@@ -9,11 +9,29 @@ from lithiumscope.core.logger import get_logger
 
 logger = get_logger("model_1.load_data")
 
+CSV_ENCODINGS = ("utf-8", "utf-8-sig", "cp1252", "latin-1")
+
+
+def _read_csv_with_fallback(path: Path) -> tuple[pd.DataFrame, str]:
+    errors: list[str] = []
+    for encoding in CSV_ENCODINGS:
+        try:
+            frame = pd.read_csv(path, encoding=encoding)
+            return frame, encoding
+        except UnicodeDecodeError as exc:
+            errors.append(f"{encoding}: {exc}")
+    raise InputValidationError(
+        "No se pudo decodificar el CSV con las codificaciones soportadas. "
+        + " | ".join(errors)
+    )
+
 
 def load_data(path: Path) -> pd.DataFrame:
     suffix = path.suffix.lower()
     if suffix == ".csv":
-        frame = pd.read_csv(path)
+        frame, encoding = _read_csv_with_fallback(path)
+        logger.info("CSV encoding selected: %s", encoding)
+        print(f"    ✓ CSV cargado con codificación: {encoding}")
     elif suffix in {".xlsx", ".xls"}:
         frame = pd.read_excel(path)
     else:
@@ -23,4 +41,5 @@ def load_data(path: Path) -> pd.DataFrame:
         raise InputValidationError(f"Input dataset is empty: {path}")
 
     logger.info("Loaded dataset %s with %d rows and %d columns", path, *frame.shape)
+    print(f"    ✓ Dataset: {frame.shape[0]} filas × {frame.shape[1]} columnas")
     return frame
