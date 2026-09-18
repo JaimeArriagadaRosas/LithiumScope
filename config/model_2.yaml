@@ -12,11 +12,17 @@ model:
 
 imagery:
   provider: earth_search
-  stac_url: https://earth-search.aws.element84.com/v1/search
+  stac_url: https://earth-search.aws.element84.com/v1
   collection: sentinel-2-l2a
-  datetime: 2020-01-01/2026-12-31
+  datetime: 2020-01-01/..
   cloud_cover_max: 35
   search_limit: 20
+  request_timeout_seconds: 60
+  max_retries: 3
+  scene_cache_decimals: 4
+  max_consecutive_sample_failures: 10
+  checkpoint_every: 10
+  progress_every: 10
   patch_size_m: 640
   patch_pixels: 32
   bands:
@@ -35,6 +41,8 @@ imagery:
 
 training:
   manifest_path: data/processed/model_2/training_manifest.csv
+  partial_manifest_path: data/processed/model_2/training_manifest.partial.csv
+  failures_path: data/processed/model_2/training_failures.csv
   feature_cache_path: data/processed/model_2/sentinel_features.csv
   image_cache_dir: data/raw/model_2/sentinel2/patches
   sample_id_column: sample_id

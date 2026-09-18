@@ -17,6 +17,18 @@ class TrainingDatasets:
     model_2_manifest: Path | None
 
 
+def _missing_imagery_dependencies() -> list[str]:
+    required = {
+        "Rasterio": "rasterio",
+        "pystac-client": "pystac_client",
+    }
+    return [
+        name
+        for name, import_name in required.items()
+        if importlib.util.find_spec(import_name) is None
+    ]
+
+
 def provision_required_datasets(prepare_model_2: bool = True) -> list[DatasetStatus]:
     statuses: list[DatasetStatus] = []
 
@@ -45,15 +57,17 @@ def provision_required_datasets(prepare_model_2: bool = True) -> list[DatasetSta
     if not prepare_model_2:
         return statuses
 
-    if importlib.util.find_spec("rasterio") is None:
+    missing_imagery = _missing_imagery_dependencies()
+    if missing_imagery:
         statuses.append(
             DatasetStatus(
                 key="model_2_sentinel2",
                 ready=False,
                 path=None,
                 detail=(
-                    "Rasterio no está instalado; no se puede preparar automáticamente "
-                    "el dataset Sentinel-2."
+                    "Dependencias de imágenes faltantes: "
+                    + ", ".join(missing_imagery)
+                    + '. Instale: pip install -e ".[imagery]"'
                 ),
             )
         )
@@ -70,7 +84,8 @@ def provision_required_datasets(prepare_model_2: bool = True) -> list[DatasetSta
                 path=str(result.manifest_path),
                 detail=(
                     f"Pares muestra-imagen listos: {result.ready_samples}; "
-                    f"omitidos: {result.failed_samples}."
+                    f"omitidos: {result.failed_samples}; "
+                    f"reanudados desde cache: {result.resumed_samples}."
                 ),
             )
         )

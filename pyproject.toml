@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lithiumscope"
-version = "0.2.0"
+version = "0.2.1"
 description = "Modular local ML toolkit for lithium prediction and spatial prospectivity."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -29,7 +29,8 @@ ml = [
 ]
 imagery = [
   "Pillow>=10.4",
-  "rasterio>=1.4"
+  "rasterio>=1.4",
+  "pystac-client>=0.8.5"
 ]
 dev = [
   "pytest>=8.3",
@@ -48,6 +49,7 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+addopts = "--basetemp=.pytest_tmp"
 
 [tool.ruff]
 line-length = 120
