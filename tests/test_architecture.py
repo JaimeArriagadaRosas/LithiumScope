@@ -6,6 +6,11 @@ def test_repository_contains_no_notebooks():
     assert not list(root.rglob("*.ipynb"))
 
 
+def test_repository_tracks_no_gitkeep_runtime_placeholders():
+    root = Path(__file__).resolve().parents[1]
+    assert not list(root.rglob(".gitkeep"))
+
+
 def test_cli_menu_remains_thin():
     root = Path(__file__).resolve().parents[1]
     lines = (root / "src/lithiumscope/cli/menu.py").read_text(encoding="utf-8").splitlines()
@@ -19,3 +24,11 @@ def test_trainers_are_thin_entry_points():
         root / "src/lithiumscope/model_2/training/trainer.py",
     ]
     assert all(len(path.read_text(encoding="utf-8").splitlines()) <= 40 for path in paths)
+
+
+def test_runtime_lifecycle_is_separated():
+    root = Path(__file__).resolve().parents[1]
+    runtime = root / "src/lithiumscope/runtime"
+    assert (runtime / "preboot.py").is_file()
+    assert (runtime / "graceful_shutdown.py").is_file()
+    assert (runtime / "lifecycle.py").is_file()

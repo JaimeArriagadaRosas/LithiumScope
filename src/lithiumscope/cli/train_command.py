@@ -8,6 +8,7 @@ from lithiumscope.cli.prompts import choose
 from lithiumscope.core.device import detect_device
 from lithiumscope.core.logger import get_logger, run_log
 from lithiumscope.datasets.downloader import ensure_dataset
+from lithiumscope.runtime.preboot import require_full_training_environment
 
 logger = get_logger("cli.train")
 
@@ -67,6 +68,10 @@ def run() -> None:
     choice = choose("> ", {"0", "1", "2", "3"})
     if choice == "0":
         return
+
+    # A full competition is all-or-nothing: detect every missing ML dependency
+    # before spending time on the first algorithm.
+    require_full_training_environment()
 
     device = detect_device(prefer_gpu=True)
     device_summary(device)
