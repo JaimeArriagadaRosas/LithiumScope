@@ -108,10 +108,12 @@ def _missing(items: list[DependencyStatus]) -> list[str]:
 
 
 def cleanup_gitkeep_placeholders() -> int:
-    """Remove obsolete runtime placeholders.
+    """Remove cloned .gitkeep files from the local runtime workspace.
 
-    LithiumScope no longer tracks .gitkeep in runtime directories. Preboot still
-    removes stale/untracked placeholders left by older clones or copied folders.
+    The repository intentionally tracks these files so GitHub and a fresh clone
+    display the complete intended directory architecture. Once LithiumScope is
+    executed, preboot removes the local placeholder files because the runtime
+    directories are already materialized and will contain real artifacts.
     """
     removed = 0
     for root in (DATA_DIR, MODELS_DIR, RESULTS_DIR, LOGS_DIR):
@@ -121,9 +123,9 @@ def cleanup_gitkeep_placeholders() -> int:
             try:
                 path.unlink()
                 removed += 1
-                logger.info("Removed obsolete placeholder: %s", path)
+                logger.info("Removed local runtime placeholder: %s", path)
             except OSError:
-                logger.warning("Could not remove placeholder: %s", path, exc_info=True)
+                logger.warning("Could not remove local placeholder: %s", path, exc_info=True)
     return removed
 
 

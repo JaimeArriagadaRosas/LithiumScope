@@ -513,7 +513,7 @@ Además genera un reporte JSON en:
 logs/preboot/preboot_<timestamp>.json
 ```
 
-Los archivos `.gitkeep` se usaron únicamente para representar directorios vacíos en Git durante la fundación inicial del repositorio. Ya no se versionan. Si un clon antiguo todavía conserva alguno como archivo local, el preboot lo elimina y luego recrea los directorios de ejecución necesarios mediante `ensure_runtime_directories()`.
+Los archivos `.gitkeep` **se mantienen versionados intencionalmente** para que GitHub y un clon recién creado muestren la arquitectura completa de directorios aunque todavía estén vacíos. Al ejecutar LithiumScope, el preboot elimina esos `.gitkeep` únicamente del working tree local, porque en ese momento las carpetas ya existen y comenzarán a contener datos, modelos, logs y resultados reales. Esta limpieza local no elimina los placeholders del repositorio remoto.
 
 ### Graceful shutdown
 
@@ -710,7 +710,8 @@ LithiumScope/
 │   ├── cli/
 │   ├── core/
 │   ├── datasets/
-│   ├── runtime/\n│   ├── model_1/
+│   ├── runtime/
+│   ├── model_1/
 │   │   ├── steps/
 │   │   ├── training/
 │   │   ├── prediction/
@@ -778,7 +779,7 @@ La figura siguiente resume los valores reportados por el documento de referencia
 - exportación CSV/Excel;
 - dashboard HTML local;
 - gráficos automáticos;
-- selector nativo de archivos sin Tkinter;\n- preboot de dependencias/configuración/permisos;\n- graceful shutdown multiplataforma;\n- limpieza de placeholders `.gitkeep` obsoletos;
+- selector nativo de archivos sin Tkinter;\n- preboot de dependencias/configuración/permisos;\n- graceful shutdown multiplataforma;\n- `.gitkeep` versionados para representar la arquitectura y limpieza local de esos placeholders durante preboot;
 - tests funcionales y estructurales;
 - CI con GitHub Actions.
 

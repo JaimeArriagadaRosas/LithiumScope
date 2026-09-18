@@ -1,14 +1,39 @@
 from pathlib import Path
 
 
+EXPECTED_GITKEEP_PATHS = {
+    "data/raw/model_1/.gitkeep",
+    "data/raw/model_2/.gitkeep",
+    "data/interim/model_1/.gitkeep",
+    "data/interim/model_2/.gitkeep",
+    "data/processed/model_1/.gitkeep",
+    "data/processed/model_2/.gitkeep",
+    "models/model_1/trained/.gitkeep",
+    "models/model_1/metadata/.gitkeep",
+    "models/model_2/trained/.gitkeep",
+    "models/model_2/metadata/.gitkeep",
+    "results/model_1/figures/.gitkeep",
+    "results/model_1/metrics/.gitkeep",
+    "results/model_1/predictions/.gitkeep",
+    "results/model_2/figures/.gitkeep",
+    "results/model_2/metrics/.gitkeep",
+    "results/model_2/predictions/.gitkeep",
+    "logs/.gitkeep",
+}
+
+
 def test_repository_contains_no_notebooks():
     root = Path(__file__).resolve().parents[1]
     assert not list(root.rglob("*.ipynb"))
 
 
-def test_repository_tracks_no_gitkeep_runtime_placeholders():
+def test_repository_keeps_runtime_architecture_placeholders():
     root = Path(__file__).resolve().parents[1]
-    assert not list(root.rglob(".gitkeep"))
+    actual = {
+        path.relative_to(root).as_posix()
+        for path in root.rglob(".gitkeep")
+    }
+    assert EXPECTED_GITKEEP_PATHS <= actual
 
 
 def test_cli_menu_remains_thin():

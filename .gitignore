@@ -25,3 +25,8 @@ models/model_2/metadata/*
 results/model_1/*
 results/model_2/*
 logs/*
+
+!data/**/.gitkeep
+!models/**/.gitkeep
+!results/**/.gitkeep
+!logs/.gitkeep
