@@ -1,5 +1,11 @@
 model:
-  default_algorithm: random_forest
+  algorithms:
+    - random_forest
+    - extra_trees
+    - hist_gradient_boosting
+    - xgboost
+    - catboost
+    - svm_rbf
   target_mode: high_lithium_quantile
   high_lithium_quantile: 0.75
   random_seed: 42
@@ -16,3 +22,15 @@ training:
   manifest_path: data/processed/model_2/training_manifest.csv
   sample_id_column: sample_id
   lithium_column: Li_icpms
+  spatial_group_column: spatial_group
+
+validation:
+  folds: 5
+  prefer_spatial_groups: true
+
+competition:
+  primary_metric: roc_auc
+  tie_breakers:
+    - average_precision
+    - balanced_accuracy
+  winner_rule: highest_cross_validated_roc_auc

@@ -1,10 +1,11 @@
 model:
-  default_algorithm: random_forest
-  supported_algorithms:
+  algorithms:
     - random_forest
     - xgboost
     - svm
     - tabnet
+    - hist_gradient_boosting
+    - catboost
 
 data:
   target_candidates:
@@ -27,3 +28,13 @@ validation:
 optimization:
   enabled: true
   n_trials: 20
+  per_algorithm_trials:
+    tabnet: 8
+    catboost: 12
+
+competition:
+  primary_metric: rmse
+  tie_breakers:
+    - mae
+    - r2
+  winner_rule: lowest_mean_outer_cv_rmse
