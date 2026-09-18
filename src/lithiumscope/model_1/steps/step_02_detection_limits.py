@@ -23,8 +23,6 @@ def clean_detection_limits(frame: pd.DataFrame) -> pd.DataFrame:
     cleaned = frame.copy()
     conversions = 0
     for column in cleaned.columns:
-        if cleaned[column].dtype != object:
-            continue
         original = cleaned[column].copy()
         cleaned[column] = cleaned[column].map(_convert)
         conversions += int((original.astype(str) != cleaned[column].astype(str)).sum())
