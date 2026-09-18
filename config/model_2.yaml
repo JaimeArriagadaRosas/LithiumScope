@@ -11,6 +11,21 @@ model:
   random_seed: 42
 
 imagery:
+  provider: earth_search
+  stac_url: https://earth-search.aws.element84.com/v1/search
+  collection: sentinel-2-l2a
+  datetime: 2020-01-01/2026-12-31
+  cloud_cover_max: 35
+  search_limit: 20
+  patch_size_m: 640
+  patch_pixels: 32
+  bands:
+    - red
+    - green
+    - blue
+    - nir
+    - swir16
+    - swir22
   accepted_extensions:
     - .tif
     - .tiff
@@ -20,9 +35,13 @@ imagery:
 
 training:
   manifest_path: data/processed/model_2/training_manifest.csv
+  feature_cache_path: data/processed/model_2/sentinel_features.csv
+  image_cache_dir: data/raw/model_2/sentinel2/patches
   sample_id_column: sample_id
   lithium_column: Li_icpms
   spatial_group_column: spatial_group
+  spatial_group_degrees: 0.5
+  minimum_samples: 50
 
 validation:
   folds: 5

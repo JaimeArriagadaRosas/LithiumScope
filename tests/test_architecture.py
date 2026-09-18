@@ -1,9 +1,39 @@
 from pathlib import Path
 
 
+EXPECTED_GITKEEP_PATHS = {
+    "data/raw/model_1/.gitkeep",
+    "data/raw/model_2/.gitkeep",
+    "data/interim/model_1/.gitkeep",
+    "data/interim/model_2/.gitkeep",
+    "data/processed/model_1/.gitkeep",
+    "data/processed/model_2/.gitkeep",
+    "models/model_1/trained/.gitkeep",
+    "models/model_1/metadata/.gitkeep",
+    "models/model_2/trained/.gitkeep",
+    "models/model_2/metadata/.gitkeep",
+    "results/model_1/figures/.gitkeep",
+    "results/model_1/metrics/.gitkeep",
+    "results/model_1/predictions/.gitkeep",
+    "results/model_2/figures/.gitkeep",
+    "results/model_2/metrics/.gitkeep",
+    "results/model_2/predictions/.gitkeep",
+    "logs/.gitkeep",
+}
+
+
 def test_repository_contains_no_notebooks():
     root = Path(__file__).resolve().parents[1]
     assert not list(root.rglob("*.ipynb"))
+
+
+def test_repository_keeps_runtime_architecture_placeholders():
+    root = Path(__file__).resolve().parents[1]
+    actual = {
+        path.relative_to(root).as_posix()
+        for path in root.rglob(".gitkeep")
+    }
+    assert EXPECTED_GITKEEP_PATHS <= actual
 
 
 def test_cli_menu_remains_thin():
@@ -19,3 +49,11 @@ def test_trainers_are_thin_entry_points():
         root / "src/lithiumscope/model_2/training/trainer.py",
     ]
     assert all(len(path.read_text(encoding="utf-8").splitlines()) <= 40 for path in paths)
+
+
+def test_runtime_lifecycle_is_separated():
+    root = Path(__file__).resolve().parents[1]
+    runtime = root / "src/lithiumscope/runtime"
+    assert (runtime / "preboot.py").is_file()
+    assert (runtime / "graceful_shutdown.py").is_file()
+    assert (runtime / "lifecycle.py").is_file()

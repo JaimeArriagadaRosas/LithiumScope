@@ -33,10 +33,6 @@ def main() -> int:
             else:
                 logger.info("LithiumScope finished")
                 return 0
-        except KeyboardInterrupt:
-            print("\nOperación cancelada.")
-            logger.warning("Operation cancelled by user")
-            pause()
         except Exception as exc:
             logger.exception("Unhandled application error")
             print(f"\nError: {exc}")

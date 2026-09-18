@@ -477,7 +477,70 @@ No necesita servidor web.
 
 ---
 
-## 11. Logs centralizados
+## 11. Runtime: preboot y cierre seguro
+
+LithiumScope incorpora una capa de ciclo de vida independiente en:
+
+```text
+src/lithiumscope/runtime/
+├── preboot.py
+├── graceful_shutdown.py
+└── lifecycle.py
+```
+
+### Preboot
+
+Antes de mostrar el menú, `preboot.py` verifica y prepara:
+
+- Python 3.11 o superior;
+- dependencias esenciales;
+- dependencias ML completas;
+- dependencias de imágenes;
+- configuración YAML;
+- permisos de escritura en `data/`, `models/`, `results/` y `logs/`;
+- acelerador CPU / CUDA / MPS;
+- dataset geoquímico del Modelo 1, descargándolo si falta;
+- dataset espacial del Modelo 2, generando automáticamente los pares Sentinel-2 si faltan;
+- placeholders `.gitkeep` locales.
+
+Si faltan paquetes opcionales para ejecutar una competencia completa, el preboot los informa de una sola vez y entrega el comando recomendado:
+
+```bat
+pip install -e ".[ml,imagery,dev]"
+```
+
+Además genera un reporte JSON en:
+
+```text
+logs/preboot/preboot_<timestamp>.json
+```
+
+Los archivos `.gitkeep` **se mantienen versionados intencionalmente** para que GitHub y un clon recién creado muestren la arquitectura completa de directorios aunque todavía estén vacíos. Al ejecutar LithiumScope, el preboot elimina esos `.gitkeep` únicamente del working tree local, porque en ese momento las carpetas ya existen y comenzarán a contener datos, modelos, logs y resultados reales. Esta limpieza local no elimina los placeholders del repositorio remoto.
+
+### Graceful shutdown
+
+`graceful_shutdown.py` registra manejadores para:
+
+- Ctrl+C / SIGINT;
+- SIGTERM;
+- Ctrl+Break en Windows;
+- cierre de consola de Windows mediante `SetConsoleCtrlHandler`;
+- finalización normal del proceso.
+
+El gestor:
+
+1. registra el motivo del cierre;
+2. detiene procesos hijo conocidos;
+3. espera un tiempo breve;
+4. fuerza su terminación solo si no responden;
+5. ejecuta callbacks de limpieza;
+6. cierra correctamente el sistema de logging.
+
+El selector de archivos ya no utiliza Tkinter. En Windows usa el diálogo nativo de WinForms mediante PowerShell; en macOS usa `osascript`; en Linux intenta `zenity` o `kdialog`. Esto evita mantener un event loop de Tkinter durante entrenamientos largos.
+
+---
+
+## 12. Logs centralizados
 
 ```text
 logs/
@@ -497,7 +560,7 @@ logs/training/model_1_competition_YYYYMMDD_HHMMSS.log
 
 ---
 
-## 12. CPU y GPU
+## 13. CPU y GPU
 
 `src/lithiumscope/core/device.py`
 
@@ -520,7 +583,7 @@ Una GPU no es requisito para utilizar LithiumScope.
 
 ---
 
-## 13. Datasets
+## 14. Datasets
 
 ### Modelo 1
 
@@ -530,39 +593,62 @@ Mientras se confirma la fuente oficial, se utiliza como bootstrap un mirror púb
 
 ### Modelo 2
 
-Fuentes registradas:
+El dataset de entrenamiento del Modelo 2 se construye **automáticamente**. El usuario no tiene que crear ni seleccionar manualmente un `training_manifest.csv`.
 
-- Fregeneda–Almendra Lithium Spectral Library;
-- GREENPEG Spectral Library;
-- Sentinel-2 / Copernicus Data Space.
+Preboot realiza este flujo:
 
-Sentinel-2 es una fuente dinámica: las escenas deberán seleccionarse según coordenadas, fecha, nubosidad y resolución.
+```text
+dataset geoquímico
+      ↓
+muestras con Li + latitud + longitud
+      ↓
+búsqueda Sentinel-2 L2A por coordenada
+      ↓
+selección de escena por nubosidad
+      ↓
+extracción y cache de parche multibanda
+      ↓
+data/processed/model_2/training_manifest.csv
+```
+
+Las imágenes se obtienen mediante el catálogo público STAC Earth Search y se almacenan como parches locales cacheados. Si una muestra no dispone de escena válida, queda registrada y se omite; el entrenamiento exige un mínimo configurable de muestras preparadas.
+
+El manifiesto generado contiene, entre otros:
+
+- `sample_id`;
+- `Li_icpms`;
+- longitud;
+- latitud;
+- `spatial_group`;
+- ruta del parche multibanda;
+- identificador de escena Sentinel-2;
+- nubosidad de la escena.
+
+Fuentes espectrales como Fregeneda–Almendra y GREENPEG continúan registradas como **referencias auxiliares**; no se mezclan automáticamente con las muestras andinas porque corresponden a dominios geológicos diferentes.
 
 ---
 
-## 14. Manifiesto del Modelo 2
+## 15. Manifiesto automático del Modelo 2
 
-Formato mínimo:
+`training_manifest.csv` es un artefacto interno reproducible, no un archivo que el usuario deba preparar.
 
-```csv
-sample_id,Li_icpms,image_path
-A001,18.4,data/processed/model_2/images/A001.tif
-A002,7.9,data/processed/model_2/images/A002.tif
+Ruta predeterminada:
+
+```text
+data/processed/model_2/training_manifest.csv
 ```
 
-Formato recomendado:
+Los parches Sentinel-2 se cachean en:
 
-```csv
-sample_id,Li_icpms,image_path,spatial_group
-A001,18.4,data/processed/model_2/images/A001.tif,sector_01
-A002,7.9,data/processed/model_2/images/A002.tif,sector_02
+```text
+data/raw/model_2/sentinel2/patches/
 ```
 
-`spatial_group` permite una evaluación geográficamente más rigurosa.
+En ejecuciones posteriores, preboot reutiliza el manifiesto y los parches existentes mientras sigan siendo válidos, evitando descargar nuevamente los mismos datos.
 
 ---
 
-## 15. Estructura SOLID
+## 16. Estructura SOLID
 
 La descripción completa está en [docs/SOLID.md](docs/SOLID.md).
 
@@ -588,7 +674,7 @@ Se añadieron tests estructurales para impedir:
 
 ---
 
-## 16. Instalación
+## 17. Instalación
 
 ### Requisito
 
@@ -630,7 +716,7 @@ python main.py
 
 ---
 
-## 17. Estructura del repositorio
+## 18. Estructura del repositorio
 
 ```text
 LithiumScope/
@@ -649,6 +735,7 @@ LithiumScope/
 │   ├── cli/
 │   ├── core/
 │   ├── datasets/
+│   ├── runtime/
 │   ├── model_1/
 │   │   ├── steps/
 │   │   ├── training/
@@ -666,7 +753,7 @@ LithiumScope/
 
 ---
 
-## 18. Representación de la baseline académica
+## 19. Representación de la baseline académica
 
 La figura siguiente resume los valores reportados por el documento de referencia. **No corresponde a resultados obtenidos todavía por LithiumScope**.
 
@@ -686,7 +773,7 @@ La figura siguiente resume los valores reportados por el documento de referencia
 
 ---
 
-## 19. Flujo técnico
+## 20. Flujo técnico
 
 <p align="center">
   <img src="docs/assets/workflow.svg" alt="Flujo de LithiumScope" width="100%">
@@ -698,7 +785,7 @@ La figura siguiente resume los valores reportados por el documento de referencia
 
 ---
 
-## 20. Estado del proyecto
+## 21. Estado del proyecto
 
 ### Implementado
 
@@ -717,7 +804,7 @@ La figura siguiente resume los valores reportados por el documento de referencia
 - exportación CSV/Excel;
 - dashboard HTML local;
 - gráficos automáticos;
-- selector de archivos de Windows;
+- selector nativo de archivos sin Tkinter;\n- preboot de dependencias/configuración/permisos;\n- graceful shutdown multiplataforma;\n- `.gitkeep` versionados para representar la arquitectura y limpieza local de esos placeholders durante preboot;
 - tests funcionales y estructurales;
 - CI con GitHub Actions.
 
@@ -725,15 +812,15 @@ La figura siguiente resume los valores reportados por el documento de referencia
 
 - confirmar el dataset oficial del trabajo de origen;
 - comparar resultados reales contra la baseline documentada;
-- construir pares reales muestra ↔ imagen;
-- automatizar adquisición Sentinel-2;
+- contrastar los pares automáticos muestra ↔ Sentinel-2 con criterios geológicos;
+- evaluar y refinar reglas de adquisición Sentinel-2;
 - definir agrupación espacial apropiada con geólogos;
 - evaluar sensibilidad a tamaño de parche y sensor;
 - validar prospectividad con ubicaciones completamente separadas.
 
 ---
 
-## 21. Criterio de éxito
+## 22. Criterio de éxito
 
 Primera etapa:
 
