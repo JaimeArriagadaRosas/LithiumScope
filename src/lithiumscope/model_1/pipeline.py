@@ -1,0 +1,85 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+
+import pandas as pd
+
+from lithiumscope.core.config import load_config
+from lithiumscope.core.logger import get_logger
+from lithiumscope.model_1.steps.step_01_load_data import load_data
+from lithiumscope.model_1.steps.step_02_detection_limits import clean_detection_limits
+from lithiumscope.model_1.steps.step_03_missing_values import (
+    normalize_missing_values,
+    should_include_age,
+)
+from lithiumscope.model_1.steps.step_04_quality_control import apply_quality_control
+from lithiumscope.model_1.steps.step_05_target_filtering import filter_target
+from lithiumscope.model_1.steps.step_06_category_cleaning import clean_categories
+from lithiumscope.model_1.steps.step_07_feature_engineering import add_geochemical_features
+from lithiumscope.model_1.steps.step_08_preprocessing import FeatureSchema, select_feature_schema
+
+logger = get_logger("model_1.pipeline")
+
+
+@dataclass
+class PreparedModel1Data:
+    frame: pd.DataFrame
+    target: str
+    schema: FeatureSchema
+    x: pd.DataFrame
+    y: pd.Series
+
+
+def prepare_training_data(path: Path, model_family: str) -> PreparedModel1Data:
+    config = load_config("model_1")
+    data_cfg = config["data"]
+
+    frame = load_data(path)
+    frame = clean_detection_limits(frame)
+    frame = normalize_missing_values(frame)
+
+    include_age = should_include_age(
+        frame,
+        max_missing_fraction=float(data_cfg["age_max_missing_fraction"]),
+    )
+
+    frame, target = filter_target(
+        frame,
+        candidates=list(data_cfg["target_candidates"]),
+        lower_quantile=float(data_cfg["target_lower_quantile"]),
+        upper_quantile=float(data_cfg["target_upper_quantile"]),
+    )
+    frame = apply_quality_control(
+        frame,
+        candidates=list(data_cfg["quality_column_candidates"]),
+        minimum=float(data_cfg["quality_min"]),
+        maximum=float(data_cfg["quality_max"]),
+    )
+    frame = clean_categories(frame, model_family=model_family)
+    frame = add_geochemical_features(frame)
+
+    schema = select_feature_schema(frame, include_age=include_age)
+    for column in schema.numeric:
+        frame[column] = pd.to_numeric(frame[column], errors="coerce")
+    columns = schema.numeric + schema.categorical
+    if not columns:
+        raise ValueError("No usable predictor columns were found in the dataset.")
+
+    x = frame[columns].copy()
+    y = pd.to_numeric(frame[target], errors="coerce")
+    logger.info("Prepared Model 1 training matrix: X=%s y=%s", x.shape, y.shape)
+    return PreparedModel1Data(frame=frame, target=target, schema=schema, x=x, y=y)
+
+
+def prepare_prediction_data(frame: pd.DataFrame, model_family: str, schema: FeatureSchema) -> pd.DataFrame:
+    result = clean_detection_limits(frame)
+    result = normalize_missing_values(result)
+    result = clean_categories(result, model_family=model_family)
+    result = add_geochemical_features(result)
+    for column in schema.numeric + schema.categorical:
+        if column not in result.columns:
+            result[column] = pd.NA
+    for column in schema.numeric:
+        result[column] = pd.to_numeric(result[column], errors="coerce")
+    return result[schema.numeric + schema.categorical].copy()

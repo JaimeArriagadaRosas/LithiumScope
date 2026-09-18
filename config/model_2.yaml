@@ -1,0 +1,18 @@
+model:
+  default_algorithm: random_forest
+  target_mode: high_lithium_quantile
+  high_lithium_quantile: 0.75
+  random_seed: 42
+
+imagery:
+  accepted_extensions:
+    - .tif
+    - .tiff
+    - .npy
+  normalize_per_band: true
+  nodata_fill: median
+
+training:
+  manifest_path: data/processed/model_2/training_manifest.csv
+  sample_id_column: sample_id
+  lithium_column: Li_icpms

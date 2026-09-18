@@ -1,0 +1,75 @@
+from __future__ import annotations
+
+from datetime import datetime, timezone
+from pathlib import Path
+import time
+import numpy as np
+from sklearn.base import clone
+from sklearn.pipeline import Pipeline
+from lithiumscope.core.config import load_config
+from lithiumscope.core.device import DeviceInfo
+from lithiumscope.core.logger import get_logger
+from lithiumscope.core.paths import RESULTS_DIR
+from lithiumscope.model_1.evaluation.metrics import regression_metrics
+from lithiumscope.model_1.evaluation.plots import save_real_vs_predicted
+from lithiumscope.model_1.evaluation.reports import save_json_report
+from lithiumscope.model_1.pipeline import prepare_training_data
+from lithiumscope.model_1.steps.step_08_preprocessing import build_preprocessor
+from lithiumscope.model_1.steps.step_09_validation import nested_cv
+from lithiumscope.model_1.training import random_forest, svm, tabnet, xgboost
+from lithiumscope.model_1.training.optimizer import optimize_with_optuna
+from lithiumscope.persistence.save_model import save_model_bundle
+
+logger = get_logger("model_1.trainer")
+
+
+def _model_module(name: str):
+    modules = {"random_forest": random_forest, "xgboost": xgboost, "svm": svm, "tabnet": tabnet}
+    try: return modules[name]
+    except KeyError as exc: raise ValueError(f"Unsupported Model 1 algorithm: {name}") from exc
+
+
+def _create_estimator(name, module, device, seed, params):
+    if name == "xgboost": return module.create_model(device=device, random_seed=seed, **params)
+    if name == "random_forest": return module.create_model(random_seed=seed, **params)
+    if name == "tabnet": return module.create_model(random_seed=seed, device_name="cuda" if device.accelerator == "cuda" else "cpu", **params)
+    return module.create_model(**params)
+
+
+def _build_pipeline(algorithm, module, device, seed, preprocessor, params):
+    return Pipeline(steps=[("preprocess", clone(preprocessor)), ("model", _create_estimator(algorithm, module, device, seed, params))])
+
+
+def _optimize_params(algorithm, module, device, seed, preprocessor, x, y, inner_cv, enabled, n_trials):
+    if not enabled: return {}
+    def factory(params): return _build_pipeline(algorithm, module, device, seed, preprocessor, params)
+    return optimize_with_optuna(factory, module.optuna_space, x, y, inner_cv, n_trials)
+
+
+def train_model_1(path: Path, algorithm: str, device: DeviceInfo) -> dict:
+    cfg = load_config("model_1"); val_cfg = cfg["validation"]; opt_cfg = cfg["optimization"]
+    seed = int(val_cfg["random_seed"]); optimize = bool(opt_cfg.get("enabled", True)); n_trials = int(opt_cfg.get("n_trials", 20))
+    started = time.perf_counter(); prepared = prepare_training_data(path, model_family=algorithm)
+    preprocessor = build_preprocessor(prepared.schema, model_family=algorithm); module = _model_module(algorithm)
+    outer_cv, inner_cv = nested_cv(int(val_cfg["outer_folds"]), int(val_cfg["inner_folds"]), seed)
+    oof = np.full(len(prepared.y), np.nan, dtype=float); fold_metrics = []
+    for fold, (train_idx, test_idx) in enumerate(outer_cv.split(prepared.x), start=1):
+        x_train = prepared.x.iloc[train_idx]; y_train = prepared.y.iloc[train_idx]
+        x_test = prepared.x.iloc[test_idx]; y_test = prepared.y.iloc[test_idx]
+        fold_params = _optimize_params(algorithm, module, device, seed, preprocessor, x_train, y_train, inner_cv, optimize, n_trials)
+        estimator = _build_pipeline(algorithm, module, device, seed, preprocessor, fold_params)
+        estimator.fit(x_train, y_train); predictions = estimator.predict(x_test); oof[test_idx] = predictions
+        metrics = regression_metrics(y_test, predictions)
+        fold_metrics.append({"fold": fold, **metrics.to_dict(), "best_params": fold_params})
+        logger.info("Model 1 %s fold=%d r2=%.4f rmse=%.4f mae=%.4f", algorithm, fold, metrics.r2, metrics.rmse, metrics.mae)
+    overall = regression_metrics(prepared.y, oof)
+    final_params = _optimize_params(algorithm, module, device, seed, preprocessor, prepared.x, prepared.y, inner_cv, optimize, n_trials)
+    final_estimator = _build_pipeline(algorithm, module, device, seed, preprocessor, final_params); final_estimator.fit(prepared.x, prepared.y)
+    elapsed = time.perf_counter() - started; timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"); results_dir = RESULTS_DIR / "model_1"
+    report = {"model_group":"model_1","algorithm":algorithm,"target":prepared.target,"samples":int(len(prepared.y)),"numeric_features":prepared.schema.numeric,"categorical_features":prepared.schema.categorical,"validation":{"outer_folds":int(val_cfg["outer_folds"]),"inner_folds":int(val_cfg["inner_folds"]),"random_seed":seed,"hyperparameter_optimization":optimize,"optuna_trials_per_search":n_trials if optimize else 0},"device":device.accelerator,"device_name":device.name,"elapsed_seconds":round(elapsed,3),"metrics":overall.to_dict(),"fold_metrics":fold_metrics,"final_best_params":final_params,"reference_note":"Metrics are generated by LithiumScope and should be compared with the source report baseline, not assumed to reproduce it exactly."}
+    report_path = save_json_report(report, results_dir / "metrics" / f"{algorithm}_{timestamp}.json")
+    figure_path = save_real_vs_predicted(prepared.y, oof, results_dir / "figures" / f"{algorithm}_real_vs_predicted_{timestamp}.png")
+    bundle = {"estimator":final_estimator,"algorithm":algorithm,"target":prepared.target,"schema":prepared.schema}
+    model_path, metadata_path = save_model_bundle("model_1", algorithm, bundle, report)
+    report.update({"model_path":str(model_path),"metadata_path":str(metadata_path),"report_path":str(report_path),"figure_path":str(figure_path)})
+    logger.info("Model 1 training complete: %s", report); return report

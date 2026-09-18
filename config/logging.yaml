@@ -1,0 +1,5 @@
+logging:
+  level: INFO
+  max_bytes: 5242880
+  backup_count: 5
+  console: true
