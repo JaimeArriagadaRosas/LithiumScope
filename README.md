@@ -477,7 +477,68 @@ No necesita servidor web.
 
 ---
 
-## 11. Logs centralizados
+## 11. Runtime: preboot y cierre seguro
+
+LithiumScope incorpora una capa de ciclo de vida independiente en:
+
+```text
+src/lithiumscope/runtime/
+├── preboot.py
+├── graceful_shutdown.py
+└── lifecycle.py
+```
+
+### Preboot
+
+Antes de mostrar el menú, `preboot.py` verifica:
+
+- Python 3.11 o superior;
+- dependencias esenciales;
+- dependencias ML completas;
+- dependencias de imágenes;
+- configuración YAML;
+- permisos de escritura en `data/`, `models/`, `results/` y `logs/`;
+- acelerador CPU / CUDA / MPS;
+- placeholders `.gitkeep` obsoletos.
+
+Si faltan paquetes opcionales para ejecutar una competencia completa, el preboot los informa de una sola vez y entrega el comando recomendado:
+
+```bat
+pip install -e ".[ml,imagery,dev]"
+```
+
+Además genera un reporte JSON en:
+
+```text
+logs/preboot/preboot_<timestamp>.json
+```
+
+Los archivos `.gitkeep` se usaron únicamente para representar directorios vacíos en Git durante la fundación inicial del repositorio. Ya no se versionan. Si un clon antiguo todavía conserva alguno como archivo local, el preboot lo elimina y luego recrea los directorios de ejecución necesarios mediante `ensure_runtime_directories()`.
+
+### Graceful shutdown
+
+`graceful_shutdown.py` registra manejadores para:
+
+- Ctrl+C / SIGINT;
+- SIGTERM;
+- Ctrl+Break en Windows;
+- cierre de consola de Windows mediante `SetConsoleCtrlHandler`;
+- finalización normal del proceso.
+
+El gestor:
+
+1. registra el motivo del cierre;
+2. detiene procesos hijo conocidos;
+3. espera un tiempo breve;
+4. fuerza su terminación solo si no responden;
+5. ejecuta callbacks de limpieza;
+6. cierra correctamente el sistema de logging.
+
+El selector de archivos ya no utiliza Tkinter. En Windows usa el diálogo nativo de WinForms mediante PowerShell; en macOS usa `osascript`; en Linux intenta `zenity` o `kdialog`. Esto evita mantener un event loop de Tkinter durante entrenamientos largos.
+
+---
+
+## 12. Logs centralizados
 
 ```text
 logs/
@@ -497,7 +558,7 @@ logs/training/model_1_competition_YYYYMMDD_HHMMSS.log
 
 ---
 
-## 12. CPU y GPU
+## 13. CPU y GPU
 
 `src/lithiumscope/core/device.py`
 
@@ -520,7 +581,7 @@ Una GPU no es requisito para utilizar LithiumScope.
 
 ---
 
-## 13. Datasets
+## 14. Datasets
 
 ### Modelo 1
 
@@ -540,7 +601,7 @@ Sentinel-2 es una fuente dinámica: las escenas deberán seleccionarse según co
 
 ---
 
-## 14. Manifiesto del Modelo 2
+## 15. Manifiesto del Modelo 2
 
 Formato mínimo:
 
@@ -562,7 +623,7 @@ A002,7.9,data/processed/model_2/images/A002.tif,sector_02
 
 ---
 
-## 15. Estructura SOLID
+## 16. Estructura SOLID
 
 La descripción completa está en [docs/SOLID.md](docs/SOLID.md).
 
@@ -588,7 +649,7 @@ Se añadieron tests estructurales para impedir:
 
 ---
 
-## 16. Instalación
+## 17. Instalación
 
 ### Requisito
 
@@ -630,7 +691,7 @@ python main.py
 
 ---
 
-## 17. Estructura del repositorio
+## 18. Estructura del repositorio
 
 ```text
 LithiumScope/
@@ -649,7 +710,7 @@ LithiumScope/
 │   ├── cli/
 │   ├── core/
 │   ├── datasets/
-│   ├── model_1/
+│   ├── runtime/\n│   ├── model_1/
 │   │   ├── steps/
 │   │   ├── training/
 │   │   ├── prediction/
@@ -666,7 +727,7 @@ LithiumScope/
 
 ---
 
-## 18. Representación de la baseline académica
+## 19. Representación de la baseline académica
 
 La figura siguiente resume los valores reportados por el documento de referencia. **No corresponde a resultados obtenidos todavía por LithiumScope**.
 
@@ -686,7 +747,7 @@ La figura siguiente resume los valores reportados por el documento de referencia
 
 ---
 
-## 19. Flujo técnico
+## 20. Flujo técnico
 
 <p align="center">
   <img src="docs/assets/workflow.svg" alt="Flujo de LithiumScope" width="100%">
@@ -698,7 +759,7 @@ La figura siguiente resume los valores reportados por el documento de referencia
 
 ---
 
-## 20. Estado del proyecto
+## 21. Estado del proyecto
 
 ### Implementado
 
@@ -717,7 +778,7 @@ La figura siguiente resume los valores reportados por el documento de referencia
 - exportación CSV/Excel;
 - dashboard HTML local;
 - gráficos automáticos;
-- selector de archivos de Windows;
+- selector nativo de archivos sin Tkinter;\n- preboot de dependencias/configuración/permisos;\n- graceful shutdown multiplataforma;\n- limpieza de placeholders `.gitkeep` obsoletos;
 - tests funcionales y estructurales;
 - CI con GitHub Actions.
 
@@ -733,7 +794,7 @@ La figura siguiente resume los valores reportados por el documento de referencia
 
 ---
 
-## 21. Criterio de éxito
+## 22. Criterio de éxito
 
 Primera etapa:
 
