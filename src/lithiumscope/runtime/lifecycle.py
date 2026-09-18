@@ -10,16 +10,15 @@ logger = get_logger("runtime.lifecycle")
 
 
 def run_application(entrypoint: Callable[[], int]) -> int:
-    report = run_preboot(verbose=True)
-    if not report.core_ready:
-        logger.error("Core preboot failed; application will not start")
-        print("\nPreboot falló en requisitos esenciales. Revise el reporte indicado arriba.")
-        return 2
-
     manager = get_shutdown_manager()
     manager.install()
 
     try:
+        report = run_preboot(verbose=True)
+        if not report.core_ready:
+            logger.error("Core preboot failed; application will not start")
+            print("\nPreboot falló en requisitos esenciales. Revise el reporte indicado arriba.")
+            return 2
         return int(entrypoint())
     except GracefulExit as exc:
         return int(exc.code or 0)

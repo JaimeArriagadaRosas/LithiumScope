@@ -19,6 +19,8 @@ from lithiumscope.core.paths import (
     RESULTS_DIR,
     ensure_runtime_directories,
 )
+from lithiumscope.datasets.provisioner import provision_required_datasets
+from lithiumscope.datasets.status import DatasetStatus
 
 logger = get_logger("runtime.preboot")
 
@@ -52,6 +54,7 @@ DEV_DEPENDENCIES = {
 }
 
 REQUIRED_CONFIGS = ("app.yaml", "logging.yaml", "model_1.yaml", "model_2.yaml")
+REQUIRED_DATASETS = {"model_1_geochemistry", "model_2_sentinel2"}
 MIN_PYTHON = (3, 11)
 
 
@@ -71,6 +74,7 @@ class PrebootReport:
     ml: list[DependencyStatus]
     imagery: list[DependencyStatus]
     dev: list[DependencyStatus]
+    datasets: list[DatasetStatus]
     configs_ok: bool
     writable_ok: bool
     placeholders_removed: int
@@ -94,6 +98,18 @@ class PrebootReport:
     @property
     def imagery_ready(self) -> bool:
         return all(item.available for item in self.imagery)
+
+    @property
+    def datasets_ready(self) -> bool:
+        by_key = {item.key: item for item in self.datasets}
+        return all(
+            key in by_key and by_key[key].ready
+            for key in REQUIRED_DATASETS
+        )
+
+    @property
+    def training_ready(self) -> bool:
+        return self.core_ready and self.ml_ready and self.imagery_ready and self.datasets_ready
 
 
 def _dependency_status(mapping: dict[str, str]) -> list[DependencyStatus]:
@@ -159,6 +175,8 @@ def _save_report(report: PrebootReport) -> Path:
     payload["core_ready"] = report.core_ready
     payload["ml_ready"] = report.ml_ready
     payload["imagery_ready"] = report.imagery_ready
+    payload["datasets_ready"] = report.datasets_ready
+    payload["training_ready"] = report.training_ready
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
     return path
 
@@ -171,6 +189,19 @@ def _print_group(title: str, items: list[DependencyStatus]) -> None:
         print("    - " + ", ".join(missing))
 
 
+def _print_datasets(items: list[DatasetStatus]) -> None:
+    by_key = {item.key: item for item in items}
+    complete = all(key in by_key and by_key[key].ready for key in REQUIRED_DATASETS)
+    print(f"  Datasets           [{'OK' if complete else 'INCOMPLETOS'}]")
+    for key in sorted(REQUIRED_DATASETS):
+        item = by_key.get(key)
+        if item is None:
+            print(f"    - {key}: NO PREPARADO")
+            continue
+        state = "OK" if item.ready else "ERROR"
+        print(f"    - {item.key}: {state} — {item.detail}")
+
+
 def run_preboot(verbose: bool = True) -> PrebootReport:
     ensure_runtime_directories()
     configure_logging()
@@ -179,16 +210,28 @@ def run_preboot(verbose: bool = True) -> PrebootReport:
     python_ok = sys.version_info >= MIN_PYTHON
     configs_ok = _configs_available()
     writable_ok = _runtime_writable()
+    core = _dependency_status(CORE_DEPENDENCIES)
+    ml = _dependency_status(ML_DEPENDENCIES)
+    imagery = _dependency_status(IMAGERY_DEPENDENCIES)
+    dev = _dependency_status(DEV_DEPENDENCIES)
     device = detect_device(prefer_gpu=True)
+
+    can_prepare_data = all(item.available for item in core)
+    datasets = (
+        provision_required_datasets(prepare_model_2=all(item.available for item in imagery))
+        if can_prepare_data
+        else []
+    )
 
     report = PrebootReport(
         python_ok=python_ok,
         python_version=platform.python_version(),
         platform=f"{platform.system()} {platform.release()}",
-        core=_dependency_status(CORE_DEPENDENCIES),
-        ml=_dependency_status(ML_DEPENDENCIES),
-        imagery=_dependency_status(IMAGERY_DEPENDENCIES),
-        dev=_dependency_status(DEV_DEPENDENCIES),
+        core=core,
+        ml=ml,
+        imagery=imagery,
+        dev=dev,
+        datasets=datasets,
         configs_ok=configs_ok,
         writable_ok=writable_ok,
         placeholders_removed=removed,
@@ -198,13 +241,12 @@ def run_preboot(verbose: bool = True) -> PrebootReport:
     report.report_path = str(_save_report(report))
 
     logger.info(
-        "Preboot complete core=%s ml=%s imagery=%s python=%s writable=%s placeholders_removed=%d",
+        "Preboot complete core=%s ml=%s imagery=%s datasets=%s training=%s",
         report.core_ready,
         report.ml_ready,
         report.imagery_ready,
-        report.python_ok,
-        report.writable_ok,
-        report.placeholders_removed,
+        report.datasets_ready,
+        report.training_ready,
     )
 
     if verbose:
@@ -219,6 +261,8 @@ def run_preboot(verbose: bool = True) -> PrebootReport:
         _print_group("ML completo", report.ml)
         _print_group("Imágenes", report.imagery)
         _print_group("Desarrollo", report.dev)
+        _print_datasets(report.datasets)
+        print(f"  Entrenamiento      [{'LISTO' if report.training_ready else 'NO LISTO'}]")
         print(f"  Reporte            {report.report_path}")
         if not report.ml_ready or not report.imagery_ready:
             print("\n  Para dejar el entorno completo:")
