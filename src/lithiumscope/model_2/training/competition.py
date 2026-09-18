@@ -47,6 +47,20 @@ def _ranking_row(result) -> dict:
     }
 
 
+def _excel_sheets(ranking: pd.DataFrame, results: dict[str, object], y: pd.Series) -> dict[str, pd.DataFrame]:
+    sheets: dict[str, pd.DataFrame] = {"ranking": ranking}
+    for algorithm, result in results.items():
+        sheets[f"folds_{algorithm}"[:31]] = result.fold_table
+        sheets[f"pred_{algorithm}"[:31]] = pd.DataFrame(
+            {
+                "y_true": y.to_numpy(),
+                "prospectivity_score": result.probabilities,
+                "predicted_class_0_5": (result.probabilities >= 0.5).astype(int),
+            }
+        )
+    return sheets
+
+
 def run_model_2_competition(manifest_path: Path, device: DeviceInfo) -> CompetitionOutcome:
     cfg = load_config("model_2")
     algorithms = list(cfg["model"]["algorithms"])
@@ -78,10 +92,16 @@ def run_model_2_competition(manifest_path: Path, device: DeviceInfo) -> Competit
             result = run_classification_cv(x, y, algorithm, device, seed, folds, groups)
             results[algorithm] = result
             rows.append(_ranking_row(result))
+
             result.fold_table.to_csv(context.tables / f"fold_metrics_{algorithm}.csv", index=False)
             pd.DataFrame(
-                {"y_true": y, "prospectivity_score": result.probabilities}
+                {
+                    "y_true": y,
+                    "prospectivity_score": result.probabilities,
+                    "predicted_class_0_5": (result.probabilities >= 0.5).astype(int),
+                }
             ).to_csv(context.tables / f"oof_predictions_{algorithm}.csv", index=False)
+
             save_probability_histogram(
                 y,
                 result.probabilities,
@@ -97,13 +117,22 @@ def run_model_2_competition(manifest_path: Path, device: DeviceInfo) -> Competit
         except Exception as exc:
             logger.exception("Model 2 algorithm failed: %s", algorithm)
             failed.append(algorithm)
-            rows.append({"algorithm": algorithm, "label": get_label(algorithm), "status": "failed", "error": str(exc)})
+            rows.append(
+                {
+                    "algorithm": algorithm,
+                    "label": get_label(algorithm),
+                    "status": "failed",
+                    "error": str(exc),
+                }
+            )
             print(f"  ✗ {get_label(algorithm)} falló: {exc}")
 
     ranking = pd.DataFrame(rows)
     ok = ranking[ranking["status"] == "ok"].copy()
+
     if ok.empty:
         ranking.to_csv(context.tables / "competition_ranking.csv", index=False)
+        export_workbook(context.exports / "model_2_results.xlsx", _excel_sheets(ranking, results, y))
         build_dashboard(context.root, "LithiumScope — Modelo 2")
         return CompetitionOutcome(context.root, ranking, None, [], failed)
 
@@ -113,14 +142,17 @@ def run_model_2_competition(manifest_path: Path, device: DeviceInfo) -> Competit
     ).reset_index(drop=True)
     ok.insert(0, "rank", range(1, len(ok) + 1))
     ranking = pd.concat([ok, ranking[ranking["status"] != "ok"]], ignore_index=True, sort=False)
+
     ranking.to_csv(context.tables / "competition_ranking.csv", index=False)
     save_competition_chart(ok, context.figures / "competition_roc_auc.png")
 
     winner = str(ok.iloc[0]["algorithm"])
     print(f"\n🏆 Ganador provisional Modelo 2: {get_label(winner)}")
+
     final_estimator = create_model(winner, device, seed)
     final_estimator.fit(x, y)
     winner_result = results[winner]
+
     metadata = {
         "model_group": "model_2",
         "algorithm": winner,
@@ -130,11 +162,13 @@ def run_model_2_competition(manifest_path: Path, device: DeviceInfo) -> Competit
         "target_quantile": q,
         "metrics": winner_result.overall_metrics,
         "competition_primary_metric": "roc_auc_mean",
+        "winner_rule": "highest mean ROC-AUC; tie-break Average Precision then Balanced Accuracy",
         "ranking": ok.to_dict(orient="records"),
         "run_id": context.run_id,
         "device": device.accelerator,
         "scope_note": "Score de priorización exploratoria; no es probabilidad de yacimiento económicamente viable.",
     }
+
     bundle = {
         "estimator": final_estimator,
         "features": list(x.columns),
@@ -142,15 +176,21 @@ def run_model_2_competition(manifest_path: Path, device: DeviceInfo) -> Competit
         "target_quantile": q,
         "algorithm": winner,
     }
-    model_path, metadata_path = save_model_bundle("model_2", f"winner_{winner}", bundle, metadata)
+    model_path, metadata_path = save_model_bundle(
+        "model_2",
+        f"winner_{winner}",
+        bundle,
+        metadata,
+    )
 
-    sheets = {"ranking": ranking}
-    for algorithm, result in results.items():
-        sheets[f"folds_{algorithm}"[:31]] = result.fold_table
-    export_workbook(context.exports / "model_2_results.xlsx", sheets)
+    export_workbook(
+        context.exports / "model_2_results.xlsx",
+        _excel_sheets(ranking, results, y),
+    )
     (context.exports / "winner.txt").write_text(
         f"algorithm={winner}\nmodel={model_path}\nmetadata={metadata_path}\n",
         encoding="utf-8",
     )
+
     build_dashboard(context.root, "LithiumScope — Modelo 2 · Competencia")
     return CompetitionOutcome(context.root, ranking, winner, list(results), failed)
