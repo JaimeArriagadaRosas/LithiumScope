@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=70", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lithiumscope"
+version = "0.1.0"
+description = "Modular local ML toolkit for lithium prediction and spatial prospectivity."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["joblib>=1.4","matplotlib>=3.9","numpy>=2.0","openpyxl>=3.1","pandas>=2.2","PyYAML>=6.0","requests>=2.32","scikit-learn>=1.5"]
+
+[project.optional-dependencies]
+ml = ["optuna>=4.0","xgboost>=2.1","torch>=2.4","pytorch-tabnet>=4.1"]
+imagery = ["Pillow>=10.4","rasterio>=1.4"]
+dev = ["pytest>=8.3","ruff>=0.6"]
+
+[project.scripts]
+lithiumscope = "lithiumscope.cli.menu:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E9", "F63", "F7", "F82"]

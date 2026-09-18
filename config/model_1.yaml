@@ -1,0 +1,29 @@
+model:
+  default_algorithm: random_forest
+  supported_algorithms:
+    - random_forest
+    - xgboost
+    - svm
+    - tabnet
+
+data:
+  target_candidates:
+    - Li_icpms
+  quality_column_candidates:
+    - "SUM (no water)"
+    - "SUM(no water)"
+    - "SUM (water)"
+  quality_min: 94.0
+  quality_max: 102.0
+  target_lower_quantile: 0.025
+  target_upper_quantile: 0.975
+  age_max_missing_fraction: 0.50
+
+validation:
+  outer_folds: 5
+  inner_folds: 5
+  random_seed: 42
+
+optimization:
+  enabled: true
+  n_trials: 20

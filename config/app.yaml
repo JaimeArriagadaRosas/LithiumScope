@@ -1,0 +1,11 @@
+app:
+  name: LithiumScope
+  version: 0.1.0
+  random_seed: 42
+  prefer_gpu: true
+
+paths:
+  data: data
+  models: models
+  results: results
+  logs: logs
