@@ -8,7 +8,7 @@ from typing import Any
 
 import pandas as pd
 
-from lithiumscope.core.hashing import file_sha256
+from lithiumscope.core.hashing import file_set_sha256, file_sha256
 from lithiumscope.core.reproducibility import runtime_fingerprint
 from lithiumscope.core.states import DatasetState
 
@@ -33,6 +33,23 @@ class DatasetManifest:
         return asdict(self)
 
 
+def _linked_file_metadata(path: Path) -> dict[str, Any]:
+    if path.suffix.lower() != ".csv":
+        return {}
+    try:
+        source = pd.read_csv(path)
+    except Exception:
+        return {}
+    if "image_path" not in source.columns:
+        return {}
+
+    linked = [Path(str(value)) for value in source["image_path"].dropna().tolist()]
+    return {
+        "linked_file_count": len(linked),
+        "linked_files_sha256": file_set_sha256(linked),
+    }
+
+
 def build_tabular_manifest(
     path: Path,
     dataset_name: str,
@@ -48,6 +65,11 @@ def build_tabular_manifest(
         elif suffix in {".xlsx", ".xls"}:
             frame = pd.read_excel(path)
 
+    merged_metadata = {
+        **_linked_file_metadata(path),
+        **(metadata or {}),
+    }
+
     return DatasetManifest(
         schema_version=1,
         dataset_name=dataset_name,
@@ -61,7 +83,7 @@ def build_tabular_manifest(
         column_names=[str(column) for column in frame.columns] if frame is not None else [],
         created_at_utc=datetime.now(timezone.utc).isoformat(),
         runtime=runtime_fingerprint(),
-        metadata=metadata or {},
+        metadata=merged_metadata,
     )
 
 
