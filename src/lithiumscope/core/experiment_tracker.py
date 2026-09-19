@@ -10,10 +10,16 @@ from lithiumscope.core.states import RunState
 
 
 class ExperimentTracker:
-    def __init__(self, run_dir: Path, run_id: str, model_group: str) -> None:
+    def __init__(
+        self,
+        run_dir: Path,
+        run_id: str,
+        model_group: str,
+        payload: dict[str, Any] | None = None,
+    ) -> None:
         self.run_dir = run_dir
         self.path = run_dir / "run.json"
-        self.payload: dict[str, Any] = {
+        self.payload = payload or {
             "schema_version": 1,
             "run_id": run_id,
             "model_group": model_group,
@@ -24,7 +30,19 @@ class ExperimentTracker:
             "events": [],
             "summary": {},
         }
-        self._write()
+        if payload is None:
+            self._write()
+
+    @classmethod
+    def load(cls, run_dir: Path) -> "ExperimentTracker":
+        path = run_dir / "run.json"
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        return cls(
+            run_dir,
+            str(payload.get("run_id", run_dir.name)),
+            str(payload.get("model_group", run_dir.parent.parent.name)),
+            payload=payload,
+        )
 
     @property
     def state(self) -> RunState:
@@ -50,6 +68,8 @@ class ExperimentTracker:
             RunState.CANCELLED,
         }:
             self.payload["completed_at_utc"] = datetime.now(timezone.utc).isoformat()
+        else:
+            self.payload["completed_at_utc"] = None
         self._write()
 
     def cancel_if_active(self) -> None:

@@ -961,3 +961,35 @@ La integración continua prueba:
 Esto es especialmente importante porque LithiumScope utiliza rutas, selectores de archivos, señales y comportamiento de consola que pueden variar entre sistemas operativos.
 
 `pyproject.toml` es la única fuente de dependencias del proyecto; se eliminó el `requirements.txt` duplicado.
+
+
+---
+
+## 26. Reanudación de entrenamiento
+
+LithiumScope evita generar carpetas y modelos repetidos cuando una competencia se interrumpe.
+
+Cada entrenamiento nuevo recibe una identidad local como:
+
+```text
+training_20260919_154100_m0300
+```
+
+Antes de crear una ejecución nueva se calcula una firma con el dataset, las configuraciones relevantes y el commit Git. Si existe un entrenamiento compatible, se reutiliza.
+
+La reanudación opera en varios niveles:
+
+- ejecución completa: si ya terminó, se reutiliza sin volver a generar el modelo;
+- algoritmo: conserva sus resultados y parámetros finales;
+- fold: un fold terminado no vuelve a ejecutarse;
+- Optuna: los estudios se persisten en SQLite y continúan los trials pendientes.
+
+Una interrupción dentro de un fold solo obliga a repetir el trabajo que todavía no había alcanzado un checkpoint seguro.
+
+### TabNet
+
+TabNet utiliza una validación interna tomada exclusivamente del conjunto de entrenamiento de cada fit para que el early stopping sea real y no utilice el fold externo de prueba. Los warnings de la librería se capturan y deduplican en los logs, mientras la consola usa progreso reescribible.
+
+El modelo final ganador puede reajustarse con todos los datos usando el número de épocas seleccionado durante la validación interna.
+
+La estrategia de versionado asociada se documenta en [docs/VERSIONING.md](docs/VERSIONING.md).

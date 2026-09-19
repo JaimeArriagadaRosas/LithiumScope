@@ -32,7 +32,9 @@ ALGORITHMS = {
     "svm": AlgorithmSpec("svm", "SVM (RBF)", svm),
     "tabnet": AlgorithmSpec("tabnet", "TabNet", tabnet, "pytorch-tabnet"),
     "hist_gradient_boosting": AlgorithmSpec(
-        "hist_gradient_boosting", "HistGradientBoosting", hist_gradient_boosting
+        "hist_gradient_boosting",
+        "HistGradientBoosting",
+        hist_gradient_boosting,
     ),
     "catboost": AlgorithmSpec("catboost", "CatBoost", catboost, "catboost"),
 }
@@ -45,23 +47,56 @@ def get_algorithm(name: str) -> AlgorithmSpec:
         raise ValueError(f"Algoritmo no soportado: {name}") from exc
 
 
-def create_model(name: str, device: DeviceInfo, seed: int, params: dict):
+def create_model(
+    name: str,
+    device: DeviceInfo,
+    seed: int,
+    params: dict,
+    *,
+    final_fit: bool = False,
+):
     spec = get_algorithm(name)
     if name in {"xgboost", "catboost"}:
-        return spec.module.create_model(device=device, random_seed=seed, **params)
+        return spec.module.create_model(
+            device=device,
+            random_seed=seed,
+            **params,
+        )
     if name in {"random_forest", "hist_gradient_boosting"}:
         return spec.module.create_model(random_seed=seed, **params)
     if name == "tabnet":
         backend = "cuda" if device.accelerator == "cuda" else "cpu"
-        return spec.module.create_model(random_seed=seed, device_name=backend, **params)
+        return spec.module.create_model(
+            random_seed=seed,
+            device_name=backend,
+            final_fit=final_fit,
+            **params,
+        )
     return spec.module.create_model(**params)
 
 
-def build_pipeline(name: str, device: DeviceInfo, seed: int, schema, params: dict):
+def build_pipeline(
+    name: str,
+    device: DeviceInfo,
+    seed: int,
+    schema,
+    params: dict,
+    *,
+    final_fit: bool = False,
+):
     preprocessor = build_preprocessor(schema, model_family=name)
     return Pipeline(
         steps=[
             ("preprocess", clone(preprocessor)),
-            ("model", create_model(name, device, seed, params)),
+            (
+                "model",
+                create_model(
+                    name,
+                    device,
+                    seed,
+                    params,
+                    final_fit=final_fit,
+                ),
+            ),
         ]
     )
