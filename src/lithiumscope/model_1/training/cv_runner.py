@@ -133,6 +133,12 @@ def run_nested_cv(
                     inner,
                     trials,
                     progress_callback=progress,
+                    storage_path=(
+                        checkpoint.root / f"optuna_fold_{fold:02d}.db"
+                        if checkpoint
+                        else None
+                    ),
+                    study_name=f"{algorithm}_fold_{fold:02d}",
                 )
 
             spinner.update(
@@ -227,6 +233,12 @@ def run_nested_cv(
                     inner,
                     trials,
                     progress_callback=final_progress,
+                    storage_path=(
+                        checkpoint.root / "optuna_final.db"
+                        if checkpoint
+                        else None
+                    ),
+                    study_name=f"{algorithm}_final",
                 )
                 spinner.succeed(
                     f"{spec.label} · hiperparámetros finales listos"
