@@ -2,11 +2,22 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 import json
+import os
+import platform
 from pathlib import Path
 from typing import Any
 
 from lithiumscope.core.reproducibility import runtime_fingerprint
 from lithiumscope.core.states import RunState
+
+
+_TERMINAL_STATES = {
+    RunState.COMPLETED,
+    RunState.PARTIAL,
+    RunState.FAILED,
+    RunState.CANCELLED,
+    RunState.CRASHED,
+}
 
 
 class ExperimentTracker:
@@ -61,12 +72,16 @@ class ExperimentTracker:
         self.payload["state"] = state.value
         if summary:
             self.payload["summary"].update(summary)
-        if state in {
-            RunState.COMPLETED,
-            RunState.PARTIAL,
-            RunState.FAILED,
-            RunState.CANCELLED,
-        }:
+
+        if state == RunState.RUNNING:
+            self.payload["active_process"] = {
+                "pid": os.getpid(),
+                "hostname": platform.node(),
+                "claimed_at_utc": datetime.now(timezone.utc).isoformat(),
+            }
+            self.payload["completed_at_utc"] = None
+        elif state in _TERMINAL_STATES:
+            self.payload["active_process"] = None
             self.payload["completed_at_utc"] = datetime.now(timezone.utc).isoformat()
         else:
             self.payload["completed_at_utc"] = None

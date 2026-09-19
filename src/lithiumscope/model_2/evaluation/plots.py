@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from lithiumscope.core.visualization import configure_headless_matplotlib
+
+configure_headless_matplotlib()
+
 import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.metrics import PrecisionRecallDisplay, RocCurveDisplay

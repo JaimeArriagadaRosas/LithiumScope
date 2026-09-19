@@ -1,0 +1,48 @@
+import json
+import os
+
+from lithiumscope.core.experiment_tracker import ExperimentTracker
+from lithiumscope.core.run_resume import recover_abandoned_runs
+from lithiumscope.core.states import RunState
+
+
+def test_legacy_running_run_is_marked_crashed(tmp_path):
+    run_dir = tmp_path / "model_1" / "runs" / "training_20260919_120000_m0300"
+    run_dir.mkdir(parents=True)
+    run_file = run_dir / "run.json"
+    run_file.write_text(
+        json.dumps(
+            {
+                "run_id": run_dir.name,
+                "model_group": "model_1",
+                "state": "running",
+                "runtime": {},
+                "summary": {"training_signature": "abc"},
+                "events": [],
+                "completed_at_utc": None,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    recovered = recover_abandoned_runs(tmp_path)
+    payload = json.loads(run_file.read_text(encoding="utf-8"))
+
+    assert recovered == [run_dir]
+    assert payload["state"] == "crashed"
+    assert payload["active_process"] is None
+    assert payload["summary"]["crash_reason"]
+    assert payload["events"][-1]["event"] == "run_recovered_as_crashed"
+
+
+def test_running_tracker_claims_current_process_and_is_not_recovered(tmp_path):
+    run_dir = tmp_path / "model_1" / "runs" / "training_20260919_130000_m0300"
+    tracker = ExperimentTracker(run_dir, run_dir.name, "model_1")
+    tracker.set_state(RunState.RUNNING)
+
+    recovered = recover_abandoned_runs(tmp_path)
+    payload = json.loads((run_dir / "run.json").read_text(encoding="utf-8"))
+
+    assert recovered == []
+    assert payload["state"] == "running"
+    assert payload["active_process"]["pid"] == os.getpid()
