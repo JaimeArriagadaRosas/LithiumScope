@@ -46,6 +46,7 @@ ML_DEPENDENCIES = {
 IMAGERY_DEPENDENCIES = {
     "Pillow": "PIL",
     "Rasterio": "rasterio",
+    "pystac-client": "pystac_client",
 }
 
 DEV_DEPENDENCIES = {
@@ -80,6 +81,7 @@ class PrebootReport:
     placeholders_removed: int
     accelerator: str
     accelerator_name: str
+    virtualenv_active: bool = False
     report_path: str = ""
 
     @property
@@ -102,10 +104,7 @@ class PrebootReport:
     @property
     def datasets_ready(self) -> bool:
         by_key = {item.key: item for item in self.datasets}
-        return all(
-            key in by_key and by_key[key].ready
-            for key in REQUIRED_DATASETS
-        )
+        return all(key in by_key and by_key[key].ready for key in REQUIRED_DATASETS)
 
     @property
     def training_ready(self) -> bool:
@@ -123,14 +122,12 @@ def _missing(items: list[DependencyStatus]) -> list[str]:
     return [item.name for item in items if not item.available]
 
 
-def cleanup_gitkeep_placeholders() -> int:
-    """Remove cloned .gitkeep files from the local runtime workspace.
+def _virtualenv_active() -> bool:
+    return sys.prefix != getattr(sys, "base_prefix", sys.prefix)
 
-    The repository intentionally tracks these files so GitHub and a fresh clone
-    display the complete intended directory architecture. Once LithiumScope is
-    executed, preboot removes the local placeholder files because the runtime
-    directories are already materialized and will contain real artifacts.
-    """
+
+def cleanup_gitkeep_placeholders() -> int:
+    """Remove cloned .gitkeep files from the local runtime workspace."""
     removed = 0
     for root in (DATA_DIR, MODELS_DIR, RESULTS_DIR, LOGS_DIR):
         if not root.exists():
@@ -215,6 +212,22 @@ def run_preboot(verbose: bool = True) -> PrebootReport:
     imagery = _dependency_status(IMAGERY_DEPENDENCIES)
     dev = _dependency_status(DEV_DEPENDENCIES)
     device = detect_device(prefer_gpu=True)
+    virtualenv_active = _virtualenv_active()
+
+    if verbose:
+        print("\n=== PREBOOT LITHIUMSCOPE: CHEQUEOS RÁPIDOS ===")
+        print(f"  Python             {platform.python_version()} [{'OK' if python_ok else 'INCOMPATIBLE'}]")
+        print(f"  Entorno virtual    [{'ACTIVO' if virtualenv_active else 'NO ACTIVO'}]")
+        print(f"  Configuración      [{'OK' if configs_ok else 'ERROR'}]")
+        print(f"  Directorios        [{'OK' if writable_ok else 'ERROR'}]")
+        _print_group("Core", core)
+        _print_group("ML completo", ml)
+        _print_group("Imágenes", imagery)
+        _print_group("Desarrollo", dev)
+        print(f"  Acelerador         {device.accelerator.upper()} — {device.name}")
+        if not virtualenv_active:
+            print("  Aviso              Se está usando el Python global; se recomienda .venv.")
+        print("\n  Provisionando datasets (puede requerir red y varios minutos)...")
 
     can_prepare_data = all(item.available for item in core)
     datasets = (
@@ -237,37 +250,31 @@ def run_preboot(verbose: bool = True) -> PrebootReport:
         placeholders_removed=removed,
         accelerator=device.accelerator,
         accelerator_name=device.name,
+        virtualenv_active=virtualenv_active,
     )
     report.report_path = str(_save_report(report))
 
     logger.info(
-        "Preboot complete core=%s ml=%s imagery=%s datasets=%s training=%s",
+        "Preboot complete core=%s ml=%s imagery=%s datasets=%s training=%s venv=%s",
         report.core_ready,
         report.ml_ready,
         report.imagery_ready,
         report.datasets_ready,
         report.training_ready,
+        report.virtualenv_active,
     )
 
     if verbose:
-        print("\n=== PREBOOT LITHIUMSCOPE ===")
-        print(f"  Python             {report.python_version} [{'OK' if report.python_ok else 'INCOMPATIBLE'}]")
+        print("\n=== PREBOOT LITHIUMSCOPE: RESULTADO ===")
         print(f"  Plataforma         {report.platform}")
-        print(f"  Acelerador         {report.accelerator.upper()} — {report.accelerator_name}")
-        print(f"  Configuración      [{'OK' if report.configs_ok else 'ERROR'}]")
-        print(f"  Directorios        [{'OK' if report.writable_ok else 'ERROR'}]")
         print(f"  .gitkeep limpiados {report.placeholders_removed}")
-        _print_group("Core", report.core)
-        _print_group("ML completo", report.ml)
-        _print_group("Imágenes", report.imagery)
-        _print_group("Desarrollo", report.dev)
         _print_datasets(report.datasets)
         print(f"  Entrenamiento      [{'LISTO' if report.training_ready else 'NO LISTO'}]")
         print(f"  Reporte            {report.report_path}")
         if not report.ml_ready or not report.imagery_ready:
             print("\n  Para dejar el entorno completo:")
             print('    pip install -e ".[ml,imagery,dev]"')
-        print("=" * 29)
+        print("=" * 39)
 
     return report
 

@@ -17,6 +17,7 @@ def _report(datasets):
         placeholders_removed=0,
         accelerator="cpu",
         accelerator_name="test",
+        virtualenv_active=True,
     )
 
 
