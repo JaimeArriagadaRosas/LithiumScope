@@ -162,6 +162,9 @@ Permite:
 - abrir el dashboard HTML del último entrenamiento;
 - abrir el Excel de resultados;
 - listar ejecuciones históricas;
+- comparar ejecuciones anteriores;
+- identificar ejecuciones aptas como candidatas a versión;
+- generar un `release_manifest.json` local para un futuro tag;
 - abrir la carpeta completa `results/`.
 
 ---
@@ -224,6 +227,8 @@ Desempates:
 
 El ganador se vuelve a entrenar con todas las muestras disponibles y se persiste para predicción posterior.
 
+Además se evalúa un **baseline trivial** (`DummyRegressor` con la media del conjunto de entrenamiento). El baseline aparece en los resultados para demostrar cuánto aporta el ML, pero no participa como candidato a ganador.
+
 > El ranking es una comparación experimental del conjunto y esquema de validación usados. No demuestra superioridad universal de un algoritmo.
 
 ---
@@ -281,6 +286,8 @@ Si los grupos no están disponibles, utiliza `StratifiedKFold` y deja una advert
 1. mayor ROC-AUC medio;
 2. mayor Average Precision;
 3. mayor Balanced Accuracy.
+
+Modelo 2 también incluye un baseline de prevalencia (`DummyClassifier(strategy="prior")`). Se informa junto con la competencia, pero queda excluido de la selección del ganador.
 
 ---
 
@@ -424,9 +431,12 @@ results/
 └── model_1/
     └── runs/
         └── YYYYMMDDTHHMMSSZ/
+            ├── config/
+            ├── manifests/
             ├── figures/
             ├── tables/
             ├── exports/
+            ├── run.json
             └── dashboard.html
 ```
 
@@ -468,6 +478,8 @@ Cada ejecución exporta un libro Excel con:
 
 `dashboard.html` carga automáticamente:
 
+- estado y trazabilidad de `run.json`;
+- manifest del dataset y su hash;
 - todas las figuras PNG de la ejecución;
 - previews de las tablas CSV;
 - enlaces a exportaciones Excel;
@@ -804,7 +816,18 @@ La figura siguiente resume los valores reportados por el documento de referencia
 - exportación CSV/Excel;
 - dashboard HTML local;
 - gráficos automáticos;
-- selector nativo de archivos sin Tkinter;\n- preboot de dependencias/configuración/permisos;\n- graceful shutdown multiplataforma;\n- `.gitkeep` versionados para representar la arquitectura y limpieza local de esos placeholders durante preboot;
+- selector nativo de archivos sin Tkinter;
+- preboot de dependencias/configuración/permisos;
+- graceful shutdown multiplataforma;
+- `.gitkeep` versionados para representar la arquitectura y limpieza local de esos placeholders durante preboot;
+- tracking de experimentos mediante `run_id` y `run.json`;
+- manifest SHA-256 de datasets por ejecución;
+- snapshots de configuración;
+- modelos autocontenidos por `run_id`;
+- baselines científicos;
+- tests automáticos contra leakage y OOF incompleto;
+- perfil de aplicabilidad / fuera de dominio;
+- comparación de ejecuciones y preparación de candidatos para futuros tags;
 - tests funcionales y estructurales;
 - CI con GitHub Actions.
 
@@ -853,3 +876,88 @@ priorización de sectores
 ```
 
 LithiumScope debe mantener siempre una separación explícita entre **reproducción**, **mejora** y **experimentación**.
+
+
+---
+
+## 23. Reproducibilidad, manifests y artefactos
+
+Cada entrenamiento es un experimento identificado por un `run_id`.
+
+Además de métricas y gráficos, LithiumScope captura:
+
+- commit Git;
+- versiones de Python y librerías;
+- recursos CPU/GPU;
+- configuración exacta;
+- hash SHA-256 del dataset;
+- estado de la ejecución;
+- eventos de algoritmos completados o fallidos;
+- ganador y métrica primaria.
+
+Los modelos nuevos se almacenan como artefactos autocontenidos:
+
+```text
+models/<modelo>/trained/<run_id>/
+├── model.joblib
+├── metadata.json
+├── feature_schema.json
+├── training_config.yaml
+└── dataset_manifest.json
+```
+
+Los loaders mantienen compatibilidad con artefactos antiguos.
+
+La documentación detallada está en [docs/REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md).
+
+### Aplicabilidad de una predicción
+
+Modelo 1 y Modelo 2 guardan un perfil empírico de los rangos observados durante entrenamiento. Las predicciones indican qué fracción de variables cae fuera del intervalo percentil 1–99 de ese entrenamiento.
+
+Esto funciona como **advertencia de extrapolación**, no como garantía estadística ni geológica.
+
+Modelo 1 agrega además un intervalo empírico basado en el percentil 90 del error absoluto out-of-fold del ganador.
+
+---
+
+## 24. Estrategia para el primer tag
+
+No se crea ningún tag automáticamente.
+
+Después de conseguir una ejecución completa y revisar que no haya errores:
+
+```text
+entrenamiento completo
+        ↓
+run Modelo 1 = completed
+run Modelo 2 = completed
+        ↓
+mismo commit Git
+        ↓
+hashes de datasets presentes
+        ↓
+revisión manual de métricas/logs
+        ↓
+release_manifest.json
+        ↓
+tag GitHub
+```
+
+Desde la opción **3. Métricas y resultados** puede evaluarse el candidato local. Esa acción solo genera un manifest; no modifica GitHub.
+
+La estrategia completa está en [docs/VERSIONING.md](docs/VERSIONING.md).
+
+---
+
+## 25. CI y compatibilidad
+
+La integración continua prueba:
+
+- Ruff;
+- Python 3.11, 3.12 y 3.13;
+- Ubuntu;
+- Windows.
+
+Esto es especialmente importante porque LithiumScope utiliza rutas, selectores de archivos, señales y comportamiento de consola que pueden variar entre sistemas operativos.
+
+`pyproject.toml` es la única fuente de dependencias del proyecto; se eliminó el `requirements.txt` duplicado.
