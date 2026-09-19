@@ -3,6 +3,8 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from lithiumscope.core.logger import get_logger
+from lithiumscope.core.run_resume import recover_abandoned_runs
+from lithiumscope.core.visualization import configure_headless_matplotlib
 from lithiumscope.runtime.graceful_shutdown import GracefulExit, get_shutdown_manager
 from lithiumscope.runtime.preboot import run_preboot
 
@@ -14,6 +16,16 @@ def run_application(entrypoint: Callable[[], int]) -> int:
     manager.install()
 
     try:
+        backend = configure_headless_matplotlib()
+        recovered = recover_abandoned_runs()
+        if recovered:
+            logger.warning(
+                "Recovered %d abandoned training run(s) as crashed: %s",
+                len(recovered),
+                ", ".join(path.name for path in recovered),
+            )
+        logger.info("Matplotlib backend initialized: %s", backend)
+
         report = run_preboot(verbose=True)
         if not report.core_ready:
             logger.error("Core preboot failed; application will not start")

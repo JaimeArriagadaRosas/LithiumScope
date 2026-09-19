@@ -27,3 +27,4 @@ class RunState(StrEnum):
     PARTIAL = "partial"
     FAILED = "failed"
     CANCELLED = "cancelled"
+    CRASHED = "crashed"

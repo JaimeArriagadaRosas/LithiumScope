@@ -26,6 +26,7 @@ from lithiumscope.core.paths import (
 )
 from lithiumscope.datasets.provisioner import provision_required_datasets
 from lithiumscope.datasets.status import DatasetStatus
+from lithiumscope.core.visualization import configure_headless_matplotlib
 
 logger = get_logger("runtime.preboot")
 
@@ -95,6 +96,7 @@ class PrebootReport:
     accelerator: str
     accelerator_name: str
     virtualenv_active: bool = False
+    visualization_backend: str = "unknown"
     report_path: str = ""
 
     @property
@@ -337,6 +339,7 @@ def run_preboot(
     )
     device = detect_device(prefer_gpu=True)
     virtualenv_active = _virtualenv_active()
+    visualization_backend = configure_headless_matplotlib()
 
     if verbose:
         print(
@@ -367,6 +370,9 @@ def run_preboot(
         print(
             f"  Acelerador         "
             f"{device.accelerator.upper()} — {device.name}"
+        )
+        print(
+            f"  Visualización      [OK] {visualization_backend}"
         )
         if not virtualenv_active:
             print(
@@ -411,6 +417,7 @@ def run_preboot(
         accelerator=device.accelerator,
         accelerator_name=device.name,
         virtualenv_active=virtualenv_active,
+        visualization_backend=visualization_backend,
     )
     report.report_path = str(
         _save_report(report)
@@ -418,13 +425,14 @@ def run_preboot(
 
     logger.info(
         "Preboot complete core=%s ml=%s imagery=%s "
-        "model1=%s model2=%s venv=%s",
+        "model1=%s model2=%s venv=%s matplotlib=%s",
         report.core_ready,
         report.ml_ready,
         report.imagery_ready,
         report.model_1_ready,
         report.model_2_ready,
         report.virtualenv_active,
+        report.visualization_backend,
     )
 
     if verbose:

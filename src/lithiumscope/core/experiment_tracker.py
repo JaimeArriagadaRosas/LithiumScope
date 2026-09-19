@@ -9,6 +9,15 @@ from lithiumscope.core.reproducibility import runtime_fingerprint
 from lithiumscope.core.states import RunState
 
 
+_TERMINAL_STATES = {
+    RunState.COMPLETED,
+    RunState.PARTIAL,
+    RunState.FAILED,
+    RunState.CANCELLED,
+    RunState.CRASHED,
+}
+
+
 class ExperimentTracker:
     def __init__(
         self,
@@ -61,12 +70,7 @@ class ExperimentTracker:
         self.payload["state"] = state.value
         if summary:
             self.payload["summary"].update(summary)
-        if state in {
-            RunState.COMPLETED,
-            RunState.PARTIAL,
-            RunState.FAILED,
-            RunState.CANCELLED,
-        }:
+        if state in _TERMINAL_STATES:
             self.payload["completed_at_utc"] = datetime.now(timezone.utc).isoformat()
         else:
             self.payload["completed_at_utc"] = None

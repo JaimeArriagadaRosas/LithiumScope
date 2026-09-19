@@ -75,6 +75,8 @@ def runtime_fingerprint() -> dict[str, Any]:
         "platform": platform.platform(),
         "machine": platform.machine(),
         "processor": platform.processor(),
+        "hostname": platform.node(),
+        "pid": os.getpid(),
         "git_commit": _git_commit(),
         "packages": _package_versions(),
         "resources": resource_snapshot(),
