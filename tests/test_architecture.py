@@ -1,4 +1,5 @@
 from pathlib import Path
+import subprocess
 
 
 EXPECTED_GITKEEP_PATHS = {
@@ -22,6 +23,28 @@ EXPECTED_GITKEEP_PATHS = {
 }
 
 
+def _tracked_paths(root: Path) -> set[str]:
+    try:
+        result = subprocess.run(
+            ["git", "ls-files"],
+            cwd=root,
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return {
+            path.relative_to(root).as_posix()
+            for path in root.rglob(".gitkeep")
+        }
+    return {
+        line.strip().replace("\\", "/")
+        for line in result.stdout.splitlines()
+        if line.strip().endswith("/.gitkeep")
+    }
+
+
 def test_repository_contains_no_notebooks():
     root = Path(__file__).resolve().parents[1]
     assert not list(root.rglob("*.ipynb"))
@@ -29,10 +52,7 @@ def test_repository_contains_no_notebooks():
 
 def test_repository_keeps_runtime_architecture_placeholders():
     root = Path(__file__).resolve().parents[1]
-    actual = {
-        path.relative_to(root).as_posix()
-        for path in root.rglob(".gitkeep")
-    }
+    actual = _tracked_paths(root)
     assert EXPECTED_GITKEEP_PATHS <= actual
 
 
@@ -57,3 +77,4 @@ def test_runtime_lifecycle_is_separated():
     assert (runtime / "preboot.py").is_file()
     assert (runtime / "graceful_shutdown.py").is_file()
     assert (runtime / "lifecycle.py").is_file()
+    assert (runtime / "console_status.py").is_file()

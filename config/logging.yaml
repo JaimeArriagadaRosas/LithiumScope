@@ -1,7 +1,10 @@
 schema_version: 1
 
 logging:
-  level: INFO
+  file_level: INFO
+  console: false
+  console_level: ERROR
   max_bytes: 5242880
   backup_count: 5
-  console: true
+  retention_days: 14
+  error_retention_days: 30

@@ -10,7 +10,12 @@ import sys
 import tempfile
 
 from lithiumscope.core.device import detect_device
-from lithiumscope.core.logger import configure_logging, get_logger
+from lithiumscope.core.logger import (
+    configure_logging,
+    current_error_log_path,
+    current_session_log_path,
+    get_logger,
+)
 from lithiumscope.core.paths import (
     CONFIG_DIR,
     DATA_DIR,
@@ -54,8 +59,16 @@ DEV_DEPENDENCIES = {
     "ruff": "ruff",
 }
 
-REQUIRED_CONFIGS = ("app.yaml", "logging.yaml", "model_1.yaml", "model_2.yaml")
-REQUIRED_DATASETS = {"model_1_geochemistry", "model_2_sentinel2"}
+REQUIRED_CONFIGS = (
+    "app.yaml",
+    "logging.yaml",
+    "model_1.yaml",
+    "model_2.yaml",
+)
+REQUIRED_DATASETS = {
+    "model_1_geochemistry",
+    "model_2_sentinel2",
+}
 MIN_PYTHON = (3, 11)
 
 
@@ -101,84 +114,183 @@ class PrebootReport:
     def imagery_ready(self) -> bool:
         return all(item.available for item in self.imagery)
 
+    def dataset_ready(self, key: str) -> bool:
+        return any(
+            item.key == key and item.ready
+            for item in self.datasets
+        )
+
+    @property
+    def model_1_ready(self) -> bool:
+        return (
+            self.core_ready
+            and self.ml_ready
+            and self.dataset_ready("model_1_geochemistry")
+        )
+
+    @property
+    def model_2_ready(self) -> bool:
+        return (
+            self.core_ready
+            and self.ml_ready
+            and self.imagery_ready
+            and self.dataset_ready("model_2_sentinel2")
+        )
+
     @property
     def datasets_ready(self) -> bool:
-        by_key = {item.key: item for item in self.datasets}
-        return all(key in by_key and by_key[key].ready for key in REQUIRED_DATASETS)
+        return all(
+            self.dataset_ready(key)
+            for key in REQUIRED_DATASETS
+        )
 
     @property
     def training_ready(self) -> bool:
-        return self.core_ready and self.ml_ready and self.imagery_ready and self.datasets_ready
+        return self.model_1_ready and self.model_2_ready
 
 
-def _dependency_status(mapping: dict[str, str]) -> list[DependencyStatus]:
+def _dependency_status(
+    mapping: dict[str, str],
+) -> list[DependencyStatus]:
     return [
-        DependencyStatus(name, import_name, importlib.util.find_spec(import_name) is not None)
+        DependencyStatus(
+            name,
+            import_name,
+            importlib.util.find_spec(import_name) is not None,
+        )
         for name, import_name in mapping.items()
     ]
 
 
-def _missing(items: list[DependencyStatus]) -> list[str]:
-    return [item.name for item in items if not item.available]
+def _missing(
+    items: list[DependencyStatus],
+) -> list[str]:
+    return [
+        item.name
+        for item in items
+        if not item.available
+    ]
 
 
 def _virtualenv_active() -> bool:
-    return sys.prefix != getattr(sys, "base_prefix", sys.prefix)
+    return sys.prefix != getattr(
+        sys,
+        "base_prefix",
+        sys.prefix,
+    )
 
 
 def cleanup_gitkeep_placeholders() -> int:
     """Remove cloned .gitkeep files from the local runtime workspace."""
     removed = 0
-    for root in (DATA_DIR, MODELS_DIR, RESULTS_DIR, LOGS_DIR):
+    for root in (
+        DATA_DIR,
+        MODELS_DIR,
+        RESULTS_DIR,
+        LOGS_DIR,
+    ):
         if not root.exists():
             continue
         for path in root.rglob(".gitkeep"):
             try:
                 path.unlink()
                 removed += 1
-                logger.info("Removed local runtime placeholder: %s", path)
+                logger.info(
+                    "Removed local runtime placeholder: %s",
+                    path,
+                )
             except OSError:
-                logger.warning("Could not remove local placeholder: %s", path, exc_info=True)
+                logger.warning(
+                    "Could not remove local placeholder: %s",
+                    path,
+                    exc_info=True,
+                )
     return removed
 
 
 def _configs_available() -> bool:
-    missing = [name for name in REQUIRED_CONFIGS if not (CONFIG_DIR / name).is_file()]
+    missing = [
+        name
+        for name in REQUIRED_CONFIGS
+        if not (CONFIG_DIR / name).is_file()
+    ]
     if missing:
-        logger.error("Missing configuration files: %s", ", ".join(missing))
+        logger.error(
+            "Missing configuration files: %s",
+            ", ".join(missing),
+        )
         return False
     return True
 
 
 def _runtime_writable() -> bool:
-    targets = (DATA_DIR, MODELS_DIR, RESULTS_DIR, LOGS_DIR)
+    targets = (
+        DATA_DIR,
+        MODELS_DIR,
+        RESULTS_DIR,
+        LOGS_DIR,
+    )
     try:
         for directory in targets:
-            directory.mkdir(parents=True, exist_ok=True)
-            with tempfile.NamedTemporaryFile(dir=directory, prefix=".write_test_", delete=True):
+            directory.mkdir(
+                parents=True,
+                exist_ok=True,
+            )
+            with tempfile.NamedTemporaryFile(
+                dir=directory,
+                prefix=".write_test_",
+                delete=True,
+            ):
                 pass
         return True
     except OSError:
-        logger.exception("A runtime directory is not writable")
+        logger.exception(
+            "A runtime directory is not writable"
+        )
         return False
 
 
-def _save_report(report: PrebootReport) -> Path:
+def _save_report(
+    report: PrebootReport,
+) -> Path:
     directory = LOGS_DIR / "preboot"
-    directory.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    directory.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+    stamp = datetime.now(
+        timezone.utc
+    ).strftime("%Y%m%dT%H%M%SZ")
     path = directory / f"preboot_{stamp}.json"
     payload = asdict(report)
     payload["core_ready"] = report.core_ready
     payload["ml_ready"] = report.ml_ready
     payload["imagery_ready"] = report.imagery_ready
     payload["datasets_ready"] = report.datasets_ready
+    payload["model_1_ready"] = report.model_1_ready
+    payload["model_2_ready"] = report.model_2_ready
     payload["training_ready"] = report.training_ready
-    path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+    payload["session_log"] = str(
+        current_session_log_path()
+    )
+    payload["error_log"] = str(
+        current_error_log_path()
+    )
+    path.write_text(
+        json.dumps(
+            payload,
+            indent=2,
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
     return path
 
 
-def _print_group(title: str, items: list[DependencyStatus]) -> None:
+def _print_group(
+    title: str,
+    items: list[DependencyStatus],
+) -> None:
     missing = _missing(items)
     mark = "OK" if not missing else "FALTAN"
     print(f"  {title:<18} [{mark}]")
@@ -186,20 +298,28 @@ def _print_group(title: str, items: list[DependencyStatus]) -> None:
         print("    - " + ", ".join(missing))
 
 
-def _print_datasets(items: list[DatasetStatus]) -> None:
-    by_key = {item.key: item for item in items}
-    complete = all(key in by_key and by_key[key].ready for key in REQUIRED_DATASETS)
-    print(f"  Datasets           [{'OK' if complete else 'INCOMPLETOS'}]")
+def _print_datasets(
+    items: list[DatasetStatus],
+) -> None:
+    by_key = {
+        item.key: item
+        for item in items
+    }
+    print("  Datasets")
     for key in sorted(REQUIRED_DATASETS):
         item = by_key.get(key)
         if item is None:
             print(f"    - {key}: NO PREPARADO")
             continue
         state = "OK" if item.ready else "ERROR"
-        print(f"    - {item.key}: {state} — {item.detail}")
+        print(
+            f"    - {item.key}: {state} — {item.detail}"
+        )
 
 
-def run_preboot(verbose: bool = True) -> PrebootReport:
+def run_preboot(
+    verbose: bool = True,
+) -> PrebootReport:
     ensure_runtime_directories()
     configure_logging()
 
@@ -209,29 +329,66 @@ def run_preboot(verbose: bool = True) -> PrebootReport:
     writable_ok = _runtime_writable()
     core = _dependency_status(CORE_DEPENDENCIES)
     ml = _dependency_status(ML_DEPENDENCIES)
-    imagery = _dependency_status(IMAGERY_DEPENDENCIES)
-    dev = _dependency_status(DEV_DEPENDENCIES)
+    imagery = _dependency_status(
+        IMAGERY_DEPENDENCIES
+    )
+    dev = _dependency_status(
+        DEV_DEPENDENCIES
+    )
     device = detect_device(prefer_gpu=True)
     virtualenv_active = _virtualenv_active()
 
     if verbose:
-        print("\n=== PREBOOT LITHIUMSCOPE: CHEQUEOS RÁPIDOS ===")
-        print(f"  Python             {platform.python_version()} [{'OK' if python_ok else 'INCOMPATIBLE'}]")
-        print(f"  Entorno virtual    [{'ACTIVO' if virtualenv_active else 'NO ACTIVO'}]")
-        print(f"  Configuración      [{'OK' if configs_ok else 'ERROR'}]")
-        print(f"  Directorios        [{'OK' if writable_ok else 'ERROR'}]")
+        print(
+            "\n=== PREBOOT LITHIUMSCOPE: "
+            "CHEQUEOS RÁPIDOS ==="
+        )
+        print(
+            f"  Python             "
+            f"{platform.python_version()} "
+            f"[{'OK' if python_ok else 'INCOMPATIBLE'}]"
+        )
+        print(
+            f"  Entorno virtual    "
+            f"[{'ACTIVO' if virtualenv_active else 'NO ACTIVO'}]"
+        )
+        print(
+            f"  Configuración      "
+            f"[{'OK' if configs_ok else 'ERROR'}]"
+        )
+        print(
+            f"  Directorios        "
+            f"[{'OK' if writable_ok else 'ERROR'}]"
+        )
         _print_group("Core", core)
         _print_group("ML completo", ml)
         _print_group("Imágenes", imagery)
         _print_group("Desarrollo", dev)
-        print(f"  Acelerador         {device.accelerator.upper()} — {device.name}")
+        print(
+            f"  Acelerador         "
+            f"{device.accelerator.upper()} — {device.name}"
+        )
         if not virtualenv_active:
-            print("  Aviso              Se está usando el Python global; se recomienda .venv.")
-        print("\n  Provisionando datasets (puede requerir red y varios minutos)...")
+            print(
+                "  Aviso              "
+                "Se está usando el Python global; "
+                "se recomienda .venv."
+            )
+        print(
+            "\n  Preparando datasets necesarios..."
+        )
 
-    can_prepare_data = all(item.available for item in core)
+    can_prepare_data = all(
+        item.available
+        for item in core
+    )
     datasets = (
-        provision_required_datasets(prepare_model_2=all(item.available for item in imagery))
+        provision_required_datasets(
+            prepare_model_2=all(
+                item.available
+                for item in imagery
+            )
+        )
         if can_prepare_data
         else []
     )
@@ -239,7 +396,10 @@ def run_preboot(verbose: bool = True) -> PrebootReport:
     report = PrebootReport(
         python_ok=python_ok,
         python_version=platform.python_version(),
-        platform=f"{platform.system()} {platform.release()}",
+        platform=(
+            f"{platform.system()} "
+            f"{platform.release()}"
+        ),
         core=core,
         ml=ml,
         imagery=imagery,
@@ -252,42 +412,73 @@ def run_preboot(verbose: bool = True) -> PrebootReport:
         accelerator_name=device.name,
         virtualenv_active=virtualenv_active,
     )
-    report.report_path = str(_save_report(report))
+    report.report_path = str(
+        _save_report(report)
+    )
 
     logger.info(
-        "Preboot complete core=%s ml=%s imagery=%s datasets=%s training=%s venv=%s",
+        "Preboot complete core=%s ml=%s imagery=%s "
+        "model1=%s model2=%s venv=%s",
         report.core_ready,
         report.ml_ready,
         report.imagery_ready,
-        report.datasets_ready,
-        report.training_ready,
+        report.model_1_ready,
+        report.model_2_ready,
         report.virtualenv_active,
     )
 
     if verbose:
-        print("\n=== PREBOOT LITHIUMSCOPE: RESULTADO ===")
-        print(f"  Plataforma         {report.platform}")
-        print(f"  .gitkeep limpiados {report.placeholders_removed}")
+        print(
+            "\n=== PREBOOT LITHIUMSCOPE: RESULTADO ==="
+        )
+        print(
+            f"  Plataforma         {report.platform}"
+        )
+        print(
+            f"  .gitkeep limpiados "
+            f"{report.placeholders_removed}"
+        )
         _print_datasets(report.datasets)
-        print(f"  Entrenamiento      [{'LISTO' if report.training_ready else 'NO LISTO'}]")
-        print(f"  Reporte            {report.report_path}")
+        print(
+            f"  Modelo 1           "
+            f"[{'LISTO' if report.model_1_ready else 'NO LISTO'}]"
+        )
+        print(
+            f"  Modelo 2           "
+            f"[{'LISTO' if report.model_2_ready else 'NO LISTO'}]"
+        )
+        print(
+            f"  Reporte            {report.report_path}"
+        )
+        print(
+            f"  Log de sesión      "
+            f"{current_session_log_path()}"
+        )
         if not report.ml_ready or not report.imagery_ready:
-            print("\n  Para dejar el entorno completo:")
-            print('    pip install -e ".[ml,imagery,dev]"')
-        print("=" * 39)
+            print(
+                "\n  Para dejar el entorno completo:"
+            )
+            print(
+                '    pip install -e ".[ml,imagery,dev]"'
+            )
+        print("=" * 43)
 
     return report
 
 
 def missing_training_dependencies() -> list[str]:
-    return _missing(_dependency_status(ML_DEPENDENCIES))
+    return _missing(
+        _dependency_status(ML_DEPENDENCIES)
+    )
 
 
 def require_full_training_environment() -> None:
     missing = missing_training_dependencies()
     if missing:
         raise RuntimeError(
-            "El entorno no está listo para ejecutar la competencia completa. "
+            "El entorno no está listo para ejecutar "
+            "la competencia completa. "
             f"Faltan: {', '.join(missing)}. "
-            'Ejecute: pip install -e ".[ml,imagery,dev]" y reinicie LithiumScope.'
+            'Ejecute: pip install -e ".[ml,imagery,dev]" '
+            "y reinicie LithiumScope."
         )

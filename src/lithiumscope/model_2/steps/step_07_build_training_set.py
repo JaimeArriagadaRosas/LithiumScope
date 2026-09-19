@@ -4,9 +4,13 @@ from pathlib import Path
 
 import pandas as pd
 
+from lithiumscope.core.logger import get_logger
 from lithiumscope.model_2.steps.step_01_load_imagery import load_imagery
 from lithiumscope.model_2.steps.step_04_image_preprocessing import preprocess_image
 from lithiumscope.model_2.steps.step_05_spectral_features import extract_spectral_features
+from lithiumscope.runtime.console_status import Spinner
+
+logger = get_logger("model_2.training_set")
 
 
 def build_training_set(
@@ -22,15 +26,45 @@ def build_training_set(
 
     rows: list[dict] = []
     total = len(manifest)
-    for position, (_, sample) in enumerate(manifest.iterrows(), start=1):
-        path = Path(sample[image_path_column])
-        print(f"    Imagen {position}/{total}: {path.name}")
-        features = extract_spectral_features(preprocess_image(load_imagery(path)))
-        features[lithium_column] = float(sample[lithium_column])
-        if spatial_group_column in manifest.columns:
-            features[spatial_group_column] = sample[spatial_group_column]
-        rows.append(features)
+    spinner = Spinner(
+        f"Extrayendo características espectrales: 0/{total}"
+    ).start()
+
+    try:
+        for position, (_, sample) in enumerate(
+            manifest.iterrows(),
+            start=1,
+        ):
+            path = Path(sample[image_path_column])
+            features = extract_spectral_features(
+                preprocess_image(load_imagery(path))
+            )
+            features[lithium_column] = float(sample[lithium_column])
+            if spatial_group_column in manifest.columns:
+                features[spatial_group_column] = sample[spatial_group_column]
+            rows.append(features)
+
+            spinner.update(
+                f"Extrayendo características espectrales: "
+                f"{position}/{total}"
+            )
+            if position % 25 == 0 or position == total:
+                logger.info(
+                    "Model 2 spectral extraction progress=%d/%d",
+                    position,
+                    total,
+                )
+    except Exception:
+        spinner.fail("Falló la extracción de características espectrales")
+        raise
 
     if not rows:
-        raise ValueError("No image/sample pairs were available to build Model 2.")
+        spinner.fail("No había pares imagen/muestra utilizables")
+        raise ValueError(
+            "No image/sample pairs were available to build Model 2."
+        )
+
+    spinner.succeed(
+        f"Características espectrales listas: {len(rows)} muestras"
+    )
     return pd.DataFrame(rows)

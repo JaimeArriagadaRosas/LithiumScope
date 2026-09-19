@@ -72,6 +72,12 @@ def _provider_error(operation: str, exc: BaseException) -> SentinelProviderError
     )
 
 
+def _masked_to_float(data) -> np.ndarray:
+    """Convert masked integer raster data before filling nodata with NaN."""
+    masked = np.ma.asarray(data).astype(np.float32)
+    return np.asarray(masked.filled(np.nan), dtype=np.float32)
+
+
 class Sentinel2Provider:
     """Small adapter around pystac-client with query caching and fail-fast errors."""
 
@@ -102,7 +108,6 @@ class Sentinel2Provider:
             raise _provider_error("apertura del catálogo STAC", exc) from exc
 
     def validate(self) -> None:
-        """Verify endpoint + collection once before a long acquisition loop."""
         client = self._open_client()
         try:
             client.get_collection(self.config.collection)
@@ -212,7 +217,7 @@ def _read_patch(
                     masked=True,
                     resampling=Resampling.bilinear,
                 )
-                return np.asarray(data.filled(np.nan), dtype=np.float32)
+                return _masked_to_float(data)
     except SentinelAssetError:
         raise
     except Exception as exc:

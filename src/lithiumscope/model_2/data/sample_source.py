@@ -37,14 +37,20 @@ def _resolve_column(frame: pd.DataFrame, candidates: tuple[str, ...]) -> str:
         match = normalized.get(candidate.strip().lower())
         if match is not None:
             return str(match)
-    raise ValueError("No se encontró ninguna de las columnas requeridas: " + ", ".join(candidates))
+    raise ValueError(
+        "No se encontró ninguna de las columnas requeridas: "
+        + ", ".join(candidates)
+    )
 
 
 def _safe_sample_id(value, index: int) -> str:
     if pd.isna(value) or not str(value).strip():
         return f"sample_{index:05d}"
     text = str(value).strip()
-    return "".join(character if character.isalnum() or character in {"-", "_"} else "_" for character in text)
+    return "".join(
+        character if character.isalnum() or character in {"-", "_"} else "_"
+        for character in text
+    )
 
 
 def _spatial_group(latitude: float, longitude: float, degrees: float) -> str:
@@ -56,9 +62,13 @@ def _spatial_group(latitude: float, longitude: float, degrees: float) -> str:
 def load_georeferenced_li_samples(dataset_path: Path) -> pd.DataFrame:
     config = load_config("model_1")
     model_2 = load_config("model_2")
-    group_degrees = float(model_2["training"].get("spatial_group_degrees", 0.5))
+    group_degrees = float(
+        model_2["training"].get("spatial_group_degrees", 0.5)
+    )
 
-    frame = normalize_missing_values(clean_detection_limits(load_data(dataset_path)))
+    frame = normalize_missing_values(
+        clean_detection_limits(load_data(dataset_path, quiet=True))
+    )
     target = resolve_target(frame, list(config["data"]["target_candidates"]))
     longitude = _resolve_column(frame, LONGITUDE_CANDIDATES)
     latitude = _resolve_column(frame, LATITUDE_CANDIDATES)
@@ -80,7 +90,10 @@ def load_georeferenced_li_samples(dataset_path: Path) -> pd.DataFrame:
         index=frame.index,
     )
     if sample_id_column is None:
-        output["sample_id"] = [_safe_sample_id(None, index) for index in range(len(output))]
+        output["sample_id"] = [
+            _safe_sample_id(None, index)
+            for index in range(len(output))
+        ]
     else:
         output["sample_id"] = [
             _safe_sample_id(value, index)
@@ -96,9 +109,15 @@ def load_georeferenced_li_samples(dataset_path: Path) -> pd.DataFrame:
     ].copy()
     output["spatial_group"] = [
         _spatial_group(lat, lon, group_degrees)
-        for lat, lon in zip(output["latitude"], output["longitude"], strict=True)
+        for lat, lon in zip(
+            output["latitude"],
+            output["longitude"],
+            strict=True,
+        )
     ]
-    output = output.drop_duplicates(subset=["sample_id", "longitude", "latitude"]).reset_index(drop=True)
+    output = output.drop_duplicates(
+        subset=["sample_id", "longitude", "latitude"]
+    ).reset_index(drop=True)
 
     logger.info(
         "Prepared %d georeferenced Li samples for Model 2 from %s",

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+from pandas.api.types import is_object_dtype, is_string_dtype
 
 from lithiumscope.core.logger import get_logger
 
@@ -12,8 +13,11 @@ _MISSING_TEXT = {"", "nan", "none", "null", "na", "n/a", "-"}
 
 def normalize_missing_values(frame: pd.DataFrame) -> pd.DataFrame:
     cleaned = frame.copy()
-    for column in cleaned.select_dtypes(include=["object"]).columns:
-        cleaned[column] = cleaned[column].map(
+    for column in cleaned.columns:
+        series = cleaned[column]
+        if not (is_object_dtype(series.dtype) or is_string_dtype(series.dtype)):
+            continue
+        cleaned[column] = series.map(
             lambda value: np.nan
             if isinstance(value, str) and value.strip().lower() in _MISSING_TEXT
             else value

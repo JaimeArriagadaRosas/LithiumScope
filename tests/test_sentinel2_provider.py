@@ -1,7 +1,10 @@
+import numpy as np
+
 from lithiumscope.model_2.data.sentinel2 import (
     Sentinel2Provider,
     SentinelConfig,
     SentinelProviderError,
+    _masked_to_float,
 )
 
 
@@ -78,3 +81,15 @@ def test_provider_validation_is_fail_fast():
         assert "HTTP 400" in str(exc)
     else:
         raise AssertionError("provider.validate() should fail")
+
+
+def test_masked_uint16_can_be_filled_with_nan_after_float_conversion():
+    data = np.ma.array(
+        np.array([1, 2], dtype=np.uint16),
+        mask=np.array([False, True]),
+    )
+    result = _masked_to_float(data)
+
+    assert result.dtype == np.float32
+    assert result[0] == 1.0
+    assert np.isnan(result[1])

@@ -1,7 +1,13 @@
+from datetime import datetime
+
 from lithiumscope.cli import predict_command, results_command, train_command
 from lithiumscope.cli.display import header, pause
 from lithiumscope.cli.prompts import choose
-from lithiumscope.core.logger import configure_logging, get_logger
+from lithiumscope.core.logger import (
+    configure_logging,
+    current_error_log_path,
+    get_logger,
+)
 from lithiumscope.core.paths import ensure_runtime_directories
 
 logger = get_logger("cli")
@@ -18,7 +24,10 @@ def main() -> int:
         print("2. Realizar predicción")
         print("3. Métricas y resultados")
         print("0. Salir")
-        choice = choose("\nSeleccione una opción: ", {"0", "1", "2", "3"})
+        choice = choose(
+            "\nSeleccione una opción: ",
+            {"0", "1", "2", "3"},
+        )
 
         try:
             if choice == "1":
@@ -34,7 +43,18 @@ def main() -> int:
                 logger.info("LithiumScope finished")
                 return 0
         except Exception as exc:
-            logger.exception("Unhandled application error")
-            print(f"\nError: {exc}")
-            print("Revise logs/errors/errors.log para el detalle.")
+            error_id = datetime.now().strftime(
+                "%Y%m%d-%H%M%S"
+            )
+            logger.exception(
+                "Unhandled application error id=%s",
+                error_id,
+            )
+            print(
+                f"\n[ERROR {error_id}] {exc}"
+            )
+            print(
+                "Detalle técnico: "
+                f"{current_error_log_path()}"
+            )
             pause()
