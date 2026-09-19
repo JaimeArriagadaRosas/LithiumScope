@@ -8,14 +8,24 @@ import pandas as pd
 from lithiumscope.core.config import load_config
 from lithiumscope.core.device import DeviceInfo
 from lithiumscope.core.logger import get_logger
+from lithiumscope.core.reproducibility import set_global_seed
 from lithiumscope.core.run_context import RunContext
-from lithiumscope.model_2.evaluation.plots import save_competition_chart, save_probability_histogram, save_roc_pr
+from lithiumscope.core.states import RunState
+from lithiumscope.datasets.manifest import build_tabular_manifest, write_manifest
+from lithiumscope.model_2.evaluation.baseline import evaluate_prior_baseline
+from lithiumscope.model_2.evaluation.plots import (
+    save_competition_chart,
+    save_probability_histogram,
+    save_roc_pr,
+)
 from lithiumscope.model_2.pipeline import load_model_2_training_frame
+from lithiumscope.model_2.schema import feature_range_profile
 from lithiumscope.model_2.training.cv_runner import run_classification_cv
 from lithiumscope.model_2.training.factory import create_model, get_label
 from lithiumscope.persistence.save_model import save_model_bundle
 from lithiumscope.results.dashboard import build_dashboard
 from lithiumscope.results.excel_exporter import export_workbook
+from lithiumscope.runtime.graceful_shutdown import get_shutdown_manager
 
 logger = get_logger("model_2.competition")
 
@@ -44,11 +54,20 @@ def _ranking_row(result) -> dict:
         "brier_score_mean": float(folds["brier_score"].mean()),
         "elapsed_seconds": result.elapsed_seconds,
         "status": "ok",
+        "is_baseline": False,
     }
 
 
-def _excel_sheets(ranking: pd.DataFrame, results: dict[str, object], y: pd.Series) -> dict[str, pd.DataFrame]:
-    sheets: dict[str, pd.DataFrame] = {"ranking": ranking}
+def _excel_sheets(
+    ranking: pd.DataFrame,
+    results: dict[str, object],
+    y: pd.Series,
+    baseline,
+) -> dict[str, pd.DataFrame]:
+    sheets: dict[str, pd.DataFrame] = {
+        "ranking": ranking,
+        "baseline_folds": baseline[1],
+    }
     for algorithm, result in results.items():
         sheets[f"folds_{algorithm}"[:31]] = result.fold_table
         sheets[f"pred_{algorithm}"[:31]] = pd.DataFrame(
@@ -61,46 +80,125 @@ def _excel_sheets(ranking: pd.DataFrame, results: dict[str, object], y: pd.Serie
     return sheets
 
 
-def run_model_2_competition(manifest_path: Path, device: DeviceInfo) -> CompetitionOutcome:
+def run_model_2_competition(
+    manifest_path: Path,
+    device: DeviceInfo,
+) -> CompetitionOutcome:
     cfg = load_config("model_2")
+    app_cfg = load_config("app")
     algorithms = list(cfg["model"]["algorithms"])
     seed = int(cfg["model"]["random_seed"])
+    set_global_seed(
+        seed,
+        deterministic_torch=bool(
+            app_cfg.get("reproducibility", {}).get("deterministic_torch", False)
+        ),
+    )
+
     lithium_column = str(cfg["training"]["lithium_column"])
-    spatial_group_column = str(cfg["training"].get("spatial_group_column", "spatial_group"))
+    spatial_group_column = str(
+        cfg["training"].get("spatial_group_column", "spatial_group")
+    )
     requested_folds = int(cfg["validation"].get("folds", 5))
     q = float(cfg["model"]["high_lithium_quantile"])
+
     context = RunContext.create("model_2")
+    context.tracker.set_state(RunState.RUNNING)
+    get_shutdown_manager().register_cleanup(context.tracker.cancel_if_active)
 
     print("\n=== MODELO 2 · COMPETENCIA DE ALGORITMOS ===")
+    print(f"Run ID: {context.run_id}")
+
     frame = load_model_2_training_frame(manifest_path)
     threshold = float(frame[lithium_column].quantile(q))
     y = (frame[lithium_column] >= threshold).astype(int)
-    groups = frame[spatial_group_column] if spatial_group_column in frame.columns else None
-    x = frame.drop(columns=[column for column in (lithium_column, spatial_group_column) if column in frame.columns])
+    groups = (
+        frame[spatial_group_column]
+        if spatial_group_column in frame.columns
+        else None
+    )
+    x = frame.drop(
+        columns=[
+            column
+            for column in (lithium_column, spatial_group_column)
+            if column in frame.columns
+        ]
+    )
+
+    dataset_manifest = build_tabular_manifest(
+        manifest_path,
+        dataset_name="model_2_training_manifest",
+        model_group="model_2",
+        stage="spectral_feature_training_input",
+        frame=frame,
+        metadata={
+            "threshold_ppm": threshold,
+            "target_quantile": q,
+            "spatial_groups": int(groups.nunique()) if groups is not None else 0,
+        },
+    )
+    dataset_manifest_path = write_manifest(
+        dataset_manifest,
+        context.manifests / "dataset_manifest.json",
+    )
+    context.tracker.attach_summary(dataset_sha256=dataset_manifest.source_sha256)
 
     min_class = int(y.value_counts().min())
     folds = max(2, min(requested_folds, min_class))
-    print(f"Muestras: {len(frame)} | Umbral Li alto: {threshold:.4f} ppm | Folds: {folds}")
+    print(
+        f"Muestras: {len(frame)} | Umbral Li alto: {threshold:.4f} ppm | "
+        f"Folds: {folds}"
+    )
 
-    rows: list[dict] = []
+    baseline = evaluate_prior_baseline(
+        x=x,
+        y=y,
+        folds=folds,
+        seed=seed,
+        groups=groups,
+    )
+    baseline[1].to_csv(
+        context.tables / "baseline_fold_metrics.csv",
+        index=False,
+    )
+
+    rows: list[dict] = [baseline[0]]
     results: dict[str, object] = {}
     failed: list[str] = []
 
     for index, algorithm in enumerate(algorithms, start=1):
         print(f"\n[{index}/{len(algorithms)}] Entrenando {get_label(algorithm)}")
+        context.tracker.event("algorithm_started", algorithm=algorithm)
+
         try:
-            result = run_classification_cv(x, y, algorithm, device, seed, folds, groups)
+            result = run_classification_cv(
+                x,
+                y,
+                algorithm,
+                device,
+                seed,
+                folds,
+                groups,
+            )
             results[algorithm] = result
             rows.append(_ranking_row(result))
 
-            result.fold_table.to_csv(context.tables / f"fold_metrics_{algorithm}.csv", index=False)
+            result.fold_table.to_csv(
+                context.tables / f"fold_metrics_{algorithm}.csv",
+                index=False,
+            )
             pd.DataFrame(
                 {
                     "y_true": y,
                     "prospectivity_score": result.probabilities,
-                    "predicted_class_0_5": (result.probabilities >= 0.5).astype(int),
+                    "predicted_class_0_5": (
+                        result.probabilities >= 0.5
+                    ).astype(int),
                 }
-            ).to_csv(context.tables / f"oof_predictions_{algorithm}.csv", index=False)
+            ).to_csv(
+                context.tables / f"oof_predictions_{algorithm}.csv",
+                index=False,
+            )
 
             save_probability_histogram(
                 y,
@@ -114,6 +212,11 @@ def run_model_2_competition(manifest_path: Path, device: DeviceInfo) -> Competit
                 context.figures / algorithm / "roc_pr.png",
                 result.label,
             )
+            context.tracker.event(
+                "algorithm_completed",
+                algorithm=algorithm,
+                metrics=result.overall_metrics,
+            )
         except Exception as exc:
             logger.exception("Model 2 algorithm failed: %s", algorithm)
             failed.append(algorithm)
@@ -122,36 +225,72 @@ def run_model_2_competition(manifest_path: Path, device: DeviceInfo) -> Competit
                     "algorithm": algorithm,
                     "label": get_label(algorithm),
                     "status": "failed",
+                    "is_baseline": False,
                     "error": str(exc),
                 }
+            )
+            context.tracker.event(
+                "algorithm_failed",
+                algorithm=algorithm,
+                error=str(exc),
             )
             print(f"  ✗ {get_label(algorithm)} falló: {exc}")
 
     ranking = pd.DataFrame(rows)
-    ok = ranking[ranking["status"] == "ok"].copy()
+    candidates = ranking[
+        (ranking["status"] == "ok")
+        & (ranking["is_baseline"] != True)  # noqa: E712
+    ].copy()
+    baseline_rows = ranking[ranking["is_baseline"] == True].copy()  # noqa: E712
+    failed_rows = ranking[ranking["status"] != "ok"].copy()
 
-    if ok.empty:
-        ranking.to_csv(context.tables / "competition_ranking.csv", index=False)
-        export_workbook(context.exports / "model_2_results.xlsx", _excel_sheets(ranking, results, y))
+    if not candidates.empty:
+        candidates = candidates.sort_values(
+            [
+                "roc_auc_mean",
+                "average_precision_mean",
+                "balanced_accuracy_mean",
+            ],
+            ascending=[False, False, False],
+        ).reset_index(drop=True)
+        candidates.insert(0, "rank", range(1, len(candidates) + 1))
+    if not baseline_rows.empty:
+        baseline_rows.insert(0, "rank", pd.NA)
+
+    ranking = pd.concat(
+        [candidates, baseline_rows, failed_rows],
+        ignore_index=True,
+        sort=False,
+    )
+    ranking.to_csv(
+        context.tables / "competition_ranking.csv",
+        index=False,
+    )
+
+    if candidates.empty:
+        export_workbook(
+            context.exports / "model_2_results.xlsx",
+            _excel_sheets(ranking, results, y, baseline),
+        )
         build_dashboard(context.root, "LithiumScope — Modelo 2")
+        context.tracker.set_state(
+            RunState.FAILED,
+            failure="No trainable algorithm completed successfully.",
+        )
         return CompetitionOutcome(context.root, ranking, None, [], failed)
 
-    ok = ok.sort_values(
-        ["roc_auc_mean", "average_precision_mean", "balanced_accuracy_mean"],
-        ascending=[False, False, False],
-    ).reset_index(drop=True)
-    ok.insert(0, "rank", range(1, len(ok) + 1))
-    ranking = pd.concat([ok, ranking[ranking["status"] != "ok"]], ignore_index=True, sort=False)
+    save_competition_chart(
+        candidates,
+        context.figures / "competition_roc_auc.png",
+    )
 
-    ranking.to_csv(context.tables / "competition_ranking.csv", index=False)
-    save_competition_chart(ok, context.figures / "competition_roc_auc.png")
-
-    winner = str(ok.iloc[0]["algorithm"])
+    winner = str(candidates.iloc[0]["algorithm"])
     print(f"\n🏆 Ganador provisional Modelo 2: {get_label(winner)}")
 
     final_estimator = create_model(winner, device, seed)
     final_estimator.fit(x, y)
     winner_result = results[winner]
+    profile = feature_range_profile(x)
 
     metadata = {
         "model_group": "model_2",
@@ -162,11 +301,18 @@ def run_model_2_competition(manifest_path: Path, device: DeviceInfo) -> Competit
         "target_quantile": q,
         "metrics": winner_result.overall_metrics,
         "competition_primary_metric": "roc_auc_mean",
-        "winner_rule": "highest mean ROC-AUC; tie-break Average Precision then Balanced Accuracy",
-        "ranking": ok.to_dict(orient="records"),
+        "winner_rule": (
+            "highest mean ROC-AUC; tie-break Average Precision then "
+            "Balanced Accuracy"
+        ),
+        "ranking": candidates.to_dict(orient="records"),
         "run_id": context.run_id,
         "device": device.accelerator,
-        "scope_note": "Score de priorización exploratoria; no es probabilidad de yacimiento económicamente viable.",
+        "dataset_sha256": dataset_manifest.source_sha256,
+        "scope_note": (
+            "Score de priorización exploratoria; no es probabilidad de "
+            "yacimiento económicamente viable."
+        ),
     }
 
     bundle = {
@@ -175,22 +321,46 @@ def run_model_2_competition(manifest_path: Path, device: DeviceInfo) -> Competit
         "threshold_ppm": threshold,
         "target_quantile": q,
         "algorithm": winner,
+        "applicability_profile": profile,
     }
     model_path, metadata_path = save_model_bundle(
         "model_2",
         f"winner_{winner}",
         bundle,
         metadata,
+        run_id=context.run_id,
+        dataset_manifest_path=dataset_manifest_path,
+        feature_schema={"features": list(x.columns)},
+        config_name="model_2",
     )
 
     export_workbook(
         context.exports / "model_2_results.xlsx",
-        _excel_sheets(ranking, results, y),
+        _excel_sheets(ranking, results, y, baseline),
     )
     (context.exports / "winner.txt").write_text(
         f"algorithm={winner}\nmodel={model_path}\nmetadata={metadata_path}\n",
         encoding="utf-8",
     )
 
-    build_dashboard(context.root, "LithiumScope — Modelo 2 · Competencia")
-    return CompetitionOutcome(context.root, ranking, winner, list(results), failed)
+    build_dashboard(
+        context.root,
+        "LithiumScope — Modelo 2 · Competencia",
+    )
+
+    final_state = RunState.PARTIAL if failed else RunState.COMPLETED
+    context.tracker.set_state(
+        final_state,
+        winner=winner,
+        primary_metric="roc_auc_mean",
+        primary_metric_value=float(candidates.iloc[0]["roc_auc_mean"]),
+        model_path=str(model_path),
+        failed_algorithms=failed,
+    )
+    return CompetitionOutcome(
+        context.root,
+        ranking,
+        winner,
+        list(results),
+        failed,
+    )
