@@ -103,6 +103,9 @@ def run_model_2_competition(
     )
     requested_folds = int(cfg["validation"].get("folds", 5))
     q = float(cfg["model"]["high_lithium_quantile"])
+    fixed_threshold = cfg["model"].get("fixed_threshold_ppm")
+    optimization_cfg = cfg.get("optimization", {})
+    inner_folds = int(cfg["validation"].get("inner_folds", 3))
 
     signature = build_training_signature(
         "model_2",
@@ -145,7 +148,11 @@ def run_model_2_competition(
     get_shutdown_manager().register_cleanup(context.tracker.cancel_if_active)
 
     frame = load_model_2_training_frame(manifest_path)
-    threshold = float(frame[lithium_column].quantile(q))
+    threshold = (
+        float(fixed_threshold)
+        if fixed_threshold is not None
+        else float(frame[lithium_column].quantile(q))
+    )
     y = (frame[lithium_column] >= threshold).astype(int)
     groups = (
         frame[spatial_group_column]
@@ -168,7 +175,16 @@ def run_model_2_competition(
         frame=frame,
         metadata={
             "threshold_ppm": threshold,
-            "target_quantile": q,
+            "target_quantile": (
+                None
+                if fixed_threshold is not None
+                else q
+            ),
+            "threshold_source": (
+                "fixed_threshold_ppm"
+                if fixed_threshold is not None
+                else "dataset_quantile"
+            ),
             "spatial_groups": int(groups.nunique()) if groups is not None else 0,
         },
     )
@@ -180,10 +196,21 @@ def run_model_2_competition(
 
     min_class = int(y.value_counts().min())
     folds = max(2, min(requested_folds, min_class))
+    threshold_source = (
+        "fijo"
+        if fixed_threshold is not None
+        else f"cuantil {q:.2f}"
+    )
     print(
-        f"Muestras: {len(frame)} | Umbral Li alto: {threshold:.4f} ppm | "
+        f"Muestras: {len(frame)} | Umbral Li alto: "
+        f"{threshold:.4f} ppm ({threshold_source}) | "
         f"Folds: {folds}"
     )
+    if groups is not None and groups.nunique() >= folds:
+        print(
+            f"Validación espacial: {groups.nunique()} grupos "
+            f"| inner folds: {inner_folds}"
+        )
 
     baseline = evaluate_prior_baseline(
         x=x,
@@ -215,6 +242,8 @@ def run_model_2_competition(
                 folds,
                 groups,
                 checkpoint_root=context.checkpoints,
+                optimization=optimization_cfg,
+                inner_folds=inner_folds,
             )
             results[algorithm] = result
             rows.append(_ranking_row(result))
@@ -327,12 +356,55 @@ def run_model_2_competition(
     )
 
     winner = str(candidates.iloc[0]["algorithm"])
-    print(f"\n🏆 Ganador provisional Modelo 2: {get_label(winner)}")
+    print(f"\n🏆 Ganador de esta ejecución Modelo 2: {get_label(winner)}")
 
-    final_estimator = create_model(winner, device, seed)
-    final_estimator.fit(x, y)
     winner_result = results[winner]
+    final_calibration_cv = None
+    if winner == "svm_rbf":
+        from lithiumscope.model_2.training.cv_runner import _materialize_splits
+
+        final_calibration_cv = _materialize_splits(
+            x,
+            y,
+            groups,
+            inner_folds,
+            seed + 9000,
+        )
+
+    final_estimator = create_model(
+        winner,
+        device,
+        seed,
+        winner_result.final_params,
+        calibrated=True,
+        calibration_cv=final_calibration_cv,
+    )
+    final_estimator.fit(x, y)
     profile = feature_range_profile(x)
+
+    baseline_row = baseline[0]
+    roc_gain = float(
+        candidates.iloc[0]["roc_auc_mean"]
+        - baseline_row["roc_auc_mean"]
+    )
+    ap_gain = float(
+        candidates.iloc[0]["average_precision_mean"]
+        - baseline_row["average_precision_mean"]
+    )
+    gate = cfg.get("release_gate", {})
+    min_roc_gain = float(
+        gate.get("min_roc_auc_gain_over_baseline", 0.0)
+    )
+    min_ap_gain = float(
+        gate.get(
+            "min_average_precision_gain_over_baseline",
+            0.0,
+        )
+    )
+    release_gate_pass = (
+        roc_gain >= min_roc_gain
+        and ap_gain >= min_ap_gain
+    )
 
     metadata = {
         "model_group": "model_2",
@@ -340,7 +412,14 @@ def run_model_2_competition(
         "label": get_label(winner),
         "samples": len(frame),
         "threshold_ppm": threshold,
-        "target_quantile": q,
+        "target_quantile": (
+            None if fixed_threshold is not None else q
+        ),
+        "threshold_source": (
+            "fixed_threshold_ppm"
+            if fixed_threshold is not None
+            else "dataset_quantile"
+        ),
         "metrics": winner_result.overall_metrics,
         "competition_primary_metric": "roc_auc_mean",
         "winner_rule": (
@@ -351,6 +430,13 @@ def run_model_2_competition(
         "run_id": context.run_id,
         "device": device.accelerator,
         "dataset_sha256": dataset_manifest.source_sha256,
+        "release_gate": {
+            "pass": release_gate_pass,
+            "roc_auc_gain_over_baseline": roc_gain,
+            "average_precision_gain_over_baseline": ap_gain,
+            "min_roc_auc_gain_over_baseline": min_roc_gain,
+            "min_average_precision_gain_over_baseline": min_ap_gain,
+        },
         "scope_note": (
             "Score de priorización exploratoria; no es probabilidad de "
             "yacimiento económicamente viable."
@@ -360,6 +446,10 @@ def run_model_2_competition(
     bundle = {
         "estimator": final_estimator,
         "features": list(x.columns),
+        "band_names": list(cfg["imagery"]["bands"]),
+        "normalize_per_band": bool(
+            cfg["imagery"].get("normalize_per_band", False)
+        ),
         "threshold_ppm": threshold,
         "target_quantile": q,
         "algorithm": winner,
@@ -398,6 +488,9 @@ def run_model_2_competition(
         primary_metric_value=float(candidates.iloc[0]["roc_auc_mean"]),
         model_path=str(model_path),
         failed_algorithms=failed,
+        release_gate_pass=release_gate_pass,
+        roc_auc_gain_over_baseline=roc_gain,
+        average_precision_gain_over_baseline=ap_gain,
     )
     return CompetitionOutcome(
         context.root,

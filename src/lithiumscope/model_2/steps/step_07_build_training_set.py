@@ -18,6 +18,9 @@ def build_training_set(
     lithium_column: str = "Li_icpms",
     image_path_column: str = "image_path",
     spatial_group_column: str = "spatial_group",
+    *,
+    band_names: tuple[str, ...] | list[str],
+    normalize_per_band: bool = False,
 ) -> pd.DataFrame:
     if lithium_column not in manifest.columns:
         raise ValueError(f"Missing lithium column: {lithium_column}")
@@ -36,8 +39,13 @@ def build_training_set(
             start=1,
         ):
             path = Path(sample[image_path_column])
+            image = preprocess_image(
+                load_imagery(path),
+                normalize_per_band=normalize_per_band,
+            )
             features = extract_spectral_features(
-                preprocess_image(load_imagery(path))
+                image,
+                band_names=band_names,
             )
             features[lithium_column] = float(sample[lithium_column])
             if spatial_group_column in manifest.columns:
@@ -45,7 +53,7 @@ def build_training_set(
             rows.append(features)
 
             spinner.update(
-                f"Extrayendo características espectrales: "
+                "Extrayendo características espectrales: "
                 f"{position}/{total}"
             )
             if position % 25 == 0 or position == total:
@@ -55,7 +63,9 @@ def build_training_set(
                     total,
                 )
     except Exception:
-        spinner.fail("Falló la extracción de características espectrales")
+        spinner.fail(
+            "Falló la extracción de características espectrales"
+        )
         raise
 
     if not rows:

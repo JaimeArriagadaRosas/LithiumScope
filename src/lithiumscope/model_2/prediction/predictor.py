@@ -10,7 +10,13 @@ from lithiumscope.persistence.load_model import load_latest_model
 
 def predict_model_2(path: Path) -> tuple[dict, Path, Path]:
     bundle, model_path = load_latest_model("model_2")
-    frame = image_to_feature_frame(path)
+    frame = image_to_feature_frame(
+        path,
+        band_names=bundle["band_names"],
+        normalize_per_band=bool(
+            bundle.get("normalize_per_band", False)
+        ),
+    )
     expected = list(bundle["features"])
     for column in expected:
         if column not in frame.columns:
