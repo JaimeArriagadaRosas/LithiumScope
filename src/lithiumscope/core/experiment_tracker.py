@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 import json
+import os
+import platform
 from pathlib import Path
 from typing import Any
 
@@ -70,7 +72,16 @@ class ExperimentTracker:
         self.payload["state"] = state.value
         if summary:
             self.payload["summary"].update(summary)
-        if state in _TERMINAL_STATES:
+
+        if state == RunState.RUNNING:
+            self.payload["active_process"] = {
+                "pid": os.getpid(),
+                "hostname": platform.node(),
+                "claimed_at_utc": datetime.now(timezone.utc).isoformat(),
+            }
+            self.payload["completed_at_utc"] = None
+        elif state in _TERMINAL_STATES:
+            self.payload["active_process"] = None
             self.payload["completed_at_utc"] = datetime.now(timezone.utc).isoformat()
         else:
             self.payload["completed_at_utc"] = None
