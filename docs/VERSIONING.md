@@ -2,6 +2,33 @@
 
 No se crea un tag automáticamente después de entrenar.
 
+## Identidad de un entrenamiento
+
+Los entrenamientos nuevos utilizan una identidad local basada en fecha, hora y zona horaria:
+
+`training_YYYYMMDD_HHMMSS_m0300`
+
+El nombre se conserva durante reanudaciones compatibles. Una interrupción no crea por sí sola un nuevo entrenamiento.
+
+## Reanudación
+
+LithiumScope calcula una firma a partir de:
+
+- modelo;
+- SHA-256 del dataset de entrada;
+- configuración relevante;
+- commit Git.
+
+Si encuentra una ejecución compatible en estado `cancelled`, `partial`, `running` o `completed`, reutiliza esa ejecución.
+
+Los folds finalizados se guardan como checkpoints. Al reanudar:
+
+- un fold completo se reutiliza;
+- un algoritmo completo se reconstruye desde sus checkpoints;
+- una ejecución ya completada se reutiliza sin generar otro modelo final.
+
+Si cambia dataset, configuración o commit, la firma cambia y se crea una ejecución nueva.
+
 ## Cuándo una ejecución es candidata
 
 Una ejecución solo se considera candidata a versión cuando:
@@ -16,29 +43,24 @@ Para versionar LithiumScope con ambos modelos, Modelo 1 y Modelo 2 deben además
 
 ## Flujo propuesto
 
-1. ejecutar una prueba completa;
-2. revisar logs, dashboards y Excel;
-3. usar `3. Métricas y resultados → Evaluar candidato local para futuro tag`;
-4. revisar el `release_manifest.json` generado;
-5. solo después crear el tag GitHub.
+1. partir de un clon limpio;
+2. ejecutar preboot desde cero;
+3. entrenar ambos modelos;
+4. si se interrumpe, volver a ejecutar y reanudar la misma identidad compatible;
+5. revisar logs, dashboards y Excel;
+6. usar `3. Métricas y resultados → Evaluar candidato local para futuro tag`;
+7. revisar el `release_manifest.json` generado;
+8. solo después crear el tag GitHub.
 
-## Qué debería representar el tag
+## Qué representa el tag
 
 El tag fija principalmente:
 
 - código fuente;
 - configuraciones;
 - hashes de datasets;
-- run IDs;
+- run IDs fechados;
 - algoritmos ganadores;
 - métricas.
 
-Los datasets grandes no deberían introducirse directamente al historial Git. Para una publicación posterior, los modelos entrenados y manifests pueden adjuntarse como assets de un GitHub Release o almacenarse en un repositorio de artefactos, manteniendo sus hashes en el release manifest.
-
-## Convención inicial
-
-El manifiesto local propone nombres del tipo:
-
-`lithiumscope-training-YYYYMMDD`
-
-La convención puede cambiarse antes del primer tag estable.
+Los datasets grandes no deben introducirse directamente al historial Git. Para una publicación posterior, los modelos entrenados y manifests pueden adjuntarse como assets de un GitHub Release o almacenarse en un repositorio de artefactos, manteniendo sus hashes en el release manifest.

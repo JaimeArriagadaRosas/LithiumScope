@@ -17,6 +17,7 @@ def optimize_with_optuna(
     y,
     cv,
     n_trials: int = 20,
+    progress_callback: Callable[[int, int], None] | None = None,
 ) -> dict:
     try:
         import optuna
@@ -41,7 +42,23 @@ def optimize_with_optuna(
         )
         return float(-np.mean(scores))
 
+    callbacks = []
+    if progress_callback is not None:
+        def on_trial_complete(study, trial):
+            progress_callback(int(trial.number) + 1, n_trials)
+
+        callbacks.append(on_trial_complete)
+
     study = optuna.create_study(direction="minimize")
-    study.optimize(objective, n_trials=n_trials)
-    logger.info("Optuna best RMSE=%.6f params=%s", study.best_value, study.best_params)
+    study.optimize(
+        objective,
+        n_trials=n_trials,
+        callbacks=callbacks,
+        show_progress_bar=False,
+    )
+    logger.info(
+        "Optuna best RMSE=%.6f params=%s",
+        study.best_value,
+        study.best_params,
+    )
     return dict(study.best_params)

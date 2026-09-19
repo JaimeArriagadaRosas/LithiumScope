@@ -35,7 +35,12 @@ def build_release_candidate_manifest() -> Path:
         "status": "candidate",
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "git_commit": model_1["git_commit"],
-        "suggested_tag": f"lithiumscope-training-{stamp[:8]}",
+        "suggested_tag": (
+            "lithiumscope-"
+            + str(model_1["run_id"]).replace("training_", "")
+            + "--"
+            + str(model_2["run_id"]).replace("training_", "")
+        ),
         "model_1": model_1,
         "model_2": model_2,
         "note": (

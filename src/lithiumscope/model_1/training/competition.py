@@ -11,6 +11,7 @@ from lithiumscope.core.device import DeviceInfo
 from lithiumscope.core.logger import get_logger
 from lithiumscope.core.reproducibility import set_global_seed
 from lithiumscope.core.run_context import RunContext
+from lithiumscope.core.run_resume import build_training_signature
 from lithiumscope.core.states import RunState
 from lithiumscope.datasets.manifest import build_tabular_manifest, write_manifest
 from lithiumscope.model_1.evaluation.artifacts import save_algorithm_artifacts, save_dataset_artifacts
@@ -115,12 +116,45 @@ def run_model_1_competition(dataset_path: Path, device: DeviceInfo) -> Competiti
         ),
     )
 
-    context = RunContext.create("model_1")
-    context.tracker.set_state(RunState.RUNNING)
-    get_shutdown_manager().register_cleanup(context.tracker.cancel_if_active)
+    signature = build_training_signature(
+        "model_1",
+        dataset_path,
+        ("app", "model_1"),
+    )
+    context = RunContext.create(
+        "model_1",
+        training_signature=signature,
+        resume=True,
+    )
 
     print("\n=== MODELO 1 · COMPETENCIA DE ALGORITMOS ===")
-    print(f"Run ID: {context.run_id}")
+    print(f"Entrenamiento: {context.run_id}")
+
+    if context.resumed and context.tracker.state == RunState.COMPLETED:
+        ranking_path = context.tables / "competition_ranking.csv"
+        ranking = pd.read_csv(ranking_path) if ranking_path.exists() else pd.DataFrame()
+        summary = context.tracker.payload.get("summary", {})
+        winner = summary.get("winner")
+        successful = (
+            ranking[
+                (ranking.get("status") == "ok")
+                & (ranking.get("is_baseline") != True)  # noqa: E712
+            ]["algorithm"].astype(str).tolist()
+            if not ranking.empty
+            else []
+        )
+        print("↻ Entrenamiento compatible ya completado; se reutiliza sin regenerar modelos.")
+        print(f"Resultados: {context.root}")
+        return CompetitionOutcome(context.root, ranking, winner, successful, [])
+
+    if context.resumed:
+        print(f"↻ Reanudando entrenamiento compatible: {context.run_id}")
+        context.tracker.event(
+            "run_resumed",
+            previous_state=context.tracker.state.value,
+        )
+    context.tracker.set_state(RunState.RUNNING)
+    get_shutdown_manager().register_cleanup(context.tracker.cancel_if_active)
     print("Preparando dataset común...")
 
     prepared = prepare_training_data(dataset_path, model_family="random_forest")
@@ -166,6 +200,7 @@ def run_model_1_competition(dataset_path: Path, device: DeviceInfo) -> Competiti
                 algorithm,
                 device,
                 config,
+                checkpoint_root=context.checkpoints,
             )
             results[algorithm] = (result, algorithm_prepared)
             save_algorithm_artifacts(
@@ -229,6 +264,7 @@ def run_model_1_competition(dataset_path: Path, device: DeviceInfo) -> Competiti
         seed,
         winner_prepared.schema,
         winner_result.final_params,
+        final_fit=True,
     )
 
     print(f"\n🏆 Ganador provisional: {get_algorithm(winner).label}")

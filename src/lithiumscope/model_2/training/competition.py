@@ -10,6 +10,7 @@ from lithiumscope.core.device import DeviceInfo
 from lithiumscope.core.logger import get_logger
 from lithiumscope.core.reproducibility import set_global_seed
 from lithiumscope.core.run_context import RunContext
+from lithiumscope.core.run_resume import build_training_signature
 from lithiumscope.core.states import RunState
 from lithiumscope.datasets.manifest import build_tabular_manifest, write_manifest
 from lithiumscope.model_2.evaluation.baseline import evaluate_prior_baseline
@@ -103,12 +104,45 @@ def run_model_2_competition(
     requested_folds = int(cfg["validation"].get("folds", 5))
     q = float(cfg["model"]["high_lithium_quantile"])
 
-    context = RunContext.create("model_2")
-    context.tracker.set_state(RunState.RUNNING)
-    get_shutdown_manager().register_cleanup(context.tracker.cancel_if_active)
+    signature = build_training_signature(
+        "model_2",
+        manifest_path,
+        ("app", "model_2"),
+    )
+    context = RunContext.create(
+        "model_2",
+        training_signature=signature,
+        resume=True,
+    )
 
     print("\n=== MODELO 2 · COMPETENCIA DE ALGORITMOS ===")
-    print(f"Run ID: {context.run_id}")
+    print(f"Entrenamiento: {context.run_id}")
+
+    if context.resumed and context.tracker.state == RunState.COMPLETED:
+        ranking_path = context.tables / "competition_ranking.csv"
+        ranking = pd.read_csv(ranking_path) if ranking_path.exists() else pd.DataFrame()
+        summary = context.tracker.payload.get("summary", {})
+        winner = summary.get("winner")
+        successful = (
+            ranking[
+                (ranking.get("status") == "ok")
+                & (ranking.get("is_baseline") != True)  # noqa: E712
+            ]["algorithm"].astype(str).tolist()
+            if not ranking.empty
+            else []
+        )
+        print("↻ Entrenamiento compatible ya completado; se reutiliza sin regenerar modelos.")
+        print(f"Resultados: {context.root}")
+        return CompetitionOutcome(context.root, ranking, winner, successful, [])
+
+    if context.resumed:
+        print(f"↻ Reanudando entrenamiento compatible: {context.run_id}")
+        context.tracker.event(
+            "run_resumed",
+            previous_state=context.tracker.state.value,
+        )
+    context.tracker.set_state(RunState.RUNNING)
+    get_shutdown_manager().register_cleanup(context.tracker.cancel_if_active)
 
     frame = load_model_2_training_frame(manifest_path)
     threshold = float(frame[lithium_column].quantile(q))
@@ -180,6 +214,7 @@ def run_model_2_competition(
                 seed,
                 folds,
                 groups,
+                checkpoint_root=context.checkpoints,
             )
             results[algorithm] = result
             rows.append(_ranking_row(result))
