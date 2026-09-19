@@ -10,6 +10,7 @@ model:
     - svm_rbf
   target_mode: high_lithium_quantile
   high_lithium_quantile: 0.75
+  fixed_threshold_ppm: null
   random_seed: 42
 
 imagery:
@@ -38,7 +39,7 @@ imagery:
     - .tif
     - .tiff
     - .npy
-  normalize_per_band: true
+  normalize_per_band: false
   nodata_fill: median
 
 training:
@@ -55,7 +56,19 @@ training:
 
 validation:
   folds: 5
+  inner_folds: 3
   prefer_spatial_groups: true
+
+optimization:
+  enabled: true
+  n_trials: 8
+  per_algorithm_trials:
+    hist_gradient_boosting: 10
+    svm_rbf: 10
+  pruning:
+    enabled: true
+    startup_trials: 3
+    warmup_folds: 2
 
 competition:
   primary_metric: roc_auc
@@ -63,6 +76,10 @@ competition:
     - average_precision
     - balanced_accuracy
   winner_rule: highest_cross_validated_roc_auc
+
+release_gate:
+  min_roc_auc_gain_over_baseline: 0.02
+  min_average_precision_gain_over_baseline: 0.02
 
 baseline:
   enabled: true

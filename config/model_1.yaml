@@ -33,6 +33,10 @@ optimization:
   per_algorithm_trials:
     tabnet: 8
     catboost: 12
+  pruning:
+    enabled: true
+    startup_trials: 4
+    warmup_folds: 2
 
 competition:
   primary_metric: rmse

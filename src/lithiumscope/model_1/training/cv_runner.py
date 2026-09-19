@@ -57,6 +57,7 @@ def run_nested_cv(
         )
     )
     optimize = bool(optimization.get("enabled", True))
+    pruning = optimization.get("pruning", {})
     checkpoint = (
         FoldCheckpointStore(checkpoint_root, algorithm)
         if checkpoint_root is not None
@@ -139,6 +140,16 @@ def run_nested_cv(
                         else None
                     ),
                     study_name=f"{algorithm}_fold_{fold:02d}",
+                    random_seed=seed + fold,
+                    pruning_enabled=bool(
+                        pruning.get("enabled", True)
+                    ),
+                    startup_trials=int(
+                        pruning.get("startup_trials", 4)
+                    ),
+                    warmup_folds=int(
+                        pruning.get("warmup_folds", 2)
+                    ),
                 )
 
             spinner.update(
@@ -239,6 +250,16 @@ def run_nested_cv(
                         else None
                     ),
                     study_name=f"{algorithm}_final",
+                    random_seed=seed + 5000,
+                    pruning_enabled=bool(
+                        pruning.get("enabled", True)
+                    ),
+                    startup_trials=int(
+                        pruning.get("startup_trials", 4)
+                    ),
+                    warmup_folds=int(
+                        pruning.get("warmup_folds", 2)
+                    ),
                 )
                 spinner.succeed(
                     f"{spec.label} · hiperparámetros finales listos"

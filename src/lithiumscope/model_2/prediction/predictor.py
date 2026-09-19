@@ -4,13 +4,20 @@ import pandas as pd
 
 from lithiumscope.core.paths import RESULTS_DIR
 from lithiumscope.model_2.prediction.image_parser import image_to_feature_frame
+from lithiumscope.model_2.steps.step_05_spectral_features import DEFAULT_BAND_NAMES
 from lithiumscope.model_2.schema import out_of_range_fraction
 from lithiumscope.persistence.load_model import load_latest_model
 
 
 def predict_model_2(path: Path) -> tuple[dict, Path, Path]:
     bundle, model_path = load_latest_model("model_2")
-    frame = image_to_feature_frame(path)
+    frame = image_to_feature_frame(
+        path,
+        band_names=bundle.get("band_names", DEFAULT_BAND_NAMES),
+        normalize_per_band=bool(
+            bundle.get("normalize_per_band", False)
+        ),
+    )
     expected = list(bundle["features"])
     for column in expected:
         if column not in frame.columns:

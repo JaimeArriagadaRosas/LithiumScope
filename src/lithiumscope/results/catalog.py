@@ -49,12 +49,17 @@ def run_catalog(model_group: str) -> pd.DataFrame:
                 "created_at_utc": payload.get("created_at_utc"),
                 "completed_at_utc": payload.get("completed_at_utc"),
                 "run_dir": str(run_dir),
+                "release_gate_pass": summary.get("release_gate_pass"),
                 "release_candidate": (
                     payload.get("state") == "completed"
                     and bool(summary.get("winner"))
                     and bool(summary.get("dataset_sha256"))
                     and bool(runtime.get("git_commit"))
                     and not failed
+                    and (
+                        model_group != "model_2"
+                        or summary.get("release_gate_pass") is True
+                    )
                 ),
             }
         )

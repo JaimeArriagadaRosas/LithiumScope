@@ -38,6 +38,7 @@ def _compare(group: str) -> None:
         "winner",
         "primary_metric_value",
         "failed_algorithms",
+        "release_gate_pass",
         "release_candidate",
     ]
     print(catalog[columns].head(20).to_string(index=False))

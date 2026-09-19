@@ -1,6 +1,124 @@
+from __future__ import annotations
+
 import numpy as np
-def extract_spectral_features(array:np.ndarray)->dict[str,float]:
-    features={}
-    for index,band in enumerate(array,start=1):
-        features[f"band_{index:02d}_mean"]=float(np.mean(band));features[f"band_{index:02d}_std"]=float(np.std(band));features[f"band_{index:02d}_p10"]=float(np.percentile(band,10));features[f"band_{index:02d}_p50"]=float(np.percentile(band,50));features[f"band_{index:02d}_p90"]=float(np.percentile(band,90))
+
+FEATURE_EXTRACTOR_VERSION = 2
+DEFAULT_BAND_NAMES = (
+    "red",
+    "green",
+    "blue",
+    "nir",
+    "swir16",
+    "swir22",
+)
+
+
+def _summary(prefix: str, values: np.ndarray) -> dict[str, float]:
+    finite = np.asarray(values, dtype=np.float32)
+    finite = finite[np.isfinite(finite)]
+    if not finite.size:
+        return {
+            f"{prefix}_mean": 0.0,
+            f"{prefix}_std": 0.0,
+            f"{prefix}_p10": 0.0,
+            f"{prefix}_p50": 0.0,
+            f"{prefix}_p90": 0.0,
+            f"{prefix}_iqr": 0.0,
+        }
+
+    p10, p25, p50, p75, p90 = np.percentile(
+        finite,
+        [10, 25, 50, 75, 90],
+    )
+    return {
+        f"{prefix}_mean": float(np.mean(finite)),
+        f"{prefix}_std": float(np.std(finite)),
+        f"{prefix}_p10": float(p10),
+        f"{prefix}_p50": float(p50),
+        f"{prefix}_p90": float(p90),
+        f"{prefix}_iqr": float(p75 - p25),
+    }
+
+
+def _normalized_difference(
+    first: np.ndarray,
+    second: np.ndarray,
+) -> np.ndarray:
+    denominator = first + second
+    return np.divide(
+        first - second,
+        denominator,
+        out=np.zeros_like(first, dtype=np.float32),
+        where=np.abs(denominator) > 1e-6,
+    )
+
+
+def _safe_ratio(
+    numerator: np.ndarray,
+    denominator: np.ndarray,
+) -> np.ndarray:
+    return np.divide(
+        numerator,
+        denominator,
+        out=np.zeros_like(numerator, dtype=np.float32),
+        where=np.abs(denominator) > 1e-6,
+    )
+
+
+def extract_spectral_features(
+    array: np.ndarray,
+    band_names: tuple[str, ...] | list[str] = DEFAULT_BAND_NAMES,
+) -> dict[str, float]:
+    """Extract raw reflectance summaries plus physically interpretable ratios."""
+    image = np.asarray(array, dtype=np.float32)
+    names = tuple(str(name) for name in band_names)
+    if image.ndim != 3:
+        raise ValueError(
+            f"Expected [bands, height, width] imagery, got {image.shape}."
+        )
+    if image.shape[0] != len(names):
+        raise ValueError(
+            "Band count does not match configured Sentinel schema: "
+            f"image={image.shape[0]} configured={len(names)}."
+        )
+
+    bands = {
+        name: image[index]
+        for index, name in enumerate(names)
+    }
+    features: dict[str, float] = {}
+
+    for name, band in bands.items():
+        features.update(_summary(name, band))
+
+    required = set(DEFAULT_BAND_NAMES)
+    if required.issubset(bands):
+        derived = {
+            "ndvi": _normalized_difference(bands["nir"], bands["red"]),
+            "ndmi": _normalized_difference(bands["nir"], bands["swir16"]),
+            "nbr": _normalized_difference(bands["nir"], bands["swir22"]),
+            "red_swir16_nd": _normalized_difference(
+                bands["red"],
+                bands["swir16"],
+            ),
+            "swir16_swir22_ratio": _safe_ratio(
+                bands["swir16"],
+                bands["swir22"],
+            ),
+            "nir_swir16_ratio": _safe_ratio(
+                bands["nir"],
+                bands["swir16"],
+            ),
+            "red_blue_ratio": _safe_ratio(
+                bands["red"],
+                bands["blue"],
+            ),
+            "green_red_ratio": _safe_ratio(
+                bands["green"],
+                bands["red"],
+            ),
+        }
+        for name, values in derived.items():
+            features.update(_summary(name, values))
+
     return features
