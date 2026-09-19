@@ -13,6 +13,7 @@ from lithiumscope.core.run_context import RunContext
 from lithiumscope.core.states import RunState
 from lithiumscope.datasets.manifest import build_tabular_manifest, write_manifest
 from lithiumscope.model_2.evaluation.baseline import evaluate_prior_baseline
+from lithiumscope.model_2.evaluation.maps import save_spatial_score_map
 from lithiumscope.model_2.evaluation.plots import (
     save_competition_chart,
     save_probability_histogram,
@@ -211,6 +212,12 @@ def run_model_2_competition(
                 result.probabilities,
                 context.figures / algorithm / "roc_pr.png",
                 result.label,
+            )
+            save_spatial_score_map(
+                manifest_path,
+                result.probabilities,
+                context.figures / algorithm / "spatial_scores.png",
+                f"{result.label} — scores espaciales OOF",
             )
             context.tracker.event(
                 "algorithm_completed",
