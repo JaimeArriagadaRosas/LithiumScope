@@ -1,3 +1,5 @@
+schema_version: 1
+
 model:
   algorithms:
     - random_forest
@@ -61,3 +63,7 @@ competition:
     - average_precision
     - balanced_accuracy
   winner_rule: highest_cross_validated_roc_auc
+
+baseline:
+  enabled: true
+  strategy: prior

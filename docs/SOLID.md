@@ -38,3 +38,22 @@ Los orquestadores dependen de factories y contratos, no de una única implementa
 3. mantener los `trainer.py` como puntos de entrada delgados.
 
 Estos tests complementan, pero no reemplazan, revisión de diseño y tests funcionales.
+
+
+## Límites adicionales de responsabilidad
+
+La segunda etapa arquitectónica agrega responsabilidades transversales sin trasladarlas a los modelos:
+
+- `datasets/manifest.py`: identidad y trazabilidad de datasets;
+- `core/experiment_tracker.py`: ciclo de vida de una ejecución;
+- `core/scientific_checks.py`: invariantes contra leakage y validación incompleta;
+- `core/reproducibility.py`: seeds y fingerprint del entorno;
+- `core/resources.py`: presupuesto común de CPU;
+- `results/catalog.py`: lectura/comparación de ejecuciones;
+- `results/release.py`: preparación local de candidatos de versión.
+
+Un algoritmo no debe conocer Git, dashboards, manifests ni tags. Del mismo modo, el tracker no debe conocer detalles de Random Forest, XGBoost o Sentinel-2.
+
+## Tamaño de archivos
+
+LithiumScope no utiliza el número de líneas como definición de SOLID. Los tests que limitan algunos archivos solo protegen decisiones concretas (por ejemplo, que `menu.py` siga siendo un despachador). Para los módulos de dominio se priorizan cohesión, acoplamiento y facilidad de prueba.

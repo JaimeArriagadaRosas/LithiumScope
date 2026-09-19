@@ -1,6 +1,8 @@
+schema_version: 1
+
 app:
   name: LithiumScope
-  version: 0.1.0
+  version: 0.3.0
   random_seed: 42
   prefer_gpu: true
 
@@ -9,3 +11,12 @@ paths:
   models: models
   results: results
   logs: logs
+
+reproducibility:
+  capture_package_versions: true
+  capture_git_commit: true
+  deterministic_torch: false
+
+resources:
+  max_cpu_fraction: 0.75
+  minimum_workers: 1

@@ -12,8 +12,15 @@ def latest_model_path(model_group: str, prefix: str | None = None) -> Path:
     directory = MODELS_DIR / model_group / "trained"
     if not directory.exists():
         raise ModelNotReadyError(f"No trained model directory exists for {model_group}.")
-    pattern = f"{prefix}_*.joblib" if prefix else "*.joblib"
-    candidates = sorted(directory.glob(pattern), key=lambda path: path.stat().st_mtime, reverse=True)
+
+    candidates = list(directory.glob("*.joblib")) + list(directory.glob("*/model.joblib"))
+    if prefix:
+        candidates = [
+            path
+            for path in candidates
+            if prefix in path.name or prefix in path.parent.name
+        ]
+    candidates = sorted(candidates, key=lambda path: path.stat().st_mtime, reverse=True)
     if not candidates:
         raise ModelNotReadyError(f"No trained models found for {model_group}.")
     return candidates[0]
