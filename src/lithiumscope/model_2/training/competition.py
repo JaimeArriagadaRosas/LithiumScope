@@ -451,7 +451,9 @@ def run_model_2_competition(
             cfg["imagery"].get("normalize_per_band", False)
         ),
         "threshold_ppm": threshold,
-        "target_quantile": q,
+        "target_quantile": (
+            None if fixed_threshold is not None else q
+        ),
         "algorithm": winner,
         "applicability_profile": profile,
     }
