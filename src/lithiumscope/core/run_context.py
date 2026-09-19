@@ -8,7 +8,7 @@ import shutil
 
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import CONFIG_DIR, RESULTS_DIR
-from lithiumscope.results.experiment_tracker import ExperimentTracker
+from lithiumscope.core.experiment_tracker import ExperimentTracker
 
 
 @dataclass(frozen=True)

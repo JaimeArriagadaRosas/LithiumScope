@@ -1,7 +1,7 @@
 import json
 
+from lithiumscope.core.experiment_tracker import ExperimentTracker
 from lithiumscope.core.states import RunState
-from lithiumscope.results.experiment_tracker import ExperimentTracker
 
 
 def test_experiment_tracker_records_lifecycle(tmp_path):
