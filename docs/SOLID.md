@@ -45,7 +45,7 @@ Estos tests complementan, pero no reemplazan, revisión de diseño y tests funci
 La segunda etapa arquitectónica agrega responsabilidades transversales sin trasladarlas a los modelos:
 
 - `datasets/manifest.py`: identidad y trazabilidad de datasets;
-- `results/experiment_tracker.py`: ciclo de vida de una ejecución;
+- `core/experiment_tracker.py`: ciclo de vida de una ejecución;
 - `core/scientific_checks.py`: invariantes contra leakage y validación incompleta;
 - `core/reproducibility.py`: seeds y fingerprint del entorno;
 - `core/resources.py`: presupuesto común de CPU;
