@@ -40,7 +40,7 @@ def _log_root() -> Path:
     if override:
         return Path(override)
     if "pytest" in sys.modules:
-        return PROJECT_ROOT / ".pytest_tmp" / "logs"
+        return PROJECT_ROOT / ".test_logs" / f"pid_{os.getpid()}"
     return LOGS_DIR
 
 

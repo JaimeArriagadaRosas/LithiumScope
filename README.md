@@ -552,34 +552,23 @@ El selector de archivos ya no utiliza Tkinter. En Windows usa el diálogo nativo
 
 ---
 
-## 12. Logs centralizados y ciclo de vida
-
-La consola y los logs tienen responsabilidades distintas: la consola muestra hitos, progreso reescribible, métricas relevantes y errores resumidos; los archivos conservan el detalle técnico.
+## 12. Logs centralizados
 
 ```text
 logs/
-├── sessions/
-│   └── session_YYYYMMDD_HHMMSS.log
+├── lithiumscope.log
 ├── training/
-│   └── model_1_competition_YYYYMMDD_HHMMSS.log
 ├── prediction/
-├── preboot/
 └── errors/
-    └── errors_YYYYMMDD_HHMMSS.log
 ```
 
-Cada arranque crea un log de sesión independiente. De esta forma una ejecución nueva no mezcla sus eventos con errores ya resueltos de ejecuciones anteriores.
+El log general conserva el flujo completo.
 
-Por defecto:
+Cada entrenamiento crea además un archivo independiente como:
 
-- los logs normales tienen una retención de 14 días;
-- los logs de errores tienen una retención de 30 días;
-- los archivos rotan cuando alcanzan el tamaño configurado;
-- pytest utiliza un directorio de logs aislado y no contamina los logs reales del proyecto;
-- los fallos por muestra de Sentinel-2 se conservan en `training_failures.csv`, mientras que el log principal registra resúmenes periódicos;
-- un error interactivo muestra un identificador y la ruta exacta del log técnico de esa sesión.
-
-Los tiempos de retención se configuran en `config/logging.yaml`.
+```text
+logs/training/model_1_competition_YYYYMMDD_HHMMSS.log
+```
 
 ---
 
@@ -618,7 +607,7 @@ Mientras se confirma la fuente oficial, se utiliza como bootstrap un mirror púb
 
 El dataset de entrenamiento del Modelo 2 se construye **automáticamente**. El usuario no tiene que crear ni seleccionar manualmente un `training_manifest.csv`.
 
-Preboot realiza este flujo. Las operaciones largas utilizan una única línea de progreso reescribible (spinner) para evitar llenar la consola con cientos de mensajes repetidos:
+Preboot realiza este flujo:
 
 ```text
 dataset geoquímico
