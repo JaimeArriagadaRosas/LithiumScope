@@ -26,12 +26,13 @@ def _read_csv_with_fallback(path: Path) -> tuple[pd.DataFrame, str]:
     )
 
 
-def load_data(path: Path) -> pd.DataFrame:
+def load_data(path: Path, *, quiet: bool = False) -> pd.DataFrame:
     suffix = path.suffix.lower()
     if suffix == ".csv":
         frame, encoding = _read_csv_with_fallback(path)
         logger.info("CSV encoding selected: %s", encoding)
-        print(f"    ✓ CSV cargado con codificación: {encoding}")
+        if not quiet:
+            print(f"    ✓ CSV cargado con codificación: {encoding}")
     elif suffix in {".xlsx", ".xls"}:
         frame = pd.read_excel(path)
     else:
@@ -41,5 +42,6 @@ def load_data(path: Path) -> pd.DataFrame:
         raise InputValidationError(f"Input dataset is empty: {path}")
 
     logger.info("Loaded dataset %s with %d rows and %d columns", path, *frame.shape)
-    print(f"    ✓ Dataset: {frame.shape[0]} filas × {frame.shape[1]} columnas")
+    if not quiet:
+        print(f"    ✓ Dataset: {frame.shape[0]} filas × {frame.shape[1]} columnas")
     return frame

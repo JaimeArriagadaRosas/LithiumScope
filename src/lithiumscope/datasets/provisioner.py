@@ -5,6 +5,7 @@ from pathlib import Path
 import importlib.util
 
 from lithiumscope.core.logger import get_logger
+from lithiumscope.core.states import DatasetState
 from lithiumscope.datasets.downloader import ensure_dataset
 from lithiumscope.datasets.status import DatasetStatus
 
@@ -29,7 +30,9 @@ def _missing_imagery_dependencies() -> list[str]:
     ]
 
 
-def provision_required_datasets(prepare_model_2: bool = True) -> list[DatasetStatus]:
+def provision_required_datasets(
+    prepare_model_2: bool = True,
+) -> list[DatasetStatus]:
     statuses: list[DatasetStatus] = []
 
     try:
@@ -40,6 +43,7 @@ def provision_required_datasets(prepare_model_2: bool = True) -> list[DatasetSta
                 ready=True,
                 path=str(model_1),
                 detail="Dataset geoquímico bootstrap disponible.",
+                state=DatasetState.READY,
             )
         )
     except Exception as exc:
@@ -50,6 +54,7 @@ def provision_required_datasets(prepare_model_2: bool = True) -> list[DatasetSta
                 ready=False,
                 path=None,
                 detail=str(exc),
+                state=DatasetState.FAILED,
             )
         )
         return statuses
@@ -67,14 +72,16 @@ def provision_required_datasets(prepare_model_2: bool = True) -> list[DatasetSta
                 detail=(
                     "Dependencias de imágenes faltantes: "
                     + ", ".join(missing_imagery)
-                    + '. Instale: pip install -e ".[imagery]"'
                 ),
+                state=DatasetState.MISSING,
             )
         )
         return statuses
 
     try:
-        from lithiumscope.model_2.data.builder import ensure_model_2_dataset
+        from lithiumscope.model_2.data.builder import (
+            ensure_model_2_dataset,
+        )
 
         result = ensure_model_2_dataset(model_1)
         statuses.append(
@@ -83,40 +90,51 @@ def provision_required_datasets(prepare_model_2: bool = True) -> list[DatasetSta
                 ready=True,
                 path=str(result.manifest_path),
                 detail=(
-                    f"Pares muestra-imagen listos: {result.ready_samples}; "
+                    f"Pares listos: {result.ready_samples}; "
                     f"omitidos: {result.failed_samples}; "
-                    f"reanudados desde cache: {result.resumed_samples}."
+                    f"cache: {result.resumed_samples}."
                 ),
+                state=DatasetState.READY,
             )
         )
     except Exception as exc:
-        logger.exception("Could not provision Model 2 Sentinel-2 dataset")
+        logger.error(
+            "Model 2 Sentinel provisioning failed: %s",
+            exc,
+        )
         statuses.append(
             DatasetStatus(
                 key="model_2_sentinel2",
                 ready=False,
                 path=None,
                 detail=str(exc),
+                state=DatasetState.FAILED,
             )
         )
 
     return statuses
 
 
-def _status_map(prepare_model_2: bool = True) -> dict[str, DatasetStatus]:
+def _status_map(
+    prepare_model_2: bool = True,
+) -> dict[str, DatasetStatus]:
     return {
         status.key: status
-        for status in provision_required_datasets(prepare_model_2=prepare_model_2)
+        for status in provision_required_datasets(
+            prepare_model_2=prepare_model_2
+        )
     }
 
 
 def require_model_1_dataset() -> Path:
-    status = _status_map(prepare_model_2=False).get("model_1_geochemistry")
+    status = _status_map(
+        prepare_model_2=False
+    ).get("model_1_geochemistry")
     if status is None or not status.ready or not status.path:
         detail = status.detail if status else "sin estado"
         raise RuntimeError(
             "Dataset automático de Modelo 1 no disponible: "
-            f"{detail}. Revise logs/preboot y la conexión a Internet."
+            f"{detail}."
         )
     return Path(status.path)
 
@@ -128,7 +146,7 @@ def require_model_2_dataset() -> Path:
         detail = status.detail if status else "sin estado"
         raise RuntimeError(
             "Dataset automático de Modelo 2 no disponible: "
-            f"{detail}. Revise logs/preboot y la conexión a Internet."
+            f"{detail}."
         )
     return Path(status.path)
 
@@ -136,4 +154,7 @@ def require_model_2_dataset() -> Path:
 def require_training_datasets() -> TrainingDatasets:
     model_1 = require_model_1_dataset()
     model_2 = require_model_2_dataset()
-    return TrainingDatasets(model_1=model_1, model_2_manifest=model_2)
+    return TrainingDatasets(
+        model_1=model_1,
+        model_2_manifest=model_2,
+    )

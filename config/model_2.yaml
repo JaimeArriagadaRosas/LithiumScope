@@ -24,7 +24,7 @@ imagery:
   scene_cache_decimals: 4
   max_consecutive_sample_failures: 10
   checkpoint_every: 10
-  progress_every: 10
+  progress_every: 25
   patch_size_m: 640
   patch_pixels: 32
   bands:
