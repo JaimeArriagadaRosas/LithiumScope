@@ -518,6 +518,9 @@ def write_pdf_report(
     concordance: pd.DataFrame,
     training_vs_external: pd.DataFrame,
     overlap_audit: dict | None,
+    input_info: dict | None,
+    model_1_diagnostics: dict | None,
+    model_2_diagnostics: dict | None,
     figures: list[Path],
 ) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -568,8 +571,86 @@ def write_pdf_report(
             widths=[2.2 * cm, 3.0 * cm, 5.6 * cm, 5.0 * cm],
             font_size=7.5,
         ),
-        _paragraph("2. Interpretacion cientifica general", styles["LS_H1"]),
+        _paragraph("2. Procedencia y cobertura de datos", styles["LS_H1"]),
     ]
+
+    if input_info:
+        source = input_info.get("demonstration", input_info)
+        source_rows = [["Campo", "Valor"]]
+        for key in (
+            "source_name",
+            "source_repository",
+            "source_commit",
+            "source_path",
+            "source_license",
+            "sentinel_datetime",
+            "pairing_rule",
+        ):
+            value = source.get(key) if isinstance(source, dict) else None
+            if value:
+                source_rows.append([key, value])
+        if len(source_rows) > 1:
+            story.append(
+                _table(
+                    source_rows,
+                    widths=[5.0 * cm, 11.0 * cm],
+                    font_size=7.5,
+                )
+            )
+
+    story.append(
+        _paragraph(
+            "El Li real, cuando existe, se conserva como verdad de referencia para "
+            "evaluar la demostracion. No se utiliza como variable de entrada para "
+            "predecir Li ni para calcular el score espacial.",
+            styles["LS_Warning"],
+        )
+    )
+
+    if model_1_diagnostics or model_2_diagnostics:
+        story.append(_paragraph("Diagnosticos de aplicabilidad", styles["LS_H2"]))
+        diag_rows = [["Diagnostico", "Modelo 1", "Modelo 2"]]
+        diag_rows.append(
+            [
+                "Casos fuera de dominio / fallidos",
+                (
+                    model_1_diagnostics.get("out_of_domain_rows", "N/D")
+                    if model_1_diagnostics
+                    else "N/D"
+                ),
+                (
+                    model_2_diagnostics.get("failed_cases", "N/D")
+                    if model_2_diagnostics
+                    else "N/D"
+                ),
+            ]
+        )
+        diag_rows.append(
+            [
+                "Variables/features ausentes",
+                (
+                    ", ".join(model_1_diagnostics.get("missing_expected_columns", []))
+                    or "ninguna declarada"
+                    if model_1_diagnostics
+                    else "N/D"
+                ),
+                (
+                    ", ".join(model_2_diagnostics.get("missing_feature_counts", {}).keys())
+                    or "ninguna"
+                    if model_2_diagnostics
+                    else "N/D"
+                ),
+            ]
+        )
+        story.append(
+            _table(
+                diag_rows,
+                widths=[5.0 * cm, 5.5 * cm, 5.5 * cm],
+                font_size=7.5,
+            )
+        )
+
+    story.append(_paragraph("3. Interpretacion cientifica general", styles["LS_H1"]))
 
     for paragraph in interpretation.splitlines():
         if paragraph.strip():
@@ -579,7 +660,7 @@ def write_pdf_report(
 
     story.extend(
         [
-            _paragraph("3. Metricas externas", styles["LS_H1"]),
+            _paragraph("4. Metricas externas", styles["LS_H1"]),
             _paragraph("Modelo 1", styles["LS_H2"]),
             _table(
                 _metric_rows(model_1_metrics),
@@ -592,7 +673,7 @@ def write_pdf_report(
                 widths=[8.0 * cm, 7.0 * cm],
                 font_size=8.5,
             ),
-            _paragraph("4. Entrenamiento vs. evaluacion actual", styles["LS_H1"]),
+            _paragraph("5. Entrenamiento vs. evaluacion actual", styles["LS_H1"]),
         ]
     )
 
@@ -618,7 +699,7 @@ def write_pdf_report(
             )
         )
 
-    story.append(_paragraph("5. Correlaciones y concordancia", styles["LS_H1"]))
+    story.append(_paragraph("6. Correlaciones y concordancia", styles["LS_H1"]))
     if correlations.empty:
         story.append(_paragraph("Sin correlaciones disponibles.", styles["LS_Body"]))
     else:
@@ -668,7 +749,7 @@ def write_pdf_report(
             )
         )
 
-    story.append(_paragraph("6. Graficas", styles["LS_H1"]))
+    story.append(_paragraph("7. Graficas", styles["LS_H1"]))
     for figure in figures:
         if not figure.is_file():
             continue
@@ -686,7 +767,7 @@ def write_pdf_report(
         )
 
     story.append(PageBreak())
-    story.append(_paragraph("7. Resumen de casos", styles["LS_H1"]))
+    story.append(_paragraph("8. Resumen de casos", styles["LS_H1"]))
     if paired.empty:
         story.append(_paragraph("No existen casos emparejados.", styles["LS_Body"]))
     else:
@@ -740,7 +821,7 @@ def write_pdf_report(
         )
 
     story.append(PageBreak())
-    story.append(_paragraph("8. Interpretacion caso por caso", styles["LS_H1"]))
+    story.append(_paragraph("9. Interpretacion caso por caso", styles["LS_H1"]))
     model_1_lookup = _case_lookup(model_1_predictions)
     model_2_lookup = _case_lookup(model_2_predictions)
     concordance_lookup = _case_lookup(concordance)
@@ -768,7 +849,7 @@ def write_pdf_report(
     story.extend(
         [
             PageBreak(),
-            _paragraph("9. Notas de interpretacion", styles["LS_H1"]),
+            _paragraph("10. Notas de interpretacion", styles["LS_H1"]),
             _paragraph(
                 "Modelo 1 responde a una estimacion de Li_icpms para una muestra "
                 "compatible con su dominio. Modelo 2 responde a prioridad relativa "

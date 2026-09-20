@@ -38,6 +38,7 @@ CORE_DEPENDENCIES = {
     "pandas": "pandas",
     "PyYAML": "yaml",
     "requests": "requests",
+    "ReportLab": "reportlab",
     "scikit-learn": "sklearn",
 }
 

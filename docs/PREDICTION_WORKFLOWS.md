@@ -97,3 +97,16 @@ El comando genera un ZIP y un archivo `.sha256` bajo
 `results/release_candidates/`. El bundle sanea rutas locales de los artefactos
 de texto y elimina hostname/PID del manifest de publicación. La creación de un
 tag o GitHub Release sigue siendo una decisión manual posterior.
+
+
+### Regenerar PDF de una ejecución anterior
+
+Una ejecución histórica que todavía tenga `report.html` puede recibir el nuevo
+informe PDF sin volver a descargar Sentinel-2 ni recalcular predicciones:
+
+```bat
+python -m lithiumscope.prediction.rebuild_pdf --run demonstration_YYYYMMDD_HHMMSS_m0300
+```
+
+El comando reconstruye el PDF desde los CSV, diagnósticos, manifest,
+interpretación y figuras ya guardados, y registra `report_pdf` en el manifest.

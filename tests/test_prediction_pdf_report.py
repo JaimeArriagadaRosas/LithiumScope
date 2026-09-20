@@ -67,6 +67,9 @@ def test_pdf_report_is_generated_with_case_sections(tmp_path: Path):
         concordance=concordance,
         training_vs_external=pd.DataFrame(),
         overlap_audit={"status": "sin coincidencias", "sample_id_matches": 0, "coordinate_matches": 0},
+        input_info={"demonstration": {"source_name": "external"}},
+        model_1_diagnostics={"out_of_domain_rows": 0, "missing_expected_columns": []},
+        model_2_diagnostics={"failed_cases": 0, "missing_feature_counts": {}},
         figures=[],
     )
 

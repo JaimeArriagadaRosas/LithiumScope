@@ -269,6 +269,9 @@ def _write_outputs(
         concordance=concordance,
         training_vs_external=training_vs_external,
         overlap_audit=overlap_audit,
+        input_info=input_info,
+        model_1_diagnostics=model_1_diagnostics,
+        model_2_diagnostics=model_2_diagnostics,
         figures=figures,
     )
 
