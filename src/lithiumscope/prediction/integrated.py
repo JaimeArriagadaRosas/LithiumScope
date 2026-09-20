@@ -371,10 +371,6 @@ def _run_integrated(
         model_1_diagnostics = {
             **prediction_diagnostics,
             "input_rows": len(raw_m1),
-            "missing_expected_columns": _missing_expected_columns(
-                raw_m1,
-                model_1_bundle["schema"],
-            ),
         }
         logger.info(
             "Model 1 prediction stage completed cases=%d ood_rows=%s",

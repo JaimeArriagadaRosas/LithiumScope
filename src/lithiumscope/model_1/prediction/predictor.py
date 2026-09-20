@@ -26,12 +26,22 @@ def predict_model_1_frame(
 
     schema = bundle["schema"]
     expected = list(schema.numeric) + list(schema.categorical)
-    missing = [column for column in expected if column not in frame.columns]
+    missing_from_raw_input = [
+        column for column in expected if column not in frame.columns
+    ]
     x = prepare_prediction_data(
         frame,
         bundle["algorithm"],
         schema,
     )
+    missing_after_preparation = [
+        column for column in expected if column not in x.columns
+    ]
+    generated_during_preparation = [
+        column
+        for column in missing_from_raw_input
+        if column in x.columns
+    ]
 
     predictions = bundle["estimator"].predict(x)
     output = frame.copy()
@@ -52,7 +62,9 @@ def predict_model_1_frame(
         "algorithm": bundle.get("algorithm", "unknown"),
         "rows": len(frame),
         "expected_columns": expected,
-        "missing_expected_columns": missing,
+        "missing_raw_input_columns": missing_from_raw_input,
+        "generated_during_preparation": generated_during_preparation,
+        "missing_expected_columns": missing_after_preparation,
         "out_of_domain_rows": int((fractions > 0.25).sum()),
         "mean_out_of_training_range_fraction": float(fractions.mean()) if len(fractions) else 0.0,
         "oof_absolute_residual_q90": interval,

@@ -630,7 +630,7 @@ def write_pdf_report(
                 "Variables/features ausentes",
                 (
                     ", ".join(model_1_diagnostics.get("missing_expected_columns", []))
-                    or "ninguna declarada"
+                    or "ninguna"
                     if model_1_diagnostics
                     else "N/D"
                 ),
@@ -649,6 +649,20 @@ def write_pdf_report(
                 font_size=7.5,
             )
         )
+        if model_1_diagnostics:
+            generated = model_1_diagnostics.get(
+                "generated_during_preparation",
+                [],
+            )
+            if generated:
+                story.append(
+                    _paragraph(
+                        "Variables derivadas generadas por el pipeline antes de predecir: "
+                        + ", ".join(generated)
+                        + ". No constituyen datos faltantes del usuario.",
+                        styles["LS_Small"],
+                    )
+                )
 
     story.append(_paragraph("3. Interpretacion cientifica general", styles["LS_H1"]))
 
