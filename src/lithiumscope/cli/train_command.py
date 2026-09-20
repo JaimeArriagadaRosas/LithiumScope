@@ -18,7 +18,7 @@ def _print_outcome(outcome, model_name: str) -> None:
     print(f"Resultados: {outcome.run_dir}")
     if outcome.winner:
         print(
-            f"Ganador provisional: {outcome.winner}"
+            f"Ganador de esta ejecución: {outcome.winner}"
         )
     if outcome.failed:
         print(

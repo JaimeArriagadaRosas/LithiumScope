@@ -12,12 +12,19 @@ El nombre se conserva durante reanudaciones compatibles. Una interrupción no cr
 
 ## Reanudación
 
-LithiumScope calcula una firma a partir de:
+LithiumScope distingue dos conceptos:
+
+- **source commit**: commit Git exacto desde el que se originó la ejecución y que queda registrado para trazabilidad;
+- **training fingerprint**: firma científica utilizada para decidir si un checkpoint sigue siendo compatible.
+
+El training fingerprint se calcula a partir de:
 
 - modelo;
 - SHA-256 del dataset de entrada;
-- configuración relevante;
-- commit Git.
+- configuración científica relevante;
+- código que puede modificar preprocessing, features, validación, tuning o entrenamiento.
+
+El logger, la consola, dashboards, documentación y otros cambios de presentación no forman parte de esta firma.
 
 Si encuentra una ejecución compatible en estado `cancelled`, `partial`, `running` o `completed`, reutiliza esa ejecución.
 
@@ -27,7 +34,9 @@ Los folds finalizados se guardan como checkpoints. Al reanudar:
 - un algoritmo completo se reconstruye desde sus checkpoints;
 - una ejecución ya completada se reutiliza sin generar otro modelo final.
 
-Si cambia dataset, configuración o commit, la firma cambia y se crea una ejecución nueva.
+Si cambia el dataset, la configuración científica o el código científico, la firma cambia y se crea una ejecución nueva. Un cambio exclusivamente de logging, consola o documentación no obliga a descartar checkpoints compatibles.
+
+El commit Git sigue guardándose por separado. Para publicar un release conjunto se mantienen las comprobaciones de procedencia definidas por el release manifest.
 
 ## Cuándo una ejecución es candidata
 

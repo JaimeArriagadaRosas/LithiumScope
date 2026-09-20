@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import atexit
 import ctypes
-import logging
 import os
 import signal
 import subprocess
@@ -10,13 +9,13 @@ import threading
 import time
 from typing import Callable
 
-from lithiumscope.core.logger import get_logger
+from lithiumscope.core.logger import finalize_logging, get_logger
 
 logger = get_logger("runtime.shutdown")
 
 
 class GracefulExit(SystemExit):
-    """Controlled application exit raised by signal handlers."""
+    pass
 
 
 class GracefulShutdownManager:
@@ -54,10 +53,8 @@ class GracefulShutdownManager:
             signal.signal(signal.SIGTERM, self._signal_handler)
         if hasattr(signal, "SIGBREAK"):
             signal.signal(signal.SIGBREAK, self._signal_handler)
-
         if os.name == "nt":
             self._install_windows_console_handler()
-
         atexit.register(self.finalize)
         self._installed = True
         logger.info("Graceful shutdown handlers installed")
@@ -71,7 +68,6 @@ class GracefulShutdownManager:
         raise GracefulExit(130)
 
     def _install_windows_console_handler(self) -> None:
-        # CTRL_CLOSE_EVENT=2, CTRL_LOGOFF_EVENT=5, CTRL_SHUTDOWN_EVENT=6.
         handler_type = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_uint)
 
         @handler_type
@@ -79,7 +75,6 @@ class GracefulShutdownManager:
             if ctrl_type in {2, 5, 6}:
                 self.request_shutdown(f"windows_console_event:{ctrl_type}", exit_code=0)
                 return True
-            # CTRL_C and CTRL_BREAK stay with Python's signal handlers.
             return False
 
         kernel32 = ctypes.windll.kernel32
@@ -92,14 +87,12 @@ class GracefulShutdownManager:
     def _stop_children(self) -> None:
         with self._lock:
             children = [child for child in self._children if child.poll() is None]
-
         for child in children:
             try:
                 logger.info("Terminating child process pid=%s", child.pid)
                 child.terminate()
             except OSError:
                 logger.debug("Child process already terminated pid=%s", child.pid)
-
         deadline = time.monotonic() + self.child_timeout_seconds
         for child in children:
             remaining = max(0.0, deadline - time.monotonic())
@@ -117,13 +110,10 @@ class GracefulShutdownManager:
             if self._requested.is_set():
                 return
             self._requested.set()
-
         logger.info("Shutdown requested reason=%s exit_code=%d", reason, exit_code)
         if reason != "normal":
             print(f"\nCerrando LithiumScope de forma segura ({reason})...")
-
         self._stop_children()
-
         with self._lock:
             callbacks = list(reversed(self._callbacks))
         for callback in callbacks:
@@ -137,12 +127,11 @@ class GracefulShutdownManager:
             if self._finalized:
                 return
             self._finalized = True
-
         if not self._requested.is_set():
             self.request_shutdown("normal", 0)
         self._stop_children()
         logger.info("LithiumScope runtime finalized")
-        logging.shutdown()
+        finalize_logging()
 
 
 _MANAGER = GracefulShutdownManager()

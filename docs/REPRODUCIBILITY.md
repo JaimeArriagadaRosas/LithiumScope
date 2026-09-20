@@ -23,9 +23,10 @@ Las ejecuciones pueden quedar como:
 - `completed`;
 - `partial`;
 - `failed`;
-- `cancelled`.
+- `cancelled`;
+- `crashed`.
 
-Una ejecución con algoritmos fallidos se considera `partial`, aunque exista un ganador provisional.
+Una ejecución con algoritmos fallidos se considera `partial`, aunque exista un ganador de esa ejecución. Un proceso que termina sin pasar por el cierre controlado puede recuperarse posteriormente como `crashed` sin borrar sus checkpoints.
 
 ## Seeds y entorno
 
@@ -58,3 +59,18 @@ LithiumScope valida automáticamente:
 Los modelos guardan rangos empíricos de entrenamiento (percentiles 1–99) para poder advertir cuando una inferencia utiliza variables alejadas del dominio observado.
 
 Esta advertencia no reemplaza una evaluación formal de incertidumbre o extrapolación geológica.
+
+## Observabilidad
+
+Cada proceso crea un log de sesión con eventos `SESSION_START` y `SESSION_END`. El arranque valida que ese archivo exista y tenga contenido.
+
+Los logs de errores se crean de forma lazy: una sesión sin errores no deja un `errors_*.log` vacío.
+
+Los warnings de Python se enrutan al logging de LithiumScope y se deduplican. El detalle permanece en el log de sesión, mientras que la consola conserva una única línea de estado reescribible para operaciones largas.
+
+Al finalizar se muestra un resumen con:
+
+- warnings únicos y totales;
+- cantidad de errores;
+- ruta del log de sesión;
+- ruta del log de errores solo cuando realmente existe.
