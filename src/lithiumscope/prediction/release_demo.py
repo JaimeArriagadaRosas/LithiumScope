@@ -4,7 +4,6 @@ import argparse
 from datetime import datetime, timezone
 import json
 from pathlib import Path
-import tempfile
 import zipfile
 
 from lithiumscope.core.hashing import file_sha256
@@ -65,6 +64,7 @@ def _publication_manifest(manifest: dict, archive_name: str) -> dict:
         "metrics": manifest.get("metrics", {}),
         "overlap_audit": manifest.get("overlap_audit"),
         "counts": manifest.get("counts", {}),
+        "thresholds": manifest.get("thresholds", {}),
         "runtime": runtime,
         "artifacts": manifest.get("artifacts", {}),
     }

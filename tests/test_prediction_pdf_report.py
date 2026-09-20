@@ -14,6 +14,7 @@ def test_pdf_report_is_generated_with_case_sections(tmp_path: Path):
                 "Li_icpms_predicted": 23.0,
                 "Li_icpms_interval_low_q90": 18.0,
                 "Li_icpms_interval_high_q90": 28.0,
+                "out_of_training_range_fraction": 0.1,
                 "applicability_warning": "OK",
                 "scientific_interpretation": "Interpretacion M1.",
             }
@@ -26,8 +27,11 @@ def test_pdf_report_is_generated_with_case_sections(tmp_path: Path):
                 "Li_icpms": 25.0,
                 "prospectivity_score": 0.62,
                 "priority": "media",
+                "out_of_training_range_fraction": 0.2,
                 "applicability_warning": "OK",
                 "sentinel_scene_id": "scene_a",
+                "sentinel_cloud_cover": 3.5,
+                "sentinel_datetime": "2025-01-01T10:00:00Z",
                 "scientific_interpretation": "Interpretacion M2.",
             }
         ]
@@ -71,6 +75,9 @@ def test_pdf_report_is_generated_with_case_sections(tmp_path: Path):
         model_1_diagnostics={"out_of_domain_rows": 0, "missing_expected_columns": []},
         model_2_diagnostics={"failed_cases": 0, "missing_feature_counts": {}},
         figures=[],
+        lithium_threshold_ppm=20.0,
+        model_2_classification_threshold=0.5,
+        runtime={"git_commit": "abc123"},
     )
 
     payload = destination.read_bytes()

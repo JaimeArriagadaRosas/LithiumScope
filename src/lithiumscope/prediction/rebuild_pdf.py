@@ -83,6 +83,13 @@ def rebuild_pdf(run: str | Path) -> Path:
             run_dir / "model_2" / "diagnostics.json"
         ),
         figures=figures,
+        lithium_threshold_ppm=manifest.get("thresholds", {}).get(
+            "lithium_reference_ppm"
+        ),
+        model_2_classification_threshold=manifest.get("thresholds", {}).get(
+            "model_2_classification_score"
+        ),
+        runtime=manifest.get("runtime", {}),
     )
 
     artifacts = manifest.setdefault("artifacts", {})

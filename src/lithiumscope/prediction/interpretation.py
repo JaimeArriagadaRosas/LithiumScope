@@ -163,6 +163,7 @@ def build_overall_interpretation(
     model_1_case_count: int | None = None,
     model_2_case_count: int | None = None,
     paired_case_count: int | None = None,
+    model_2_predicted_positive_count: int | None = None,
 ) -> str:
     lines = [
         "INTERPRETACIÓN CIENTÍFICA INTEGRADA",
@@ -215,8 +216,23 @@ def build_overall_interpretation(
             "Modelo 2 — evaluación con etiquetas derivadas del umbral experimental: "
             f"ROC-AUC={_fmt(model_2_metrics.get('roc_auc'))}, "
             f"Average Precision={_fmt(model_2_metrics.get('average_precision'))}, "
-            f"Balanced Accuracy={_fmt(model_2_metrics.get('balanced_accuracy'))}."
+            f"Balanced Accuracy={_fmt(model_2_metrics.get('balanced_accuracy'))}, "
+            f"precision={_fmt(model_2_metrics.get('precision'))}, "
+            f"recall={_fmt(model_2_metrics.get('recall'))}, "
+            f"F1={_fmt(model_2_metrics.get('f1'))}."
         )
+        if model_2_predicted_positive_count is not None:
+            lines.append(
+                "- Casos clasificados como positivos por el umbral operativo actual: "
+                f"{model_2_predicted_positive_count}."
+            )
+            if model_2_predicted_positive_count == 0:
+                lines.append(
+                    "- No se predijeron positivos con el umbral operativo actual. "
+                    "ROC-AUC y Average Precision deben interpretarse por separado "
+                    "como métricas de ranking; una señal de ordenamiento no convierte "
+                    "el score en probabilidad de yacimiento."
+                )
     else:
         lines.append(
             "Modelo 2 — no se dispuso de verdad de referencia suficiente para calcular métricas externas."

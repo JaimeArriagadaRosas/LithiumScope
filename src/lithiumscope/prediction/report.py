@@ -139,6 +139,27 @@ def save_integrated_figures(
             destination=figure_dir / "model_2_score_by_case.png",
             horizontal_lines=(0.4, 0.7),
         ),
+        _case_bar(
+            work,
+            value_column="model_1_out_of_training_range_fraction",
+            title="Fraccion OOD del Modelo 1 por caso",
+            ylabel="Fraccion fuera del dominio de entrenamiento",
+            destination=figure_dir / "model_1_ood_by_case.png",
+        ),
+        _case_bar(
+            work,
+            value_column="model_2_out_of_training_range_fraction",
+            title="Fraccion OOD del Modelo 2 por caso",
+            ylabel="Fraccion fuera del dominio de entrenamiento",
+            destination=figure_dir / "model_2_ood_by_case.png",
+        ),
+        _scatter(
+            work,
+            "model_1_out_of_training_range_fraction",
+            "model_2_out_of_training_range_fraction",
+            "OOD Modelo 1 vs. OOD Modelo 2",
+            figure_dir / "model_1_vs_model_2_ood.png",
+        ),
     ]
     return [path for path in outputs if path is not None]
 
@@ -192,6 +213,14 @@ def _number(value, digits: int = 3) -> str:
         return f"{float(value):.{digits}f}"
     except (TypeError, ValueError):
         return "N/D"
+
+
+def _fraction(value) -> str:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return "N/D"
+    return f"{number:.3f} ({number * 100:.1f}%)"
 
 
 def _styles():
@@ -281,7 +310,8 @@ def _styles():
 
 
 def _paragraph(text, style):
-    return Paragraph(_pdf_text(text), style)
+    payload = _pdf_text(text).replace("\n", "<br/>")
+    return Paragraph(payload, style)
 
 
 def _table(
@@ -405,13 +435,21 @@ def _case_story(
 
     rows = [
         ["Dato", "Resultado"],
-        ["Li real reservado para evaluacion", _number(li_real, 3)],
+        ["Li real (ground truth; no predictor)", _number(li_real, 3)],
         ["Li estimado por Modelo 1", _number(li_pred, 3)],
         [
             "Intervalo empirico q90 M1",
             (
                 f"{_number(interval_low, 3)} a {_number(interval_high, 3)} ppm"
                 if interval_low is not None and interval_high is not None
+                else "N/D"
+            ),
+        ],
+        [
+            "Fraccion OOD M1",
+            (
+                _fraction(model_1_row.get("out_of_training_range_fraction"))
+                if model_1_row is not None
                 else "N/D"
             ),
         ],
@@ -433,6 +471,14 @@ def _case_story(
             ),
         ],
         [
+            "Fraccion OOD M2",
+            (
+                _fraction(model_2_row.get("out_of_training_range_fraction"))
+                if model_2_row is not None
+                else "N/D"
+            ),
+        ],
+        [
             "Aplicabilidad M2",
             (
                 str(model_2_row.get("applicability_warning", "N/D"))
@@ -448,17 +494,33 @@ def _case_story(
                 else "N/D"
             ),
         ],
+        [
+            "Nubosidad Sentinel-2",
+            (
+                _number(model_2_row.get("sentinel_cloud_cover"), 2)
+                if model_2_row is not None
+                else "N/D"
+            ),
+        ],
+        [
+            "Fecha Sentinel-2",
+            (
+                str(model_2_row.get("sentinel_datetime", "N/D"))
+                if model_2_row is not None
+                else "N/D"
+            ),
+        ],
     ]
     story.append(_table(rows, widths=[6.0 * cm, 10.0 * cm], font_size=8.5))
     story.append(Spacer(1, 5))
 
     story.append(
         _paragraph(
-            "Datos solicitados. El Modelo 1 utiliza las variables geoquimicas, "
-            "geograficas y contextuales compatibles con su esquema; el Li real se "
-            "conserva solamente como verdad de referencia para esta demostracion y no "
-            "se entrega como predictor. El Modelo 2 analiza el parche multibanda "
-            "Sentinel-2 asociado a las coordenadas del mismo caso.",
+            "Datos usados. El Modelo 1 recibe solamente variables predictoras "
+            "compatibles con su esquema; Li_icpms real se conserva como ground truth "
+            "para evaluacion y nunca se entrega al estimador. El Modelo 2 recibe "
+            "caracteristicas espaciales/espectrales derivadas del parche multibanda "
+            "Sentinel-2 del caso. La salida del Modelo 1 no alimenta al Modelo 2.",
             styles["LS_Small"],
         )
     )
@@ -522,6 +584,9 @@ def write_pdf_report(
     model_1_diagnostics: dict | None,
     model_2_diagnostics: dict | None,
     figures: list[Path],
+    lithium_threshold_ppm: float | None = None,
+    model_2_classification_threshold: float | None = None,
+    runtime: dict | None = None,
 ) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     styles = _styles()
@@ -541,7 +606,7 @@ def write_pdf_report(
         Spacer(1, 0.8 * cm),
         _paragraph(title, styles["LS_Title"]),
         _paragraph(
-            f"Ejecucion: {run_id}<br/>Modo: {mode}<br/>"
+            f"Ejecucion: {run_id}\nModo: {mode}\n"
             "Informe generado automaticamente a partir de artefactos reproducibles.",
             styles["LS_Subtitle"],
         ),
@@ -554,22 +619,44 @@ def write_pdf_report(
         _paragraph("1. Trazabilidad de modelos", styles["LS_H1"]),
         _table(
             [
-                ["Modelo", "Algoritmo", "Run de entrenamiento", "SHA-256"],
+                ["Campo", "Valor"],
+                ["Run de prediccion", run_id],
+                ["Commit Git", (runtime or {}).get("git_commit", "N/D")],
+                ["Modelo 1 - algoritmo", model_1_identity.get("algorithm", "N/D")],
+                ["Modelo 1 - run de entrenamiento", model_1_identity.get("run_id", "N/D")],
                 [
-                    "Modelo 1",
-                    model_1_identity.get("algorithm", "N/D"),
-                    model_1_identity.get("run_id", "N/D"),
-                    str(model_1_identity.get("model_sha256", "N/D"))[:20] + "...",
+                    "Modelo 1 - SHA-256 del modelo",
+                    _paragraph(
+                        str(model_1_identity.get("model_sha256", "N/D")),
+                        styles["LS_Small"],
+                    ),
                 ],
                 [
-                    "Modelo 2",
-                    model_2_identity.get("algorithm", "N/D"),
-                    model_2_identity.get("run_id", "N/D"),
-                    str(model_2_identity.get("model_sha256", "N/D"))[:20] + "...",
+                    "Modelo 1 - SHA-256 del dataset",
+                    _paragraph(
+                        str(model_1_identity.get("dataset_sha256", "N/D")),
+                        styles["LS_Small"],
+                    ),
+                ],
+                ["Modelo 2 - algoritmo", model_2_identity.get("algorithm", "N/D")],
+                ["Modelo 2 - run de entrenamiento", model_2_identity.get("run_id", "N/D")],
+                [
+                    "Modelo 2 - SHA-256 del modelo",
+                    _paragraph(
+                        str(model_2_identity.get("model_sha256", "N/D")),
+                        styles["LS_Small"],
+                    ),
+                ],
+                [
+                    "Modelo 2 - SHA-256 del dataset",
+                    _paragraph(
+                        str(model_2_identity.get("dataset_sha256", "N/D")),
+                        styles["LS_Small"],
+                    ),
                 ],
             ],
-            widths=[2.2 * cm, 3.0 * cm, 5.6 * cm, 5.0 * cm],
-            font_size=7.5,
+            widths=[5.4 * cm, 10.6 * cm],
+            font_size=7.2,
         ),
         _paragraph("2. Procedencia y cobertura de datos", styles["LS_H1"]),
     ]
@@ -687,8 +774,66 @@ def write_pdf_report(
                 widths=[8.0 * cm, 7.0 * cm],
                 font_size=8.5,
             ),
-            _paragraph("5. Entrenamiento vs. evaluacion actual", styles["LS_H1"]),
         ]
+    )
+
+    story.extend(
+        [
+            _paragraph("Como leer estas metricas", styles["LS_H2"]),
+            _paragraph(
+                "Modelo 1: RMSE penaliza mas los errores grandes; MAE resume el "
+                "error absoluto medio; R2 compara la varianza explicada frente a "
+                "una referencia constante. El Li real se usa aqui solo como ground "
+                "truth para evaluacion externa.",
+                styles["LS_Small"],
+            ),
+            _paragraph(
+                "Modelo 2: ROC-AUC y Average Precision describen capacidad de "
+                "ordenamiento. Balanced Accuracy, precision, recall y F1 dependen "
+                "del umbral operativo. El score representa prioridad exploratoria "
+                "relativa: no es concentracion de Li ni probabilidad de yacimiento.",
+                styles["LS_Small"],
+            ),
+        ]
+    )
+    if model_2_classification_threshold is not None:
+        scores = pd.to_numeric(
+            model_2_predictions.get(
+                "prospectivity_score",
+                pd.Series(dtype=float),
+            ),
+            errors="coerce",
+        ).dropna()
+        predicted_positive_count = int(
+            (scores >= float(model_2_classification_threshold)).sum()
+        )
+        story.append(
+            _paragraph(
+                f"Con el umbral operativo actual "
+                f"({model_2_classification_threshold:.3f}), Modelo 2 clasifico "
+                f"{predicted_positive_count}/{len(scores)} casos como positivos.",
+                styles["LS_Small"],
+            )
+        )
+        if not scores.empty and predicted_positive_count == 0:
+            story.append(
+                _paragraph(
+                    "No se predijo ningun positivo con el umbral operativo actual. "
+                    "Esto no anula una posible capacidad de ranking reflejada por "
+                    "ROC-AUC o Average Precision; ambas lecturas se reportan por "
+                    "separado y el score no se interpreta como probabilidad.",
+                    styles["LS_Warning"],
+                )
+            )
+
+    story.append(_paragraph("5. Entrenamiento vs. evaluacion actual", styles["LS_H1"]))
+    story.append(
+        _paragraph(
+            "El delta se calcula como evaluacion externa menos entrenamiento/OOF. "
+            "Debe interpretarse junto con tamaño muestral, dominio y aplicabilidad; "
+            "por si solo no establece la causa de una diferencia de rendimiento.",
+            styles["LS_Small"],
+        )
     )
 
     if training_vs_external.empty:
@@ -738,6 +883,31 @@ def write_pdf_report(
             _paragraph(
                 "Estas asociaciones describen relacion estadistica dentro de esta "
                 "muestra y no establecen causalidad.",
+                styles["LS_Small"],
+            )
+        )
+
+    if not concordance.empty and "concordance" in concordance.columns:
+        counts = concordance["concordance"].value_counts()
+        story.append(_paragraph("Distribucion de concordancia", styles["LS_H2"]))
+        story.append(
+            _table(
+                [
+                    ["Categoria", "Casos"],
+                    ["Concordante alta", int(counts.get("concordante_alta", 0))],
+                    ["Concordante baja", int(counts.get("concordante_baja", 0))],
+                    ["Divergente M1 alto", int(counts.get("divergente_m1_alto", 0))],
+                    ["Divergente M2 alto", int(counts.get("divergente_m2_alto", 0))],
+                ],
+                widths=[10.5 * cm, 5.5 * cm],
+                font_size=8,
+            )
+        )
+        story.append(
+            _paragraph(
+                "Una discrepancia entre modelos es un resultado cientifico valido: "
+                "cada modelo responde una pregunta distinta y ninguno debe forzarse "
+                "a confirmar al otro.",
                 styles["LS_Small"],
             )
         )
@@ -878,8 +1048,27 @@ def write_pdf_report(
                 "ranking y las metricas binarias se reportan separadamente.",
                 styles["LS_Body"],
             ),
+            _paragraph(
+                "La discrepancia entre modelos no es un error por si misma. Puede "
+                "reflejar diferencias entre evidencia geoquimica de una muestra y "
+                "patrones espaciales/espectrales del sector, y debe conservarse para "
+                "revision cientifica.",
+                styles["LS_Body"],
+            ),
         ]
     )
+
+    if lithium_threshold_ppm is not None or model_2_classification_threshold is not None:
+        story.append(
+            _paragraph(
+                "Umbrales de la ejecucion: "
+                f"Li de referencia={_number(lithium_threshold_ppm, 3)} ppm; "
+                f"score operativo M2={_number(model_2_classification_threshold, 3)}. "
+                "Estos umbrales apoyan evaluacion y concordancia; no convierten el "
+                "score M2 en una probabilidad geologica.",
+                styles["LS_Body"],
+            )
+        )
 
     document.build(
         story,

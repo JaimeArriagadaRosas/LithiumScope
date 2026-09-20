@@ -225,6 +225,9 @@ def _write_outputs(
     overlap_audit: dict | None,
     interpretation: str,
     run_log_path: Path,
+    lithium_threshold: float,
+    probability_threshold: float,
+    model_2_predicted_positive_count: int,
 ) -> tuple[Path, Path, Path]:
     model_1_predictions.to_csv(session.model_1 / "predictions.csv", index=False)
     model_2_predictions.to_csv(session.model_2 / "predictions.csv", index=False)
@@ -248,6 +251,7 @@ def _write_outputs(
         concordance=concordance,
         training_vs_external=training_vs_external,
     )
+    runtime = runtime_fingerprint()
     report_path = write_pdf_report(
         session.root / "report.pdf",
         title=(
@@ -273,6 +277,9 @@ def _write_outputs(
         model_1_diagnostics=model_1_diagnostics,
         model_2_diagnostics=model_2_diagnostics,
         figures=figures,
+        lithium_threshold_ppm=lithium_threshold,
+        model_2_classification_threshold=probability_threshold,
+        runtime=runtime,
     )
 
     manifest = {
@@ -294,8 +301,13 @@ def _write_outputs(
             "model_1_cases": len(model_1_predictions),
             "model_2_cases": len(model_2_predictions),
             "paired_cases": len(paired),
+            "model_2_predicted_positive": model_2_predicted_positive_count,
         },
-        "runtime": runtime_fingerprint(),
+        "thresholds": {
+            "lithium_reference_ppm": lithium_threshold,
+            "model_2_classification_score": probability_threshold,
+        },
+        "runtime": runtime,
         "artifacts": {
             "model_1_predictions": str(session.model_1 / "predictions.csv"),
             "model_2_predictions": str(session.model_2 / "predictions.csv"),
@@ -422,6 +434,16 @@ def _run_integrated(
             model_1_metrics,
             model_2_metrics,
         )
+        model_2_scores = pd.to_numeric(
+            model_2_predictions.get(
+                "prospectivity_score",
+                pd.Series(dtype=float),
+            ),
+            errors="coerce",
+        ).dropna()
+        model_2_predicted_positive_count = int(
+            (model_2_scores >= probability_threshold).sum()
+        )
         interpretation = build_overall_interpretation(
             model_1_metrics=model_1_metrics,
             model_2_metrics=model_2_metrics,
@@ -431,6 +453,7 @@ def _run_integrated(
             model_1_case_count=len(model_1_predictions),
             model_2_case_count=len(model_2_predictions),
             paired_case_count=len(paired),
+            model_2_predicted_positive_count=model_2_predicted_positive_count,
         )
         logger.info(
             "Cross-model analysis completed paired=%d correlations=%d",
@@ -456,6 +479,9 @@ def _run_integrated(
             overlap_audit=overlap_audit,
             interpretation=interpretation,
             run_log_path=local_log_path,
+            lithium_threshold=lithium_threshold,
+            probability_threshold=probability_threshold,
+            model_2_predicted_positive_count=model_2_predicted_positive_count,
         )
         logger.info(
             "Integrated prediction finished run=%s report=%s workbook=%s",

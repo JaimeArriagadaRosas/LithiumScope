@@ -25,6 +25,7 @@ _TRACKED_PACKAGES = (
     "pytorch-tabnet",
     "rasterio",
     "pystac-client",
+    "reportlab",
 )
 
 

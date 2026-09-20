@@ -38,6 +38,10 @@ def test_release_bundle_requires_pdf_and_sanitizes_local_paths(monkeypatch, tmp_
                         "model_sha256": "b" * 64,
                     },
                 },
+                "thresholds": {
+                    "lithium_reference_ppm": 20.0,
+                    "model_2_classification_score": 0.5,
+                },
                 "runtime": {
                     "git_commit": "abc",
                     "hostname": "private-host",
@@ -60,3 +64,4 @@ def test_release_bundle_requires_pdf_and_sanitizes_local_paths(monkeypatch, tmp_
     assert "<PROJECT_ROOT>" in log_text
     assert "hostname" not in publication["runtime"]
     assert "pid" not in publication["runtime"]
+    assert publication["thresholds"]["model_2_classification_score"] == 0.5

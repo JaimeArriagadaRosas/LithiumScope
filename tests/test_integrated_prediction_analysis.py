@@ -111,13 +111,19 @@ def test_external_demo_interpretation_warns_small_sample():
             "roc_auc": 0.6,
             "average_precision": 0.4,
             "balanced_accuracy": 0.55,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
         },
         correlations=pd.DataFrame(),
         concordance=pd.DataFrame(),
         model_1_case_count=10,
         model_2_case_count=10,
         paired_case_count=10,
+        model_2_predicted_positive_count=0,
     )
 
     assert "pocos casos" in text
     assert "no como validación definitiva" in text
+    assert "No se predijeron positivos" in text
+    assert "métricas de ranking" in text
