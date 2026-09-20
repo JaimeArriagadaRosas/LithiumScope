@@ -66,6 +66,7 @@ REQUIRED_CONFIGS = (
     "logging.yaml",
     "model_1.yaml",
     "model_2.yaml",
+    "prediction.yaml",
 )
 REQUIRED_DATASETS = {
     "model_1_geochemistry",

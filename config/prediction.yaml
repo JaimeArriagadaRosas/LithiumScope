@@ -1,0 +1,17 @@
+schema_version: 1
+
+interpretation:
+  applicability_warning_fraction: 0.25
+  model_2_classification_threshold: 0.50
+  model_2_priority_medium: 0.40
+  model_2_priority_high: 0.70
+
+demonstration:
+  cases_path: examples/integrated_demo/cases.csv
+  source_name: Castro et al. 2021 via andes_paleoelevation
+  source_repository: siwill22/andes_paleoelevation
+  source_commit: cc00b161ace1be8bd9ed46d306a8ac3b2dc39ecc
+  source_path: datafiles/geoch_Castro++2021.csv
+  source_license: MIT
+  sentinel_datetime: 2024-01-01/2025-12-31
+  imagery_cache_dir: data/interim/model_2/integrated_demo

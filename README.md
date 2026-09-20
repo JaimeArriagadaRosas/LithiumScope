@@ -1009,3 +1009,26 @@ TabNet utiliza una validación interna tomada exclusivamente del conjunto de ent
 El modelo final ganador puede reajustarse con todos los datos usando el número de épocas seleccionado durante la validación interna.
 
 La estrategia de versionado asociada se documenta en [docs/VERSIONING.md](docs/VERSIONING.md).
+
+
+### Predicción integrada
+
+Dentro de `2. Realizar predicción`:
+
+```text
+1. Modelo 1 — Predicción de concentración
+2. Modelo 2 — Prospectividad espacial
+3. Predicción completa
+4. Demostración integrada automática
+0. Volver
+```
+
+La predicción completa solicita los inputs del usuario para ambos modelos. La
+demostración utiliza un conjunto externo versionado y obtiene automáticamente
+Sentinel-2 para los mismos casos. Ambas conservan los modelos científicamente
+separados y realizan la integración después de predecir, generando métricas,
+correlaciones, concordancias, diagnósticos, Excel, HTML, manifest e
+interpretación reproducible.
+
+Consulte `docs/PREDICTION_WORKFLOWS.md` para el contrato científico y los
+artefactos generados.

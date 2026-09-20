@@ -37,3 +37,5 @@ models/active_models.json
 models/installed_release.json
 models/.release_*/
 results/release_candidates/*
+
+results/predictions/*
