@@ -24,7 +24,7 @@ from lithiumscope.core.paths import (
     RESULTS_DIR,
     ensure_runtime_directories,
 )
-from lithiumscope.datasets.provisioner import provision_required_datasets
+from lithiumscope.datasets.provisioner import inspect_required_datasets, provision_required_datasets
 from lithiumscope.datasets.status import DatasetStatus
 from lithiumscope.core.visualization import configure_headless_matplotlib
 
@@ -322,6 +322,8 @@ def _print_datasets(
 
 def run_preboot(
     verbose: bool = True,
+    *,
+    provision_datasets: bool = False,
 ) -> PrebootReport:
     ensure_runtime_directories()
     configure_logging()
@@ -382,19 +384,27 @@ def run_preboot(
                 "se recomienda .venv."
             )
         print(
-            "\n  Preparando datasets necesarios..."
+            "\n  Revisando estado local de datasets..."
         )
+        if not provision_datasets:
+            print(
+                "  Nota               Los datasets se preparan al elegir Entrenar."
+            )
 
     can_prepare_data = all(
         item.available
         for item in core
     )
     datasets = (
-        provision_required_datasets(
-            prepare_model_2=all(
-                item.available
-                for item in imagery
+        (
+            provision_required_datasets(
+                prepare_model_2=all(
+                    item.available
+                    for item in imagery
+                )
             )
+            if provision_datasets
+            else inspect_required_datasets()
         )
         if can_prepare_data
         else []

@@ -6,7 +6,7 @@ from lithiumscope.results.browser import (
     preview_latest,
 )
 from lithiumscope.results.catalog import run_catalog
-from lithiumscope.results.release import build_release_candidate_manifest
+from lithiumscope.results.release import prepare_release_candidate_bundle
 
 
 def _preview(group: str) -> None:
@@ -54,7 +54,7 @@ def run() -> None:
     print("6. Abrir carpeta completa de resultados")
     print("7. Comparar ejecuciones — Modelo 1")
     print("8. Comparar ejecuciones — Modelo 2")
-    print("9. Evaluar candidato local para futuro tag")
+    print("9. Preparar bundle local de modelo para publicación")
     print("0. Volver")
     choice = choose("> ", {str(i) for i in range(10)})
 
@@ -82,8 +82,9 @@ def run() -> None:
         _compare("model_2")
     elif choice == "9":
         try:
-            path = build_release_candidate_manifest()
-            print(f"Candidato local generado: {path}")
-            print("No se creó ningún tag de GitHub.")
+            manifest_path, bundle_path = prepare_release_candidate_bundle()
+            print(f"Manifest generado: {manifest_path}")
+            print(f"Bundle generado:   {bundle_path}")
+            print("No se creó ningún tag ni GitHub Release automáticamente.")
         except RuntimeError as exc:
             print(f"No hay candidato válido todavía: {exc}")

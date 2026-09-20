@@ -6,9 +6,18 @@ import joblib
 
 from lithiumscope.core.exceptions import ModelNotReadyError
 from lithiumscope.core.paths import MODELS_DIR
+from lithiumscope.persistence.active_models import active_model_path
 
 
 def latest_model_path(model_group: str, prefix: str | None = None) -> Path:
+    active = active_model_path(model_group)
+    if active is not None and (
+        prefix is None
+        or prefix in active.name
+        or prefix in active.parent.name
+    ):
+        return active
+
     directory = MODELS_DIR / model_group / "trained"
     if not directory.exists():
         raise ModelNotReadyError(f"No trained model directory exists for {model_group}.")

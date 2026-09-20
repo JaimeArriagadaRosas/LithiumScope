@@ -4,9 +4,12 @@ from dataclasses import dataclass
 from pathlib import Path
 import importlib.util
 
+from lithiumscope.core.config import load_config
 from lithiumscope.core.logger import get_logger
+from lithiumscope.core.paths import DATA_DIR, PROJECT_ROOT
 from lithiumscope.core.states import DatasetState
 from lithiumscope.datasets.downloader import ensure_dataset
+from lithiumscope.datasets.registry import get_dataset_spec
 from lithiumscope.datasets.status import DatasetStatus
 
 logger = get_logger("datasets.provisioner")
@@ -27,6 +30,62 @@ def _missing_imagery_dependencies() -> list[str]:
         name
         for name, import_name in required.items()
         if importlib.util.find_spec(import_name) is None
+    ]
+
+
+def _project_path(raw: str) -> Path:
+    path = Path(raw)
+    return path if path.is_absolute() else PROJECT_ROOT / path
+
+
+def inspect_required_datasets() -> list[DatasetStatus]:
+    """Inspect only local dataset state. This function never downloads data."""
+    model_1_spec = get_dataset_spec("mamani09_public_mirror")
+    model_1_path = (
+        DATA_DIR
+        / "raw"
+        / model_1_spec.model
+        / model_1_spec.destination_name
+    )
+    model_1_ready = (
+        model_1_path.exists()
+        and model_1_path.is_file()
+        and model_1_path.stat().st_size > 0
+    )
+
+    model_2_cfg = load_config("model_2")
+    manifest_path = _project_path(
+        str(model_2_cfg["training"]["manifest_path"])
+    )
+    model_2_ready = (
+        manifest_path.exists()
+        and manifest_path.is_file()
+        and manifest_path.stat().st_size > 0
+    )
+
+    return [
+        DatasetStatus(
+            key="model_1_geochemistry",
+            ready=model_1_ready,
+            path=str(model_1_path) if model_1_ready else None,
+            detail=(
+                "Dataset geoquímico local disponible."
+                if model_1_ready
+                else "No preparado todavía; se descargará al iniciar entrenamiento."
+            ),
+            state=DatasetState.READY if model_1_ready else DatasetState.MISSING,
+        ),
+        DatasetStatus(
+            key="model_2_sentinel2",
+            ready=model_2_ready,
+            path=str(manifest_path) if model_2_ready else None,
+            detail=(
+                "Manifest espacial local disponible."
+                if model_2_ready
+                else "No preparado todavía; se construirá al iniciar entrenamiento."
+            ),
+            state=DatasetState.READY if model_2_ready else DatasetState.MISSING,
+        ),
     ]
 
 

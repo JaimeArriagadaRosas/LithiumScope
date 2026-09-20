@@ -127,6 +127,7 @@ lithiumscope
 1. Entrenar modelos
 2. Realizar predicción
 3. Métricas y resultados
+4. Cargar modelo versionado
 0. Salir
 ```
 
@@ -163,9 +164,24 @@ Permite:
 - abrir el Excel de resultados;
 - listar ejecuciones históricas;
 - comparar ejecuciones anteriores;
-- identificar ejecuciones aptas como candidatas a versión;
-- generar un `release_manifest.json` local para un futuro tag;
+- identificar ejecuciones aptas como candidatas a publicación;
+- generar un manifest y un ZIP local con los modelos entrenados;
 - abrir la carpeta completa `results/`.
+
+### Opción 4 — Cargar modelo versionado
+
+Consulta los GitHub Releases del proyecto y muestra únicamente los releases que contienen un asset de modelos compatible (`*-artifacts.zip`).
+
+Al seleccionar uno:
+
+1. descarga únicamente el asset de modelos, nunca los archivos automáticos `Source code` de GitHub;
+2. verifica el SHA-256 disponible y los hashes internos de cada modelo;
+3. valida el manifest del bundle;
+4. comprueba que ambos artefactos pueden deserializarse en el entorno actual;
+5. instala Modelo 1 y Modelo 2;
+6. los registra como modelos activos para las predicciones posteriores.
+
+Un clon nuevo puede llegar al menú sin descargar los datasets de entrenamiento. Los datasets se preparan recién al elegir la opción de entrenamiento.
 
 ---
 
@@ -511,8 +527,8 @@ Antes de mostrar el menú, `preboot.py` verifica y prepara:
 - configuración YAML;
 - permisos de escritura en `data/`, `models/`, `results/` y `logs/`;
 - acelerador CPU / CUDA / MPS;
-- dataset geoquímico del Modelo 1, descargándolo si falta;
-- dataset espacial del Modelo 2, generando automáticamente los pares Sentinel-2 si faltan;
+- estado local del dataset geoquímico del Modelo 1, sin descargarlo durante el arranque;
+- estado local del dataset espacial del Modelo 2, sin construir pares Sentinel-2 durante el arranque;
 - placeholders `.gitkeep` locales.
 
 Si faltan paquetes opcionales para ejecutar una competencia completa, el preboot los informa de una sola vez y entrega el comando recomendado:

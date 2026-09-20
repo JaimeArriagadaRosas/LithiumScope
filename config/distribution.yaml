@@ -1,0 +1,10 @@
+schema_version: 1
+
+github:
+  repository: JaimeArriagadaRosas/LithiumScope
+  api_base: https://api.github.com
+  tag_prefix: lithiumscope-training_
+  asset_suffix: -artifacts.zip
+  request_timeout_seconds: 60
+  max_releases: 20
+  max_asset_size_mb: 2048

@@ -11,6 +11,7 @@ import yaml
 
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import CONFIG_DIR, MODELS_DIR
+from lithiumscope.persistence.active_models import set_active_model
 
 
 def _serializable_schema(schema: Any) -> Any:
@@ -69,4 +70,12 @@ def save_model_bundle(
         if config_path.exists():
             shutil.copy2(config_path, artifact_dir / "training_config.yaml")
 
+    set_active_model(
+        model_group,
+        model_path,
+        source={
+            "type": "local_training",
+            "run_id": stamp,
+        },
+    )
     return model_path, metadata_path
