@@ -112,6 +112,16 @@ def _identity(
             "algorithm",
             "unknown",
         ),
+        "variant_id": metadata.get(
+            "variant_id"
+        ),
+        "target_transform": metadata.get(
+            "target_transform",
+            "identity",
+        ),
+        "feature_extractor_version": metadata.get(
+            "feature_extractor_version"
+        ),
         "model_path": str(model_path),
         "model_sha256": file_sha256(
             model_path

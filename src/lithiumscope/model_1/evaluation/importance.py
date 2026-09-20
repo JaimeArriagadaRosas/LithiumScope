@@ -10,6 +10,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from lithiumscope.model_1.training.target_transform import (
+    unwrap_fitted_regressor,
+)
+
 
 def _importance_values(model) -> np.ndarray | None:
     if hasattr(model, "feature_importances_"):
@@ -24,8 +28,11 @@ def _importance_values(model) -> np.ndarray | None:
 
 def save_feature_importance(estimator, destination_table: Path, destination_figure: Path, top_n: int = 25) -> tuple[Path, Path] | None:
     try:
-        preprocessor = estimator.named_steps["preprocess"]
-        model = estimator.named_steps["model"]
+        pipeline = unwrap_fitted_regressor(
+            estimator
+        )
+        preprocessor = pipeline.named_steps["preprocess"]
+        model = pipeline.named_steps["model"]
         names = np.asarray(preprocessor.get_feature_names_out(), dtype=object)
         values = _importance_values(model)
         if values is None or len(values) != len(names):

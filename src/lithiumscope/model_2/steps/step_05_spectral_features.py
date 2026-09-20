@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
-FEATURE_EXTRACTOR_VERSION = 2
+FEATURE_EXTRACTOR_VERSION = 3
 DEFAULT_BAND_NAMES = (
     "red",
     "green",
@@ -37,6 +37,69 @@ def _summary(prefix: str, values: np.ndarray) -> dict[str, float]:
         f"{prefix}_p50": float(p50),
         f"{prefix}_p90": float(p90),
         f"{prefix}_iqr": float(p75 - p25),
+    }
+
+
+def _texture_summary(
+    prefix: str,
+    values: np.ndarray,
+) -> dict[str, float]:
+    array = np.asarray(
+        values,
+        dtype=np.float32,
+    )
+    if array.ndim != 2:
+        return {
+            f"{prefix}_texture_mean": 0.0,
+            f"{prefix}_texture_p90": 0.0,
+        }
+
+    gradients = []
+    if array.shape[0] > 1:
+        gradients.append(
+            np.abs(
+                np.diff(
+                    array,
+                    axis=0,
+                )
+            ).ravel()
+        )
+    if array.shape[1] > 1:
+        gradients.append(
+            np.abs(
+                np.diff(
+                    array,
+                    axis=1,
+                )
+            ).ravel()
+        )
+    if not gradients:
+        return {
+            f"{prefix}_texture_mean": 0.0,
+            f"{prefix}_texture_p90": 0.0,
+        }
+
+    finite = np.concatenate(
+        gradients
+    )
+    finite = finite[
+        np.isfinite(finite)
+    ]
+    if not finite.size:
+        return {
+            f"{prefix}_texture_mean": 0.0,
+            f"{prefix}_texture_p90": 0.0,
+        }
+    return {
+        f"{prefix}_texture_mean": float(
+            np.mean(finite)
+        ),
+        f"{prefix}_texture_p90": float(
+            np.percentile(
+                finite,
+                90,
+            )
+        ),
     }
 
 
@@ -89,14 +152,61 @@ def extract_spectral_features(
     features: dict[str, float] = {}
 
     for name, band in bands.items():
-        features.update(_summary(name, band))
+        features.update(
+            _summary(
+                name,
+                band,
+            )
+        )
+        features.update(
+            _texture_summary(
+                name,
+                band,
+            )
+        )
 
     required = set(DEFAULT_BAND_NAMES)
     if required.issubset(bands):
+        ndvi = _normalized_difference(
+            bands["nir"],
+            bands["red"],
+        )
+        swir_plus_red = (
+            bands["swir16"]
+            + bands["red"]
+        )
+        nir_plus_blue = (
+            bands["nir"]
+            + bands["blue"]
+        )
+        bsi = _normalized_difference(
+            swir_plus_red,
+            nir_plus_blue,
+        )
         derived = {
-            "ndvi": _normalized_difference(bands["nir"], bands["red"]),
+            "ndvi": ndvi,
             "ndmi": _normalized_difference(bands["nir"], bands["swir16"]),
             "nbr": _normalized_difference(bands["nir"], bands["swir22"]),
+            "nbr2": _normalized_difference(
+                bands["swir16"],
+                bands["swir22"],
+            ),
+            "mndwi": _normalized_difference(
+                bands["green"],
+                bands["swir16"],
+            ),
+            "bare_soil_index": bsi,
+            "dry_bare_soil_index": (
+                _normalized_difference(
+                    bands["swir16"],
+                    bands["green"],
+                )
+                - ndvi
+            ),
+            "nir_swir22_nd": _normalized_difference(
+                bands["nir"],
+                bands["swir22"],
+            ),
             "red_swir16_nd": _normalized_difference(
                 bands["red"],
                 bands["swir16"],

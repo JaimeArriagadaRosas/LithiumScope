@@ -20,6 +20,10 @@ from lithiumscope.model_1.steps.step_09_validation import (
 )
 from lithiumscope.model_1.training.factory import build_pipeline, get_algorithm
 from lithiumscope.model_1.training.optimizer import optimize_with_optuna
+from lithiumscope.model_1.training.target_transform import (
+    transform_label,
+    validate_target_transform,
+)
 from lithiumscope.runtime.console_status import Spinner
 
 logger = get_logger("model_1.cv_runner")
@@ -34,6 +38,8 @@ class CVRunResult:
     overall_metrics: dict[str, float]
     elapsed_seconds: float
     final_params: dict
+    target_transform: str = "identity"
+    variant_id: str | None = None
 
 
 def run_nested_cv(
@@ -42,6 +48,9 @@ def run_nested_cv(
     device: DeviceInfo,
     config: dict,
     checkpoint_root: Path | None = None,
+    *,
+    target_transform: str = "identity",
+    variant_id: str | None = None,
 ) -> CVRunResult:
     validation = config["validation"]
     optimization = config["optimization"]
@@ -66,6 +75,22 @@ def run_nested_cv(
         )
     )
     spec = get_algorithm(algorithm)
+    target_transform = validate_target_transform(
+        target_transform,
+        prepared.y,
+    )
+    variant_id = (
+        variant_id
+        or f"{algorithm}__{target_transform}"
+    )
+    label = (
+        spec.label
+        if target_transform == "identity"
+        else (
+            f"{spec.label} · "
+            f"{transform_label(target_transform)}"
+        )
+    )
     predictions = np.full(len(prepared.y), np.nan, dtype=float)
     folds: list[dict] = []
     started = time.perf_counter()
@@ -78,15 +103,18 @@ def run_nested_cv(
     optimize = bool(optimization.get("enabled", True))
     pruning = optimization.get("pruning", {})
     checkpoint = (
-        FoldCheckpointStore(checkpoint_root, algorithm)
+        FoldCheckpointStore(checkpoint_root, variant_id)
         if checkpoint_root is not None
         else None
     )
 
-    print(f"\n  ▶ {spec.label}")
+    print(f"\n  ▶ {label}")
     logger.info(
-        "Starting Model 1 algorithm=%s samples=%d checkpoint=%s",
+        "Starting Model 1 algorithm=%s variant=%s target_transform=%s "
+        "samples=%d checkpoint=%s",
         algorithm,
+        variant_id,
+        target_transform,
         len(prepared.y),
         checkpoint_root,
     )
@@ -135,7 +163,7 @@ def run_nested_cv(
             continue
 
         spinner = Spinner(
-            f"{spec.label} · fold {fold}/{len(outer_splits)} · preparando"
+            f"{label} · fold {fold}/{len(outer_splits)} · preparando"
         ).start()
         try:
             x_train = prepared.x.iloc[train_idx]
@@ -157,11 +185,12 @@ def run_nested_cv(
                         seed,
                         prepared.schema,
                         candidate,
+                        target_transform=target_transform,
                     )
 
                 def progress(done: int, total: int) -> None:
                     spinner.update(
-                        f"{spec.label} · fold {fold}/{len(outer_splits)} · "
+                        f"{label} · fold {fold}/{len(outer_splits)} · "
                         f"Optuna {done}/{total}"
                     )
 
@@ -199,7 +228,7 @@ def run_nested_cv(
                 )
 
             spinner.update(
-                f"{spec.label} · fold {fold}/{len(outer_splits)} · ajustando"
+                f"{label} · fold {fold}/{len(outer_splits)} · ajustando"
             )
             estimator = build_pipeline(
                 algorithm,
@@ -207,6 +236,7 @@ def run_nested_cv(
                 seed,
                 prepared.schema,
                 params,
+                target_transform=target_transform,
             )
             estimator.fit(x_train, y_train)
             fold_predictions = estimator.predict(x_test)
@@ -235,7 +265,7 @@ def run_nested_cv(
                 )
 
             spinner.succeed(
-                f"{spec.label} · fold {fold}/{len(outer_splits)} | "
+                f"{label} · fold {fold}/{len(outer_splits)} | "
                 f"RMSE={metrics['rmse']:.4f} | MAE={metrics['mae']:.4f} | "
                 f"R²={metrics['r2']:.4f}"
             )
@@ -247,7 +277,7 @@ def run_nested_cv(
             )
         except BaseException:
             spinner.fail(
-                f"{spec.label} · fold {fold}/{len(outer_splits)} interrumpido"
+                f"{label} · fold {fold}/{len(outer_splits)} interrumpido"
             )
             raise
 
@@ -266,7 +296,7 @@ def run_nested_cv(
         final_params: dict = {}
         if optimize:
             spinner = Spinner(
-                f"{spec.label} · optimización final de hiperparámetros"
+                f"{label} · optimización final de hiperparámetros"
             ).start()
             try:
                 def final_factory(candidate: dict):
@@ -276,11 +306,12 @@ def run_nested_cv(
                         seed,
                         prepared.schema,
                         candidate,
+                        target_transform=target_transform,
                     )
 
                 def final_progress(done: int, total: int) -> None:
                     spinner.update(
-                        f"{spec.label} · optimización final {done}/{total}"
+                        f"{label} · optimización final {done}/{total}"
                     )
 
                 final_splits, _ = materialize_regression_splits(
@@ -316,11 +347,11 @@ def run_nested_cv(
                     ),
                 )
                 spinner.succeed(
-                    f"{spec.label} · hiperparámetros finales listos"
+                    f"{label} · hiperparámetros finales listos"
                 )
             except BaseException:
                 spinner.fail(
-                    f"{spec.label} · optimización final interrumpida"
+                    f"{label} · optimización final interrumpida"
                 )
                 raise
         previous_elapsed = 0.0
@@ -330,7 +361,9 @@ def run_nested_cv(
         checkpoint.save_algorithm(
             {
                 "algorithm": algorithm,
-                "label": spec.label,
+                "label": label,
+                "variant_id": variant_id,
+                "target_transform": target_transform,
                 "final_params": final_params,
                 "overall_metrics": overall,
                 "elapsed_seconds": elapsed,
@@ -338,11 +371,13 @@ def run_nested_cv(
         )
 
     return CVRunResult(
-        algorithm,
-        spec.label,
-        predictions,
-        fold_table,
-        overall,
-        elapsed,
-        final_params,
+        algorithm=algorithm,
+        label=label,
+        predictions=predictions,
+        fold_table=fold_table,
+        overall_metrics=overall,
+        elapsed_seconds=elapsed,
+        final_params=final_params,
+        target_transform=target_transform,
+        variant_id=variant_id,
     )

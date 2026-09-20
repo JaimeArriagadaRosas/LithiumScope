@@ -4,6 +4,7 @@ from lithiumscope.model_2.steps.step_04_image_preprocessing import (
     preprocess_image,
 )
 from lithiumscope.model_2.steps.step_05_spectral_features import (
+    FEATURE_EXTRACTOR_VERSION,
     extract_spectral_features,
 )
 
@@ -52,3 +53,43 @@ def test_spectral_features_include_raw_statistics_and_indices():
     assert np.isclose(features["ndvi_mean"], 0.5)
     assert np.isclose(features["ndmi_mean"], 0.2)
     assert np.isclose(features["swir16_swir22_ratio_mean"], 0.8)
+
+
+
+def test_spectral_feature_extractor_v3_adds_soil_and_texture_context():
+    assert FEATURE_EXTRACTOR_VERSION == 3
+
+    red = np.asarray(
+        [
+            [1.0, 2.0, 3.0],
+            [1.0, 2.0, 3.0],
+            [1.0, 2.0, 3.0],
+        ],
+        dtype=np.float32,
+    )
+    green = np.full((3, 3), 3.0, dtype=np.float32)
+    blue = np.full((3, 3), 1.0, dtype=np.float32)
+    nir = np.full((3, 3), 6.0, dtype=np.float32)
+    swir16 = np.full((3, 3), 4.0, dtype=np.float32)
+    swir22 = np.full((3, 3), 5.0, dtype=np.float32)
+    image = np.stack(
+        [
+            red,
+            green,
+            blue,
+            nir,
+            swir16,
+            swir22,
+        ]
+    )
+
+    features = extract_spectral_features(
+        image
+    )
+
+    assert "bare_soil_index_mean" in features
+    assert "mndwi_mean" in features
+    assert "nbr2_mean" in features
+    assert "red_texture_mean" in features
+    assert features["red_texture_mean"] > 0.0
+    assert features["green_texture_mean"] == 0.0

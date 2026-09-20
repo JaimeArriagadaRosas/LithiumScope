@@ -22,6 +22,9 @@ from lithiumscope.model_2.evaluation.plots import (
     save_roc_pr,
 )
 from lithiumscope.model_2.pipeline import load_model_2_training_frame
+from lithiumscope.model_2.steps.step_05_spectral_features import (
+    FEATURE_EXTRACTOR_VERSION,
+)
 from lithiumscope.model_2.schema import feature_range_profile
 from lithiumscope.model_2.training.cv_runner import run_classification_cv
 from lithiumscope.model_2.training.factory import create_model, get_label
@@ -472,6 +475,7 @@ def run_model_2_competition(
             else "dataset_quantile"
         ),
         "metrics": winner_result.overall_metrics,
+        "feature_extractor_version": FEATURE_EXTRACTOR_VERSION,
         "operating_threshold": operating_threshold,
         "operating_threshold_objective": threshold_selection.objective,
         "operating_threshold_objective_value": threshold_selection.objective_value,
@@ -510,6 +514,7 @@ def run_model_2_competition(
             None if fixed_threshold is not None else q
         ),
         "algorithm": winner,
+        "feature_extractor_version": FEATURE_EXTRACTOR_VERSION,
         "operating_threshold": operating_threshold,
         "operating_threshold_objective": threshold_selection.objective,
         "operating_threshold_metrics": threshold_selection.metrics,

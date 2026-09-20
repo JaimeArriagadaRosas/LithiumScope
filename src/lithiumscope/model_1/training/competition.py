@@ -42,7 +42,12 @@ class CompetitionOutcome:
 def _ranking_row(result) -> dict:
     folds = result.fold_table
     return {
-        "algorithm": result.algorithm,
+        "algorithm": (
+            result.variant_id
+            or result.algorithm
+        ),
+        "base_algorithm": result.algorithm,
+        "target_transform": result.target_transform,
         "label": result.label,
         "rmse_mean": float(folds["rmse"].mean()),
         "rmse_std": float(folds["rmse"].std(ddof=0)),
@@ -56,6 +61,54 @@ def _ranking_row(result) -> dict:
         "status": "ok",
         "is_baseline": False,
     }
+
+
+def _target_experiments(
+    algorithms: list[str],
+    config: dict,
+) -> list[tuple[str, str, str]]:
+    configured = config.get(
+        "competition",
+        {},
+    ).get(
+        "target_transforms",
+        {
+            "identity": "all",
+        },
+    )
+    experiments: list[
+        tuple[str, str, str]
+    ] = []
+    for target_transform, selected in (
+        configured.items()
+    ):
+        if selected == "all":
+            selected_algorithms = set(
+                algorithms
+            )
+        else:
+            selected_algorithms = {
+                str(value)
+                for value in selected
+            }
+        for algorithm in algorithms:
+            if (
+                algorithm
+                not in selected_algorithms
+            ):
+                continue
+            variant_id = (
+                f"{algorithm}__"
+                f"{target_transform}"
+            )
+            experiments.append(
+                (
+                    variant_id,
+                    algorithm,
+                    str(target_transform),
+                )
+            )
+    return experiments
 
 
 def _rank(rows: list[dict]) -> pd.DataFrame:
@@ -108,6 +161,10 @@ def run_model_1_competition(dataset_path: Path, device: DeviceInfo) -> Competiti
     config = load_config("model_1")
     app_config = load_config("app")
     algorithms = list(config["model"]["algorithms"])
+    experiments = _target_experiments(
+        algorithms,
+        config,
+    )
     seed = int(config["validation"]["random_seed"])
     set_global_seed(
         seed,
@@ -184,25 +241,63 @@ def run_model_1_competition(dataset_path: Path, device: DeviceInfo) -> Competiti
     results: dict[str, tuple] = {}
     failed: list[str] = []
 
-    for index, algorithm in enumerate(algorithms, start=1):
-        label = get_algorithm(algorithm).label
-        print(f"\n[{index}/{len(algorithms)}] Entrenando {label}")
-        context.tracker.event("algorithm_started", algorithm=algorithm)
+    svm_prepared = None
+    for index, (
+        variant_id,
+        algorithm,
+        target_transform,
+    ) in enumerate(
+        experiments,
+        start=1,
+    ):
+        base_label = get_algorithm(
+            algorithm
+        ).label
+        display_label = (
+            base_label
+            if target_transform == "identity"
+            else (
+                f"{base_label} · "
+                f"{target_transform}"
+            )
+        )
+        print(
+            f"\n[{index}/{len(experiments)}] "
+            f"Entrenando {display_label}"
+        )
+        context.tracker.event(
+            "algorithm_started",
+            algorithm=algorithm,
+            variant_id=variant_id,
+            target_transform=target_transform,
+        )
 
         try:
-            algorithm_prepared = (
-                prepared
-                if algorithm != "svm"
-                else prepare_training_data(dataset_path, model_family="svm")
-            )
+            if algorithm == "svm":
+                if svm_prepared is None:
+                    svm_prepared = (
+                        prepare_training_data(
+                            dataset_path,
+                            model_family="svm",
+                        )
+                    )
+                algorithm_prepared = svm_prepared
+            else:
+                algorithm_prepared = prepared
+
             result = run_nested_cv(
                 algorithm_prepared,
                 algorithm,
                 device,
                 config,
                 checkpoint_root=context.checkpoints,
+                target_transform=target_transform,
+                variant_id=variant_id,
             )
-            results[algorithm] = (result, algorithm_prepared)
+            results[variant_id] = (
+                result,
+                algorithm_prepared,
+            )
             save_algorithm_artifacts(
                 algorithm_prepared,
                 result,
@@ -212,15 +307,19 @@ def run_model_1_competition(dataset_path: Path, device: DeviceInfo) -> Competiti
             context.tracker.event(
                 "algorithm_completed",
                 algorithm=algorithm,
+                variant_id=variant_id,
+                target_transform=target_transform,
                 metrics=result.overall_metrics,
             )
         except Exception as exc:
             logger.exception("Algorithm failed: %s", algorithm)
-            failed.append(algorithm)
+            failed.append(variant_id)
             rows.append(
                 {
-                    "algorithm": algorithm,
-                    "label": label,
+                    "algorithm": variant_id,
+                    "base_algorithm": algorithm,
+                    "target_transform": target_transform,
+                    "label": display_label,
                     "status": "failed",
                     "is_baseline": False,
                     "error": str(exc),
@@ -229,9 +328,14 @@ def run_model_1_competition(dataset_path: Path, device: DeviceInfo) -> Competiti
             context.tracker.event(
                 "algorithm_failed",
                 algorithm=algorithm,
+                variant_id=variant_id,
+                target_transform=target_transform,
                 error=str(exc),
             )
-            print(f"  ✗ {label} falló: {exc}")
+            print(
+                f"  ✗ {display_label} "
+                f"falló: {exc}"
+            )
 
     ranking = _rank(rows)
     ranking.to_csv(context.tables / "competition_ranking.csv", index=False)
@@ -256,18 +360,32 @@ def run_model_1_competition(dataset_path: Path, device: DeviceInfo) -> Competiti
         successful,
         context.figures / "competition_rmse.png",
     )
-    winner = str(successful.iloc[0]["algorithm"])
-    winner_result, winner_prepared = results[winner]
+    winner_variant = str(
+        successful.iloc[0]["algorithm"]
+    )
+    winner_result, winner_prepared = (
+        results[winner_variant]
+    )
+    winner_algorithm = (
+        winner_result.algorithm
+    )
+    winner_transform = (
+        winner_result.target_transform
+    )
     final_estimator = build_pipeline(
-        winner,
+        winner_algorithm,
         device,
         seed,
         winner_prepared.schema,
         winner_result.final_params,
         final_fit=True,
+        target_transform=winner_transform,
     )
 
-    print(f"\n🏆 Ganador provisional: {get_algorithm(winner).label}")
+    print(
+        f"\n🏆 Ganador provisional: "
+        f"{winner_result.label}"
+    )
     print("Entrenando ganador con todas las muestras disponibles...")
     final_estimator.fit(winner_prepared.x, winner_prepared.y)
 
@@ -288,12 +406,17 @@ def run_model_1_competition(dataset_path: Path, device: DeviceInfo) -> Competiti
 
     metadata = {
         "model_group": "model_1",
-        "algorithm": winner,
-        "label": get_algorithm(winner).label,
+        "algorithm": winner_algorithm,
+        "variant_id": winner_variant,
+        "target_transform": winner_transform,
+        "label": winner_result.label,
         "samples": len(winner_prepared.y),
         "metrics": winner_result.overall_metrics,
         "competition_primary_metric": "rmse_mean",
-        "winner_rule": "lowest mean outer-CV RMSE; tie-break MAE then R2",
+        "winner_rule": (
+            "lowest mean outer-CV RMSE across algorithm/target variants; "
+            "tie-break MAE then R2"
+        ),
         "ranking": successful.to_dict(orient="records"),
         "run_id": context.run_id,
         "device": device.accelerator,
@@ -324,7 +447,9 @@ def run_model_1_competition(dataset_path: Path, device: DeviceInfo) -> Competiti
     }
     bundle = {
         "estimator": final_estimator,
-        "algorithm": winner,
+        "algorithm": winner_algorithm,
+        "variant_id": winner_variant,
+        "target_transform": winner_transform,
         "target": winner_prepared.target,
         "schema": winner_prepared.schema,
         "oof_absolute_residual_q90": interval_q90,
@@ -332,7 +457,7 @@ def run_model_1_competition(dataset_path: Path, device: DeviceInfo) -> Competiti
     }
     model_path, metadata_path = save_model_bundle(
         "model_1",
-        f"winner_{winner}",
+        f"winner_{winner_variant}",
         bundle,
         metadata,
         run_id=context.run_id,
@@ -347,7 +472,13 @@ def run_model_1_competition(dataset_path: Path, device: DeviceInfo) -> Competiti
         _excel_sheets(prepared, ranking, results, baseline),
     )
     (context.exports / "winner.txt").write_text(
-        f"algorithm={winner}\nmodel={model_path}\nmetadata={metadata_path}\n",
+        (
+            f"variant={winner_variant}\n"
+            f"algorithm={winner_algorithm}\n"
+            f"target_transform={winner_transform}\n"
+            f"model={model_path}\n"
+            f"metadata={metadata_path}\n"
+        ),
         encoding="utf-8",
     )
     build_dashboard(
@@ -358,7 +489,9 @@ def run_model_1_competition(dataset_path: Path, device: DeviceInfo) -> Competiti
     final_state = RunState.PARTIAL if failed else RunState.COMPLETED
     context.tracker.set_state(
         final_state,
-        winner=winner,
+        winner=winner_variant,
+        winner_algorithm=winner_algorithm,
+        target_transform=winner_transform,
         primary_metric="rmse_mean",
         primary_metric_value=float(successful.iloc[0]["rmse_mean"]),
         model_path=str(model_path),
@@ -367,7 +500,7 @@ def run_model_1_competition(dataset_path: Path, device: DeviceInfo) -> Competiti
     return CompetitionOutcome(
         context.root,
         ranking,
-        winner,
+        winner_variant,
         list(results),
         failed,
     )

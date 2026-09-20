@@ -8,6 +8,7 @@ from sklearn.pipeline import Pipeline
 
 from lithiumscope.core.device import DeviceInfo
 from lithiumscope.model_1.steps.step_08_preprocessing import build_preprocessor
+from lithiumscope.model_1.training.target_transform import wrap_target_regressor
 from lithiumscope.model_1.training import (
     catboost,
     hist_gradient_boosting,
@@ -83,9 +84,10 @@ def build_pipeline(
     params: dict,
     *,
     final_fit: bool = False,
+    target_transform: str = "identity",
 ):
     preprocessor = build_preprocessor(schema, model_family=name)
-    return Pipeline(
+    pipeline = Pipeline(
         steps=[
             ("preprocess", clone(preprocessor)),
             (
@@ -99,4 +101,8 @@ def build_pipeline(
                 ),
             ),
         ]
+    )
+    return wrap_target_regressor(
+        pipeline,
+        target_transform,
     )

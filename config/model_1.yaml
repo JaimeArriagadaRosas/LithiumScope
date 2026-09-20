@@ -41,6 +41,12 @@ optimization:
     warmup_folds: 2
 
 competition:
+  target_transforms:
+    identity: all
+    log1p:
+      - random_forest
+      - svm
+      - catboost
   primary_metric: rmse
   tie_breakers:
     - mae

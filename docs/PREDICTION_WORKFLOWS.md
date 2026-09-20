@@ -153,3 +153,20 @@ estricta en al menos una y el mismo umbral de Li usado para definir la etiqueta
 de referencia. Solo un candidato que supera su gate cambia
 `models/active_models.json`. La promoción local no crea tags ni GitHub
 Releases.
+
+
+## Experimentos de mejora posteriores al gate externo
+
+Modelo 1 compara el target original para todos los algoritmos y una variante
+`log1p` únicamente para Random Forest, SVM-RBF y CatBoost. La transformación se
+ajusta dentro de cada fold y la predicción se devuelve automáticamente a ppm
+antes de calcular RMSE/MAE/R2. Por tanto, la competencia sigue comparando todos
+los candidatos en la escala científica original. Cada combinación
+algoritmo/target usa checkpoints y artefactos separados.
+
+Modelo 2 usa el extractor espectral 3. Además de las estadísticas ya existentes,
+incorpora BSI, MNDWI, NBR2, un índice de suelo seco y descriptores de textura
+por banda. Estos atributos describen contexto superficial y heterogeneidad del
+parche Sentinel-2; no se interpretan como detección directa de litio. El cambio
+de versión invalida automáticamente el cache anterior de features y queda
+registrado en metadata y en el bundle entrenado.
