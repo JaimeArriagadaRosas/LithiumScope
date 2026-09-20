@@ -1,27 +1,39 @@
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+
+
+def test_warning_capture_deduplicates_repeated_warning(tmp_path: Path):
+    env = os.environ.copy()
+    env["LITHIUMSCOPE_LOG_DIR"] = str(tmp_path)
+    code = """
+import json
 import warnings
-
-import lithiumscope.core.logger as logger_module
-
-
-def test_warning_capture_deduplicates_repeated_warning(monkeypatch, tmp_path):
-    monkeypatch.setenv(
-        "LITHIUMSCOPE_LOG_DIR",
-        str(tmp_path),
+from lithiumscope.core.logger import (
+    configure_logging,
+    finalize_logging,
+    install_warning_capture,
+    warning_summary,
+)
+configure_logging()
+install_warning_capture()
+for _ in range(5):
+    warnings.warn("repeated test warning", UserWarning)
+print(json.dumps(warning_summary()))
+finalize_logging()
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", code],
+        check=True,
+        capture_output=True,
+        text=True,
+        env=env,
+        timeout=20,
     )
-    logger_module.finalize_logging()
-    logger_module._WARNING_COUNTS.clear()
-    logger_module.configure_logging()
-    logger_module.install_warning_capture()
 
-    for _ in range(5):
-        warnings.warn(
-            "repeated test warning",
-            UserWarning,
-        )
-
-    summary = logger_module.warning_summary()
-    logger_module.finalize_logging()
-
+    summary = json.loads(result.stdout.strip())
     assert summary["unique"] == 1
     assert summary["total"] == 5
     assert summary["repeated"] == 4
