@@ -70,6 +70,10 @@ optimization:
     startup_trials: 3
     warmup_folds: 2
 
+decision_threshold:
+  objective: balanced_accuracy
+  fallback: 0.50
+
 competition:
   primary_metric: roc_auc
   tie_breakers:

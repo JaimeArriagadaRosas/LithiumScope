@@ -110,3 +110,24 @@ python -m lithiumscope.prediction.rebuild_pdf --run demonstration_YYYYMMDD_HHMMS
 
 El comando reconstruye el PDF desde los CSV, diagnósticos, manifest,
 interpretación y figuras ya guardados, y registra `report_pdf` en el manifest.
+
+
+## Validación científica de candidatos
+
+Los entrenamientos nuevos de Modelo 1 prefieren validación espacial agrupada
+cuando las coordenadas permiten construir suficientes grupos de 0,5 grados.
+Los grupos se respetan tanto en los folds externos como en la optimización
+interna de hiperparámetros. Si faltan coordenadas válidas o grupos suficientes,
+el run registra explícitamente el fallback a KFold aleatorio.
+
+Modelo 2 conserva ROC-AUC y Average Precision como métricas de ranking. La
+conversión del score a clase operativa ya no depende obligatoriamente de 0,5:
+los entrenamientos nuevos seleccionan un `operating_threshold` usando únicamente
+predicciones OOF del conjunto de entrenamiento y optimizando Balanced Accuracy.
+El threshold, su métrica y sus resultados quedan guardados en metadata y en el
+bundle del modelo. Los modelos históricos que no contienen este campo mantienen
+0,5 como fallback compatible.
+
+La prioridad exploratoria `baja/media/alta` y la clase binaria operacional son
+conceptos distintos. Ninguna de las dos convierte el score de Modelo 2 en
+probabilidad de yacimiento o concentración de litio.

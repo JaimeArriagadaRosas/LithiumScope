@@ -14,6 +14,7 @@ from lithiumscope.core.run_resume import build_training_signature
 from lithiumscope.core.states import RunState
 from lithiumscope.datasets.manifest import build_tabular_manifest, write_manifest
 from lithiumscope.model_2.evaluation.baseline import evaluate_prior_baseline
+from lithiumscope.model_2.evaluation.thresholds import select_operating_threshold
 from lithiumscope.model_2.evaluation.maps import save_spatial_score_map
 from lithiumscope.model_2.evaluation.plots import (
     save_competition_chart,
@@ -359,6 +360,46 @@ def run_model_2_competition(
     print(f"\n🏆 Ganador de esta ejecución Modelo 2: {get_label(winner)}")
 
     winner_result = results[winner]
+    threshold_cfg = cfg.get("decision_threshold", {})
+    threshold_objective = str(
+        threshold_cfg.get("objective", "balanced_accuracy")
+    )
+    threshold_fallback = float(
+        threshold_cfg.get("fallback", 0.5)
+    )
+    threshold_selection = select_operating_threshold(
+        y.to_numpy(),
+        winner_result.probabilities,
+        objective=threshold_objective,
+        fallback=threshold_fallback,
+    )
+    operating_threshold = float(
+        threshold_selection.threshold
+    )
+    print(
+        "Umbral operativo Modelo 2: "
+        f"{operating_threshold:.4f} "
+        f"| {threshold_objective} OOF="
+        f"{threshold_selection.objective_value:.4f}"
+    )
+    pd.DataFrame(
+        [
+            {
+                "threshold": operating_threshold,
+                "objective": threshold_selection.objective,
+                "objective_value": threshold_selection.objective_value,
+                "candidate_count": threshold_selection.candidate_count,
+                **{
+                    f"metric_{key}": value
+                    for key, value in threshold_selection.metrics.items()
+                },
+            }
+        ]
+    ).to_csv(
+        context.tables / "winner_operating_threshold.csv",
+        index=False,
+    )
+
     final_calibration_cv = None
     if winner == "svm_rbf":
         from lithiumscope.model_2.training.cv_runner import _materialize_splits
@@ -431,6 +472,10 @@ def run_model_2_competition(
             else "dataset_quantile"
         ),
         "metrics": winner_result.overall_metrics,
+        "operating_threshold": operating_threshold,
+        "operating_threshold_objective": threshold_selection.objective,
+        "operating_threshold_objective_value": threshold_selection.objective_value,
+        "operating_threshold_metrics": threshold_selection.metrics,
         "competition_primary_metric": "roc_auc_mean",
         "winner_rule": (
             "highest mean ROC-AUC; tie-break Average Precision then "
@@ -465,6 +510,9 @@ def run_model_2_competition(
             None if fixed_threshold is not None else q
         ),
         "algorithm": winner,
+        "operating_threshold": operating_threshold,
+        "operating_threshold_objective": threshold_selection.objective,
+        "operating_threshold_metrics": threshold_selection.metrics,
         "applicability_profile": profile,
     }
     model_path, metadata_path = save_model_bundle(
@@ -503,6 +551,9 @@ def run_model_2_competition(
         release_gate_pass=release_gate_pass,
         roc_auc_gain_over_baseline=roc_gain,
         average_precision_gain_over_baseline=ap_gain,
+        operating_threshold=operating_threshold,
+        operating_threshold_objective=threshold_selection.objective,
+        operating_threshold_objective_value=threshold_selection.objective_value,
     )
     return CompetitionOutcome(
         context.root,

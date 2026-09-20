@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
-import importlib.util
 import json
 from pathlib import Path
 import platform
@@ -27,39 +26,18 @@ from lithiumscope.core.paths import (
 from lithiumscope.datasets.provisioner import inspect_required_datasets, provision_required_datasets
 from lithiumscope.datasets.status import DatasetStatus
 from lithiumscope.core.visualization import configure_headless_matplotlib
+from lithiumscope.runtime.dependencies import (
+    CORE_DEPENDENCIES,
+    DEV_DEPENDENCIES,
+    IMAGERY_DEPENDENCIES,
+    ML_DEPENDENCIES,
+    DependencyStatus,
+    dependency_status,
+    ensure_runtime_dependencies,
+    missing_names,
+)
 
 logger = get_logger("runtime.preboot")
-
-CORE_DEPENDENCIES = {
-    "joblib": "joblib",
-    "matplotlib": "matplotlib",
-    "numpy": "numpy",
-    "openpyxl": "openpyxl",
-    "pandas": "pandas",
-    "PyYAML": "yaml",
-    "requests": "requests",
-    "ReportLab": "reportlab",
-    "scikit-learn": "sklearn",
-}
-
-ML_DEPENDENCIES = {
-    "CatBoost": "catboost",
-    "Optuna": "optuna",
-    "PyTorch": "torch",
-    "PyTorch TabNet": "pytorch_tabnet",
-    "XGBoost": "xgboost",
-}
-
-IMAGERY_DEPENDENCIES = {
-    "Pillow": "PIL",
-    "Rasterio": "rasterio",
-    "pystac-client": "pystac_client",
-}
-
-DEV_DEPENDENCIES = {
-    "pytest": "pytest",
-    "ruff": "ruff",
-}
 
 REQUIRED_CONFIGS = (
     "app.yaml",
@@ -74,13 +52,6 @@ REQUIRED_DATASETS = {
     "model_2_sentinel2",
 }
 MIN_PYTHON = (3, 11)
-
-
-@dataclass(frozen=True)
-class DependencyStatus:
-    name: str
-    import_name: str
-    available: bool
 
 
 @dataclass
@@ -101,6 +72,7 @@ class PrebootReport:
     virtualenv_active: bool = False
     visualization_backend: str = "unknown"
     report_path: str = ""
+    dependency_repair: dict = field(default_factory=dict)
 
     @property
     def core_ready(self) -> bool:
@@ -157,24 +129,13 @@ class PrebootReport:
 def _dependency_status(
     mapping: dict[str, str],
 ) -> list[DependencyStatus]:
-    return [
-        DependencyStatus(
-            name,
-            import_name,
-            importlib.util.find_spec(import_name) is not None,
-        )
-        for name, import_name in mapping.items()
-    ]
+    return dependency_status(mapping)
 
 
 def _missing(
     items: list[DependencyStatus],
 ) -> list[str]:
-    return [
-        item.name
-        for item in items
-        if not item.available
-    ]
+    return missing_names(items)
 
 
 def _virtualenv_active() -> bool:
@@ -331,6 +292,9 @@ def run_preboot(
     ensure_runtime_directories()
     configure_logging()
 
+    repair = ensure_runtime_dependencies(
+        verbose=verbose,
+    )
     removed = cleanup_gitkeep_placeholders()
     python_ok = sys.version_info >= MIN_PYTHON
     configs_ok = _configs_available()
@@ -369,6 +333,11 @@ def run_preboot(
             f"  Directorios        "
             f"[{'OK' if writable_ok else 'ERROR'}]"
         )
+        if repair.attempted:
+            print(
+                "  Dependencias       "
+                f"[{'REPARADAS' if repair.success else 'ERROR'}]"
+            )
         _print_group("Core", core)
         _print_group("ML completo", ml)
         _print_group("Imágenes", imagery)
@@ -435,6 +404,7 @@ def run_preboot(
         accelerator_name=device.name,
         virtualenv_active=virtualenv_active,
         visualization_backend=visualization_backend,
+        dependency_repair=repair.to_dict(),
     )
     _save_report(report)
 

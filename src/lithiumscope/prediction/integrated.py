@@ -99,6 +99,9 @@ def _score_model_2_cases(
             frame[column] = 0.0
 
         score = float(bundle["estimator"].predict_proba(frame[expected])[0, 1])
+        operating_threshold = float(
+            bundle.get("operating_threshold", 0.5)
+        )
         priority = "alta" if score >= 0.70 else "media" if score >= 0.40 else "baja"
         applicability = out_of_range_fraction(
             frame[expected],
@@ -110,6 +113,10 @@ def _score_model_2_cases(
             "image": str(image_path),
             "prospectivity_score": score,
             "priority": priority,
+            "operating_positive": bool(
+                score >= operating_threshold
+            ),
+            "operating_threshold": operating_threshold,
             "algorithm": bundle.get("algorithm", "unknown"),
             "out_of_training_range_fraction": float(applicability),
             "applicability_warning": "OUT_OF_DOMAIN" if applicability > 0.25 else "OK",
@@ -127,6 +134,12 @@ def _score_model_2_cases(
         "ready_cases": len(records),
         "requested_cases": len(cases),
         "failed_cases": int(len(cases) - len(records)),
+        "operating_threshold": float(
+            bundle.get("operating_threshold", 0.5)
+        ),
+        "operating_threshold_objective": bundle.get(
+            "operating_threshold_objective"
+        ),
     }
     return pd.DataFrame(records), diagnostics
 
@@ -335,7 +348,7 @@ def _run_integrated(
     overlap_audit: dict | None = None,
 ) -> IntegratedPredictionResult:
     prediction_cfg = load_config("prediction")["interpretation"]
-    probability_threshold = float(
+    fallback_probability_threshold = float(
         prediction_cfg["model_2_classification_threshold"]
     )
     local_log_path = session.root / "prediction.log"
@@ -359,6 +372,12 @@ def _run_integrated(
             model_2_identity["run_id"],
         )
         lithium_threshold = float(model_2_bundle["threshold_ppm"])
+        probability_threshold = float(
+            model_2_bundle.get(
+                "operating_threshold",
+                fallback_probability_threshold,
+            )
+        )
 
         raw_m1 = ensure_case_ids(model_1_input)
         logger.info(

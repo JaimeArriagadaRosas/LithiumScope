@@ -298,6 +298,27 @@ def run_model_1_competition(dataset_path: Path, device: DeviceInfo) -> Competiti
         "run_id": context.run_id,
         "device": device.accelerator,
         "device_name": device.name,
+        "validation_strategy": (
+            str(
+                winner_result.fold_table[
+                    "validation_strategy"
+                ].iloc[0]
+            )
+            if (
+                not winner_result.fold_table.empty
+                and "validation_strategy"
+                in winner_result.fold_table.columns
+            )
+            else "unknown"
+        ),
+        "spatial_groups": (
+            int(winner_prepared.groups.nunique())
+            if winner_prepared.groups is not None
+            else 0
+        ),
+        "spatial_group_degrees": config["validation"].get(
+            "spatial_group_degrees"
+        ),
         "oof_absolute_residual_q90": interval_q90,
         "dataset_sha256": dataset_manifest.source_sha256,
     }

@@ -71,8 +71,13 @@ def optimize_with_optuna(
     def objective(trial):
         params = parameter_space(trial)
         rmses: list[float] = []
-        for step, (train_idx, valid_idx) in enumerate(
+        split_iterator = (
             cv.split(x, y)
+            if hasattr(cv, "split")
+            else iter(cv)
+        )
+        for step, (train_idx, valid_idx) in enumerate(
+            split_iterator
         ):
             estimator = estimator_factory(params)
             estimator.fit(

@@ -26,6 +26,8 @@ validation:
   outer_folds: 5
   inner_folds: 5
   random_seed: 42
+  prefer_spatial_groups: true
+  spatial_group_degrees: 0.5
 
 optimization:
   enabled: true

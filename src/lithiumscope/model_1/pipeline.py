@@ -17,6 +17,7 @@ from lithiumscope.model_1.steps.step_05_target_filtering import filter_target
 from lithiumscope.model_1.steps.step_06_category_cleaning import clean_categories
 from lithiumscope.model_1.steps.step_07_feature_engineering import add_geochemical_features
 from lithiumscope.model_1.steps.step_08_preprocessing import FeatureSchema, select_feature_schema
+from lithiumscope.model_1.steps.step_09_validation import build_spatial_groups
 
 logger = get_logger("model_1.pipeline")
 
@@ -30,6 +31,7 @@ class PreparedModel1Data:
     x: pd.DataFrame
     y: pd.Series
     audit: PipelineAudit
+    groups: pd.Series | None = None
 
 
 def prepare_training_data(path: Path, model_family: str) -> PreparedModel1Data:
@@ -86,9 +88,45 @@ def prepare_training_data(path: Path, model_family: str) -> PreparedModel1Data:
 
     x = frame[columns].copy()
     y = pd.to_numeric(frame[target], errors="coerce")
-    logger.info("Prepared Model 1 matrix: X=%s y=%s", x.shape, y.shape)
+    validation_cfg = config["validation"]
+    groups = None
+    if bool(
+        validation_cfg.get(
+            "prefer_spatial_groups",
+            False,
+        )
+    ):
+        groups = build_spatial_groups(
+            frame,
+            degrees=float(
+                validation_cfg.get(
+                    "spatial_group_degrees",
+                    0.5,
+                )
+            ),
+        )
+    logger.info(
+        "Prepared Model 1 matrix: X=%s y=%s spatial_groups=%s",
+        x.shape,
+        y.shape,
+        groups.nunique() if groups is not None else 0,
+    )
     print(f"    ✓ Matriz de entrenamiento: X={x.shape}, y={y.shape}")
-    return PreparedModel1Data(raw_frame, frame, target, schema, x, y, audit)
+    if groups is not None:
+        print(
+            "    ✓ Grupos espaciales para validación: "
+            f"{groups.nunique()}"
+        )
+    return PreparedModel1Data(
+        raw_frame=raw_frame,
+        frame=frame,
+        target=target,
+        schema=schema,
+        x=x,
+        y=y,
+        audit=audit,
+        groups=groups,
+    )
 
 
 def prepare_prediction_data(frame: pd.DataFrame, model_family: str, schema: FeatureSchema) -> pd.DataFrame:

@@ -1033,3 +1033,10 @@ predeterminado del sistema cuando la ejecución finaliza.
 
 Consulte `docs/PREDICTION_WORKFLOWS.md` para el contrato científico y los
 artefactos generados.
+
+
+### Reparación automática de dependencias
+
+`python main.py` verifica y repara dependencias runtime faltantes dentro de un
+entorno virtual antes de cargar la aplicación. Solo instala extras ML/imagery
+cuando son necesarios y no modifica automáticamente el Python global.

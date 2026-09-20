@@ -10,9 +10,14 @@ import pandas as pd
 from lithiumscope.core.checkpoints import FoldCheckpointStore
 from lithiumscope.core.device import DeviceInfo
 from lithiumscope.core.logger import get_logger
-from lithiumscope.core.scientific_checks import assert_oof_complete
+from lithiumscope.core.scientific_checks import (
+    assert_group_isolation,
+    assert_oof_complete,
+)
 from lithiumscope.model_1.evaluation.metrics import regression_metrics
-from lithiumscope.model_1.steps.step_09_validation import nested_cv
+from lithiumscope.model_1.steps.step_09_validation import (
+    materialize_regression_splits,
+)
 from lithiumscope.model_1.training.factory import build_pipeline, get_algorithm
 from lithiumscope.model_1.training.optimizer import optimize_with_optuna
 from lithiumscope.runtime.console_status import Spinner
@@ -41,10 +46,24 @@ def run_nested_cv(
     validation = config["validation"]
     optimization = config["optimization"]
     seed = int(validation["random_seed"])
-    outer, inner = nested_cv(
-        int(validation["outer_folds"]),
-        int(validation["inner_folds"]),
-        seed,
+    groups = (
+        prepared.groups
+        if bool(
+            validation.get(
+                "prefer_spatial_groups",
+                False,
+            )
+        )
+        else None
+    )
+    outer_splits, outer_strategy = (
+        materialize_regression_splits(
+            prepared.x,
+            prepared.y,
+            groups,
+            int(validation["outer_folds"]),
+            seed,
+        )
     )
     spec = get_algorithm(algorithm)
     predictions = np.full(len(prepared.y), np.nan, dtype=float)
@@ -72,10 +91,24 @@ def run_nested_cv(
         checkpoint_root,
     )
 
+    print(
+        "    Validación externa: "
+        f"{outer_strategy}"
+    )
+
     for fold, (train_idx, test_idx) in enumerate(
-        outer.split(prepared.x),
+        outer_splits,
         start=1,
     ):
+        if (
+            groups is not None
+            and outer_strategy == "group_kfold_spatial"
+        ):
+            assert_group_isolation(
+                train_idx,
+                test_idx,
+                groups,
+            )
         cached = checkpoint.load_fold(fold, test_idx) if checkpoint else None
         if cached is not None:
             fold_predictions = np.asarray(
@@ -90,24 +123,30 @@ def run_nested_cv(
                     **metrics,
                     "n_train": len(train_idx),
                     "n_test": len(test_idx),
+                    "validation_strategy": outer_strategy,
                     "resumed": True,
                 }
             )
             print(
-                f"      Fold externo {fold}/{outer.get_n_splits()} "
+                f"      Fold externo {fold}/{len(outer_splits)} "
                 f"↻ reutilizado | RMSE={metrics['rmse']:.4f} | "
                 f"MAE={metrics['mae']:.4f} | R²={metrics['r2']:.4f}"
             )
             continue
 
         spinner = Spinner(
-            f"{spec.label} · fold {fold}/{outer.get_n_splits()} · preparando"
+            f"{spec.label} · fold {fold}/{len(outer_splits)} · preparando"
         ).start()
         try:
             x_train = prepared.x.iloc[train_idx]
             y_train = prepared.y.iloc[train_idx]
             x_test = prepared.x.iloc[test_idx]
             y_test = prepared.y.iloc[test_idx]
+            groups_train = (
+                groups.iloc[train_idx]
+                if groups is not None
+                else None
+            )
 
             params: dict = {}
             if optimize:
@@ -122,16 +161,23 @@ def run_nested_cv(
 
                 def progress(done: int, total: int) -> None:
                     spinner.update(
-                        f"{spec.label} · fold {fold}/{outer.get_n_splits()} · "
+                        f"{spec.label} · fold {fold}/{len(outer_splits)} · "
                         f"Optuna {done}/{total}"
                     )
 
+                inner_splits, _ = materialize_regression_splits(
+                    x_train,
+                    y_train,
+                    groups_train,
+                    int(validation["inner_folds"]),
+                    seed + fold,
+                )
                 params = optimize_with_optuna(
                     factory,
                     spec.module.optuna_space,
                     x_train,
                     y_train,
-                    inner,
+                    inner_splits,
                     trials,
                     progress_callback=progress,
                     storage_path=(
@@ -153,7 +199,7 @@ def run_nested_cv(
                 )
 
             spinner.update(
-                f"{spec.label} · fold {fold}/{outer.get_n_splits()} · ajustando"
+                f"{spec.label} · fold {fold}/{len(outer_splits)} · ajustando"
             )
             estimator = build_pipeline(
                 algorithm,
@@ -175,6 +221,7 @@ def run_nested_cv(
                     **metrics,
                     "n_train": len(train_idx),
                     "n_test": len(test_idx),
+                    "validation_strategy": outer_strategy,
                     "resumed": False,
                 }
             )
@@ -188,7 +235,7 @@ def run_nested_cv(
                 )
 
             spinner.succeed(
-                f"{spec.label} · fold {fold}/{outer.get_n_splits()} | "
+                f"{spec.label} · fold {fold}/{len(outer_splits)} | "
                 f"RMSE={metrics['rmse']:.4f} | MAE={metrics['mae']:.4f} | "
                 f"R²={metrics['r2']:.4f}"
             )
@@ -200,7 +247,7 @@ def run_nested_cv(
             )
         except BaseException:
             spinner.fail(
-                f"{spec.label} · fold {fold}/{outer.get_n_splits()} interrumpido"
+                f"{spec.label} · fold {fold}/{len(outer_splits)} interrumpido"
             )
             raise
 
@@ -236,12 +283,19 @@ def run_nested_cv(
                         f"{spec.label} · optimización final {done}/{total}"
                     )
 
+                final_splits, _ = materialize_regression_splits(
+                    prepared.x,
+                    prepared.y,
+                    groups,
+                    int(validation["inner_folds"]),
+                    seed + 5000,
+                )
                 final_params = optimize_with_optuna(
                     final_factory,
                     spec.module.optuna_space,
                     prepared.x,
                     prepared.y,
-                    inner,
+                    final_splits,
                     trials,
                     progress_callback=final_progress,
                     storage_path=(

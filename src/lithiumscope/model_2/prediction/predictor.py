@@ -32,6 +32,10 @@ def score_model_2_image(
         frame[column] = 0.0
 
     score = float(bundle["estimator"].predict_proba(frame[expected])[0, 1])
+    operating_threshold = float(
+        bundle.get("operating_threshold", 0.5)
+    )
+    operating_positive = score >= operating_threshold
     label = "alta" if score >= 0.70 else "media" if score >= 0.40 else "baja"
     applicability = out_of_range_fraction(
         frame[expected],
@@ -42,6 +46,8 @@ def score_model_2_image(
         "image": str(path),
         "prospectivity_score": score,
         "priority": label,
+        "operating_positive": bool(operating_positive),
+        "operating_threshold": operating_threshold,
         "algorithm": bundle.get("algorithm", "unknown"),
         "out_of_training_range_fraction": applicability,
         "applicability_warning": "OUT_OF_DOMAIN" if applicability > 0.25 else "OK",
@@ -53,6 +59,10 @@ def score_model_2_image(
         "out_of_training_range_fraction": float(applicability),
         "threshold_ppm": bundle.get("threshold_ppm"),
         "target_quantile": bundle.get("target_quantile"),
+        "operating_threshold": operating_threshold,
+        "operating_threshold_objective": bundle.get(
+            "operating_threshold_objective"
+        ),
     }
     return payload, diagnostics
 
