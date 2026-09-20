@@ -12,6 +12,7 @@ import pandas as pd
 from lithiumscope.core.config import load_config
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.logger import get_logger, run_log
+from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.core.reproducibility import runtime_fingerprint
 from lithiumscope.model_1.prediction.input_parser import load_prediction_input
 from lithiumscope.model_1.prediction.predictor import predict_model_1_frame
@@ -313,73 +314,122 @@ def _run_integrated(
     overlap_audit: dict | None = None,
 ) -> IntegratedPredictionResult:
     prediction_cfg = load_config("prediction")["interpretation"]
-    probability_threshold = float(prediction_cfg["model_2_classification_threshold"])
-
-    model_1_bundle, _, model_1_identity = load_model_with_identity("model_1")
-    model_2_bundle, _, model_2_identity = load_model_with_identity("model_2")
-    lithium_threshold = float(model_2_bundle["threshold_ppm"])
-
-    raw_m1 = ensure_case_ids(model_1_input)
-    model_1_predictions, prediction_diagnostics = predict_model_1_frame(
-        raw_m1,
-        bundle=model_1_bundle,
+    probability_threshold = float(
+        prediction_cfg["model_2_classification_threshold"]
     )
-    model_1_predictions["scientific_interpretation"] = model_1_predictions.apply(
-        lambda row: model_1_case_text(row, lithium_threshold_ppm=lithium_threshold),
-        axis=1,
-    )
-    model_1_diagnostics = {
-        **prediction_diagnostics,
-        "input_rows": len(raw_m1),
-        "missing_expected_columns": _missing_expected_columns(raw_m1, model_1_bundle["schema"]),
-    }
-
-    model_2_predictions, model_2_diagnostics = _score_model_2_cases(
-        model_2_cases,
-        model_2_bundle,
-    )
-    paired = pair_model_outputs(model_1_predictions, model_2_predictions)
-    correlations = correlation_table(paired)
-    concordance = concordance_table(
-        paired,
-        lithium_threshold_ppm=lithium_threshold,
-        model_2_probability_threshold=probability_threshold,
-    )
-    if not concordance.empty:
-        concordance["scientific_interpretation"] = concordance.apply(
-            integrated_case_text,
-            axis=1,
-        )
-
-    model_1_metrics = model_1_external_metrics(model_1_predictions)
-    model_2_metrics = model_2_external_metrics(
-        model_2_predictions,
-        threshold_ppm=lithium_threshold,
-        probability_threshold=probability_threshold,
-    )
-    training_vs_external = training_vs_external_table(
-        model_1_identity,
-        model_2_identity,
-        model_1_metrics,
-        model_2_metrics,
-    )
-    interpretation = build_overall_interpretation(
-        model_1_metrics=model_1_metrics,
-        model_2_metrics=model_2_metrics,
-        correlations=correlations,
-        concordance=concordance,
-        overlap_audit=overlap_audit,
-    )
+    local_log_path = session.root / "prediction.log"
 
     with run_log("prediction", session.run_id) as log_path:
         logger.info(
-            "Integrated prediction run=%s mode=%s model1_cases=%d model2_cases=%d paired=%d",
+            "Integrated prediction started run=%s mode=%s",
             session.run_id,
             session.mode,
-            len(model_1_predictions),
-            len(model_2_predictions),
-            len(paired),
         )
+
+        model_1_bundle, _, model_1_identity = load_model_with_identity(
+            "model_1"
+        )
+        model_2_bundle, _, model_2_identity = load_model_with_identity(
+            "model_2"
+        )
+        logger.info(
+            "Models loaded model_1=%s model_2=%s",
+            model_1_identity["run_id"],
+            model_2_identity["run_id"],
+        )
+        lithium_threshold = float(model_2_bundle["threshold_ppm"])
+
+        raw_m1 = ensure_case_ids(model_1_input)
+        logger.info(
+            "Model 1 prediction stage started cases=%d",
+            len(raw_m1),
+        )
+        model_1_predictions, prediction_diagnostics = (
+            predict_model_1_frame(
+                raw_m1,
+                bundle=model_1_bundle,
+            )
+        )
+        model_1_predictions["scientific_interpretation"] = (
+            model_1_predictions.apply(
+                lambda row: model_1_case_text(
+                    row,
+                    lithium_threshold_ppm=lithium_threshold,
+                ),
+                axis=1,
+            )
+        )
+        model_1_diagnostics = {
+            **prediction_diagnostics,
+            "input_rows": len(raw_m1),
+            "missing_expected_columns": _missing_expected_columns(
+                raw_m1,
+                model_1_bundle["schema"],
+            ),
+        }
+        logger.info(
+            "Model 1 prediction stage completed cases=%d ood_rows=%s",
+            len(model_1_predictions),
+            model_1_diagnostics.get("out_of_domain_rows"),
+        )
+
+        logger.info(
+            "Model 2 prediction stage started requested_cases=%d",
+            len(model_2_cases),
+        )
+        model_2_predictions, model_2_diagnostics = _score_model_2_cases(
+            model_2_cases,
+            model_2_bundle,
+        )
+        logger.info(
+            "Model 2 prediction stage completed ready=%d failed=%d",
+            len(model_2_predictions),
+            model_2_diagnostics["failed_cases"],
+        )
+
+        paired = pair_model_outputs(
+            model_1_predictions,
+            model_2_predictions,
+        )
+        correlations = correlation_table(paired)
+        concordance = concordance_table(
+            paired,
+            lithium_threshold_ppm=lithium_threshold,
+            model_2_probability_threshold=probability_threshold,
+        )
+        if not concordance.empty:
+            concordance["scientific_interpretation"] = concordance.apply(
+                integrated_case_text,
+                axis=1,
+            )
+
+        model_1_metrics = model_1_external_metrics(
+            model_1_predictions
+        )
+        model_2_metrics = model_2_external_metrics(
+            model_2_predictions,
+            threshold_ppm=lithium_threshold,
+            probability_threshold=probability_threshold,
+        )
+        training_vs_external = training_vs_external_table(
+            model_1_identity,
+            model_2_identity,
+            model_1_metrics,
+            model_2_metrics,
+        )
+        interpretation = build_overall_interpretation(
+            model_1_metrics=model_1_metrics,
+            model_2_metrics=model_2_metrics,
+            correlations=correlations,
+            concordance=concordance,
+            overlap_audit=overlap_audit,
+        )
+        logger.info(
+            "Cross-model analysis completed paired=%d correlations=%d",
+            len(paired),
+            len(correlations),
+        )
+
         report_path, workbook_path, manifest_path = _write_outputs(
             session=session,
             model_1_predictions=model_1_predictions,
@@ -397,8 +447,16 @@ def _run_integrated(
             input_info=input_info,
             overlap_audit=overlap_audit,
             interpretation=interpretation,
-            run_log_path=log_path,
+            run_log_path=local_log_path,
         )
+        logger.info(
+            "Integrated prediction finished run=%s report=%s workbook=%s",
+            session.run_id,
+            report_path,
+            workbook_path,
+        )
+
+    shutil.copy2(log_path, local_log_path)
 
     return IntegratedPredictionResult(
         session=session,
@@ -415,25 +473,44 @@ def _run_integrated(
         manifest_path=manifest_path,
     )
 
-
-def run_complete_prediction(model_1_path: Path, model_2_path: Path) -> IntegratedPredictionResult:
+def run_complete_prediction(
+    model_1_path: Path,
+    model_2_path: Path,
+) -> IntegratedPredictionResult:
     session = PredictionSession.create("complete")
-    model_1_input = load_prediction_input(model_1_path)
-    model_1_input = ensure_case_ids(model_1_input)
 
-    placeholder = pd.DataFrame()
+    model_1_snapshot = (
+        session.inputs / f"model_1_input{model_1_path.suffix.lower()}"
+    )
+    model_2_snapshot = (
+        session.inputs / f"model_2_input{model_2_path.suffix.lower()}"
+    )
+    shutil.copy2(model_1_path, model_1_snapshot)
+    shutil.copy2(model_2_path, model_2_snapshot)
+
+    model_1_input = ensure_case_ids(
+        load_prediction_input(model_1_snapshot)
+    )
     model_2_cases, model_2_input_info = _model_2_cases_from_input(
-        model_2_path,
+        model_2_snapshot,
         session,
-        model_1_input if not model_1_input.empty else placeholder,
+        model_1_input,
     )
     input_info = {
         "model_1": {
-            "path": str(model_1_path),
-            "sha256": file_sha256(model_1_path),
+            "original_path": str(model_1_path),
+            "snapshot_path": str(model_1_snapshot),
+            "sha256": file_sha256(model_1_snapshot),
         },
-        "model_2": model_2_input_info,
-        "pairing_rule": "case_id; single image pairs automatically only when Modelo 1 has one row",
+        "model_2": {
+            **model_2_input_info,
+            "original_path": str(model_2_path),
+            "snapshot_path": str(model_2_snapshot),
+        },
+        "pairing_rule": (
+            "case_id; una imagen única se empareja automáticamente "
+            "solo cuando Modelo 1 contiene un único caso"
+        ),
     }
     return _run_integrated(
         session=session,
@@ -442,10 +519,11 @@ def run_complete_prediction(model_1_path: Path, model_2_path: Path) -> Integrate
         input_info=input_info,
     )
 
-
 def run_automatic_demonstration() -> IntegratedPredictionResult:
     session = PredictionSession.create("demonstration")
     cases = ensure_case_ids(load_demonstration_cases())
+    demo_snapshot = session.inputs / "demonstration_cases.csv"
+    cases.to_csv(demo_snapshot, index=False)
     overlap = audit_demo_overlap(cases)
     demo_cfg = load_config("prediction")["demonstration"]
     imagery = prepare_case_images(
@@ -456,7 +534,10 @@ def run_automatic_demonstration() -> IntegratedPredictionResult:
     input_info = {
         "demonstration": {
             "cases_path": str(demo_cfg["cases_path"]),
-            "cases_sha256": file_sha256(Path(__file__).resolve().parents[3] / str(demo_cfg["cases_path"])),
+            "snapshot_path": str(demo_snapshot),
+            "cases_sha256": file_sha256(
+                PROJECT_ROOT / str(demo_cfg["cases_path"])
+            ),
             "source_name": demo_cfg["source_name"],
             "source_repository": demo_cfg["source_repository"],
             "source_commit": demo_cfg["source_commit"],

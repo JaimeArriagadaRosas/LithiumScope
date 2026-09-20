@@ -13,6 +13,8 @@ def test_versioned_demo_fixture_has_multiple_external_cases():
     assert frame["Li_icpms"].notna().all()
     assert frame["Longitude"].notna().all()
     assert frame["Latitude"].notna().all()
+    assert frame["Longitude (X)"].equals(frame["Longitude"])
+    assert frame["Latitude (Y)"].equals(frame["Latitude"])
     assert frame["source_dataset"].str.contains("andes_paleoelevation").all()
 
 

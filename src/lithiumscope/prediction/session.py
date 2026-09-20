@@ -25,6 +25,7 @@ class PredictionSession:
     root: Path
     model_1: Path
     model_2: Path
+    inputs: Path
     cross_model: Path
     figures: Path
 
@@ -34,11 +35,21 @@ class PredictionSession:
         root = RESULTS_DIR / "predictions" / run_id
         model_1 = root / "model_1"
         model_2 = root / "model_2"
+        inputs = root / "inputs"
         cross_model = root / "cross_model"
         figures = cross_model / "figures"
-        for path in (model_1, model_2, cross_model, figures):
+        for path in (model_1, model_2, inputs, cross_model, figures):
             path.mkdir(parents=True, exist_ok=True)
-        return cls(run_id, mode, root, model_1, model_2, cross_model, figures)
+        return cls(
+            run_id,
+            mode,
+            root,
+            model_1,
+            model_2,
+            inputs,
+            cross_model,
+            figures,
+        )
 
 
 def load_model_with_identity(model_group: str):
