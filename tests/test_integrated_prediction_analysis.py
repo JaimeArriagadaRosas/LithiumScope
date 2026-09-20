@@ -5,7 +5,11 @@ from lithiumscope.prediction.analysis import (
     correlation_table,
     pair_model_outputs,
 )
-from lithiumscope.prediction.interpretation import integrated_case_text
+from lithiumscope.prediction.interpretation import (
+    build_overall_interpretation,
+    integrated_case_text,
+    model_2_case_text,
+)
 
 
 def _paired_inputs():
@@ -73,3 +77,47 @@ def test_integrated_interpretation_distinguishes_divergence():
 
     assert "divergen" in text.lower()
     assert "error" not in text.lower()
+
+
+def test_model_2_human_output_changes_with_priority():
+    high = model_2_case_text(
+        pd.Series(
+            {
+                "prospectivity_score": 0.82,
+                "priority": "alta",
+                "out_of_training_range_fraction": 0.1,
+            }
+        )
+    )
+    low = model_2_case_text(
+        pd.Series(
+            {
+                "prospectivity_score": 0.18,
+                "priority": "baja",
+                "out_of_training_range_fraction": 0.1,
+            }
+        )
+    )
+
+    assert "semejanza relativamente alta" in high
+    assert "semejanza relativamente baja" in low
+    assert high != low
+
+
+def test_external_demo_interpretation_warns_small_sample():
+    text = build_overall_interpretation(
+        model_1_metrics={"rmse": 5.0, "mae": 4.0, "r2": 0.4},
+        model_2_metrics={
+            "roc_auc": 0.6,
+            "average_precision": 0.4,
+            "balanced_accuracy": 0.55,
+        },
+        correlations=pd.DataFrame(),
+        concordance=pd.DataFrame(),
+        model_1_case_count=10,
+        model_2_case_count=10,
+        paired_case_count=10,
+    )
+
+    assert "pocos casos" in text
+    assert "no como validación definitiva" in text

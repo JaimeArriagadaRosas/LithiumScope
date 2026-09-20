@@ -184,6 +184,20 @@ def build_overall_interpretation(
             ]
         )
 
+    evaluated_counts = [
+        value
+        for value in (model_1_case_count, model_2_case_count)
+        if value is not None
+    ]
+    if evaluated_counts and min(evaluated_counts) < 30:
+        lines.extend(
+            [
+                "Advertencia de tamaño muestral:",
+                "- Esta evaluación contiene pocos casos y debe interpretarse como demostración externa exploratoria, no como validación definitiva.",
+                "",
+            ]
+        )
+
     if model_1_metrics:
         lines.append(
             "Modelo 1 — evaluación con verdad de referencia: "
