@@ -60,7 +60,6 @@ Los modelos guardan rangos empíricos de entrenamiento (percentiles 1–99) para
 
 Esta advertencia no reemplaza una evaluación formal de incertidumbre o extrapolación geológica.
 
-
 ## Observabilidad
 
 Cada proceso crea un log de sesión con eventos `SESSION_START` y `SESSION_END`. El arranque valida que ese archivo exista y tenga contenido.
