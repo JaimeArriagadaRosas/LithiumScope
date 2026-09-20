@@ -17,7 +17,6 @@ from lithiumscope.core.paths import LOGS_DIR, PROJECT_ROOT, ensure_runtime_direc
 _LOG_FORMAT = "%(asctime)s | %(levelname)-8s | %(name)s | %(message)s"
 _CONSOLE_FORMAT = "%(levelname)s | %(name)s | %(message)s"
 _CONFIGURED = False
-_SESSION_STAMP = datetime.now().strftime("%Y%m%d_%H%M%S")
 _CURRENT_SESSION_LOG: Path | None = None
 _CURRENT_ERROR_LOG: Path | None = None
 _SESSION_HANDLER: logging.Handler | None = None
@@ -120,13 +119,17 @@ def _teardown_handlers(root: logging.Logger) -> None:
 
 
 def configure_logging() -> logging.Logger:
-    global _CONFIGURED, _CURRENT_SESSION_LOG, _CURRENT_ERROR_LOG, _SESSION_HANDLER, _ERROR_HANDLER
+    global _CONFIGURED, _CURRENT_SESSION_LOG, _CURRENT_ERROR_LOG, _SESSION_HANDLER, _ERROR_HANDLER, _ERROR_COUNT
     ensure_runtime_directories()
     root = logging.getLogger("lithiumscope")
     if _CONFIGURED and _handler_is_attached(root, _SESSION_HANDLER) and _handler_is_attached(root, _ERROR_HANDLER):
         return root
     if _CONFIGURED:
         _teardown_handlers(root)
+    else:
+        _ERROR_COUNT = 0
+        with _WARNING_LOCK:
+            _WARNING_COUNTS.clear()
 
     cfg = load_config("logging").get("logging", {})
     file_level = getattr(logging, str(cfg.get("file_level", "INFO")).upper(), logging.INFO)
@@ -143,8 +146,9 @@ def configure_logging() -> logging.Logger:
     error_dir.mkdir(parents=True, exist_ok=True)
     removed = cleanup_expired_logs(log_root, retention_days, error_retention_days)
 
-    _CURRENT_SESSION_LOG = session_dir / f"session_{_SESSION_STAMP}.log"
-    _CURRENT_ERROR_LOG = error_dir / f"errors_{_SESSION_STAMP}.log"
+    session_stamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+    _CURRENT_SESSION_LOG = session_dir / f"session_{session_stamp}.log"
+    _CURRENT_ERROR_LOG = error_dir / f"errors_{session_stamp}.log"
 
     root.setLevel(logging.DEBUG)
     root.propagate = False
