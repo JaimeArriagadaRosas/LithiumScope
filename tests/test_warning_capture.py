@@ -11,12 +11,7 @@ def test_warning_capture_deduplicates_repeated_warning(tmp_path: Path):
     code = """
 import json
 import warnings
-from lithiumscope.core.logger import (
-    configure_logging,
-    finalize_logging,
-    install_warning_capture,
-    warning_summary,
-)
+from lithiumscope.core.logger import configure_logging, finalize_logging, install_warning_capture, warning_summary
 configure_logging()
 install_warning_capture()
 for _ in range(5):
@@ -24,15 +19,7 @@ for _ in range(5):
 print(json.dumps(warning_summary()))
 finalize_logging()
 """
-    result = subprocess.run(
-        [sys.executable, "-c", code],
-        check=True,
-        capture_output=True,
-        text=True,
-        env=env,
-        timeout=20,
-    )
-
+    result = subprocess.run([sys.executable, "-c", code], check=True, capture_output=True, text=True, env=env, timeout=20)
     summary = json.loads(result.stdout.strip())
     assert summary["unique"] == 1
     assert summary["total"] == 5

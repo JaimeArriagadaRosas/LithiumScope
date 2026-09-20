@@ -1,14 +1,7 @@
 from datetime import datetime
 
-from lithiumscope.cli import (
-    predict_command,
-    results_command,
-    train_command,
-)
-from lithiumscope.cli.display import (
-    header,
-    pause,
-)
+from lithiumscope.cli import predict_command, results_command, train_command
+from lithiumscope.cli.display import header, pause
 from lithiumscope.cli.prompts import choose
 from lithiumscope.core.logger import (
     configure_logging,
@@ -16,9 +9,7 @@ from lithiumscope.core.logger import (
     flush_logging,
     get_logger,
 )
-from lithiumscope.core.paths import (
-    ensure_runtime_directories,
-)
+from lithiumscope.core.paths import ensure_runtime_directories
 
 logger = get_logger("cli")
 
@@ -26,21 +17,14 @@ logger = get_logger("cli")
 def main() -> int:
     ensure_runtime_directories()
     configure_logging()
-    logger.info(
-        "LithiumScope started"
-    )
-
+    logger.info("LithiumScope started")
     while True:
         header()
         print("1. Entrenar modelos")
         print("2. Realizar predicción")
         print("3. Métricas y resultados")
         print("0. Salir")
-        choice = choose(
-            "\nSeleccione una opción: ",
-            {"0", "1", "2", "3"},
-        )
-
+        choice = choose("\nSeleccione una opción: ", {"0", "1", "2", "3"})
         try:
             if choice == "1":
                 train_command.run()
@@ -52,27 +36,12 @@ def main() -> int:
                 results_command.run()
                 pause()
             else:
-                logger.info(
-                    "LithiumScope finished"
-                )
+                logger.info("LithiumScope finished")
                 return 0
         except Exception as exc:
-            error_id = (
-                datetime.now().strftime(
-                    "%Y%m%d-%H%M%S"
-                )
-            )
-            logger.exception(
-                "Unhandled application error "
-                "id=%s",
-                error_id,
-            )
+            error_id = datetime.now().strftime("%Y%m%d-%H%M%S")
+            logger.exception("Unhandled application error id=%s", error_id)
             flush_logging()
-            print(
-                f"\n[ERROR {error_id}] {exc}"
-            )
-            print(
-                "Detalle técnico: "
-                f"{current_error_log_path()}"
-            )
+            print(f"\n[ERROR {error_id}] {exc}")
+            print(f"Detalle técnico: {current_error_log_path()}")
             pause()
