@@ -6,12 +6,14 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
 
-def _base_model(random_seed: int = 42, **params):
+def _base_model(
+    random_seed: int = 42,
+    **params,
+):
     defaults = {
         "kernel": "rbf",
         "C": 5.0,
         "gamma": "scale",
-        "probability": False,
         "class_weight": "balanced",
         "random_state": random_seed,
     }
@@ -41,7 +43,11 @@ def create_model(
     return CalibratedClassifierCV(
         estimator=estimator,
         method="sigmoid",
-        cv=calibration_cv if calibration_cv is not None else 3,
+        cv=(
+            calibration_cv
+            if calibration_cv is not None
+            else 3
+        ),
         ensemble=False,
     )
 

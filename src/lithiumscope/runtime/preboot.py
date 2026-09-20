@@ -264,6 +264,7 @@ def _save_report(
         timezone.utc
     ).strftime("%Y%m%dT%H%M%SZ")
     path = directory / f"preboot_{stamp}.json"
+    report.report_path = str(path)
     payload = asdict(report)
     payload["core_ready"] = report.core_ready
     payload["ml_ready"] = report.ml_ready
@@ -419,9 +420,7 @@ def run_preboot(
         virtualenv_active=virtualenv_active,
         visualization_backend=visualization_backend,
     )
-    report.report_path = str(
-        _save_report(report)
-    )
+    _save_report(report)
 
     logger.info(
         "Preboot complete core=%s ml=%s imagery=%s "

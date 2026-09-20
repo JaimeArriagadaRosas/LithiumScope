@@ -405,6 +405,16 @@ def run_model_2_competition(
         roc_gain >= min_roc_gain
         and ap_gain >= min_ap_gain
     )
+    print(
+        "Release gate Modelo 2: "
+        + ("PASS" if release_gate_pass else "FAIL")
+        + (
+            f" | ΔROC-AUC={roc_gain:+.4f} "
+            f"(mín {min_roc_gain:+.4f})"
+            f" | ΔAP={ap_gain:+.4f} "
+            f"(mín {min_ap_gain:+.4f})"
+        )
+    )
 
     metadata = {
         "model_group": "model_2",
