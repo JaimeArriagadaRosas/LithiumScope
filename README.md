@@ -1027,8 +1027,9 @@ La predicción completa solicita los inputs del usuario para ambos modelos. La
 demostración utiliza un conjunto externo versionado y obtiene automáticamente
 Sentinel-2 para los mismos casos. Ambas conservan los modelos científicamente
 separados y realizan la integración después de predecir, generando métricas,
-correlaciones, concordancias, diagnósticos, Excel, HTML, manifest e
-interpretación reproducible.
+correlaciones, concordancias, diagnósticos, Excel, PDF, manifest e
+interpretación reproducible. El PDF se abre automáticamente en el navegador
+predeterminado del sistema cuando la ejecución finaliza.
 
 Consulte `docs/PREDICTION_WORKFLOWS.md` para el contrato científico y los
 artefactos generados.

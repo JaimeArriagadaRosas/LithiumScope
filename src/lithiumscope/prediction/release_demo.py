@@ -108,9 +108,15 @@ def build_demonstration_release_bundle(
                 bundle.write(path, arcname=arcname)
 
         publication = _publication_manifest(manifest, archive.name)
+        publication_text = json.dumps(
+            publication,
+            indent=2,
+            ensure_ascii=False,
+            default=str,
+        )
         bundle.writestr(
             "release_manifest.json",
-            json.dumps(publication, indent=2, ensure_ascii=False, default=str),
+            _sanitize_text(publication_text, run_dir),
         )
 
     temporary.replace(archive)

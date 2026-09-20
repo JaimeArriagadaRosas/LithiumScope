@@ -73,3 +73,22 @@ El tag fija principalmente:
 - métricas.
 
 Los datasets grandes no deben introducirse directamente al historial Git. Para una publicación posterior, los modelos entrenados y manifests pueden adjuntarse como assets de un GitHub Release o almacenarse en un repositorio de artefactos, manteniendo sus hashes en el release manifest.
+
+
+## Demostraciones publicables
+
+Las demostraciones integradas se identifican por su run fechado:
+
+`demonstration_YYYYMMDD_HHMMSS_m0300`
+
+No representan una versión del producto y no utilizan etiquetas `v1`, `v2`
+o similares. Una demostración puede empaquetarse con:
+
+```bat
+python -m lithiumscope.prediction.release_demo --run demonstration_YYYYMMDD_HHMMSS_m0300
+```
+
+El paquete incluye el PDF científico, Excel, CSV, diagnósticos, manifest, log,
+figuras e inputs de la ejecución, más un `release_manifest.json` saneado.
+También se genera un checksum SHA-256. El comando no crea tags ni publica en
+GitHub automáticamente.

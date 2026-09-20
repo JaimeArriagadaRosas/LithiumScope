@@ -2,6 +2,7 @@ from pathlib import Path
 
 from lithiumscope.cli.file_picker import pick_file
 from lithiumscope.cli.prompts import choose
+from lithiumscope.cli.report_viewer import open_report_in_default_browser
 from lithiumscope.core.logger import run_log
 from lithiumscope.prediction.interpretation import (
     model_1_case_text,
@@ -16,6 +17,10 @@ def _print_integrated_result(result) -> None:
     print(f"  Reporte:   {result.report_path}")
     print(f"  Excel:     {result.workbook_path}")
     print(f"  Manifest:  {result.manifest_path}")
+    if open_report_in_default_browser(result.report_path):
+        print("  Apertura:   reporte PDF enviado al navegador predeterminado")
+    else:
+        print("  Apertura:   no fue posible abrir el navegador automáticamente")
 
 
 def _run_model_1() -> None:

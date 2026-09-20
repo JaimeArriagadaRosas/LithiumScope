@@ -39,8 +39,8 @@ from lithiumscope.prediction.interpretation import (
 )
 from lithiumscope.prediction.report import (
     save_integrated_figures,
-    write_html_report,
     write_json,
+    write_pdf_report,
     write_workbook,
 )
 from lithiumscope.prediction.session import (
@@ -248,19 +248,27 @@ def _write_outputs(
         concordance=concordance,
         training_vs_external=training_vs_external,
     )
-    report_path = write_html_report(
-        session.root / "report.html",
+    report_path = write_pdf_report(
+        session.root / "report.pdf",
         title=(
-            "LithiumScope — Demostración integrada automática"
+            "LithiumScope - Demostración integrada automática"
             if session.mode == "demonstration"
-            else "LithiumScope — Predicción completa"
+            else "LithiumScope - Predicción completa"
         ),
+        run_id=session.run_id,
+        mode=session.mode,
         interpretation=interpretation,
+        model_1_identity=model_1_identity,
+        model_2_identity=model_2_identity,
         model_1_metrics=model_1_metrics,
         model_2_metrics=model_2_metrics,
+        model_1_predictions=model_1_predictions,
+        model_2_predictions=model_2_predictions,
+        paired=paired,
         correlations=correlations,
         concordance=concordance,
         training_vs_external=training_vs_external,
+        overlap_audit=overlap_audit,
         figures=figures,
     )
 
@@ -293,7 +301,7 @@ def _write_outputs(
             "concordance": str(session.cross_model / "concordance.csv"),
             "training_vs_external": str(session.root / "training_vs_external.csv"),
             "workbook": str(workbook_path),
-            "report_html": str(report_path),
+            "report_pdf": str(report_path),
             "interpretation": str(interpretation_path),
             "run_log": str(run_log_path),
             "figures": [str(path) for path in figures],

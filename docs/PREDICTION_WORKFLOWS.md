@@ -48,7 +48,7 @@ results/predictions/<run_id>/
 ├── prediction_manifest.json
 ├── interpretation.txt
 ├── evaluation.xlsx
-├── report.html
+├── report.pdf
 ├── training_vs_external.csv
 ├── model_1/
 │   ├── predictions.csv
@@ -65,3 +65,35 @@ results/predictions/<run_id>/
 
 El manifest conserva hashes de modelos e inputs, run IDs, métricas, entorno de
 ejecución y procedencia del conjunto de demostración.
+
+## Informe PDF
+
+Las opciones 3 y 4 generan un informe PDF reproducible y lo intentan abrir con
+el navegador web predeterminado del sistema. El informe incluye:
+
+- trazabilidad de los dos modelos y sus runs de entrenamiento;
+- interpretación científica general;
+- métricas externas y comparación contra entrenamiento;
+- correlaciones y concordancias;
+- todas las gráficas integradas;
+- tabla resumen de los casos;
+- una sección por caso con Li real reservado para evaluación, predicción M1,
+  intervalo, aplicabilidad, score/prioridad M2, escena Sentinel-2 y las
+  interpretaciones de M1, M2 e integración;
+- advertencias de alcance, tamaño muestral y dominio.
+
+El Li real de una demostración se utiliza exclusivamente como verdad de
+referencia para evaluación: no se entrega como feature de entrada de los modelos.
+
+## Publicación de una demostración
+
+Una demostración con PDF puede empaquetarse localmente sin crear tags:
+
+```bat
+python -m lithiumscope.prediction.release_demo --run demonstration_YYYYMMDD_HHMMSS_m0300
+```
+
+El comando genera un ZIP y un archivo `.sha256` bajo
+`results/release_candidates/`. El bundle sanea rutas locales de los artefactos
+de texto y elimina hostname/PID del manifest de publicación. La creación de un
+tag o GitHub Release sigue siendo una decisión manual posterior.
