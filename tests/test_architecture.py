@@ -78,3 +78,13 @@ def test_runtime_lifecycle_is_separated():
     assert (runtime / "graceful_shutdown.py").is_file()
     assert (runtime / "lifecycle.py").is_file()
     assert (runtime / "console_status.py").is_file()
+
+
+def test_cli_contains_versioned_model_loader():
+    root = Path(__file__).resolve().parents[1]
+    menu = (
+        root
+        / "src/lithiumscope/cli/menu.py"
+    ).read_text(encoding="utf-8")
+    assert "4. Cargar modelo versionado" in menu
+    assert "model_release_command.run()" in menu

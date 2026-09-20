@@ -62,6 +62,7 @@ DEV_DEPENDENCIES = {
 
 REQUIRED_CONFIGS = (
     "app.yaml",
+    "distribution.yaml",
     "logging.yaml",
     "model_1.yaml",
     "model_2.yaml",
@@ -391,9 +392,12 @@ def run_preboot(
                 "  Nota               Los datasets se preparan al elegir Entrenar."
             )
 
-    can_prepare_data = all(
-        item.available
-        for item in core
+    can_prepare_data = (
+        configs_ok
+        and all(
+            item.available
+            for item in core
+        )
     )
     datasets = (
         (
@@ -457,12 +461,12 @@ def run_preboot(
         )
         _print_datasets(report.datasets)
         print(
-            f"  Modelo 1           "
-            f"[{'LISTO' if report.model_1_ready else 'NO LISTO'}]"
+            f"  Entrenamiento M1   "
+            f"[{'LISTO' if report.model_1_ready else 'DATOS PENDIENTES'}]"
         )
         print(
-            f"  Modelo 2           "
-            f"[{'LISTO' if report.model_2_ready else 'NO LISTO'}]"
+            f"  Entrenamiento M2   "
+            f"[{'LISTO' if report.model_2_ready else 'DATOS PENDIENTES'}]"
         )
         print(
             f"  Reporte            {report.report_path}"
