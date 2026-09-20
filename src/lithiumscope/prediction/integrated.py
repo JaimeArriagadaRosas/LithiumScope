@@ -2,11 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timezone
-import json
 from pathlib import Path
 import shutil
 
-import numpy as np
 import pandas as pd
 
 from lithiumscope.core.config import load_config
@@ -423,6 +421,9 @@ def _run_integrated(
             correlations=correlations,
             concordance=concordance,
             overlap_audit=overlap_audit,
+            model_1_case_count=len(model_1_predictions),
+            model_2_case_count=len(model_2_predictions),
+            paired_case_count=len(paired),
         )
         logger.info(
             "Cross-model analysis completed paired=%d correlations=%d",
@@ -492,7 +493,7 @@ def run_complete_prediction(
         load_prediction_input(model_1_snapshot)
     )
     model_2_cases, model_2_input_info = _model_2_cases_from_input(
-        model_2_snapshot,
+        model_2_path,
         session,
         model_1_input,
     )
@@ -506,6 +507,7 @@ def run_complete_prediction(
             **model_2_input_info,
             "original_path": str(model_2_path),
             "snapshot_path": str(model_2_snapshot),
+            "snapshot_sha256": file_sha256(model_2_snapshot),
         },
         "pairing_rule": (
             "case_id; una imagen única se empareja automáticamente "

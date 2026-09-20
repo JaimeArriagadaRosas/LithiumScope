@@ -160,6 +160,9 @@ def build_overall_interpretation(
     correlations: pd.DataFrame,
     concordance: pd.DataFrame,
     overlap_audit: dict | None = None,
+    model_1_case_count: int | None = None,
+    model_2_case_count: int | None = None,
+    paired_case_count: int | None = None,
 ) -> str:
     lines = [
         "INTERPRETACIÓN CIENTÍFICA INTEGRADA",
@@ -169,6 +172,17 @@ def build_overall_interpretation(
         "los observados alrededor de muestras relativamente enriquecidas?",
         "",
     ]
+
+    if model_1_case_count is not None or model_2_case_count is not None:
+        lines.extend(
+            [
+                "Cobertura de la ejecución:",
+                f"- Casos evaluados por Modelo 1: {model_1_case_count if model_1_case_count is not None else 'N/D'}",
+                f"- Casos evaluados por Modelo 2: {model_2_case_count if model_2_case_count is not None else 'N/D'}",
+                f"- Casos emparejados: {paired_case_count if paired_case_count is not None else 'N/D'}",
+                "",
+            ]
+        )
 
     if model_1_metrics:
         lines.append(
