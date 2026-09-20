@@ -14,6 +14,7 @@ import warnings
 from lithiumscope.core.logger import configure_logging, finalize_logging, install_warning_capture, warning_summary
 configure_logging()
 install_warning_capture()
+warnings.simplefilter("always")
 for _ in range(5):
     warnings.warn("repeated test warning", UserWarning)
 print(json.dumps(warning_summary()))
