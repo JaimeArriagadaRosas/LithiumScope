@@ -131,3 +131,25 @@ bundle del modelo. Los modelos históricos que no contienen este campo mantienen
 La prioridad exploratoria `baja/media/alta` y la clase binaria operacional son
 conceptos distintos. Ninguna de las dos convierte el score de Modelo 2 en
 probabilidad de yacimiento o concentración de litio.
+
+
+## Candidatos y promoción de modelos
+
+Completar un entrenamiento ya no reemplaza automáticamente el modelo activo.
+El ganador de la competencia se guarda como candidato fechado y recibe un
+`candidate_status.json` con estado `pending`.
+
+Desde **Métricas y resultados -> Evaluar/promover candidatos con demo
+versionada**, LithiumScope compara el candidato pendiente más reciente contra el
+modelo actualmente activo usando los diez casos externos versionados. Debido a
+que este conjunto ya ha sido inspeccionado durante el desarrollo, se declara
+explícitamente como **conjunto externo conocido de aceptación/regresión**, no
+como validación ciega nueva.
+
+Para Modelo 1 la promoción exige no empeorar RMSE, MAE ni R2 externos y mejorar
+estrictamente al menos una de esas métricas. Para Modelo 2 se exige conservar o
+mejorar ROC-AUC, Average Precision y Balanced Accuracy externas, con mejora
+estricta en al menos una y el mismo umbral de Li usado para definir la etiqueta
+de referencia. Solo un candidato que supera su gate cambia
+`models/active_models.json`. La promoción local no crea tags ni GitHub
+Releases.

@@ -6,6 +6,7 @@ from pathlib import Path
 import pandas as pd
 
 from lithiumscope.core.paths import RESULTS_DIR
+from lithiumscope.persistence.active_models import active_model_path
 
 
 def load_run_record(run_dir: Path) -> dict:
@@ -74,3 +75,30 @@ def latest_release_candidate(model_group: str) -> dict | None:
     if candidates.empty:
         return None
     return candidates.iloc[0].to_dict()
+
+
+
+def active_release_candidate(
+    model_group: str,
+) -> dict | None:
+    active = active_model_path(
+        model_group
+    )
+    if active is None:
+        return None
+    run_id = active.parent.name
+    catalog = run_catalog(
+        model_group
+    )
+    if catalog.empty:
+        return None
+    matching = catalog[
+        (catalog["run_id"] == run_id)
+        & (
+            catalog["release_candidate"]
+            == True  # noqa: E712
+        )
+    ]
+    if matching.empty:
+        return None
+    return matching.iloc[0].to_dict()

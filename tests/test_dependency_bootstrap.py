@@ -144,3 +144,57 @@ def test_dependency_repair_does_not_modify_global_python(
     assert result.skipped_reason == (
         "virtualenv_not_active"
     )
+
+
+
+def test_dependency_repair_captures_installer_output(
+    monkeypatch,
+    tmp_path,
+):
+    missing = {"reportlab"}
+    monkeypatch.setattr(
+        dependencies,
+        "PROJECT_ROOT",
+        tmp_path,
+    )
+    monkeypatch.setattr(
+        dependencies,
+        "_virtualenv_active",
+        lambda: True,
+    )
+    monkeypatch.setattr(
+        dependencies.importlib.util,
+        "find_spec",
+        _fake_find_spec_factory(missing),
+    )
+
+    def run(command, **kwargs):
+        assert kwargs["stdout"] is dependencies.subprocess.PIPE
+        assert kwargs["stderr"] is dependencies.subprocess.STDOUT
+        assert kwargs["text"] is True
+        missing.clear()
+        return SimpleNamespace(
+            returncode=0,
+            stdout="pip detail hidden from normal output",
+        )
+
+    monkeypatch.setattr(
+        dependencies.subprocess,
+        "run",
+        run,
+    )
+    monkeypatch.setattr(
+        dependencies,
+        "_LAST_REPAIR_RESULT",
+        None,
+    )
+
+    result = dependencies.ensure_runtime_dependencies(
+        verbose=False
+    )
+
+    assert result.success is True
+    assert (
+        result.installer_output_tail[-1]
+        == "pip detail hidden from normal output"
+    )

@@ -55,8 +55,12 @@ def run() -> None:
     print("7. Comparar ejecuciones — Modelo 1")
     print("8. Comparar ejecuciones — Modelo 2")
     print("9. Preparar bundle local de modelo para publicación")
+    print("10. Evaluar/promover candidatos con demo versionada")
     print("0. Volver")
-    choice = choose("> ", {str(i) for i in range(10)})
+    choice = choose(
+        "> ",
+        {str(i) for i in range(11)},
+    )
 
     if choice == "1":
         _preview("model_1")
@@ -88,3 +92,31 @@ def run() -> None:
             print("No se creó ningún tag ni GitHub Release automáticamente.")
         except RuntimeError as exc:
             print(f"No hay candidato válido todavía: {exc}")
+    elif choice == "10":
+        _evaluate_candidates()
+
+
+def _evaluate_candidates() -> None:
+    from lithiumscope.prediction.candidate_evaluation import (
+        evaluate_pending_candidates,
+    )
+
+    result = evaluate_pending_candidates(
+        promote_if_better=True,
+    )
+    print(
+        f"Evaluación: {result.evaluation_id}"
+    )
+    print(
+        f"Manifest:   {result.manifest_path}"
+    )
+    for model_group, decision in (
+        result.decisions.items()
+    ):
+        status = decision.get(
+            "status",
+            "unknown",
+        )
+        print(
+            f"  {model_group}: {status}"
+        )

@@ -129,3 +129,164 @@ class Spinner:
 
     def stop(self, message: str | None = None) -> None:
         self._finish("[--]", message)
+
+
+
+class LoadingBar:
+    """Indeterminate terminal loading bar for work without a reliable total."""
+
+    _BAR_WIDTH = 24
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        interval: float = 0.12,
+        stream: TextIO | None = None,
+    ) -> None:
+        self._message = message
+        self._interval = max(0.08, float(interval))
+        self._stream = stream or sys.stdout
+        self._enabled = bool(
+            getattr(
+                self._stream,
+                "isatty",
+                lambda: False,
+            )()
+        )
+        self._stop = threading.Event()
+        self._thread: threading.Thread | None = None
+        self._position = 0
+        self._direction = 1
+        self._last_width = 0
+        self._started = False
+
+    def _render(self) -> str:
+        width = self._BAR_WIDTH
+        position = max(
+            0,
+            min(
+                width - 1,
+                self._position,
+            ),
+        )
+        cells = [" "] * width
+        cells[position] = "█"
+        if position > 0:
+            cells[position - 1] = "▓"
+        if position + 1 < width:
+            cells[position + 1] = "▒"
+        return (
+            "["
+            + "".join(cells)
+            + "] "
+            + self._message
+        )
+
+    def _rewrite(self, text: str) -> None:
+        width = max(
+            self._last_width,
+            len(text),
+        )
+        self._stream.write(
+            "\r" + text.ljust(width)
+        )
+        self._stream.flush()
+        self._last_width = width
+
+    def _animate(self) -> None:
+        while not self._stop.wait(
+            self._interval
+        ):
+            self._rewrite(
+                self._render()
+            )
+            next_position = (
+                self._position
+                + self._direction
+            )
+            if (
+                next_position >= self._BAR_WIDTH
+                or next_position < 0
+            ):
+                self._direction *= -1
+                next_position = (
+                    self._position
+                    + self._direction
+                )
+            self._position = next_position
+
+    def start(self) -> "LoadingBar":
+        if self._started:
+            return self
+        self._started = True
+        if not self._enabled:
+            self._stream.write(
+                self._message + "\n"
+            )
+            self._stream.flush()
+            return self
+        self._rewrite(
+            self._render()
+        )
+        self._thread = threading.Thread(
+            target=self._animate,
+            name="lithiumscope-loading-bar",
+            daemon=True,
+        )
+        self._thread.start()
+        return self
+
+    def _finish(
+        self,
+        *,
+        success: bool,
+        message: str | None = None,
+    ) -> None:
+        if not self._started:
+            return
+        self._stop.set()
+        if self._thread is not None:
+            self._thread.join(
+                timeout=max(
+                    0.5,
+                    self._interval * 5,
+                )
+            )
+        final_message = (
+            message or self._message
+        )
+        marker = (
+            "[████████████████████████] [OK]"
+            if success
+            else "[!!!!!!!!!!!!!!!!!!!!!!!!] [ERROR]"
+        )
+        if self._enabled:
+            self._rewrite(
+                f"{marker} {final_message}"
+            )
+            self._stream.write("\n")
+        else:
+            self._stream.write(
+                f"{'[OK]' if success else '[ERROR]'} "
+                f"{final_message}\n"
+            )
+        self._stream.flush()
+
+    def succeed(
+        self,
+        message: str | None = None,
+    ) -> None:
+        self._finish(
+            success=True,
+            message=message,
+        )
+
+    def fail(
+        self,
+        message: str | None = None,
+    ) -> None:
+        self._finish(
+            success=False,
+            message=message,
+        )

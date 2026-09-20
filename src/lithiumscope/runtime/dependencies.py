@@ -8,6 +8,8 @@ from pathlib import Path
 import subprocess
 import sys
 
+from lithiumscope.runtime.console_status import LoadingBar
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
@@ -60,6 +62,7 @@ class DependencyRepairResult:
     command: tuple[str, ...] = ()
     returncode: int | None = None
     skipped_reason: str | None = None
+    installer_output_tail: tuple[str, ...] = ()
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -200,25 +203,39 @@ def ensure_runtime_dependencies(
         target,
     )
 
+    loading = None
     if verbose:
         print("\n=== LITHIUMSCOPE · REPARACIÓN DE ENTORNO ===")
         print(
             "  Faltan             "
             + ", ".join(missing_before)
         )
-        print(
-            "  Acción             instalando dependencias declaradas..."
-        )
+        loading = LoadingBar(
+            "Instalando dependencias declaradas"
+        ).start()
 
+    output = ""
     try:
         completed = subprocess.run(
             list(command),
             cwd=PROJECT_ROOT,
             check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
         )
         returncode = int(completed.returncode)
-    except OSError:
+        output = str(
+            getattr(
+                completed,
+                "stdout",
+                "",
+            )
+            or ""
+        )
+    except OSError as exc:
         returncode = -1
+        output = str(exc)
 
     importlib.invalidate_caches()
     core_after, ml_after, imagery_after = _runtime_gaps()
@@ -227,6 +244,12 @@ def ensure_runtime_dependencies(
     )
     success = returncode == 0 and not missing_after
 
+    output_lines = tuple(
+        line.strip()
+        for line in output.splitlines()
+        if line.strip()
+    )
+    output_tail = output_lines[-12:]
     result = DependencyRepairResult(
         attempted=True,
         success=success,
@@ -235,19 +258,33 @@ def ensure_runtime_dependencies(
         extras=extras,
         command=command,
         returncode=returncode,
+        installer_output_tail=output_tail,
     )
     _LAST_REPAIR_RESULT = result
 
     if verbose:
-        print(
-            "  Resultado          "
-            + ("[OK] entorno reparado" if success else "[ERROR] reparación incompleta")
-        )
+        if loading is not None:
+            if success:
+                loading.succeed(
+                    "Dependencias instaladas y verificadas"
+                )
+            else:
+                loading.fail(
+                    "No fue posible completar la instalación"
+                )
         if missing_after:
             print(
                 "  Aún faltan         "
                 + ", ".join(missing_after)
             )
+        if not success and output_tail:
+            print(
+                "  Detalle instalador:"
+            )
+            for line in output_tail:
+                print(
+                    "    " + line
+                )
         print("=" * 44)
 
     return result

@@ -18,7 +18,11 @@ def _print_outcome(outcome, model_name: str) -> None:
     print(f"Resultados: {outcome.run_dir}")
     if outcome.winner:
         print(
-            f"Ganador de esta ejecución: {outcome.winner}"
+            f"Ganador candidato de esta ejecución: {outcome.winner}"
+        )
+        print(
+            "El modelo activo no se reemplaza durante el entrenamiento. "
+            "Evalúe el candidato desde Métricas y resultados."
         )
     if outcome.failed:
         print(

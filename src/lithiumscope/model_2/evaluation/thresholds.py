@@ -60,16 +60,11 @@ def select_operating_threshold(
     scores = scores[valid]
 
     if y.size < 2 or np.unique(y).size < 2:
-        metrics = classification_metrics(
-            y,
-            scores,
-            threshold=float(fallback),
-        ) if y.size else {}
         return ThresholdSelection(
             threshold=float(fallback),
             objective=objective,
-            objective_value=float(metrics.get(objective, 0.0)),
-            metrics=metrics,
+            objective_value=0.0,
+            metrics={},
             candidate_count=1,
         )
 

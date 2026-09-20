@@ -6,12 +6,12 @@ from pathlib import Path
 import zipfile
 
 from lithiumscope.core.paths import MODELS_DIR, RESULTS_DIR
-from lithiumscope.results.catalog import latest_release_candidate
+from lithiumscope.results.catalog import active_release_candidate
 
 
 def build_release_candidate_manifest() -> Path:
-    model_1 = latest_release_candidate("model_1")
-    model_2 = latest_release_candidate("model_2")
+    model_1 = active_release_candidate("model_1")
+    model_2 = active_release_candidate("model_2")
 
     if model_1 is None or model_2 is None:
         missing = []
@@ -20,7 +20,7 @@ def build_release_candidate_manifest() -> Path:
         if model_2 is None:
             missing.append("model_2")
         raise RuntimeError(
-            "No existe una ejecución completa apta para versionar en: "
+            "No existe un modelo activo y promovido apto para versionar en: "
             + ", ".join(missing)
         )
 

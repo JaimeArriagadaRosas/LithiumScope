@@ -524,6 +524,7 @@ def run_model_2_competition(
         dataset_manifest_path=dataset_manifest_path,
         feature_schema={"features": list(x.columns)},
         config_name="model_2",
+        activate=False,
     )
 
     export_workbook(

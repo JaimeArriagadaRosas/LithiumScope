@@ -32,6 +32,7 @@ def save_model_bundle(
     dataset_manifest_path: Path | None = None,
     feature_schema: Any = None,
     config_name: str | None = None,
+    activate: bool = True,
 ) -> tuple[Path, Path]:
     stamp = run_id or datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     artifact_dir = MODELS_DIR / model_group / "trained" / stamp
@@ -49,6 +50,11 @@ def save_model_bundle(
         "model_path": str(model_path.relative_to(MODELS_DIR.parent)),
         "model_sha256": file_sha256(model_path),
         "saved_at_utc": datetime.now(timezone.utc).isoformat(),
+        "activation_at_save": (
+            "active"
+            if activate
+            else "candidate"
+        ),
     }
     metadata_path.write_text(
         json.dumps(payload, indent=2, ensure_ascii=False, default=str),
@@ -70,12 +76,30 @@ def save_model_bundle(
         if config_path.exists():
             shutil.copy2(config_path, artifact_dir / "training_config.yaml")
 
-    set_active_model(
-        model_group,
-        model_path,
-        source={
-            "type": "local_training",
-            "run_id": stamp,
-        },
-    )
+    if activate:
+        set_active_model(
+            model_group,
+            model_path,
+            source={
+                "type": "local_training",
+                "run_id": stamp,
+            },
+        )
+    else:
+        (artifact_dir / "candidate_status.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": 1,
+                    "status": "pending",
+                    "run_id": stamp,
+                    "model_group": model_group,
+                    "created_at_utc": datetime.now(
+                        timezone.utc
+                    ).isoformat(),
+                },
+                indent=2,
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
     return model_path, metadata_path

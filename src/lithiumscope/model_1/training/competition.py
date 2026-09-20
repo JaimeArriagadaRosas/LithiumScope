@@ -339,6 +339,7 @@ def run_model_1_competition(dataset_path: Path, device: DeviceInfo) -> Competiti
         dataset_manifest_path=manifest_path,
         feature_schema=winner_prepared.schema,
         config_name="model_1",
+        activate=False,
     )
 
     export_workbook(
