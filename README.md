@@ -25,6 +25,11 @@ El documento de referencia informa 2.635 registros iniciales, 787 muestras con `
 
 LithiumScope **no descarga ni reutiliza notebooks**. Cada etapa del procedimiento se traduce a un módulo `.py` independiente, testeable y reutilizable.
 
+### Documentación técnica de datos
+
+- [Variables de entrada y salida](docs/INPUT_OUTPUT_VARIABLES.md)
+- [Datasets y features](docs/DATASETS_AND_FEATURES.md)
+
 ---
 
 ## 2. Qué intenta resolver
