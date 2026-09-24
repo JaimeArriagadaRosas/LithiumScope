@@ -269,6 +269,21 @@ def harmonize_georoc(state: dict | None = None) -> dict:
         "Filas descartadas en adaptación: "
         f"{result.rows_rejected_missing_core:,}"
     )
+    _print_table(
+        "Mapeo de columnas GEOROC → LithiumScope",
+        pd.DataFrame(
+            [
+                {
+                    "georoc_column": source,
+                    "lithiumscope_column": target,
+                }
+                for source, target in sorted(
+                    result.mapped_columns.items()
+                )
+            ]
+        ),
+        max_rows=100,
+    )
     _dataset_summary(
         frame,
         "GEOROC armonizado",
