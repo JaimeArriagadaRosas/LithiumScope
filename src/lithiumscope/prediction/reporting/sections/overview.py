@@ -10,27 +10,7 @@ from lithiumscope.prediction.reporting.primitives import (
 
 
 def build_overview(context, styles) -> list:
-    story: list = [
-        Spacer(1, 0.8 * cm),
-        paragraph(
-            context.title,
-            styles["LS_Title"],
-        ),
-        paragraph(
-            f"Ejecucion: {context.run_id}\n"
-            f"Modo: {context.mode}\n"
-            "Informe generado automaticamente a partir de "
-            "artefactos reproducibles.",
-            styles["LS_Subtitle"],
-        ),
-        paragraph(
-            "Alcance: apoyo preliminar para analisis y priorizacion. "
-            "No confirma un recurso, no sustituye ICP-MS y no "
-            "reemplaza validacion geologica, mineralogica ni de "
-            "terreno.",
-            styles["LS_Warning"],
-        ),
-    ]
+    story: list = []
 
     traceability = table(
         [
