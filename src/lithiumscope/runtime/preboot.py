@@ -70,6 +70,9 @@ class PrebootReport:
     placeholders_removed: int
     accelerator: str
     accelerator_name: str
+    accelerator_diagnostic: str = ""
+    nvidia_driver_available: bool = False
+    nvidia_device_names: tuple[str, ...] = ()
     virtualenv_active: bool = False
     visualization_backend: str = "unknown"
     report_path: str = ""
@@ -377,6 +380,14 @@ def run_preboot(
             f"  Acelerador         "
             f"{device.accelerator.upper()} — {device.name}"
         )
+        if device.nvidia_device_names:
+            print(
+                "  NVIDIA sistema      "
+                + ", ".join(device.nvidia_device_names)
+            )
+        print(
+            f"  Diagnostico GPU    {device.diagnostic}"
+        )
         print(
             f"  Visualización      [OK] {visualization_backend}"
         )
@@ -433,6 +444,9 @@ def run_preboot(
         placeholders_removed=removed,
         accelerator=device.accelerator,
         accelerator_name=device.name,
+        accelerator_diagnostic=device.diagnostic,
+        nvidia_driver_available=device.nvidia_driver_available,
+        nvidia_device_names=device.nvidia_device_names,
         virtualenv_active=virtualenv_active,
         visualization_backend=visualization_backend,
         dependency_repair=repair.to_dict(),
