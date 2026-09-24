@@ -10,6 +10,7 @@ from lithiumscope.core.config import load_config
 from lithiumscope.core.device import detect_device
 from lithiumscope.core.paths import DATA_DIR, PROJECT_ROOT
 from lithiumscope.datasets.downloader import ensure_dataset
+from lithiumscope.datasets.registry import get_dataset_spec
 from lithiumscope.datasets.georoc_filtered_acquisition import (
     acquire_filtered_georoc,
     write_acquisition_contract,
@@ -64,7 +65,7 @@ def run_lab_preboot(
     verbose: bool = True,
 ) -> LabPrebootReport:
     report = run_preboot(
-        verbose=verbose,
+        verbose=False,
         provision_datasets=False,
     )
     if not report.core_ready:
@@ -72,15 +73,42 @@ def run_lab_preboot(
             "El preboot base no está listo. Revise el reporte indicado."
         )
 
-    base = ensure_dataset("mamani09_public_mirror")
+    base_spec = get_dataset_spec(
+        "mamani09_public_mirror"
+    )
+    base_candidate = (
+        DATA_DIR
+        / "raw"
+        / base_spec.model
+        / base_spec.destination_name
+    )
+    if (
+        base_candidate.is_file()
+        and base_candidate.stat().st_size > 0
+    ):
+        if verbose:
+            print("[LAB] Mamani09 [ENCONTRADO]")
+    else:
+        if verbose:
+            print("[LAB] Mamani09 [NO ENCONTRADO] → descargando")
+    base = ensure_dataset(
+        "mamani09_public_mirror"
+    )
+
     georoc_files = _georoc_files()
+    if georoc_files:
+        if verbose:
+            print(
+                "[LAB] GEOROC [ENCONTRADO] "
+                f"{len(georoc_files)} archivo(s)"
+            )
 
     if not georoc_files and acquire_data:
-        print(
-            "\n[LAB] GEOROC filtrado no está disponible; "
-            "se intentará una consulta remota limitada a los datos "
-            "que usa LithiumScope."
-        )
+        if verbose:
+            print(
+                "[LAB] GEOROC [NO ENCONTRADO] "
+                "→ descargando extracción filtrada"
+            )
         target_dir = (
             DATA_DIR
             / "raw"
@@ -107,19 +135,14 @@ def run_lab_preboot(
 
     if verbose:
         print(
-            "\n=== PREBOOT LABORATORIO ==="
-        )
-        print(f"  Mamani09 bruto      [OK] {base}")
-        print(
-            "  GEOROC bruto        [OK] "
-            f"{len(georoc_files)} archivo(s)"
+            "[LAB] Entorno [OK] | "
+            f"Mamani09 [OK] | GEOROC [OK]"
         )
         for path in georoc_files:
             print(
-                f"    - {path.name} "
+                f"      {path.name} "
                 f"({path.stat().st_size / 1048576:.1f} MiB)"
             )
-        print("=" * 29)
 
     return LabPrebootReport(
         base_dataset=base,
@@ -243,7 +266,7 @@ def probe_gpu() -> GpuProbeResult:
 
 def print_gpu_probe() -> int:
     preboot = run_preboot(
-        verbose=True,
+        verbose=False,
         provision_datasets=False,
     )
     if not preboot.core_ready:
