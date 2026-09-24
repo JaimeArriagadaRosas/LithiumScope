@@ -26,6 +26,7 @@ from lithiumscope.core.paths import (
 from lithiumscope.datasets.provisioner import inspect_required_datasets, provision_required_datasets
 from lithiumscope.datasets.status import DatasetStatus
 from lithiumscope.core.visualization import configure_headless_matplotlib
+from lithiumscope.runtime.console_status import LoadingBar
 from lithiumscope.runtime.dependencies import (
     CORE_DEPENDENCIES,
     DEV_DEPENDENCIES,
@@ -295,21 +296,51 @@ def run_preboot(
     repair = ensure_runtime_dependencies(
         verbose=verbose,
     )
-    removed = cleanup_gitkeep_placeholders()
-    python_ok = sys.version_info >= MIN_PYTHON
-    configs_ok = _configs_available()
-    writable_ok = _runtime_writable()
-    core = _dependency_status(CORE_DEPENDENCIES)
-    ml = _dependency_status(ML_DEPENDENCIES)
-    imagery = _dependency_status(
-        IMAGERY_DEPENDENCIES
+
+    loading = (
+        LoadingBar(
+            "Preparando chequeos de preboot"
+        ).start()
+        if verbose
+        else None
     )
-    dev = _dependency_status(
-        DEV_DEPENDENCIES
-    )
-    device = detect_device(prefer_gpu=True)
-    virtualenv_active = _virtualenv_active()
-    visualization_backend = configure_headless_matplotlib()
+    try:
+        if loading is not None:
+            loading.update("Limpiando workspace local")
+        removed = cleanup_gitkeep_placeholders()
+
+        if loading is not None:
+            loading.update("Verificando Python, configuracion y permisos")
+        python_ok = sys.version_info >= MIN_PYTHON
+        configs_ok = _configs_available()
+        writable_ok = _runtime_writable()
+
+        if loading is not None:
+            loading.update("Comprobando dependencias instaladas")
+        core = _dependency_status(CORE_DEPENDENCIES)
+        ml = _dependency_status(ML_DEPENDENCIES)
+        imagery = _dependency_status(
+            IMAGERY_DEPENDENCIES
+        )
+        dev = _dependency_status(
+            DEV_DEPENDENCIES
+        )
+
+        if loading is not None:
+            loading.update("Detectando CPU y aceleradores GPU")
+        device = detect_device(prefer_gpu=True)
+        virtualenv_active = _virtualenv_active()
+
+        if loading is not None:
+            loading.update("Configurando visualizacion")
+        visualization_backend = configure_headless_matplotlib()
+    except Exception:
+        if loading is not None:
+            loading.fail("Fallo durante los chequeos de preboot")
+        raise
+    else:
+        if loading is not None:
+            loading.succeed("Chequeos iniciales completados")
 
     if verbose:
         print(
