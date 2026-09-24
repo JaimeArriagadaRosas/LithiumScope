@@ -18,10 +18,13 @@ GEOROC_ALIASES: dict[str, tuple[str, ...]] = {
         "SAMPLE",
         "SAMPLE_ID",
         "SAMPLE ID",
+        "UNIQUE_ID",
+        "UNIQUE ID",
     ),
     "Sample_type": (
         "TYPE OF MATERIAL",
         "SAMPLE TYPE",
+        "MATERIAL",
     ),
     "Rock_type": (
         "ROCK NAME",
@@ -33,10 +36,30 @@ GEOROC_ALIASES: dict[str, tuple[str, ...]] = {
         "LONGITUDE (X)",
         "LON",
     ),
+    "Longitude_min": (
+        "LONGITUDE MIN",
+        "LONGITUDE MIN.",
+        "LONG MIN",
+    ),
+    "Longitude_max": (
+        "LONGITUDE MAX",
+        "LONGITUDE MAX.",
+        "LONG MAX",
+    ),
     "Latitude": (
         "LATITUDE",
         "LATITUDE (Y)",
         "LAT",
+    ),
+    "Latitude_min": (
+        "LATITUDE MIN",
+        "LATITUDE MIN.",
+        "LAT MIN",
+    ),
+    "Latitude_max": (
+        "LATITUDE MAX",
+        "LATITUDE MAX.",
+        "LAT MAX",
     ),
     "Age (Ma)": (
         "AGE(MA)",
@@ -58,19 +81,19 @@ GEOROC_ALIASES: dict[str, tuple[str, ...]] = {
     "Na2O": ("NA2O(WT%)", "NA2O (WT%)", "NA2O"),
     "K2O": ("K2O(WT%)", "K2O (WT%)", "K2O"),
     "P2O5": ("P2O5(WT%)", "P2O5 (WT%)", "P2O5"),
-    "Li_icpms": ("LI(PPM)", "LI (PPM)", "LI_PPM"),
-    "Th_icpms": ("TH(PPM)", "TH (PPM)"),
-    "U_icpms": ("U(PPM)", "U (PPM)"),
-    "Rb_icpms": ("RB(PPM)", "RB (PPM)"),
-    "Cs_icpms": ("CS(PPM)", "CS (PPM)"),
-    "Nb_icpms": ("NB(PPM)", "NB (PPM)"),
-    "Ta_icpms": ("TA(PPM)", "TA (PPM)"),
-    "Pb_icpms": ("PB(PPM)", "PB (PPM)"),
-    "Ba_icpms": ("BA(PPM)", "BA (PPM)"),
-    "Sr_icpms": ("SR(PPM)", "SR (PPM)"),
-    "Zr_icpms": ("ZR(PPM)", "ZR (PPM)"),
-    "V_icpms": ("V(PPM)", "V (PPM)"),
-    "Hf_icpms": ("HF(PPM)", "HF (PPM)"),
+    "Li_icpms": ("LI(PPM)", "LI (PPM)", "LI_PPM", "LI"),
+    "Th_icpms": ("TH(PPM)", "TH (PPM)", "TH"),
+    "U_icpms": ("U(PPM)", "U (PPM)", "U"),
+    "Rb_icpms": ("RB(PPM)", "RB (PPM)", "RB"),
+    "Cs_icpms": ("CS(PPM)", "CS (PPM)", "CS"),
+    "Nb_icpms": ("NB(PPM)", "NB (PPM)", "NB"),
+    "Ta_icpms": ("TA(PPM)", "TA (PPM)", "TA"),
+    "Pb_icpms": ("PB(PPM)", "PB (PPM)", "PB"),
+    "Ba_icpms": ("BA(PPM)", "BA (PPM)", "BA"),
+    "Sr_icpms": ("SR(PPM)", "SR (PPM)", "SR"),
+    "Zr_icpms": ("ZR(PPM)", "ZR (PPM)", "ZR"),
+    "V_icpms": ("V(PPM)", "V (PPM)", "V"),
+    "Hf_icpms": ("HF(PPM)", "HF (PPM)", "HF"),
 }
 
 
@@ -194,7 +217,11 @@ def _harmonize_chunk(
         column
         for column in (
             "Longitude",
+            "Longitude_min",
+            "Longitude_max",
             "Latitude",
+            "Latitude_min",
+            "Latitude_max",
             "Age (Ma)",
             *MAJOR_OXIDES,
             "Li_icpms",
@@ -218,6 +245,28 @@ def _harmonize_chunk(
             frame[column],
             errors="coerce",
         )
+
+    if "Longitude" not in frame.columns and "Longitude_min" in frame.columns:
+        longitude_min = frame["Longitude_min"]
+        longitude_max = (
+            frame["Longitude_max"]
+            if "Longitude_max" in frame.columns
+            else longitude_min
+        )
+        frame["Longitude"] = (
+            longitude_min + longitude_max.fillna(longitude_min)
+        ) / 2.0
+
+    if "Latitude" not in frame.columns and "Latitude_min" in frame.columns:
+        latitude_min = frame["Latitude_min"]
+        latitude_max = (
+            frame["Latitude_max"]
+            if "Latitude_max" in frame.columns
+            else latitude_min
+        )
+        frame["Latitude"] = (
+            latitude_min + latitude_max.fillna(latitude_min)
+        ) / 2.0
 
     required = [
         column
@@ -331,15 +380,21 @@ def ingest_georoc_files(
             mapping = infer_georoc_column_map(header)
             mapped_union.update(mapping)
 
-            required_targets = {
-                "Li_icpms",
-                "Longitude",
-                "Latitude",
-            }
             produced = set(mapping.values())
-            missing = sorted(
-                required_targets - produced
+            has_li = "Li_icpms" in produced
+            has_longitude = bool(
+                {"Longitude", "Longitude_min"} & produced
             )
+            has_latitude = bool(
+                {"Latitude", "Latitude_min"} & produced
+            )
+            missing = []
+            if not has_li:
+                missing.append("Li_icpms")
+            if not has_longitude:
+                missing.append("Longitude")
+            if not has_latitude:
+                missing.append("Latitude")
             if missing:
                 logger.warning(
                     "Skipping GEOROC file without core columns %s: %s",
