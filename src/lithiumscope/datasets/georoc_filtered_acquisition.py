@@ -107,6 +107,10 @@ def acquire_filtered_georoc(
         response = initial_query(
             session,
             timeout,
+            capture_initial=lambda page: _save_debug(
+                0,
+                page,
+            ),
         )
 
         for step in range(
