@@ -60,6 +60,22 @@ def _select_andean_form(
     return None
 
 
+def _is_chem_location_form(
+    form: Form,
+) -> bool:
+    action = norm(form.action)
+    has_submit = any(
+        item.kind
+        in {"submit", "button", "image"}
+        for item in form.inputs
+    )
+    return (
+        form.method == "post"
+        and "CHEMLOCASP" in action
+        and has_submit
+    )
+
+
 def initial_query(
     session: requests.Session,
     timeout: float,
@@ -129,6 +145,20 @@ def advance_query(
                 response.url,
                 form,
                 payload,
+                timeout,
+            )
+
+    # GEOROC's current Chemistry results page continues
+    # through POST ChemLoc.asp. Its visible Continue button
+    # has no name attribute, so the hidden fields themselves
+    # are the request payload.
+    for form in parser.forms:
+        if _is_chem_location_form(form):
+            return submit_form(
+                session,
+                response.url,
+                form,
+                default_payload(form),
                 timeout,
             )
 
