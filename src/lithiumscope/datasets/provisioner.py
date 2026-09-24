@@ -94,13 +94,16 @@ def inspect_required_datasets() -> list[DatasetStatus]:
 
 def provision_required_datasets(
     prepare_model_2: bool = True,
+    *,
+    include_georoc: bool | None = None,
 ) -> list[DatasetStatus]:
     statuses: list[DatasetStatus] = []
 
     try:
         base_model_1 = ensure_dataset("mamani09_public_mirror")
         model_1 = prepare_model_1_training_source(
-            base_model_1
+            base_model_1,
+            include_georoc=include_georoc,
         )
         statuses.append(
             DatasetStatus(
@@ -189,18 +192,25 @@ def provision_required_datasets(
 
 def _status_map(
     prepare_model_2: bool = True,
+    *,
+    include_georoc: bool | None = None,
 ) -> dict[str, DatasetStatus]:
     return {
         status.key: status
         for status in provision_required_datasets(
-            prepare_model_2=prepare_model_2
+            prepare_model_2=prepare_model_2,
+            include_georoc=include_georoc,
         )
     }
 
 
-def require_model_1_dataset() -> Path:
+def require_model_1_dataset(
+    *,
+    include_georoc: bool | None = None,
+) -> Path:
     status = _status_map(
-        prepare_model_2=False
+        prepare_model_2=False,
+        include_georoc=include_georoc,
     ).get("model_1_geochemistry")
     if status is None or not status.ready or not status.path:
         detail = status.detail if status else "sin estado"
@@ -211,8 +221,14 @@ def require_model_1_dataset() -> Path:
     return Path(status.path)
 
 
-def require_model_2_dataset() -> Path:
-    statuses = _status_map(prepare_model_2=True)
+def require_model_2_dataset(
+    *,
+    include_georoc: bool | None = None,
+) -> Path:
+    statuses = _status_map(
+        prepare_model_2=True,
+        include_georoc=include_georoc,
+    )
     status = statuses.get("model_2_sentinel2")
     if status is None or not status.ready or not status.path:
         detail = status.detail if status else "sin estado"
