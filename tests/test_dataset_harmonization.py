@@ -59,3 +59,33 @@ def test_merge_harmonized_sources_records_deduplication():
 
     assert len(merged) == 1
     assert audit["duplicates_removed"] == 1
+
+
+def test_merge_coalesces_identifiers_across_sources():
+    mamani = pd.DataFrame(
+        [
+            {
+                "Sample": "A-1",
+                "Longitude": -70.0,
+                "Latitude": -20.0,
+                "Li_icpms": 10.0,
+            }
+        ]
+    )
+    georoc = pd.DataFrame(
+        [
+            {
+                "source_sample": "A-1",
+                "Longitude": -70.0,
+                "Latitude": -20.0,
+                "Li_icpms": 10.0,
+            }
+        ]
+    )
+
+    merged, audit = merge_harmonized_sources(
+        [mamani, georoc]
+    )
+
+    assert len(merged) == 1
+    assert audit["duplicates_removed"] == 1
