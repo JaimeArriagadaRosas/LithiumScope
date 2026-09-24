@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Callable
+
 import requests
 
 from lithiumscope.datasets.georoc_query_contract import (
@@ -80,12 +82,19 @@ def _is_chem_location_form(
 def initial_query(
     session: requests.Session,
     timeout: float,
+    capture_initial: Callable[
+        [requests.Response],
+        None,
+    ]
+    | None = None,
 ) -> requests.Response:
     response = session.get(
         GEOROC_QUERY_URL,
         timeout=timeout,
     )
     response.raise_for_status()
+    if capture_initial is not None:
+        capture_initial(response)
     parser = parse(response.text)
     form = best_chemistry_form(
         parser.forms,
