@@ -7,10 +7,8 @@ from pathlib import Path
 import pandas as pd
 
 from lithiumscope.cli.prompts import choose
-from lithiumscope.tools.lab_preboot import (
-    print_gpu_probe,
-    run_lab_preboot,
-)
+from lithiumscope.tools.gpu_probe import print_gpu_probe
+from lithiumscope.tools.lab_preboot import run_lab_preboot
 from lithiumscope.tools.pipeline_inspection_models import (
     inspect_model_1_pipeline,
     inspect_model_2_candidates,
