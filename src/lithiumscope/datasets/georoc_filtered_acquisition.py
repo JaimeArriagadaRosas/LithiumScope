@@ -23,10 +23,10 @@ from lithiumscope.tools.georoc_query_export import (
     materialize_download,
     validate_export,
 )
-from lithiumscope.tools.georoc_query_html import (
+from lithiumscope.tools.georoc_query_models import parse
+from lithiumscope.tools.georoc_query_payload import (
     best_chemistry_form,
     default_payload,
-    parse,
     select_chemistry,
 )
 
