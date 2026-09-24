@@ -56,20 +56,6 @@ def _print_outcome(outcome, model_name: str) -> None:
     )
 
 
-def _choose_data_source() -> bool:
-    print("\nFUENTE DE DATOS GEOQUÍMICOS")
-    print("1. Dataset base Mamani09")
-    print("2. Dataset base + GEOROC")
-    print("0. Volver")
-    choice = choose(
-        "\nSeleccione fuente [0-2]: ",
-        {"0", "1", "2"},
-    )
-    if choice == "0":
-        raise KeyboardInterrupt
-    return choice == "2"
-
-
 def run() -> None:
     from lithiumscope.model_1.training.competition import (
         run_model_1_competition,
@@ -97,25 +83,14 @@ def run() -> None:
     device = detect_device(prefer_gpu=True)
     device_summary(device)
 
-    include_georoc = False
-    if choice in {"1", "2", "3"}:
-        try:
-            include_georoc = _choose_data_source()
-        except KeyboardInterrupt:
-            return
-
-    if include_georoc:
-        print(
-            "\nFuente seleccionada: Mamani09 + GEOROC. "
-            "LithiumScope verificará, armonizará y deduplicará "
-            "los CSV GEOROC antes de entrenar."
-        )
-    else:
-        print("\nFuente seleccionada: Mamani09 base.")
+    print(
+        "\nFuente de entrenamiento: Mamani09 + GEOROC. "
+        "GEOROC se armoniza y deduplica antes de entrenar."
+    )
 
     if choice in {"1", "3"}:
         model_1_dataset = require_model_1_dataset(
-            include_georoc=include_georoc
+            include_georoc=True
         )
         print(
             "\nOrden Modelo 1: "
@@ -137,7 +112,7 @@ def run() -> None:
 
     if choice in {"2", "3"}:
         model_2_manifest = require_model_2_dataset(
-            include_georoc=include_georoc
+            include_georoc=True
         )
         print(
             "\nOrden Modelo 2: "
