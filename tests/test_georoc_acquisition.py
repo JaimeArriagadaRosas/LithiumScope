@@ -60,6 +60,9 @@ from lithiumscope.tools.georoc_query_models import (
     Form,
     Input,
 )
+from lithiumscope.tools.georoc_query_payload import (
+    select_submit_by_label,
+)
 
 
 def test_chemloc_continue_form_does_not_require_submit_name():
@@ -93,3 +96,73 @@ def test_chemloc_continue_form_does_not_require_submit_name():
         ("Batches", "46,47,48"),
         ("Matches", "53173"),
     ]
+
+
+
+def test_select_submit_by_label_prefers_convergent_margin():
+    form = Form(
+        action="ChemistryComb.asp",
+        method="post",
+        inputs=[
+            Input(
+                name="setting",
+                value="ocean",
+                kind="submit",
+                checked=False,
+                nearby_text="to select ocean island(s)",
+            ),
+            Input(
+                name="setting",
+                value="convergent",
+                kind="submit",
+                checked=False,
+                nearby_text="to select convergent margin(s)",
+            ),
+            Input(
+                name="Items",
+                value="LI,SIO2",
+                kind="hidden",
+                checked=False,
+            ),
+        ],
+    )
+
+    payload = _default_payload(form)
+    selected = select_submit_by_label(
+        form,
+        payload,
+        ("CONVERGENT MARGIN",),
+    )
+
+    assert ("setting", "convergent") in selected
+    assert ("setting", "ocean") not in selected
+    assert ("Items", "LI,SIO2") in selected
+
+
+def test_select_submit_by_label_fails_if_setting_is_missing():
+    form = Form(
+        action="ChemistryComb.asp",
+        method="post",
+        inputs=[
+            Input(
+                name="setting",
+                value="ocean",
+                kind="submit",
+                checked=False,
+                nearby_text="to select ocean island(s)",
+            )
+        ],
+    )
+
+    try:
+        select_submit_by_label(
+            form,
+            [],
+            ("CONVERGENT MARGIN",),
+        )
+    except RuntimeError as exc:
+        assert "CONVERGENT MARGIN" in str(exc)
+    else:
+        raise AssertionError(
+            "Expected explicit geological-setting failure."
+        )
