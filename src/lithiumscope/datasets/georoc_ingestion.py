@@ -136,25 +136,29 @@ def _read_header(path: Path) -> list[str]:
 
 
 def _quality_sum(frame: pd.DataFrame) -> pd.Series:
-    available = [
-        column
+    if not all(
+        column in frame.columns
         for column in MAJOR_OXIDES
-        if column in frame.columns
-    ]
-    if len(available) < 8:
+    ):
         return pd.Series(
             pd.NA,
             index=frame.index,
             dtype="Float64",
         )
-    numeric = frame[available].apply(
+    numeric = frame[list(MAJOR_OXIDES)].apply(
         pd.to_numeric,
         errors="coerce",
     )
-    return numeric.sum(
-        axis=1,
-        min_count=len(available),
+    complete = numeric.notna().all(axis=1)
+    result = pd.Series(
+        pd.NA,
+        index=frame.index,
+        dtype="Float64",
     )
+    result.loc[complete] = numeric.loc[
+        complete
+    ].sum(axis=1)
+    return result
 
 
 def _harmonize_chunk(
@@ -405,7 +409,10 @@ def ingest_georoc_files(
         "scientific_note": (
             "FE2O3T(WT%) is accepted as the total-iron "
             "counterpart for the current Fe2O3 predictor. "
-            "This assumption remains traceable in the source mapping."
+            "The oxide-sum QC value is calculated only for rows "
+            "with all ten major oxides available; incomplete sums "
+            "are not fabricated. These assumptions remain traceable "
+            "in the source mapping."
         ),
     }
     audit_destination.parent.mkdir(
