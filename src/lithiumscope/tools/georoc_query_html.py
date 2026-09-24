@@ -1,138 +1,29 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from html.parser import HTMLParser
 import re
 from urllib.parse import urljoin
 
 import requests
 
+from lithiumscope.tools.georoc_query_models import (
+    Form,
+    FormParser,
+    Input,
+    parse,
+)
+
 
 def norm(value: str) -> str:
-    return re.sub(r"[^A-Z0-9]+", "", str(value).upper())
+    return re.sub(
+        r"[^A-Z0-9]+",
+        "",
+        str(value).upper(),
+    )
 
 
-@dataclass
-class Option:
-    value: str
-    text: str
-    selected: bool = False
-
-
-@dataclass
-class Select:
-    name: str
-    multiple: bool
-    options: list[Option] = field(default_factory=list)
-
-
-@dataclass
-class Input:
-    name: str
-    value: str
-    kind: str
-    checked: bool
-    nearby_text: str = ""
-
-
-@dataclass
-class Form:
-    action: str
-    method: str
-    inputs: list[Input] = field(default_factory=list)
-    selects: list[Select] = field(default_factory=list)
-
-
-class FormParser(HTMLParser):
-    def __init__(self) -> None:
-        super().__init__()
-        self.forms: list[Form] = []
-        self.links: list[tuple[str, str]] = []
-        self._form: Form | None = None
-        self._select: Select | None = None
-        self._option: Option | None = None
-        self._anchor_href: str | None = None
-        self._anchor_text: list[str] = []
-        self._recent_input: Input | None = None
-
-    def handle_starttag(self, tag: str, attrs) -> None:
-        data = {str(k).lower(): str(v or "") for k, v in attrs}
-        tag = tag.lower()
-        if tag == "form":
-            self._form = Form(
-                action=data.get("action", ""),
-                method=data.get("method", "get").lower(),
-            )
-            self.forms.append(self._form)
-        elif tag == "select" and self._form is not None:
-            self._select = Select(
-                name=data.get("name", ""),
-                multiple="multiple" in data,
-            )
-            self._form.selects.append(self._select)
-        elif tag == "option" and self._select is not None:
-            self._option = Option(
-                value=data.get("value", ""),
-                text="",
-                selected="selected" in data,
-            )
-            self._select.options.append(self._option)
-        elif tag == "input" and self._form is not None:
-            item = Input(
-                name=data.get("name", ""),
-                value=data.get("value", ""),
-                kind=data.get("type", "text").lower(),
-                checked="checked" in data,
-            )
-            self._form.inputs.append(item)
-            self._recent_input = item
-        elif tag == "a":
-            self._anchor_href = data.get("href", "")
-            self._anchor_text = []
-
-    def handle_endtag(self, tag: str) -> None:
-        tag = tag.lower()
-        if tag == "form":
-            self._form = None
-            self._recent_input = None
-        elif tag == "select":
-            self._select = None
-        elif tag == "option":
-            self._option = None
-        elif tag == "a" and self._anchor_href is not None:
-            self.links.append(
-                (
-                    self._anchor_href,
-                    " ".join(self._anchor_text).strip(),
-                )
-            )
-            self._anchor_href = None
-            self._anchor_text = []
-
-    def handle_data(self, data: str) -> None:
-        text = " ".join(data.split())
-        if not text:
-            return
-        if self._option is not None:
-            self._option.text += (
-                (" " if self._option.text else "") + text
-            )
-        if self._anchor_href is not None:
-            self._anchor_text.append(text)
-        if self._recent_input is not None:
-            joined = (
-                self._recent_input.nearby_text + " " + text
-            ).strip()
-            self._recent_input.nearby_text = joined[-240:]
-
-
-def parse(html: str) -> FormParser:
-    parser = FormParser()
-    parser.feed(html)
-    return parser
-
-
-def default_payload(form: Form) -> list[tuple[str, str]]:
+def default_payload(
+    form: Form,
+) -> list[tuple[str, str]]:
     payload: list[tuple[str, str]] = []
     for item in form.inputs:
         if not item.name:
@@ -150,7 +41,9 @@ def default_payload(form: Form) -> list[tuple[str, str]]:
             and not item.checked
         ):
             continue
-        payload.append((item.name, item.value))
+        payload.append(
+            (item.name, item.value)
+        )
 
     for select in form.selects:
         if not select.name:
@@ -183,7 +76,10 @@ def replace_field(
         for key, value in payload
         if key != name
     ]
-    result.extend((name, value) for value in values)
+    result.extend(
+        (name, value)
+        for value in values
+    )
     return result
 
 
@@ -191,25 +87,40 @@ def best_chemistry_form(
     forms: list[Form],
     chemistry: tuple[str, ...],
 ) -> Form:
-    wanted = {norm(value) for value in chemistry}
-    scored: list[tuple[int, Form]] = []
+    wanted = {
+        norm(value)
+        for value in chemistry
+    }
+    scored: list[
+        tuple[int, Form]
+    ] = []
     for form in forms:
         texts = {
             norm(option.text)
             for select in form.selects
             for option in select.options
         }
-        scored.append((len(wanted & texts), form))
+        scored.append(
+            (
+                len(wanted & texts),
+                form,
+            )
+        )
 
     if not scored:
         raise RuntimeError(
-            "GEOROC no entregó ningún formulario de consulta."
+            "GEOROC no entregó ningún "
+            "formulario de consulta."
         )
 
-    score, form = max(scored, key=lambda item: item[0])
+    score, form = max(
+        scored,
+        key=lambda item: item[0],
+    )
     if score < 3:
         raise RuntimeError(
-            "No fue posible identificar el formulario químico de GEOROC."
+            "No fue posible identificar el "
+            "formulario químico de GEOROC."
         )
     return form
 
@@ -219,7 +130,10 @@ def select_chemistry(
     payload: list[tuple[str, str]],
     chemistry: tuple[str, ...],
 ) -> list[tuple[str, str]]:
-    wanted = {norm(value) for value in chemistry}
+    wanted = {
+        norm(value)
+        for value in chemistry
+    }
     for select in form.selects:
         values = [
             option.value
@@ -235,17 +149,42 @@ def select_chemistry(
     return payload
 
 
+def _matching_inputs(
+    items: list[Input],
+    desired: tuple[str, ...],
+) -> list[Input]:
+    return [
+        item
+        for item in items
+        if any(
+            token
+            in norm(
+                item.nearby_text
+                + " "
+                + item.value
+            )
+            for token in desired
+        )
+    ]
+
+
 def set_named_choices(
     form: Form,
     payload: list[tuple[str, str]],
     wanted_labels: tuple[str, ...],
 ) -> list[tuple[str, str]]:
-    desired = tuple(norm(value) for value in wanted_labels)
+    desired = tuple(
+        norm(value)
+        for value in wanted_labels
+    )
     checkbox_names = {
         item.name
         for item in form.inputs
-        if item.kind in {"checkbox", "radio"}
-        and item.name
+        if (
+            item.kind
+            in {"checkbox", "radio"}
+            and item.name
+        )
     }
     result = [
         (key, value)
@@ -253,29 +192,27 @@ def set_named_choices(
         if key not in checkbox_names
     ]
 
-    groups: dict[str, list[Input]] = {}
+    groups: dict[
+        str,
+        list[Input],
+    ] = {}
     for item in form.inputs:
         if (
-            item.kind not in {"checkbox", "radio"}
+            item.kind
+            not in {"checkbox", "radio"}
             or not item.name
         ):
             continue
-        groups.setdefault(item.name, []).append(item)
+        groups.setdefault(
+            item.name,
+            [],
+        ).append(item)
 
     for name, items in groups.items():
-        matches = [
-            item
-            for item in items
-            if any(
-                token
-                in norm(
-                    item.nearby_text
-                    + " "
-                    + item.value
-                )
-                for token in desired
-            )
-        ]
+        matches = _matching_inputs(
+            items,
+            desired,
+        )
         if matches:
             selected = (
                 matches[:1]
@@ -312,19 +249,36 @@ def add_submit(
     )
     for item in form.inputs:
         if (
-            item.kind not in {"submit", "button", "image"}
+            item.kind
+            not in {
+                "submit",
+                "button",
+                "image",
+            }
             or not item.name
         ):
             continue
         text = norm(
-            item.value + " " + item.nearby_text
+            item.value
+            + " "
+            + item.nearby_text
         )
-        if any(norm(token) in text for token in preferred):
-            return payload + [(item.name, item.value)]
+        if any(
+            norm(token) in text
+            for token in preferred
+        ):
+            return payload + [
+                (item.name, item.value)
+            ]
 
     for item in form.inputs:
-        if item.kind == "submit" and item.name:
-            return payload + [(item.name, item.value)]
+        if (
+            item.kind == "submit"
+            and item.name
+        ):
+            return payload + [
+                (item.name, item.value)
+            ]
     return payload
 
 
@@ -335,7 +289,10 @@ def submit_form(
     payload: list[tuple[str, str]],
     timeout: float,
 ) -> requests.Response:
-    url = urljoin(base_url, form.action or base_url)
+    url = urljoin(
+        base_url,
+        form.action or base_url,
+    )
     if form.method == "post":
         response = session.post(
             url,
@@ -359,25 +316,56 @@ def follow_link_by_text(
     tokens: tuple[str, ...],
     timeout: float,
 ) -> requests.Response | None:
-    wanted = tuple(norm(token) for token in tokens)
-    ranked: list[tuple[int, str]] = []
+    wanted = tuple(
+        norm(token)
+        for token in tokens
+    )
+    ranked: list[
+        tuple[int, str]
+    ] = []
     for href, text in parser.links:
-        combined = norm(text + " " + href)
+        combined = norm(
+            text + " " + href
+        )
         score = sum(
             1
             for token in wanted
             if token in combined
         )
         if score:
-            ranked.append((score, href))
+            ranked.append(
+                (score, href)
+            )
 
     if not ranked:
         return None
 
-    _, href = max(ranked, key=lambda item: item[0])
+    _, href = max(
+        ranked,
+        key=lambda item: item[0],
+    )
     response = session.get(
-        urljoin(base_url, href),
+        urljoin(
+            base_url,
+            href,
+        ),
         timeout=timeout,
     )
     response.raise_for_status()
     return response
+
+
+__all__ = [
+    "Form",
+    "FormParser",
+    "add_submit",
+    "best_chemistry_form",
+    "default_payload",
+    "follow_link_by_text",
+    "norm",
+    "parse",
+    "replace_field",
+    "select_chemistry",
+    "set_named_choices",
+    "submit_form",
+]
