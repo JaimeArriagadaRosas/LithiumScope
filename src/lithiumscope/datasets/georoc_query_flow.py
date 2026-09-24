@@ -19,6 +19,7 @@ from lithiumscope.tools.georoc_query_payload import (
     default_payload,
     replace_field,
     select_chemistry,
+    select_submit_by_label,
     set_named_choices,
 )
 
@@ -105,9 +106,10 @@ def initial_query(
             "WHOLE ROCK",
         ),
     )
-    payload = add_submit(
+    payload = select_submit_by_label(
         form,
         payload,
+        ("CONVERGENT MARGIN",),
     )
     return submit_form(
         session,
