@@ -747,7 +747,74 @@ ruff check src tests main.py
 python main.py
 ```
 
+### Comandos útiles
+
+La aplicación principal continúa siendo:
+
+```bat
+python main.py
+```
+
+o, después de instalar el proyecto:
+
+```bat
+lithiumscope
+```
+
+Para inspeccionar el pipeline de datos **sin entrenar modelos**:
+
+```bat
+python -m lithiumscope.tools.pipeline_inspect
+```
+
+o con el comando instalado:
+
+```bat
+lithiumscope-inspect
+```
+
+El inspector permite ejecutar etapas individuales:
+
+```text
+1. Inspeccionar fuentes brutas
+2. Armonizar GEOROC
+3. Concatenar Mamani09 + GEOROC
+4. Deduplicar dataset combinado
+5. Ejecutar limpieza completa de M1
+6. Obtener candidatos para M2
+7. Ejecutar steps 1-6 y mostrar informe completo
+0. Salir
+```
+
+Para ejecutar directamente el flujo completo:
+
+```bat
+lithiumscope-inspect --step 7
+```
+
+equivalente a:
+
+```bat
+python -m lithiumscope.tools.pipeline_inspect --step all
+```
+
+La opción 7 reutiliza las mismas funciones de adquisición, armonización,
+deduplicación y limpieza utilizadas por el entrenamiento. No entrena ningún
+algoritmo. Su objetivo es mostrar exactamente cuántas filas sobreviven a cada
+etapa y generar artefactos de inspección en:
+
+```text
+data/processed/model_1/inspection/
+```
+
+Entre los datos mostrados se incluyen filas por fuente, porcentaje de faltantes,
+distribución de Li, filas eliminadas por deduplicación, auditoría completa de
+los steps de M1, número final de muestras de M1 y número de candidatos de M2
+antes de verificar/descargar Sentinel-2.
+
 ---
+
+
 
 ## 18. Estructura del repositorio
 
