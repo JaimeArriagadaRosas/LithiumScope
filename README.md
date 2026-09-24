@@ -761,46 +761,17 @@ o, después de instalar el proyecto:
 lithiumscope
 ```
 
-Para descargar de forma reanudable los tres CSV oficiales de **GEOROC Andean Arc**:
-
-```bat
-lithiumscope-georoc
-```
-
-o:
-
-```bat
-python -m lithiumscope.tools.georoc_download
-```
-
-Antes de descargar puede revisar los nombres y tamaños publicados por el repositorio oficial:
-
-```bat
-lithiumscope-georoc --list
-```
-
-La descarga guarda los archivos en:
-
-```text
-data/raw/model_1/georoc/
-```
-
-Si una descarga se interrumpe, conserva un archivo `.part` y el mismo comando
-continúa desde donde quedó cuando el servidor acepta solicitudes por rango.
-También se genera `georoc_andean_arc_download.json` con los identificadores,
-tamaños, checksum disponible y rutas locales de los archivos.
-
 Para inspeccionar el pipeline de datos **sin entrenar modelos**:
-
-```bat
-python -m lithiumscope.tools.pipeline_inspect
-```
-
-o con el comando instalado:
 
 ```bat
 lithiumscope-inspect
 ```
+
+El laboratorio ejecuta su propio preboot antes de cualquier step. Ese preboot
+comprueba entorno, Mamani09 y una extracción GEOROC filtrada. Si falta GEOROC,
+intenta obtener mediante la consulta pública únicamente el subconjunto requerido
+por LithiumScope; nunca descarga automáticamente los ~22 GiB de Andean Arc como
+fallback.
 
 El inspector permite ejecutar etapas individuales:
 
@@ -821,29 +792,29 @@ Para ejecutar directamente el flujo completo:
 lithiumscope-inspect --step 7
 ```
 
-equivalente a:
+Para comprobar la GPU sin descargar datasets:
 
 ```bat
-python -m lithiumscope.tools.pipeline_inspect --step all
+lithiumscope-inspect --gpu
 ```
 
-La opción 7 reutiliza las mismas funciones de adquisición, armonización,
-deduplicación y limpieza utilizadas por el entrenamiento. No entrena ningún
-algoritmo. Su objetivo es mostrar exactamente cuántas filas sobreviven a cada
-etapa y generar artefactos de inspección en:
+La prueba GPU informa NVIDIA/`nvidia-smi`, VRAM, PyTorch CUDA y realiza pruebas
+mínimas reales de XGBoost CUDA y CatBoost GPU cuando están instalados.
+
+La opción 7 no entrena ningún algoritmo. Reconstruye y audita las etapas de datos
+para obtener el número final de muestras que entrarían a M1 y el número de
+candidatos M2 con Li + coordenadas antes de Sentinel-2.
+
+Los artefactos de inspección se guardan en:
 
 ```text
 data/processed/model_1/inspection/
 ```
 
-Entre los datos mostrados se incluyen filas por fuente, porcentaje de faltantes,
-distribución de Li, filas eliminadas por deduplicación, auditoría completa de
-los steps de M1, número final de muestras de M1 y número de candidatos de M2
-antes de verificar/descargar Sentinel-2.
+El procedimiento aprobado y el contrato de adquisición se documentan en
+[`docs/LAB_PIPELINE_PROCEDURE.md`](docs/LAB_PIPELINE_PROCEDURE.md).
 
 ---
-
-
 
 ## 18. Estructura del repositorio
 
