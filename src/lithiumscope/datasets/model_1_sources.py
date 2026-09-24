@@ -39,12 +39,19 @@ def _source_name(frame: pd.DataFrame, fallback: str) -> pd.DataFrame:
 
 def prepare_model_1_training_source(
     base_dataset: Path,
+    *,
+    include_georoc: bool | None = None,
 ) -> Path:
     config = load_config("model_1")
     sources = config.get("data_sources", {})
     georoc = sources.get("georoc", {})
 
-    if not bool(georoc.get("enabled", False)):
+    use_georoc = (
+        bool(georoc.get("enabled", False))
+        if include_georoc is None
+        else bool(include_georoc)
+    )
+    if not use_georoc:
         return base_dataset
 
     raw_glob = str(
@@ -58,12 +65,12 @@ def prepare_model_1_training_source(
         pattern.parent.glob(pattern.name)
     )
     if not georoc_files:
-        logger.warning(
-            "GEOROC integration enabled but no local CSV files "
-            "matched %s; using base dataset only.",
-            raw_glob,
+        raise RuntimeError(
+            "Se solicitó entrenamiento con GEOROC, pero no hay "
+            f"CSV disponibles en {raw_glob}. Descargue/revise los "
+            "archivos GEOROC y colóquelos en esa ruta antes de "
+            "iniciar el entrenamiento."
         )
-        return base_dataset
 
     harmonized_path = _project_path(
         str(
