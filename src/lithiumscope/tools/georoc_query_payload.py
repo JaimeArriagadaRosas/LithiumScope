@@ -221,6 +221,51 @@ def set_named_choices(
     return result
 
 
+def select_submit_by_label(
+    form: Form,
+    payload: list[tuple[str, str]],
+    labels: tuple[str, ...],
+) -> list[tuple[str, str]]:
+    wanted = tuple(
+        norm(label)
+        for label in labels
+    )
+    for item in form.inputs:
+        if item.kind not in {
+            "submit",
+            "button",
+            "image",
+        }:
+            continue
+        text = norm(
+            " ".join(
+                (
+                    item.name,
+                    item.value,
+                    item.nearby_text,
+                )
+            )
+        )
+        if not any(
+            label in text
+            for label in wanted
+        ):
+            continue
+        if not item.name:
+            raise RuntimeError(
+                "GEOROC expuso el selector solicitado "
+                "sin un nombre de campo utilizable."
+            )
+        return payload + [
+            (item.name, item.value)
+        ]
+
+    raise RuntimeError(
+        "GEOROC no expuso de forma inequívoca "
+        "el selector de CONVERGENT MARGIN."
+    )
+
+
 def add_submit(
     form: Form,
     payload: list[tuple[str, str]],
