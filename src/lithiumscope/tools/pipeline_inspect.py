@@ -26,6 +26,10 @@ from lithiumscope.model_1.steps.step_01_load_data import (
 from lithiumscope.model_2.data.sample_source import (
     load_georeferenced_li_samples,
 )
+from lithiumscope.tools.lab_preboot import (
+    print_gpu_probe,
+    run_lab_preboot,
+)
 
 
 def _project_path(raw: str) -> Path:
@@ -665,7 +669,26 @@ def main() -> None:
             "Use 7 o all para ejecutar el flujo completo."
         ),
     )
+    parser.add_argument(
+        "--gpu",
+        action="store_true",
+        help=(
+            "Ejecuta únicamente el diagnóstico GPU del laboratorio. "
+            "No descarga datasets."
+        ),
+    )
     args = parser.parse_args()
+
+    if args.gpu:
+        raise SystemExit(print_gpu_probe())
+
+    # El laboratorio tiene su propio preboot. Garantiza entorno y
+    # fuentes brutas, pero deja concatenación/limpieza a los steps.
+    run_lab_preboot(
+        acquire_data=True,
+        verbose=True,
+    )
+
     if args.step in {"7", "all"}:
         run_all()
         return
