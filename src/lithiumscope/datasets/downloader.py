@@ -112,6 +112,14 @@ def ensure_dataset(key: str, allow_large: bool = False) -> Path:
     spec = get_dataset_spec(key)
     base = DATA_DIR / "raw" / spec.model
 
+    if spec.provider == "manual":
+        raise DatasetError(
+            f"{spec.key} is a reviewed/manual source and is not "
+            "downloaded automatically. Review the source and place "
+            "the approved files in the configured raw-data directory: "
+            f"{spec.source_url}"
+        )
+
     if spec.provider == "dynamic":
         raise DatasetError(
             f"{spec.key} is a dynamic imagery provider, not a static dataset. "
