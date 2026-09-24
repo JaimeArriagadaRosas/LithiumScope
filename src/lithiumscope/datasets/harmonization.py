@@ -12,7 +12,7 @@ _COORDINATE_PAIRS = (
 )
 
 
-def _canonical_coordinates(
+def canonicalize_coordinates(
     frame: pd.DataFrame,
 ) -> pd.DataFrame:
     result = frame.copy()
@@ -40,13 +40,11 @@ def _canonical_coordinates(
     return result
 
 
-def merge_harmonized_sources(
+def concatenate_harmonized_sources(
     frames: Iterable[pd.DataFrame],
-    *,
-    coordinate_decimals: int = 5,
-) -> tuple[pd.DataFrame, dict]:
+) -> pd.DataFrame:
     prepared = [
-        _canonical_coordinates(frame)
+        canonicalize_coordinates(frame)
         for frame in frames
         if frame is not None and not frame.empty
     ]
@@ -54,12 +52,19 @@ def merge_harmonized_sources(
         raise ValueError(
             "No harmonized datasets were supplied."
         )
-
-    combined = pd.concat(
+    return pd.concat(
         prepared,
         ignore_index=True,
         sort=False,
     )
+
+
+def deduplicate_harmonized_sources(
+    frame: pd.DataFrame,
+    *,
+    coordinate_decimals: int = 5,
+) -> tuple[pd.DataFrame, dict]:
+    combined = canonicalize_coordinates(frame)
     rows_before = len(combined)
 
     dedupe_columns: list[str] = []
@@ -101,11 +106,18 @@ def merge_harmonized_sources(
             ]
         )
 
+    duplicate_mask = pd.Series(
+        False,
+        index=combined.index,
+    )
     if dedupe_columns:
-        combined = combined.drop_duplicates(
+        duplicate_mask = combined.duplicated(
             subset=dedupe_columns,
             keep="first",
         )
+        combined = combined.loc[
+            ~duplicate_mask
+        ].copy()
 
     combined = combined.drop(
         columns=[
@@ -116,12 +128,42 @@ def merge_harmonized_sources(
     ).reset_index(drop=True)
 
     audit = {
-        "sources": len(prepared),
         "rows_before_deduplication": rows_before,
         "rows_after_deduplication": len(combined),
-        "duplicates_removed": (
-            rows_before - len(combined)
+        "duplicates_removed": int(
+            duplicate_mask.sum()
         ),
         "deduplication_columns": dedupe_columns,
+        "coordinate_decimals": coordinate_decimals,
+        "rule": (
+            "Conservative exact-key deduplication using the "
+            "available sample identifier together with rounded "
+            "coordinates. Same-location samples with different "
+            "identifiers are retained."
+        ),
     }
     return combined, audit
+
+
+def merge_harmonized_sources(
+    frames: Iterable[pd.DataFrame],
+    *,
+    coordinate_decimals: int = 5,
+) -> tuple[pd.DataFrame, dict]:
+    concatenated = concatenate_harmonized_sources(
+        frames
+    )
+    merged, audit = deduplicate_harmonized_sources(
+        concatenated,
+        coordinate_decimals=coordinate_decimals,
+    )
+    audit["sources"] = (
+        int(
+            concatenated["source_dataset"].nunique(
+                dropna=True
+            )
+        )
+        if "source_dataset" in concatenated.columns
+        else None
+    )
+    return merged, audit
