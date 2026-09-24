@@ -252,10 +252,7 @@ def select_submit_by_label(
         ):
             continue
         if not item.name:
-            raise RuntimeError(
-                "GEOROC expuso el selector solicitado "
-                "sin un nombre de campo utilizable."
-            )
+            return payload
         return payload + [
             (item.name, item.value)
         ]
