@@ -161,6 +161,9 @@ class LoadingBar:
         self._last_width = 0
         self._started = False
 
+    def update(self, message: str) -> None:
+        self._message = str(message)
+
     def _render(self) -> str:
         width = self._BAR_WIDTH
         position = max(
