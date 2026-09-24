@@ -761,6 +761,35 @@ o, después de instalar el proyecto:
 lithiumscope
 ```
 
+Para descargar de forma reanudable los tres CSV oficiales de **GEOROC Andean Arc**:
+
+```bat
+lithiumscope-georoc
+```
+
+o:
+
+```bat
+python -m lithiumscope.tools.georoc_download
+```
+
+Antes de descargar puede revisar los nombres y tamaños publicados por el repositorio oficial:
+
+```bat
+lithiumscope-georoc --list
+```
+
+La descarga guarda los archivos en:
+
+```text
+data/raw/model_1/georoc/
+```
+
+Si una descarga se interrumpe, conserva un archivo `.part` y el mismo comando
+continúa desde donde quedó cuando el servidor acepta solicitudes por rango.
+También se genera `georoc_andean_arc_download.json` con los identificadores,
+tamaños, checksum disponible y rutas locales de los archivos.
+
 Para inspeccionar el pipeline de datos **sin entrenar modelos**:
 
 ```bat
