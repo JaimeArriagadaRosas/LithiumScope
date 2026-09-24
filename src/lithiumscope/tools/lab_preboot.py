@@ -242,6 +242,17 @@ def probe_gpu() -> GpuProbeResult:
 
 
 def print_gpu_probe() -> int:
+    preboot = run_preboot(
+        verbose=True,
+        provision_datasets=False,
+    )
+    if not preboot.core_ready:
+        print(
+            "\n[ERROR] El entorno base no supera el preboot; "
+            "el diagnóstico GPU no es confiable."
+        )
+        return 2
+
     result = probe_gpu()
 
     def state(value: bool | None) -> str:
