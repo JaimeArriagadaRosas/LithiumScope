@@ -370,9 +370,11 @@ def _materialize_download(
         temporary = destination.with_suffix(".download")
         temporary.write_bytes(raw)
         try:
-            frame = pd.read_csv(temporary, sep=None, engine="python", low_memory=False)
-        except TypeError:
-            frame = pd.read_csv(temporary, sep=None, engine="python")
+            frame = pd.read_csv(
+                temporary,
+                sep=None,
+                engine="python",
+            )
         finally:
             temporary.unlink(missing_ok=True)
         frame.to_csv(destination, index=False)
