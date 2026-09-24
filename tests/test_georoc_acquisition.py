@@ -51,3 +51,45 @@ def test_chemistry_form_selects_only_requested_analytes():
     assert ("major", "CR2O3") not in selected
     assert ("trace", "AU") not in selected
     assert set(CHEMISTRY) >= {"LI", "SIO2", "RB"}
+
+
+from lithiumscope.datasets.georoc_query_flow import (
+    _is_chem_location_form,
+)
+from lithiumscope.tools.georoc_query_models import (
+    Form,
+    Input,
+)
+
+
+def test_chemloc_continue_form_does_not_require_submit_name():
+    form = Form(
+        action="ChemLoc.asp",
+        method="post",
+        inputs=[
+            Input(
+                name="",
+                value="Continue",
+                kind="submit",
+                checked=False,
+            ),
+            Input(
+                name="Batches",
+                value="46,47,48",
+                kind="hidden",
+                checked=False,
+            ),
+            Input(
+                name="Matches",
+                value="53173",
+                kind="hidden",
+                checked=False,
+            ),
+        ],
+    )
+
+    assert _is_chem_location_form(form) is True
+    assert _default_payload(form) == [
+        ("Batches", "46,47,48"),
+        ("Matches", "53173"),
+    ]
