@@ -74,6 +74,7 @@ def test_pdf_report_is_generated_with_case_sections(tmp_path: Path):
         input_info={"demonstration": {"source_name": "external"}},
         model_1_diagnostics={"out_of_domain_rows": 0, "missing_expected_columns": []},
         model_2_diagnostics={"failed_cases": 0, "missing_feature_counts": {}},
+        maps=[],
         figures=[],
         lithium_threshold_ppm=20.0,
         model_2_classification_threshold=0.5,
