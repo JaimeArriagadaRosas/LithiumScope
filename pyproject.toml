@@ -41,6 +41,7 @@ dev = [
 [project.scripts]
 lithiumscope = "lithiumscope.cli.menu:main"
 lithiumscope-inspect = "lithiumscope.tools.pipeline_inspect:main"
+lithiumscope-georoc = "lithiumscope.tools.georoc_download:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
