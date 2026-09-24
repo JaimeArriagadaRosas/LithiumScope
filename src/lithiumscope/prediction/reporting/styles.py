@@ -43,6 +43,7 @@ def build_styles():
             textColor=colors.HexColor("#17324D"),
             spaceBefore=8,
             spaceAfter=8,
+            keepWithNext=True,
         )
     )
     styles.add(
@@ -55,6 +56,7 @@ def build_styles():
             textColor=colors.HexColor("#274F6F"),
             spaceBefore=7,
             spaceAfter=5,
+            keepWithNext=True,
         )
     )
     styles.add(
