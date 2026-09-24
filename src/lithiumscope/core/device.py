@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import importlib.util
 import os
 import platform
 import shutil
@@ -21,11 +22,19 @@ class DeviceInfo:
     mps_available: bool
     nvidia_driver_available: bool = False
     nvidia_device_names: tuple[str, ...] = ()
+    xgboost_cuda_available: bool = False
     diagnostic: str = ""
 
     @property
     def is_gpu(self) -> bool:
         return self.accelerator in {"cuda", "mps"}
+
+    @property
+    def any_cuda_backend(self) -> bool:
+        return (
+            self.cuda_available
+            or self.xgboost_cuda_available
+        )
 
 
 def _detect_nvidia_driver() -> tuple[bool, tuple[str, ...]]:
@@ -60,6 +69,35 @@ def _detect_nvidia_driver() -> tuple[bool, tuple[str, ...]]:
     return bool(names), names
 
 
+def _detect_xgboost_cuda() -> bool:
+    if importlib.util.find_spec("xgboost") is None:
+        return False
+    try:
+        import xgboost  # type: ignore
+
+        build_info = getattr(
+            xgboost,
+            "build_info",
+            lambda: {},
+        )()
+        value = build_info.get("USE_CUDA")
+        if isinstance(value, bool):
+            return value
+        if value is not None:
+            return str(value).strip().lower() in {
+                "1",
+                "true",
+                "yes",
+                "on",
+            }
+    except Exception:
+        logger.debug(
+            "Could not inspect XGBoost CUDA build",
+            exc_info=True,
+        )
+    return False
+
+
 def detect_device(prefer_gpu: bool = True) -> DeviceInfo:
     cpu_count = os.cpu_count() or 1
     torch_available = False
@@ -70,6 +108,11 @@ def detect_device(prefer_gpu: bool = True) -> DeviceInfo:
 
     nvidia_driver_available, nvidia_device_names = (
         _detect_nvidia_driver()
+    )
+    xgboost_cuda_available = (
+        _detect_xgboost_cuda()
+        if prefer_gpu and nvidia_driver_available
+        else False
     )
 
     try:
@@ -91,11 +134,22 @@ def detect_device(prefer_gpu: bool = True) -> DeviceInfo:
             name = "Apple Metal Performance Shaders"
     except Exception:
         logger.debug(
-            "PyTorch unavailable; using CPU detection only",
+            "PyTorch unavailable; using independent backend detection",
             exc_info=True,
         )
 
     if (
+        prefer_gpu
+        and nvidia_driver_available
+        and not cuda_available
+        and xgboost_cuda_available
+    ):
+        diagnostic = (
+            "NVIDIA detectada. PyTorch no expone CUDA, pero "
+            "XGBoost informa soporte CUDA; XGBoost puede usar GPU "
+            "mientras TabNet seguira en CPU hasta corregir PyTorch."
+        )
+    elif (
         prefer_gpu
         and nvidia_driver_available
         and not cuda_available
@@ -121,16 +175,18 @@ def detect_device(prefer_gpu: bool = True) -> DeviceInfo:
         mps_available=mps_available,
         nvidia_driver_available=nvidia_driver_available,
         nvidia_device_names=nvidia_device_names,
+        xgboost_cuda_available=xgboost_cuda_available,
         diagnostic=diagnostic,
     )
     logger.info(
         "Device selected: %s | %s | CPU threads=%s | "
-        "nvidia_driver=%s | nvidia_devices=%s | %s",
+        "nvidia_driver=%s | nvidia_devices=%s | xgboost_cuda=%s | %s",
         info.accelerator,
         info.name,
         info.cpu_count,
         info.nvidia_driver_available,
         ", ".join(info.nvidia_device_names) or "none",
+        info.xgboost_cuda_available,
         info.diagnostic,
     )
     return info
@@ -139,7 +195,7 @@ def detect_device(prefer_gpu: bool = True) -> DeviceInfo:
 def xgboost_device_parameters(
     device: DeviceInfo,
 ) -> dict[str, str]:
-    if device.accelerator == "cuda":
+    if device.xgboost_cuda_available:
         return {
             "device": "cuda",
             "tree_method": "hist",
