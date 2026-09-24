@@ -57,3 +57,24 @@ Un algoritmo no debe conocer Git, dashboards, manifests ni tags. Del mismo modo,
 ## Tamaño de archivos
 
 LithiumScope no utiliza el número de líneas como definición de SOLID. Los tests que limitan algunos archivos solo protegen decisiones concretas (por ejemplo, que `menu.py` siga siendo un despachador). Para los módulos de dominio se priorizan cohesión, acoplamiento y facilidad de prueba.
+
+
+## Laboratorio de inspección
+
+El laboratorio separa explícitamente estas responsabilidades:
+
+- `tools/pipeline_inspect.py`: CLI/orquestación solamente;
+- `tools/pipeline_inspection_sources.py`: steps de fuentes, armonización, concatenación y deduplicación;
+- `tools/pipeline_inspection_models.py`: inspección de M1 y candidatos M2;
+- `tools/pipeline_inspection_reporting.py`: tablas y resúmenes;
+- `tools/lab_preboot.py`: disponibilidad del entorno y fuentes brutas del laboratorio;
+- `tools/gpu_probe.py`: diagnóstico de aceleradores;
+- `datasets/georoc_filtered_acquisition.py`: coordinación de adquisición GEOROC;
+- `datasets/georoc_query_contract.py`: contrato científico de la extracción;
+- `datasets/georoc_query_flow.py`: navegación de la consulta remota;
+- `tools/georoc_query_models.py`: representación/parser HTML;
+- `tools/georoc_query_payload.py`: construcción de payloads del formulario;
+- `tools/georoc_query_html.py`: navegación HTTP mínima;
+- `tools/georoc_query_export.py`: materialización y validación de la exportación.
+
+Para este subsistema se adopta además una guarda estructural de 300 líneas por archivo. No define SOLID de forma general; sirve para impedir que el laboratorio vuelva a concentrar parsing, HTTP, reporting, preboot y orquestación en un solo módulo.
