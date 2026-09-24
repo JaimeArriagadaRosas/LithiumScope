@@ -11,6 +11,9 @@ from lithiumscope.core.states import DatasetState
 from lithiumscope.datasets.downloader import ensure_dataset
 from lithiumscope.datasets.registry import get_dataset_spec
 from lithiumscope.datasets.status import DatasetStatus
+from lithiumscope.datasets.model_1_sources import (
+    prepare_model_1_training_source,
+)
 
 logger = get_logger("datasets.provisioner")
 
@@ -95,13 +98,23 @@ def provision_required_datasets(
     statuses: list[DatasetStatus] = []
 
     try:
-        model_1 = ensure_dataset("mamani09_public_mirror")
+        base_model_1 = ensure_dataset("mamani09_public_mirror")
+        model_1 = prepare_model_1_training_source(
+            base_model_1
+        )
         statuses.append(
             DatasetStatus(
                 key="model_1_geochemistry",
                 ready=True,
                 path=str(model_1),
-                detail="Dataset geoquímico bootstrap disponible.",
+                detail=(
+                    "Dataset geoquímico disponible"
+                    + (
+                        " con fuentes adicionales armonizadas."
+                        if model_1 != base_model_1
+                        else " (bootstrap base)."
+                    )
+                ),
                 state=DatasetState.READY,
             )
         )
