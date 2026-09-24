@@ -68,20 +68,36 @@ def deduplicate_harmonized_sources(
     rows_before = len(combined)
 
     dedupe_columns: list[str] = []
-    sample_id = next(
-        (
-            column
-            for column in (
-                "source_sample",
-                "sample_id",
-                "Sample",
+    identifier_candidates = [
+        column
+        for column in (
+            "source_sample",
+            "sample_id",
+            "Sample",
+        )
+        if column in combined.columns
+    ]
+    if identifier_candidates:
+        identifier = pd.Series(
+            pd.NA,
+            index=combined.index,
+            dtype="string",
+        )
+        for column in identifier_candidates:
+            values = (
+                combined[column]
+                .astype("string")
+                .str.strip()
             )
-            if column in combined.columns
-        ),
-        None,
-    )
-    if sample_id is not None:
-        dedupe_columns.append(sample_id)
+            usable = values.notna() & values.ne("")
+            identifier = identifier.mask(
+                identifier.isna() & usable,
+                values,
+            )
+        combined["_dedupe_sample_id"] = identifier
+        dedupe_columns.append(
+            "_dedupe_sample_id"
+        )
 
     if {
         "Longitude",
@@ -121,6 +137,7 @@ def deduplicate_harmonized_sources(
 
     combined = combined.drop(
         columns=[
+            "_dedupe_sample_id",
             "_dedupe_longitude",
             "_dedupe_latitude",
         ],
@@ -135,11 +152,12 @@ def deduplicate_harmonized_sources(
         ),
         "deduplication_columns": dedupe_columns,
         "coordinate_decimals": coordinate_decimals,
+        "identifier_candidates": identifier_candidates,
         "rule": (
-            "Conservative exact-key deduplication using the "
-            "available sample identifier together with rounded "
-            "coordinates. Same-location samples with different "
-            "identifiers are retained."
+            "Conservative exact-key deduplication using a row-wise "
+            "coalesced sample identifier (source_sample, sample_id "
+            "or Sample) together with rounded coordinates. "
+            "Same-location samples with different identifiers are retained."
         ),
     }
     return combined, audit
