@@ -12,8 +12,14 @@ from lithiumscope.tools.georoc_query_export import (
     materialize_download,
     validate_export,
 )
+from lithiumscope.tools.georoc_postprocess import (
+    process_georoc_text_export,
+)
 from lithiumscope.tools.georoc_query_log import (
     BoundedRunLog,
+)
+from lithiumscope.tools.georoc_source_checkpoint import (
+    source_path_for,
 )
 
 
@@ -40,3 +46,63 @@ def finish_download(
         "GEOROC filtrado descargado y validado"
     )
     return path
+
+
+
+def finish_source_checkpoint(
+    destination: Path,
+    spinner: Spinner,
+    run_log: BoundedRunLog,
+) -> Path:
+    source = source_path_for(destination)
+    if (
+        not source.is_file()
+        or source.stat().st_size <= 0
+    ):
+        raise RuntimeError(
+            "No existe un checkpoint GEOROC reutilizable."
+        )
+
+    spinner.update(
+        "GEOROC → procesando fuente ya descargada"
+    )
+    run_log.event(
+        "resume",
+        "procesando checkpoint local",
+        source=source,
+        bytes=source.stat().st_size,
+    )
+    result = process_georoc_text_export(
+        source,
+        destination,
+    )
+    validate_export(result.path)
+    health = assess_dataset_health_file(
+        result.path
+    )
+    run_log.event(
+        "postprocess",
+        "completado desde checkpoint",
+        encoding=result.encoding,
+        rows_before_filter=(
+            result.rows_before_filter
+        ),
+        rows_after_filter=(
+            result.rows_after_filter
+        ),
+        rows_removed_by_material=(
+            result.rows_removed_by_material
+        ),
+        material_column=(
+            result.material_column
+        ),
+    )
+    run_log.event(
+        "health_check",
+        "salud post-descarga OK",
+        **health.as_log_fields(),
+    )
+    spinner.succeed(
+        "GEOROC recuperado, filtrado y validado"
+    )
+    return result.path
