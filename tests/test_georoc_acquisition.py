@@ -232,3 +232,28 @@ def test_andean_arc_direct_form_is_detected():
         ("Items", "LI + SIO2"),
         ("Material", "'WR','GL'"),
     ]
+
+
+
+def test_resolve_postpage_action_supports_two_arguments():
+    html = """
+    <form id="FieldItems_comp"
+          action="Results.asp"
+          method="post">
+      <input type="button"
+             value="Compile File"
+             onclick="postpage('FieldItems_comp','ChemCompTxt.asp');"/>
+      <input type="hidden"
+             name="Items"
+             value="LI + SIO2"/>
+    </form>
+    """
+
+    parser = _parse(html)
+    target, track = resolve_postpage_action(
+        parser.forms[0],
+        "COMPILE FILE",
+    )
+
+    assert target == "ChemCompTxt.asp"
+    assert track == ""
