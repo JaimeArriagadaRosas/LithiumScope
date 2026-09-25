@@ -24,6 +24,7 @@ from lithiumscope.tools.georoc_query_diagnostics import (
 )
 from lithiumscope.tools.georoc_download_finalize import (
     finish_download,
+    finish_source_checkpoint,
 )
 from lithiumscope.tools.georoc_query_download import (
     find_download_link,
@@ -36,6 +37,9 @@ from lithiumscope.tools.georoc_query_log import BoundedRunLog
 from lithiumscope.tools.georoc_query_models import parse
 from lithiumscope.tools.georoc_query_transfer import (
     request_compiled_export,
+)
+from lithiumscope.tools.georoc_source_checkpoint import (
+    has_source_checkpoint,
 )
 from lithiumscope.tools.georoc_query_payload import (
     best_chemistry_form,
@@ -112,6 +116,17 @@ def acquire_filtered_georoc(
     )
     last_debug: Path | None = None
     try:
+        if has_source_checkpoint(destination):
+            run_log.event(
+                "acquisition",
+                "checkpoint local detectado; se omite GEOROC remoto",
+            )
+            return finish_source_checkpoint(
+                destination,
+                spinner,
+                run_log,
+            )
+
         try:
             response = initial_query(
                 session,
