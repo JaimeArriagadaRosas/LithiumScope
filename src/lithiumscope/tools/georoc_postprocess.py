@@ -27,6 +27,10 @@ class GeorocPostprocessResult:
     rows_removed_by_material: int
     material_column: str
     materials_seen: tuple[str, ...]
+    whole_rock_rows: int
+    volcanic_glass_rows: int
+    unknown_rows: int
+    missing_rows: int
 
 
 def process_georoc_text_export(
@@ -76,4 +80,8 @@ def process_georoc_text_export(
         rows_removed_by_material=material.rows_removed,
         material_column=material.material_column,
         materials_seen=material.materials_seen,
+        whole_rock_rows=material.whole_rock_rows,
+        volcanic_glass_rows=material.volcanic_glass_rows,
+        unknown_rows=material.unknown_rows,
+        missing_rows=material.missing_rows,
     )
