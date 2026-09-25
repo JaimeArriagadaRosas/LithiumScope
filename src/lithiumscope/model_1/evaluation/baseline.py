@@ -26,13 +26,22 @@ def evaluate_mean_baseline(prepared, config: dict) -> tuple[dict, pd.DataFrame, 
         )
         else None
     )
-    outer_splits, strategy = materialize_regression_splits(
-        prepared.x,
-        prepared.y,
-        groups,
-        int(validation["outer_folds"]),
-        int(validation["random_seed"]),
+    require_groups = bool(
+        validation.get("prefer_spatial_groups", False)
+        and not validation.get("allow_random_fallback", False)
     )
+    if prepared.outer_splits is not None:
+        outer_splits = prepared.outer_splits
+        strategy = prepared.validation_strategy or "unknown"
+    else:
+        outer_splits, strategy = materialize_regression_splits(
+            prepared.x,
+            prepared.y,
+            groups,
+            int(validation["outer_folds"]),
+            int(validation["random_seed"]),
+            require_groups=require_groups,
+        )
     predictions = np.full(len(prepared.y), np.nan, dtype=float)
     rows: list[dict] = []
 
