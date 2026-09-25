@@ -62,6 +62,10 @@ def follow_link_by_text(
         tuple[int, str]
     ] = []
     for href, text in parser.links:
+        if str(href).strip().lower().startswith(
+            "javascript:"
+        ):
+            continue
         combined = norm(
             text + " " + href
         )
