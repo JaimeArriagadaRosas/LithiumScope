@@ -547,3 +547,105 @@ def test_source_checkpoint_can_be_reprocessed_without_network(
     assert len(frame) == 1
     assert frame.loc[0, "TYPE OF MATERIAL"] == "WHOLE ROCK"
     assert "recuperado" in spinner.success.lower()
+
+
+
+def test_schema_profile_reports_material_candidates():
+    import pandas as pd
+    from lithiumscope.tools.georoc_schema_profile import (
+        profile_georoc_schema,
+    )
+
+    frame = pd.DataFrame(
+        {
+            "TYPE OF MATERIAL": [
+                "/ GL",
+                "/ GL",
+                "WHOLE ROCK",
+            ],
+            "ROCK NAME": [
+                "BASALT",
+                "DACITE",
+                "ANDESITE",
+            ],
+            "LI": [10, 20, 30],
+        }
+    )
+
+    profile = profile_georoc_schema(frame)
+
+    names = {
+        candidate.name
+        for candidate in profile.candidates
+    }
+    assert "TYPE OF MATERIAL" in names
+    assert "ROCK NAME" in names
+
+    material = next(
+        item
+        for item in profile.candidates
+        if item.name == "TYPE OF MATERIAL"
+    )
+    assert material.top_values[0] == (
+        "/ GL",
+        2,
+    )
+
+
+def test_schema_profile_is_logged_before_filter_failure(
+    tmp_path,
+):
+    import pandas as pd
+    import pytest
+    from lithiumscope.tools.georoc_postprocess import (
+        process_georoc_text_export,
+    )
+    from lithiumscope.tools.georoc_query_log import (
+        BoundedRunLog,
+    )
+    from lithiumscope.tools.georoc_schema_profile import (
+        log_georoc_schema_profile,
+    )
+
+    source = tmp_path / "source.csv"
+    pd.DataFrame(
+        {
+            "TYPE OF MATERIAL": [
+                "/ GL [100]",
+                "/ GL [101]",
+            ],
+            "ROCK NAME": [
+                "BASALT",
+                "DACITE",
+            ],
+            "LI": [10, 20],
+            "LONGITUDE": [-70, -69],
+            "LATITUDE": [-33, -22],
+        }
+    ).to_csv(source, index=False)
+
+    log = BoundedRunLog(
+        tmp_path / "run.log"
+    )
+
+    with pytest.raises(
+        RuntimeError,
+        match="WHOLE ROCK",
+    ):
+        process_georoc_text_export(
+            source,
+            tmp_path / "out.csv",
+            profile_callback=lambda profile: (
+                log_georoc_schema_profile(
+                    log,
+                    profile,
+                )
+            ),
+        )
+
+    text = log.path.read_text(
+        encoding="utf-8"
+    )
+    assert "stage=schema_profile" in text
+    assert "TYPE OF MATERIAL" in text
+    assert "/ GL [100]" in text
