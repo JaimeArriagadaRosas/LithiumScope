@@ -6,7 +6,7 @@ from lithiumscope.tools.georoc_query_html import norm
 from lithiumscope.tools.georoc_query_models import Form
 
 _POSTPAGE_RE = re.compile(
-    r"""postpage\(\s*['"][^'"]+['"]\s*,\s*['"](?P<target>[^'"]+)['"]\s*,\s*['"](?P<track>[^'"]*)['"]\s*\)""",
+    r"""postpage\(\s*['"][^'"]+['"]\s*,\s*['"](?P<target>[^'"]+)['"](?:\s*,\s*['"](?P<track>[^'"]*)['"])?\s*\)""",
     re.IGNORECASE,
 )
 
@@ -48,7 +48,7 @@ def resolve_postpage_action(
 
         return (
             match.group("target"),
-            match.group("track"),
+            match.group("track") or "",
         )
 
     raise RuntimeError(
