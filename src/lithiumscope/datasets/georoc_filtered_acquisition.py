@@ -22,6 +22,9 @@ from lithiumscope.tools.georoc_query_diagnostics import (
     diagnose_query_exception,
     format_query_failure,
 )
+from lithiumscope.tools.georoc_dataset_health import (
+    assess_dataset_health,
+)
 from lithiumscope.tools.georoc_query_export import (
     find_download_link,
     looks_downloadable,
@@ -75,8 +78,15 @@ def _finish_download(
         run_log=run_log,
     )
     validate_export(path)
+    frame = __import__("pandas").read_csv(path)
+    health = assess_dataset_health(frame)
+    run_log.event(
+        "health_check",
+        "salud post-descarga OK",
+        **health.as_log_fields(),
+    )
     spinner.succeed(
-        "GEOROC filtrado descargado"
+        "GEOROC filtrado descargado y validado"
     )
     return path
 
@@ -183,6 +193,7 @@ def acquire_filtered_georoc(
                 response,
                 parser,
                 timeout,
+                run_log,
             )
             if downloadable is not None:
                 run_log.event(
