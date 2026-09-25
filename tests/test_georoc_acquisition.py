@@ -55,6 +55,7 @@ def test_chemistry_form_selects_only_requested_analytes():
 
 from lithiumscope.datasets.georoc_query_flow import (
     _is_chem_location_form,
+    _is_direct_batch_form,
 )
 from lithiumscope.tools.georoc_query_models import (
     Form,
@@ -196,3 +197,38 @@ def test_query_diagnostics_exposes_http_status_url_and_body(
     formatted = format_query_failure(failure)
     assert "HTTP=500" in formatted
     assert "ConvMargin/ChemistrySearch.asp" in formatted
+
+
+
+def test_andean_arc_direct_form_is_detected():
+    form = Form(
+        action="/georoc/ChemBatchDirect.asp",
+        method="post",
+        inputs=[
+            Input(
+                name="BatchesDirect",
+                value="34273,58579",
+                kind="hidden",
+                checked=False,
+            ),
+            Input(
+                name="Items",
+                value="LI + SIO2",
+                kind="hidden",
+                checked=False,
+            ),
+            Input(
+                name="Material",
+                value="'WR','GL'",
+                kind="hidden",
+                checked=False,
+            ),
+        ],
+    )
+
+    assert _is_direct_batch_form(form) is True
+    assert _default_payload(form) == [
+        ("BatchesDirect", "34273,58579"),
+        ("Items", "LI + SIO2"),
+        ("Material", "'WR','GL'"),
+    ]
