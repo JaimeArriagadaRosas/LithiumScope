@@ -257,7 +257,11 @@ def find_download_link(
     ):
         candidate = session.get(
             urljoin(response.url, href),
-            timeout=timeout,
+            timeout=(
+                max(1.0, min(float(timeout), 30.0)),
+                None,
+            ),
+            stream=True,
         )
         candidate.raise_for_status()
         if looks_downloadable(candidate):
