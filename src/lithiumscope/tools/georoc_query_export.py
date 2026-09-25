@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-import zipfile
-
 import pandas as pd
 import requests
 
@@ -14,8 +12,8 @@ from lithiumscope.tools.georoc_query_html import (
     norm,
 )
 from lithiumscope.tools.georoc_query_log import BoundedRunLog
-from lithiumscope.tools.georoc_query_transfer import (
-    stream_response_to_file,
+from lithiumscope.tools.georoc_source_checkpoint import (
+    persist_response_source,
 )
 
 
@@ -47,137 +45,56 @@ def materialize_download(
     spinner: Spinner | None = None,
     run_log: BoundedRunLog | None = None,
 ) -> Path:
-    destination.parent.mkdir(
-        parents=True,
-        exist_ok=True,
+    if spinner is None or run_log is None:
+        raise RuntimeError(
+            "La materialización GEOROC requiere "
+            "estado de consola y log de ejecución."
+        )
+
+    source_path = persist_response_source(
+        response,
+        destination,
+        spinner,
+        run_log,
     )
-    raw_path = destination.with_name(
-        destination.name + ".download.part"
+    run_log.event(
+        "postprocess",
+        "inicio desde checkpoint",
+        source_copy=source_path,
+        raw_bytes=source_path.stat().st_size,
+        content_type=response.headers.get(
+            "content-type",
+            "",
+        ),
+        disposition=response.headers.get(
+            "content-disposition",
+            "",
+        ),
     )
-    source_path = destination.with_name(
-        destination.name + ".source"
+
+    result = process_georoc_text_export(
+        source_path,
+        destination,
     )
-    content_type = response.headers.get(
-        "content-type",
-        "",
-    ).lower()
-    disposition = response.headers.get(
-        "content-disposition",
-        "",
-    ).lower()
-
-    raw_path.unlink(missing_ok=True)
-
-    try:
-        if spinner is not None and run_log is not None:
-            stream_response_to_file(
-                response,
-                raw_path,
-                spinner,
-                run_log,
-            )
-        else:
-            raw_path.write_bytes(
-                response.content
-            )
-
-        if run_log is not None:
-            run_log.event(
-                "postprocess",
-                "inicio",
-                raw_bytes=raw_path.stat().st_size,
-                content_type=content_type,
-                disposition=disposition,
-            )
-
-        if (
-            "zip" in content_type
-            or ".zip" in disposition
-        ):
-            with zipfile.ZipFile(raw_path) as archive:
-                candidates = [
-                    name
-                    for name in archive.namelist()
-                    if name.lower().endswith(
-                        (".csv", ".txt")
-                    )
-                ]
-                if not candidates:
-                    raise RuntimeError(
-                        "La exportación GEOROC ZIP no contiene "
-                        "un CSV/TXT compatible."
-                    )
-                extracted = raw_path.with_name(
-                    raw_path.name + ".table"
-                )
-                extracted.write_bytes(
-                    archive.read(candidates[0])
-                )
-                try:
-                    result = process_georoc_text_export(
-                        extracted,
-                        destination,
-                    )
-                finally:
-                    extracted.unlink(
-                        missing_ok=True
-                    )
-        elif (
-            "excel" in content_type
-            or ".xlsx" in disposition
-            or ".xls" in disposition
-        ):
-            raise RuntimeError(
-                "La ruta automática GEOROC esperaba una "
-                "exportación de texto CSV/TXT, pero recibió Excel."
-            )
-        else:
-            result = process_georoc_text_export(
-                raw_path,
-                destination,
-            )
-
-        raw_path.replace(source_path)
-
-        if run_log is not None:
-            run_log.event(
-                "postprocess",
-                "completado",
-                encoding=result.encoding,
-                rows_before_filter=(
-                    result.rows_before_filter
-                ),
-                rows_after_filter=(
-                    result.rows_after_filter
-                ),
-                rows_removed_by_material=(
-                    result.rows_removed_by_material
-                ),
-                material_column=(
-                    result.material_column
-                ),
-                source_copy=source_path,
-            )
-        return result.path
-    except BaseException as exc:
-        if raw_path.exists():
-            try:
-                raw_path.replace(source_path)
-            except OSError:
-                pass
-        if run_log is not None:
-            run_log.event(
-                "postprocess",
-                "error",
-                error_type=type(exc).__name__,
-                detail=str(exc),
-                source_copy=(
-                    source_path
-                    if source_path.exists()
-                    else None
-                ),
-            )
-        raise
+    run_log.event(
+        "postprocess",
+        "completado",
+        encoding=result.encoding,
+        rows_before_filter=(
+            result.rows_before_filter
+        ),
+        rows_after_filter=(
+            result.rows_after_filter
+        ),
+        rows_removed_by_material=(
+            result.rows_removed_by_material
+        ),
+        material_column=(
+            result.material_column
+        ),
+        source_copy=source_path,
+    )
+    return result.path
 
 
 def validate_export(
