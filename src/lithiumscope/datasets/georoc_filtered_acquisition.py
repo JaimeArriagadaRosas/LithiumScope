@@ -14,6 +14,7 @@ from lithiumscope.datasets.georoc_query_contract import (
 )
 from lithiumscope.datasets.georoc_query_flow import (
     advance_query,
+    compile_file_form,
     initial_query,
 )
 from lithiumscope.runtime.console_status import Spinner
@@ -27,7 +28,11 @@ from lithiumscope.tools.georoc_query_export import (
     materialize_download,
     validate_export,
 )
+from lithiumscope.tools.georoc_query_log import BoundedRunLog
 from lithiumscope.tools.georoc_query_models import parse
+from lithiumscope.tools.georoc_query_transfer import (
+    request_compiled_export,
+)
 from lithiumscope.tools.georoc_query_payload import (
     best_chemistry_form,
     default_payload,
@@ -61,10 +66,13 @@ def _finish_download(
     response: requests.Response,
     destination: Path,
     spinner: Spinner,
+    run_log: BoundedRunLog,
 ) -> Path:
     path = materialize_download(
         response,
         destination,
+        spinner=spinner,
+        run_log=run_log,
     )
     validate_export(path)
     spinner.succeed(
@@ -105,6 +113,17 @@ def acquire_filtered_georoc(
     spinner = Spinner(
         "Descargando GEOROC filtrado"
     ).start()
+    run_log = BoundedRunLog(
+        LOGS_DIR
+        / "lab"
+        / "georoc_query"
+        / "run.log"
+    )
+    run_log.event(
+        "acquisition",
+        "inicio",
+        destination=destination,
+    )
 
     last_debug: Path | None = None
     try:
@@ -141,6 +160,7 @@ def acquire_filtered_georoc(
                     response,
                     destination,
                     spinner,
+                    run_log,
                 )
 
             last_debug = _save_debug(
@@ -148,6 +168,17 @@ def acquire_filtered_georoc(
                 response,
             )
             parser = parse(response.text)
+            run_log.event(
+                "step",
+                "respuesta",
+                step=step,
+                status=response.status_code,
+                url=response.url,
+                content_type=response.headers.get(
+                    "content-type",
+                    "",
+                ),
+            )
             downloadable = find_download_link(
                 session,
                 response,
@@ -159,7 +190,23 @@ def acquire_filtered_georoc(
                     downloadable,
                     destination,
                     spinner,
+                    run_log,
                 )
+
+            compile_form = compile_file_form(
+                parser.forms
+            )
+            if compile_form is not None:
+                response = request_compiled_export(
+                    session,
+                    response.url,
+                    compile_form,
+                    default_payload(compile_form),
+                    min(float(timeout), 30.0),
+                    spinner,
+                    run_log,
+                )
+                continue
 
             response = advance_query(
                 session,
@@ -171,7 +218,23 @@ def acquire_filtered_georoc(
             "GEOROC no produjo una "
             "exportación filtrada."
         )
+    except KeyboardInterrupt:
+        run_log.event(
+            "acquisition",
+            "cancelada por usuario",
+        )
+        spinner.fail(
+            "Descarga GEOROC cancelada"
+        )
+        raise
     except Exception as exc:
+        run_log.event(
+            "acquisition",
+            "error",
+            error_type=type(exc).__name__,
+            detail=str(exc),
+            evidence=last_debug,
+        )
         spinner.fail(
             "Falló la descarga de GEOROC filtrado"
         )
@@ -191,7 +254,9 @@ def acquire_filtered_georoc(
             "filtrada de GEOROC."
             + evidence
             + detail_text
-            + " No se descargó el paquete "
+            + " Log: "
+            + str(run_log.path)
+            + ". No se descargó el paquete "
             "precompilado masivo."
         ) from exc
 
