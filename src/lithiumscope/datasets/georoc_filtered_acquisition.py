@@ -70,7 +70,6 @@ def _save_debug(
     return path
 
 
-
 def acquire_filtered_georoc(
     destination: Path | None = None,
     *,
@@ -266,7 +265,6 @@ def acquire_filtered_georoc(
             + ". No se descargó el paquete "
             "precompilado masivo."
         ) from exc
-
 
 # Compatibility exports for focused tests.
 _parse = parse
