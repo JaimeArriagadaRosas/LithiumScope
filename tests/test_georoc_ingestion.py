@@ -91,3 +91,67 @@ def test_georoc_ingestion_supports_material_and_coordinate_ranges(
     assert frame.loc[0, "Longitude"] == -70.1
     assert frame.loc[0, "Latitude"] == -23.5
     assert frame.loc[0, "Li_icpms"] == 20.0
+
+
+
+def test_georoc_ingestion_parses_batch_material_and_preserves_traceability(
+    tmp_path: Path,
+):
+    source = tmp_path / "georoc_batch_material.csv"
+    pd.DataFrame(
+        [
+            {
+                "SAMPLE NAME": "WR-1",
+                "MATERIAL": "/ WR [13695]",
+                "LONGITUDE": -70.1,
+                "LATITUDE": -23.4,
+                "LI": 15.0,
+                "SIO2(WT%)": 60.0,
+                "TIO2(WT%)": 1.0,
+                "AL2O3(WT%)": 16.0,
+                "FE2O3T(WT%)": 6.0,
+                "MNO(WT%)": 0.1,
+                "MGO(WT%)": 4.0,
+                "CAO(WT%)": 6.0,
+                "NA2O(WT%)": 3.0,
+                "K2O(WT%)": 3.0,
+                "P2O5(WT%)": 0.2,
+            },
+            {
+                "SAMPLE NAME": "GL-1",
+                "MATERIAL": "/ GL [10206]",
+                "LONGITUDE": -69.9,
+                "LATITUDE": -22.0,
+                "LI": 25.0,
+                "SIO2(WT%)": 60.0,
+                "TIO2(WT%)": 1.0,
+                "AL2O3(WT%)": 16.0,
+                "FE2O3T(WT%)": 6.0,
+                "MNO(WT%)": 0.1,
+                "MGO(WT%)": 4.0,
+                "CAO(WT%)": 6.0,
+                "NA2O(WT%)": 3.0,
+                "K2O(WT%)": 3.0,
+                "P2O5(WT%)": 0.2,
+            },
+        ]
+    ).to_csv(source, index=False)
+
+    destination = tmp_path / "harmonized_batch.csv"
+    result = ingest_georoc_files(
+        [source],
+        destination,
+        chunksize=10,
+        minimum_predictors=8,
+        allowed_material_types=("WHOLE ROCK",),
+    )
+
+    frame = pd.read_csv(result.path)
+
+    assert result.rows_read == 2
+    assert result.rows_kept == 1
+    assert frame.loc[0, "source_sample"] == "WR-1"
+    assert frame.loc[0, "Sample_type"] == "WHOLE ROCK"
+    assert frame.loc[0, "Sample_type_raw"] == "/ WR [13695]"
+    assert frame.loc[0, "Sample_material_code"] == "WR"
+    assert str(frame.loc[0, "Sample_material_batch_id"]) == "13695"
