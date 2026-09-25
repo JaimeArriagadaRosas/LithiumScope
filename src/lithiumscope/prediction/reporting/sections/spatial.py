@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from reportlab.lib.units import cm
-from reportlab.platypus import Image, KeepTogether, Spacer
+from reportlab.platypus import Image, KeepTogether, PageBreak, Spacer
 
 from lithiumscope.prediction.reporting.primitives import paragraph
 
@@ -81,7 +81,10 @@ def build_spatial(context, styles) -> list:
         )
 
     for item in interpretation_lines:
-        if item.strip():
+        stripped = item.strip()
+        if stripped == "Cobertura de la ejecución:":
+            story.append(PageBreak())
+        if stripped:
             story.append(
                 paragraph(
                     item,

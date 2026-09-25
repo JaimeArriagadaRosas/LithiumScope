@@ -42,6 +42,14 @@ def _rgb_preview(path: Path) -> np.ndarray | None:
     return rendered
 
 
+def _satellite_preview_grid_shape(
+    count: int,
+) -> tuple[int, int]:
+    columns = min(4, max(1, count))
+    rows = (count + columns - 1) // columns
+    return rows, columns
+
+
 def save_satellite_input_preview(
     cases: pd.DataFrame,
     destination: Path,
@@ -76,8 +84,7 @@ def save_satellite_input_preview(
         return None
 
     count = len(previews)
-    columns = min(3, count)
-    rows = (count + columns - 1) // columns
+    rows, columns = _satellite_preview_grid_shape(count)
     figure, axes = plt.subplots(
         rows,
         columns,

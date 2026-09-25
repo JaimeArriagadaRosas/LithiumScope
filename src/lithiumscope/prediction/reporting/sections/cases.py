@@ -8,7 +8,10 @@ from lithiumscope.prediction.reporting.case_cards import (
     case_lookup,
     case_story,
 )
-from lithiumscope.prediction.reporting.formatting import number
+from lithiumscope.prediction.reporting.formatting import (
+    number,
+    operating_classification,
+)
 from lithiumscope.prediction.reporting.primitives import (
     paragraph,
     table,
@@ -43,7 +46,8 @@ def build_cases(context, styles) -> list:
                 "Li M1",
                 "Error abs.",
                 "Score M2",
-                "Prioridad",
+                "Cat. desc. M2",
+                "Clase op. M2",
                 "Concordancia",
             ]
         ]
@@ -90,6 +94,10 @@ def build_cases(context, styles) -> list:
                             "N/D",
                         )
                     ).upper(),
+                    operating_classification(
+                        row.get("prospectivity_score"),
+                        context.model_2_classification_threshold,
+                    ),
                     (
                         str(
                             concordance_row.get(
@@ -106,17 +114,29 @@ def build_cases(context, styles) -> list:
             table(
                 rows,
                 widths=[
-                    2.4 * cm,
-                    2.0 * cm,
-                    2.0 * cm,
-                    2.0 * cm,
                     2.1 * cm,
+                    1.6 * cm,
+                    1.6 * cm,
+                    1.6 * cm,
+                    1.6 * cm,
+                    2.0 * cm,
                     2.0 * cm,
                     3.5 * cm,
                 ],
-                font_size=6.8,
+                font_size=6.4,
             )
         )
+        if context.model_2_classification_threshold is not None:
+            story.append(
+                paragraph(
+                    "Cat. desc. M2 usa cortes fijos del score "
+                    "(BAJA < 0.40; MEDIA 0.40-0.70; "
+                    "ALTA >= 0.70). Clase op. M2 usa el "
+                    f"umbral operativo del modelo "
+                    f"({context.model_2_classification_threshold:.3f}).",
+                    styles["LS_Small"],
+                )
+            )
 
     story.extend(
         [

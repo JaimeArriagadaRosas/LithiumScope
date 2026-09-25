@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pandas as pd
 from reportlab.lib.units import cm
 from reportlab.platypus import KeepTogether, PageBreak, Spacer
 
@@ -7,6 +8,25 @@ from lithiumscope.prediction.reporting.primitives import (
     paragraph,
     table,
 )
+
+
+def _out_of_domain_count(frame: pd.DataFrame) -> int | str:
+    if frame is None or frame.empty:
+        return 0
+    if "applicability_warning" in frame.columns:
+        values = (
+            frame["applicability_warning"]
+            .astype(str)
+            .str.upper()
+        )
+        return int((values == "OUT_OF_DOMAIN").sum())
+    if "out_of_training_range_fraction" in frame.columns:
+        values = pd.to_numeric(
+            frame["out_of_training_range_fraction"],
+            errors="coerce",
+        )
+        return int((values > 0.25).sum())
+    return "N/D"
 
 
 def build_overview(context, styles) -> list:
@@ -156,6 +176,14 @@ def build_overview(context, styles) -> list:
     ):
         m1 = context.model_1_diagnostics or {}
         m2 = context.model_2_diagnostics or {}
+        m1_ood = m1.get("out_of_domain_rows")
+        if m1_ood is None:
+            m1_ood = _out_of_domain_count(
+                context.model_1_predictions
+            )
+        m2_ood = _out_of_domain_count(
+            context.model_2_predictions
+        )
         diagnostics = [
             paragraph(
                 "Diagnosticos de aplicabilidad",
@@ -169,8 +197,13 @@ def build_overview(context, styles) -> list:
                         "Modelo 2",
                     ],
                     [
-                        "Casos fuera de dominio / fallidos",
-                        m1.get("out_of_domain_rows", "N/D"),
+                        "Casos fuera de dominio (OOD)",
+                        m1_ood,
+                        m2_ood,
+                    ],
+                    [
+                        "Casos fallidos",
+                        m1.get("failed_cases", "N/D"),
                         m2.get("failed_cases", "N/D"),
                     ],
                     [

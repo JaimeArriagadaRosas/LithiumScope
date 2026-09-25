@@ -15,6 +15,16 @@ def _fmt(value, digits: int = 3) -> str:
     return f"{number:.{digits}f}"
 
 
+def _fmt_nonnegative(value, digits: int = 3) -> str:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return "N/D"
+    if not math.isfinite(number):
+        return "N/D"
+    return f"{max(0.0, number):.{digits}f}"
+
+
 def _corr_strength(value) -> str:
     try:
         magnitude = abs(float(value))
@@ -43,7 +53,7 @@ def model_1_case_text(row: pd.Series, *, lithium_threshold_ppm: float | None = N
     if pd.notna(interval_low) and pd.notna(interval_high):
         text += (
             f" El intervalo empírico q90 asociado va aproximadamente de "
-            f"{_fmt(interval_low, 2)} a {_fmt(interval_high, 2)} ppm."
+            f"{_fmt_nonnegative(interval_low, 2)} a {_fmt(interval_high, 2)} ppm."
         )
     if ood > 0.25:
         text += (
@@ -76,10 +86,38 @@ def model_2_case_text(row: pd.Series) -> str:
     score = float(row.get("prospectivity_score", 0.0) or 0.0)
     priority = str(row.get("priority", "desconocida")).upper()
     ood = float(row.get("out_of_training_range_fraction", 0.0) or 0.0)
+    try:
+        operating_threshold = float(
+            row.get("operating_threshold")
+        )
+    except (TypeError, ValueError):
+        operating_threshold = None
+    if (
+        operating_threshold is not None
+        and not math.isfinite(operating_threshold)
+    ):
+        operating_threshold = None
+
     text = (
-        f"El Modelo 2 asigna un score de prioridad exploratoria de {score:.3f} "
-        f"y una categoría {priority}. "
+        f"El Modelo 2 asigna un score de prioridad exploratoria de "
+        f"{score:.3f} y una categoría descriptiva del score "
+        f"{priority}. "
+        "La categoría descriptiva usa cortes fijos "
+        "(BAJA < 0.40; MEDIA 0.40-0.70; ALTA >= 0.70) y no "
+        "equivale a la clasificación operativa positiva/negativa. "
     )
+    if operating_threshold is not None:
+        operating_label = (
+            "POSITIVA"
+            if score >= operating_threshold
+            else "NEGATIVA"
+        )
+        text += (
+            "Según el umbral operativo del Modelo 2 "
+            f"({operating_threshold:.3f}), la clasificación es "
+            f"{operating_label}. "
+        )
+
     if priority == "ALTA":
         text += (
             "El entorno presenta una semejanza relativamente alta con los patrones "
@@ -115,29 +153,29 @@ def integrated_case_text(row: pd.Series) -> str:
     if status == "concordante_alta":
         text = (
             "Las dos evidencias apuntan en una dirección compatible: el Modelo 1 "
-            "estima una concentración relativamente alta y el Modelo 2 asigna una "
-            "señal espacial/espectral elevada. Dentro de los casos evaluados, este "
-            "caso merece mayor prioridad relativa para revisión o nuevo muestreo."
+            "estima una concentración relativamente alta y el score del Modelo 2 "
+            "supera el umbral operativo del Modelo 2. Dentro de los casos evaluados, "
+            "este caso merece mayor prioridad relativa para revisión o nuevo muestreo."
         )
     elif status == "concordante_baja":
         text = (
             "Las dos evidencias son concordantes en una prioridad relativa menor: "
-            "la estimación geoquímica no supera el umbral experimental y la señal "
-            "espacial/espectral tampoco lo supera."
+            "la estimación geoquímica no supera el umbral experimental y el score "
+            "del Modelo 2 tampoco supera su umbral operativo."
         )
     elif status == "divergente_m1_alto":
         text = (
             "Las evidencias divergen: la estimación geoquímica del Modelo 1 es "
-            "relativamente alta, pero el Modelo 2 no asigna una señal espacial/espectral "
-            "equivalente. La discrepancia es informativa y justifica revisar contexto "
+            "relativamente alta, pero el score del Modelo 2 no supera su umbral "
+            "operativo. La discrepancia es informativa y justifica revisar contexto "
             "geológico, condiciones superficiales y representatividad de la imagen."
         )
     elif status == "divergente_m2_alto":
         text = (
-            "Las evidencias divergen: el Modelo 2 asigna una señal espacial/espectral "
-            "elevada, pero la estimación de concentración del Modelo 1 no supera el "
-            "umbral experimental. El sector puede ser interesante para revisión, pero "
-            "la señal satelital no debe interpretarse como concentración química."
+            "Las evidencias divergen: el score del Modelo 2 supera el umbral operativo "
+            "del Modelo 2, pero la estimación de concentración del Modelo 1 no supera "
+            "el umbral experimental. El sector puede ser interesante para revisión, "
+            "pero la señal satelital no debe interpretarse como concentración química."
         )
     else:
         text = (
@@ -220,6 +258,12 @@ def build_overall_interpretation(
             f"precision={_fmt(model_2_metrics.get('precision'))}, "
             f"recall={_fmt(model_2_metrics.get('recall'))}, "
             f"F1={_fmt(model_2_metrics.get('f1'))}."
+        )
+        lines.append(
+            "- La categoría descriptiva BAJA/MEDIA/ALTA usa cortes "
+            "fijos del score (0.40 y 0.70) y se reporta por separado "
+            "de la clasificación positiva/negativa basada en el "
+            "umbral operativo aprendido."
         )
         if model_2_predicted_positive_count is not None:
             lines.append(

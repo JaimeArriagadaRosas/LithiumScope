@@ -6,7 +6,9 @@ from reportlab.platypus import Spacer
 
 from lithiumscope.prediction.reporting.formatting import (
     fraction,
+    nonnegative_interval,
     number,
+    operating_classification,
 )
 from lithiumscope.prediction.reporting.primitives import (
     paragraph,
@@ -82,14 +84,10 @@ def case_story(
         ],
         [
             "Intervalo empirico q90 M1",
-            (
-                f"{number(interval_low, 3)} a "
-                f"{number(interval_high, 3)} ppm"
-                if (
-                    interval_low is not None
-                    and interval_high is not None
-                )
-                else "N/D"
+            nonnegative_interval(
+                interval_low,
+                interval_high,
+                3,
             ),
         ],
         [
@@ -122,7 +120,7 @@ def case_story(
             number(score, 3),
         ],
         [
-            "Prioridad M2",
+            "Categoria descriptiva del score M2",
             (
                 str(
                     model_2_row.get(
@@ -130,6 +128,32 @@ def case_story(
                         "N/D",
                     )
                 ).upper()
+                if model_2_row is not None
+                else "N/D"
+            ),
+        ],
+        [
+            "Clasificacion segun umbral operativo M2",
+            (
+                operating_classification(
+                    score,
+                    model_2_row.get(
+                        "operating_threshold"
+                    ),
+                )
+                if model_2_row is not None
+                else "N/D"
+            ),
+        ],
+        [
+            "Umbral operativo M2",
+            (
+                number(
+                    model_2_row.get(
+                        "operating_threshold"
+                    ),
+                    3,
+                )
                 if model_2_row is not None
                 else "N/D"
             ),

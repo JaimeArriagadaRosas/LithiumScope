@@ -108,12 +108,12 @@ def build_performance(context, styles) -> list:
         [
             PageBreak(),
             paragraph(
-                "5. Entrenamiento vs. evaluacion actual",
+                "5. Validacion de entrenamiento vs. evaluacion actual",
                 styles["LS_H1"],
             ),
             paragraph(
                 "El delta se calcula como evaluacion externa menos "
-                "entrenamiento/OOF. Debe interpretarse junto con "
+                "CV/OOF de entrenamiento. Debe interpretarse junto con "
                 "tamaño muestral, dominio y aplicabilidad; por si "
                 "solo no establece la causa de una diferencia de "
                 "rendimiento.",
@@ -135,7 +135,7 @@ def build_performance(context, styles) -> list:
             [
                 "Modelo",
                 "Metrica",
-                "Entrenamiento",
+                "CV/OOF de entrenamiento",
                 "Externo",
                 "Delta",
             ]
