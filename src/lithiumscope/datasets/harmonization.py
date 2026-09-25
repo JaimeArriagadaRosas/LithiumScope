@@ -5,38 +5,65 @@ from collections.abc import Iterable
 import pandas as pd
 
 
-_COORDINATE_PAIRS = (
-    ("Longitude", "Latitude"),
-    ("Longitude (X)", "Latitude (Y)"),
-    ("longitude", "latitude"),
+_LONGITUDE_CANDIDATES = (
+    "Longitude",
+    "Longitude (X)",
+    "Logintude (X)",
+    "longitude",
 )
+_LATITUDE_CANDIDATES = (
+    "Latitude",
+    "Latitude (Y)",
+    "latitude",
+)
+
+
+def _coalesce_numeric(
+    frame: pd.DataFrame,
+    candidates: tuple[str, ...],
+) -> pd.Series | None:
+    available = [
+        column
+        for column in candidates
+        if column in frame.columns
+    ]
+    if not available:
+        return None
+
+    combined = pd.Series(
+        float("nan"),
+        index=frame.index,
+        dtype=float,
+    )
+    for column in available:
+        values = pd.to_numeric(
+            frame[column],
+            errors="coerce",
+        )
+        combined = combined.where(
+            combined.notna(),
+            values,
+        )
+    return combined
 
 
 def canonicalize_coordinates(
     frame: pd.DataFrame,
 ) -> pd.DataFrame:
+    """Coalesce all known coordinate aliases row by row."""
     result = frame.copy()
-    pair = next(
-        (
-            pair
-            for pair in _COORDINATE_PAIRS
-            if pair[0] in result.columns
-            and pair[1] in result.columns
-        ),
-        None,
+    longitude = _coalesce_numeric(
+        result,
+        _LONGITUDE_CANDIDATES,
     )
-    if pair is None:
-        return result
-
-    longitude, latitude = pair
-    result["Longitude"] = pd.to_numeric(
-        result[longitude],
-        errors="coerce",
+    latitude = _coalesce_numeric(
+        result,
+        _LATITUDE_CANDIDATES,
     )
-    result["Latitude"] = pd.to_numeric(
-        result[latitude],
-        errors="coerce",
-    )
+    if longitude is not None:
+        result["Longitude"] = longitude
+    if latitude is not None:
+        result["Latitude"] = latitude
     return result
 
 
@@ -99,27 +126,17 @@ def deduplicate_harmonized_sources(
             "_dedupe_sample_id"
         )
 
-    if {
-        "Longitude",
-        "Latitude",
-    } <= set(combined.columns):
-        combined["_dedupe_longitude"] = (
-            pd.to_numeric(
-                combined["Longitude"],
-                errors="coerce",
-            ).round(coordinate_decimals)
-        )
-        combined["_dedupe_latitude"] = (
-            pd.to_numeric(
-                combined["Latitude"],
-                errors="coerce",
-            ).round(coordinate_decimals)
-        )
+    if {"Longitude", "Latitude"} <= set(combined.columns):
+        combined["_dedupe_longitude"] = pd.to_numeric(
+            combined["Longitude"],
+            errors="coerce",
+        ).round(coordinate_decimals)
+        combined["_dedupe_latitude"] = pd.to_numeric(
+            combined["Latitude"],
+            errors="coerce",
+        ).round(coordinate_decimals)
         dedupe_columns.extend(
-            [
-                "_dedupe_longitude",
-                "_dedupe_latitude",
-            ]
+            ["_dedupe_longitude", "_dedupe_latitude"]
         )
 
     duplicate_mask = pd.Series(
@@ -147,9 +164,7 @@ def deduplicate_harmonized_sources(
     audit = {
         "rows_before_deduplication": rows_before,
         "rows_after_deduplication": len(combined),
-        "duplicates_removed": int(
-            duplicate_mask.sum()
-        ),
+        "duplicates_removed": int(duplicate_mask.sum()),
         "deduplication_columns": dedupe_columns,
         "coordinate_decimals": coordinate_decimals,
         "identifier_candidates": identifier_candidates,
