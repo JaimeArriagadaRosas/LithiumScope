@@ -101,6 +101,12 @@ def materialize_download(
         material_column=(
             result.material_column
         ),
+        whole_rock_rows=result.whole_rock_rows,
+        volcanic_glass_rows=(
+            result.volcanic_glass_rows
+        ),
+        unknown_rows=result.unknown_rows,
+        missing_rows=result.missing_rows,
         source_copy=source_path,
     )
     return result.path
