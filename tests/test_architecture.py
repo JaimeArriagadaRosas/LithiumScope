@@ -105,6 +105,7 @@ def test_lab_modules_remain_focused():
         root / "src/lithiumscope/datasets/georoc_ingestion_transform.py",
         root / "src/lithiumscope/tools/georoc_raw_reader.py",
         root / "src/lithiumscope/tools/georoc_normalizer.py",
+        root / "src/lithiumscope/tools/georoc_material_parser.py",
         root / "src/lithiumscope/tools/georoc_material_filter.py",
         root / "src/lithiumscope/tools/georoc_postprocess.py",
         root / "src/lithiumscope/tools/georoc_source_checkpoint.py",
