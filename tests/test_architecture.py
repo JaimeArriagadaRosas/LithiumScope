@@ -106,6 +106,8 @@ def test_lab_modules_remain_focused():
         root / "src/lithiumscope/tools/georoc_query_actions.py",
         root / "src/lithiumscope/tools/georoc_query_diagnostics.py",
         root / "src/lithiumscope/tools/georoc_dataset_health.py",
+        root / "src/lithiumscope/tools/georoc_query_download.py",
+        root / "src/lithiumscope/tools/georoc_download_finalize.py",
         root / "src/lithiumscope/tools/georoc_query_download_links.py",
         root / "src/lithiumscope/tools/georoc_query_log.py",
         root / "src/lithiumscope/tools/georoc_query_transfer.py",
