@@ -8,6 +8,9 @@ from lithiumscope.datasets.georoc_query_contract import (
     CHEMISTRY,
     GEOROC_QUERY_URL,
 )
+from lithiumscope.tools.georoc_query_actions import (
+    resolve_postpage_action,
+)
 from lithiumscope.tools.georoc_query_html import (
     Form,
     follow_link_by_text,
@@ -21,7 +24,6 @@ from lithiumscope.tools.georoc_query_payload import (
     default_payload,
     replace_field,
     select_chemistry,
-    select_submit_by_label,
     set_named_choices,
 )
 
@@ -115,15 +117,25 @@ def initial_query(
             "WHOLE ROCK",
         ),
     )
-    payload = select_submit_by_label(
+    target_action, track = resolve_postpage_action(
         form,
+        "CONVERGENT MARGINS",
+    )
+    payload = replace_field(
         payload,
-        ("CONVERGENT MARGIN",),
+        "trackcriteria",
+        [f" - {track}"],
+    )
+    routed_form = Form(
+        action=target_action,
+        method=form.method,
+        inputs=form.inputs,
+        selects=form.selects,
     )
     return submit_form(
         session,
         response.url,
-        form,
+        routed_form,
         payload,
         timeout,
     )
