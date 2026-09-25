@@ -124,7 +124,6 @@ def acquire_filtered_georoc(
         "inicio",
         destination=destination,
     )
-
     last_debug: Path | None = None
     try:
         try:
