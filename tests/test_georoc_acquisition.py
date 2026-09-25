@@ -349,3 +349,49 @@ def test_resolve_download_href_leaves_regular_links_unchanged():
     assert resolve_download_href(
         "/georoc/results/table.csv"
     ) == "/georoc/results/table.csv"
+
+
+
+def test_dataset_health_accepts_valid_li_coordinates():
+    import pandas as pd
+    from lithiumscope.tools.georoc_dataset_health import (
+        assess_dataset_health,
+    )
+
+    frame = pd.DataFrame(
+        {
+            "LI": [12.0, 24.0, None],
+            "LONGITUDE": [-70.1, -69.8, -70.0],
+            "LATITUDE": [-33.4, -22.1, -91.0],
+        }
+    )
+
+    health = assess_dataset_health(frame)
+
+    assert health.rows == 3
+    assert health.li_nonempty == 2
+    assert health.valid_coordinate_pairs == 2
+    assert health.complete_li_coordinate_rows == 2
+    assert health.out_of_range_coordinates == 1
+
+
+def test_dataset_health_rejects_dataset_without_usable_li():
+    import pandas as pd
+    import pytest
+    from lithiumscope.tools.georoc_dataset_health import (
+        assess_dataset_health,
+    )
+
+    frame = pd.DataFrame(
+        {
+            "LI": [None, ""],
+            "LONGITUDE": [-70.1, -69.8],
+            "LATITUDE": [-33.4, -22.1],
+        }
+    )
+
+    with pytest.raises(
+        RuntimeError,
+        match="litio utilizables",
+    ):
+        assess_dataset_health(frame)
