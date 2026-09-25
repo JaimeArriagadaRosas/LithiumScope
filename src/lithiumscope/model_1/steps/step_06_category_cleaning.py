@@ -90,16 +90,25 @@ def clean_categories(frame: pd.DataFrame, model_family: str) -> pd.DataFrame:
             lambda value: AGE_GROUPS.get(value, "unknown")
         )
 
-    svm = model_family.lower() == "svm"
     if "Rock_type" in result.columns:
-        rules = ROCK_RULES_SVM if svm else ROCK_RULES_GENERAL
-        result["Rock_type"] = result["Rock_type"].map(lambda value: _group_by_rules(value, rules))
-
-    if "Sample_type" in result.columns:
-        rules = SAMPLE_RULES_SVM if svm else SAMPLE_RULES_GENERAL
-        result["Sample_type"] = result["Sample_type"].map(
-            lambda value: _group_by_rules(value, rules)
+        result["Rock_type"] = result["Rock_type"].map(
+            lambda value: _group_by_rules(
+                value,
+                ROCK_RULES_GENERAL,
+            )
         )
 
-    logger.info("Categorical normalization/grouping completed for model=%s", model_family)
+    if "Sample_type" in result.columns:
+        result["Sample_type"] = result["Sample_type"].map(
+            lambda value: _group_by_rules(
+                value,
+                SAMPLE_RULES_GENERAL,
+            )
+        )
+
+    logger.info(
+        "Categorical normalization/grouping completed with common semantic rules "
+        "(requested_model_family=%s)",
+        model_family,
+    )
     return result
