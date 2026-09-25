@@ -476,3 +476,74 @@ def test_postprocess_decodes_filters_and_writes_utf8(
         "WHOLE ROCK"
     ]
     assert "Andes Sur" in frame["NOTE"].iloc[0]
+
+
+
+def test_encoding_detection_checks_beyond_first_half_megabyte(
+    tmp_path,
+):
+    from lithiumscope.tools.georoc_raw_reader import (
+        detect_georoc_encoding,
+    )
+
+    path = tmp_path / "late_cp1252.csv"
+    prefix = (
+        "MATERIAL,LI,LONGITUDE,LATITUDE,NOTE\n"
+        + "WHOLE ROCK,1,-70,-33,"
+        + ("A" * (600 * 1024))
+    )
+    path.write_bytes(
+        (prefix + "\xa0fin\n").encode(
+            "cp1252"
+        )
+    )
+
+    assert detect_georoc_encoding(path) == "cp1252"
+
+
+def test_source_checkpoint_can_be_reprocessed_without_network(
+    tmp_path,
+):
+    from lithiumscope.tools.georoc_download_finalize import (
+        finish_source_checkpoint,
+    )
+    from lithiumscope.tools.georoc_query_log import (
+        BoundedRunLog,
+    )
+    from lithiumscope.tools.georoc_source_checkpoint import (
+        source_path_for,
+    )
+
+    class SilentSpinner:
+        def update(self, message):
+            self.message = message
+
+        def succeed(self, message=None):
+            self.success = message
+
+    destination = tmp_path / "GEOROC.csv"
+    source = source_path_for(destination)
+    source.write_bytes(
+        (
+            "TYPE OF MATERIAL,LI,LONGITUDE,LATITUDE\n"
+            "WHOLE ROCK,12,-70.1,-33.4\n"
+            "VOLCANIC GLASS,30,-69.9,-22.0\n"
+        ).encode("cp1252")
+    )
+    log = BoundedRunLog(
+        tmp_path / "run.log"
+    )
+    spinner = SilentSpinner()
+
+    path = finish_source_checkpoint(
+        destination,
+        spinner,
+        log,
+    )
+
+    assert path == destination
+    assert source.is_file()
+    frame = __import__("pandas").read_csv(path)
+    assert len(frame) == 1
+    assert frame.loc[0, "TYPE OF MATERIAL"] == "WHOLE ROCK"
+    assert "recuperado" in spinner.success.lower()
