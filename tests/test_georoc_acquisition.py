@@ -649,3 +649,79 @@ def test_schema_profile_is_logged_before_filter_failure(
     assert "stage=schema_profile" in text
     assert "TYPE OF MATERIAL" in text
     assert "/ GL [100]" in text
+
+
+
+def test_material_parser_understands_georoc_wr_batch_notation():
+    from lithiumscope.tools.georoc_material_parser import (
+        parse_georoc_material,
+    )
+
+    parsed = parse_georoc_material(
+        "/ WR [13695]"
+    )
+
+    assert parsed.code == "WR"
+    assert parsed.batch_id == "13695"
+    assert parsed.known is True
+
+
+def test_material_parser_understands_georoc_gl_batch_notation():
+    from lithiumscope.tools.georoc_material_parser import (
+        parse_georoc_material,
+    )
+
+    parsed = parse_georoc_material(
+        "/ GL [10206]"
+    )
+
+    assert parsed.code == "GL"
+    assert parsed.batch_id == "10206"
+
+
+def test_material_parser_does_not_guess_unknown_values():
+    from lithiumscope.tools.georoc_material_parser import (
+        parse_georoc_material,
+    )
+
+    parsed = parse_georoc_material(
+        "WRONG MATERIAL"
+    )
+
+    assert parsed.code is None
+    assert parsed.batch_id is None
+    assert parsed.known is False
+
+
+def test_whole_rock_filter_supports_georoc_batch_notation():
+    import pandas as pd
+    from lithiumscope.tools.georoc_material_filter import (
+        filter_whole_rock,
+    )
+
+    frame = pd.DataFrame(
+        {
+            "MATERIAL": [
+                "/ WR [13695]",
+                "/ GL [10206]",
+                "WHOLE ROCK",
+                "VOLCANIC GLASS",
+                "",
+                "UNEXPECTED",
+            ],
+            "LI": [1, 2, 3, 4, 5, 6],
+        }
+    )
+
+    result = filter_whole_rock(frame)
+
+    assert result.rows_before == 6
+    assert result.rows_after == 2
+    assert result.whole_rock_rows == 2
+    assert result.volcanic_glass_rows == 2
+    assert result.missing_rows == 1
+    assert result.unknown_rows == 1
+    assert result.frame["LI"].tolist() == [
+        1,
+        3,
+    ]
