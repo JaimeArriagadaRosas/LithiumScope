@@ -65,15 +65,22 @@ def run_nested_cv(
         )
         else None
     )
-    outer_splits, outer_strategy = (
-        materialize_regression_splits(
+    require_groups = bool(
+        validation.get("prefer_spatial_groups", False)
+        and not validation.get("allow_random_fallback", False)
+    )
+    if prepared.outer_splits is not None:
+        outer_splits = prepared.outer_splits
+        outer_strategy = prepared.validation_strategy or "unknown"
+    else:
+        outer_splits, outer_strategy = materialize_regression_splits(
             prepared.x,
             prepared.y,
             groups,
             int(validation["outer_folds"]),
             seed,
+            require_groups=require_groups,
         )
-    )
     spec = get_algorithm(algorithm)
     target_transform = validate_target_transform(
         target_transform,
@@ -200,6 +207,7 @@ def run_nested_cv(
                     groups_train,
                     int(validation["inner_folds"]),
                     seed + fold,
+                    require_groups=require_groups,
                 )
                 params = optimize_with_optuna(
                     factory,
@@ -270,9 +278,14 @@ def run_nested_cv(
                 f"R²={metrics['r2']:.4f}"
             )
             logger.info(
-                "algorithm=%s fold=%d metrics=%s",
+                "algorithm=%s fold=%d strategy=%s n_train=%d n_test=%d "
+                "params=%s metrics=%s",
                 algorithm,
                 fold,
+                outer_strategy,
+                len(train_idx),
+                len(test_idx),
+                params,
                 metrics,
             )
         except BaseException:
@@ -320,6 +333,7 @@ def run_nested_cv(
                     groups,
                     int(validation["inner_folds"]),
                     seed + 5000,
+                    require_groups=require_groups,
                 )
                 final_params = optimize_with_optuna(
                     final_factory,
