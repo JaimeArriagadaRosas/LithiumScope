@@ -6,12 +6,103 @@ from pathlib import Path
 import zipfile
 
 from lithiumscope.core.paths import MODELS_DIR, RESULTS_DIR
+from lithiumscope.persistence.active_models import (
+    active_model_path,
+    read_active_models,
+)
 from lithiumscope.results.catalog import active_release_candidate
 
 
+def _active_artifact_release_entry(
+    model_group: str,
+) -> dict | None:
+    catalog_entry = active_release_candidate(
+        model_group
+    )
+    if catalog_entry is not None:
+        return {
+            **catalog_entry,
+            "release_provenance": "local_run_catalog",
+            "reused_from_previous_release": False,
+        }
+
+    model_path = active_model_path(
+        model_group
+    )
+    if model_path is None:
+        return None
+    metadata_path = (
+        model_path.parent / "metadata.json"
+    )
+    if not metadata_path.is_file():
+        return None
+    try:
+        metadata = json.loads(
+            metadata_path.read_text(
+                encoding="utf-8"
+            )
+        )
+    except (
+        OSError,
+        json.JSONDecodeError,
+    ):
+        return None
+
+    registry = read_active_models()
+    registry_entry = (
+        registry.get("models", {})
+        .get(model_group, {})
+    )
+    source = (
+        registry_entry.get("source", {})
+        if isinstance(
+            registry_entry,
+            dict,
+        )
+        else {}
+    )
+    return {
+        "model_group": model_group,
+        "run_id": str(
+            metadata.get(
+                "run_id",
+                model_path.parent.name,
+            )
+        ),
+        "winner": metadata.get(
+            "variant_id",
+            metadata.get("algorithm"),
+        ),
+        "algorithm": metadata.get("algorithm"),
+        "dataset_sha256": metadata.get(
+            "dataset_sha256"
+        ),
+        "git_commit": metadata.get(
+            "git_commit"
+        ),
+        "model_sha256": metadata.get(
+            "model_sha256"
+        ),
+        "release_candidate": True,
+        "release_provenance": "active_installed_artifact",
+        "reused_from_previous_release": (
+            source.get("type")
+            == "github_release"
+        ),
+        "source_release": source.get("tag"),
+        "source_release_asset": source.get(
+            "asset"
+        ),
+    }
+
+
 def build_release_candidate_manifest() -> Path:
-    model_1 = active_release_candidate("model_1")
-    model_2 = active_release_candidate("model_2")
+    model_1 = _active_artifact_release_entry(
+        "model_1"
+    )
+    model_2 = _active_artifact_release_entry(
+        "model_2"
+    )
 
     if model_1 is None or model_2 is None:
         missing = []
@@ -20,14 +111,8 @@ def build_release_candidate_manifest() -> Path:
         if model_2 is None:
             missing.append("model_2")
         raise RuntimeError(
-            "No existe un modelo activo y promovido apto para versionar en: "
+            "No existe un modelo activo con artefacto verificable en: "
             + ", ".join(missing)
-        )
-
-    if model_1["git_commit"] != model_2["git_commit"]:
-        raise RuntimeError(
-            "Los candidatos de Modelo 1 y Modelo 2 fueron generados con commits "
-            "distintos. Ejecute ambos modelos sobre el mismo código antes de publicar."
         )
 
     stamp = datetime.now(
@@ -44,13 +129,23 @@ def build_release_candidate_manifest() -> Path:
         "created_at_utc": datetime.now(
             timezone.utc
         ).isoformat(),
-        "git_commit": model_1["git_commit"],
+        "git_commit": model_1.get("git_commit"),
+        "git_commits": {
+            "model_1": model_1.get("git_commit"),
+            "model_2": model_2.get("git_commit"),
+        },
+        "mixed_training_commits": (
+            model_1.get("git_commit")
+            != model_2.get("git_commit")
+        ),
         "suggested_tag": suggested_tag,
         "model_1": model_1,
         "model_2": model_2,
         "note": (
-            "Local model publication manifest. "
-            "It does not create a Git tag or GitHub Release."
+            "Local model publication manifest. Each model preserves its own "
+            "training provenance; a previously versioned active model may be "
+            "reused without retraining. This manifest does not create a Git "
+            "tag or GitHub Release."
         ),
     }
 
