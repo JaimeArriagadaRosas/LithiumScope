@@ -65,6 +65,16 @@ def _select_andean_form(
     return None
 
 
+def _is_direct_batch_form(
+    form: Form,
+) -> bool:
+    return (
+        form.method == "post"
+        and "CHEMBATCHDIRECTASP"
+        in norm(form.action)
+    )
+
+
 def _is_chem_location_form(
     form: Form,
 ) -> bool:
@@ -147,6 +157,20 @@ def advance_query(
     timeout: float,
 ) -> requests.Response:
     parser = parse(response.text)
+
+    # On the Andean Arc "Arc Zone(s)" page, GEOROC exposes
+    # a "No further Constraint" button that submits directform
+    # to ChemBatchDirect.asp. For the full Andean Arc scope we
+    # must follow that path instead of selecting a sub-zone.
+    for form in parser.forms:
+        if _is_direct_batch_form(form):
+            return submit_form(
+                session,
+                response.url,
+                form,
+                default_payload(form),
+                timeout,
+            )
 
     direct = follow_link_by_text(
         session,
