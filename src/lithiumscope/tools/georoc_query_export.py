@@ -12,6 +12,9 @@ from lithiumscope.tools.georoc_query_html import (
     norm,
 )
 from lithiumscope.tools.georoc_query_log import BoundedRunLog
+from lithiumscope.tools.georoc_schema_profile import (
+    log_georoc_schema_profile,
+)
 from lithiumscope.tools.georoc_source_checkpoint import (
     persist_response_source,
 )
@@ -75,6 +78,12 @@ def materialize_download(
     result = process_georoc_text_export(
         source_path,
         destination,
+        profile_callback=lambda profile: (
+            log_georoc_schema_profile(
+                run_log,
+                profile,
+            )
+        ),
     )
     run_log.event(
         "postprocess",
