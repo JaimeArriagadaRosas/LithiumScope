@@ -9,6 +9,9 @@ import pandas as pd
 import requests
 
 from lithiumscope.runtime.console_status import Spinner
+from lithiumscope.tools.georoc_query_download_links import (
+    resolve_download_href,
+)
 from lithiumscope.tools.georoc_query_html import (
     FormParser,
     norm,
@@ -229,8 +232,13 @@ def find_download_link(
 ) -> requests.Response | None:
     ranked: list[tuple[int, str]] = []
     for href, text in parser.links:
+        resolved = resolve_download_href(
+            href
+        )
+        if resolved is None:
+            continue
         joined = (
-            href + " " + text
+            resolved + " " + text
         ).lower()
         score = 0
         if "download" in joined:
@@ -249,7 +257,7 @@ def find_download_link(
         if "data" in joined:
             score += 1
         if score:
-            ranked.append((score, href))
+            ranked.append((score, resolved))
 
     for _, href in sorted(
         ranked,
