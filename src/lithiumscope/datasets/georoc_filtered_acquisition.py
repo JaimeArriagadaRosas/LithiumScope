@@ -17,6 +17,10 @@ from lithiumscope.datasets.georoc_query_flow import (
     initial_query,
 )
 from lithiumscope.runtime.console_status import Spinner
+from lithiumscope.tools.georoc_query_diagnostics import (
+    diagnose_query_exception,
+    format_query_failure,
+)
 from lithiumscope.tools.georoc_query_export import (
     find_download_link,
     looks_downloadable,
@@ -104,14 +108,24 @@ def acquire_filtered_georoc(
 
     last_debug: Path | None = None
     try:
-        response = initial_query(
-            session,
-            timeout,
-            capture_initial=lambda page: _save_debug(
-                0,
-                page,
-            ),
-        )
+        try:
+            response = initial_query(
+                session,
+                timeout,
+                capture_initial=lambda page: _save_debug(
+                    0,
+                    page,
+                ),
+            )
+        except Exception as exc:
+            failure = diagnose_query_exception(
+                exc,
+                filename="error_initial.html",
+            )
+            raise RuntimeError(
+                "Falló la consulta inicial de GEOROC: "
+                + format_query_failure(failure)
+            ) from exc
 
         for step in range(
             1,
@@ -166,10 +180,17 @@ def acquire_filtered_georoc(
             if last_debug is not None
             else ""
         )
+        detail = str(exc).strip()
+        detail_text = (
+            f" Detalle: {detail}."
+            if detail
+            else ""
+        )
         raise RuntimeError(
             "No se pudo completar la consulta "
             "filtrada de GEOROC."
             + evidence
+            + detail_text
             + " No se descargó el paquete "
             "precompilado masivo."
         ) from exc
