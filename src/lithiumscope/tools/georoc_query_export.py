@@ -229,6 +229,7 @@ def find_download_link(
     response: requests.Response,
     parser: FormParser,
     timeout: float,
+    run_log: BoundedRunLog | None = None,
 ) -> requests.Response | None:
     ranked: list[tuple[int, str]] = []
     for href, text in parser.links:
@@ -263,8 +264,12 @@ def find_download_link(
         ranked,
         reverse=True,
     ):
+        candidate_url = urljoin(
+            response.url,
+            href,
+        )
         candidate = session.get(
-            urljoin(response.url, href),
+            candidate_url,
             timeout=(
                 max(1.0, min(float(timeout), 30.0)),
                 None,
@@ -272,6 +277,37 @@ def find_download_link(
             stream=True,
         )
         candidate.raise_for_status()
-        if looks_downloadable(candidate):
+        content_type = candidate.headers.get(
+            "content-type",
+            "",
+        )
+        if run_log is not None:
+            run_log.event(
+                "download_candidate",
+                "respuesta",
+                url=candidate.url,
+                status=candidate.status_code,
+                content_type=content_type,
+                content_length=candidate.headers.get(
+                    "content-length",
+                    "",
+                ),
+            )
+        extension_match = any(
+            href.lower().split("?", 1)[0].endswith(
+                extension
+            )
+            for extension in (
+                ".csv",
+                ".txt",
+                ".xlsx",
+                ".xls",
+                ".zip",
+            )
+        )
+        if (
+            looks_downloadable(candidate)
+            or extension_match
+        ):
             return candidate
     return None
