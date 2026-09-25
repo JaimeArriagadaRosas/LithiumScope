@@ -25,6 +25,7 @@ class Input:
     kind: str
     checked: bool
     nearby_text: str = ""
+    onclick: str = ""
 
 
 @dataclass
@@ -101,6 +102,7 @@ class FormParser(HTMLParser):
                     "text",
                 ).lower(),
                 checked="checked" in data,
+                onclick=data.get("onclick", ""),
             )
             self._form.inputs.append(item)
             self._recent_input = item
