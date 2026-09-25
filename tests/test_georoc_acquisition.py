@@ -143,3 +143,56 @@ def test_resolve_postpage_action_uses_convergent_margin_target():
 
     assert target == "/georoc/ConvMargin/ChemistrySearch.asp"
     assert track == "Convergent Margins"
+
+
+
+from lithiumscope.tools.georoc_query_diagnostics import (
+    diagnose_query_exception,
+    format_query_failure,
+)
+
+
+def test_query_diagnostics_exposes_http_status_url_and_body(
+    tmp_path,
+    monkeypatch,
+):
+    import requests
+
+    response = requests.Response()
+    response.status_code = 500
+    response.url = (
+        "https://georoc.eu/georoc/"
+        "ConvMargin/ChemistrySearch.asp"
+    )
+    response._content = b"<html>server error</html>"
+    request = requests.Request(
+        "POST",
+        response.url,
+    ).prepare()
+    response.request = request
+
+    exc = requests.HTTPError(
+        "500 Server Error",
+        response=response,
+        request=request,
+    )
+
+    from lithiumscope.tools import georoc_query_diagnostics as diag
+
+    monkeypatch.setattr(
+        diag,
+        "LOGS_DIR",
+        tmp_path,
+    )
+    failure = diagnose_query_exception(exc)
+
+    assert failure.status_code == 500
+    assert failure.url == response.url
+    assert failure.evidence_path is not None
+    assert failure.evidence_path.read_text(
+        encoding="utf-8"
+    ) == "<html>server error</html>"
+
+    formatted = format_query_failure(failure)
+    assert "HTTP=500" in formatted
+    assert "ConvMargin/ChemistrySearch.asp" in formatted
