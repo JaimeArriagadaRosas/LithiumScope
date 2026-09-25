@@ -19,6 +19,7 @@ from lithiumscope.model_1.evaluation.baseline import evaluate_mean_baseline
 from lithiumscope.model_1.evaluation.importance import save_feature_importance
 from lithiumscope.model_1.evaluation.plots import save_competition_chart
 from lithiumscope.model_1.pipeline import prepare_training_data
+from lithiumscope.model_1.preflight import run_model_1_preflight
 from lithiumscope.model_1.schema import applicability_profile
 from lithiumscope.model_1.training.cv_runner import run_nested_cv
 from lithiumscope.model_1.training.factory import build_pipeline, get_algorithm
@@ -214,8 +215,13 @@ def run_model_1_competition(dataset_path: Path, device: DeviceInfo) -> Competiti
     get_shutdown_manager().register_cleanup(context.tracker.cancel_if_active)
     print("Preparando dataset común...")
 
-    prepared = prepare_training_data(dataset_path, model_family="random_forest")
+    prepared = prepare_training_data(dataset_path, model_family="common")
     save_dataset_artifacts(prepared, context)
+    preflight = run_model_1_preflight(
+        prepared,
+        config,
+        context,
+    )
 
     dataset_manifest = build_tabular_manifest(
         dataset_path,
@@ -241,7 +247,6 @@ def run_model_1_competition(dataset_path: Path, device: DeviceInfo) -> Competiti
     results: dict[str, tuple] = {}
     failed: list[str] = []
 
-    svm_prepared = None
     for index, (
         variant_id,
         algorithm,
@@ -273,17 +278,7 @@ def run_model_1_competition(dataset_path: Path, device: DeviceInfo) -> Competiti
         )
 
         try:
-            if algorithm == "svm":
-                if svm_prepared is None:
-                    svm_prepared = (
-                        prepare_training_data(
-                            dataset_path,
-                            model_family="svm",
-                        )
-                    )
-                algorithm_prepared = svm_prepared
-            else:
-                algorithm_prepared = prepared
+            algorithm_prepared = prepared
 
             result = run_nested_cv(
                 algorithm_prepared,
@@ -444,6 +439,11 @@ def run_model_1_competition(dataset_path: Path, device: DeviceInfo) -> Competiti
         ),
         "oof_absolute_residual_q90": interval_q90,
         "dataset_sha256": dataset_manifest.source_sha256,
+        "git_commit": context.tracker.payload.get("runtime", {}).get("git_commit"),
+        "preflight_status": preflight.get("status"),
+        "preflight_manifest": str(
+            context.manifests / "model_1_preflight.json"
+        ),
     }
     bundle = {
         "estimator": final_estimator,
