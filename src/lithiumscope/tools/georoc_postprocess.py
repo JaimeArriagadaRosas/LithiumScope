@@ -1,0 +1,68 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+
+from lithiumscope.tools.georoc_material_filter import (
+    MaterialFilterResult,
+    filter_whole_rock,
+)
+from lithiumscope.tools.georoc_normalizer import (
+    normalize_georoc_frame,
+)
+from lithiumscope.tools.georoc_raw_reader import (
+    read_georoc_raw,
+)
+
+
+@dataclass(frozen=True)
+class GeorocPostprocessResult:
+    path: Path
+    encoding: str
+    rows_before_filter: int
+    rows_after_filter: int
+    rows_removed_by_material: int
+    material_column: str
+    materials_seen: tuple[str, ...]
+
+
+def process_georoc_text_export(
+    raw_path: Path,
+    destination: Path,
+) -> GeorocPostprocessResult:
+    raw = read_georoc_raw(raw_path)
+    normalized = normalize_georoc_frame(
+        raw.frame
+    )
+    material: MaterialFilterResult = (
+        filter_whole_rock(normalized)
+    )
+
+    destination.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+    temporary = destination.with_name(
+        destination.name + ".normalized.part"
+    )
+    temporary.unlink(missing_ok=True)
+    try:
+        material.frame.to_csv(
+            temporary,
+            index=False,
+            encoding="utf-8",
+        )
+        temporary.replace(destination)
+    except BaseException:
+        temporary.unlink(missing_ok=True)
+        raise
+
+    return GeorocPostprocessResult(
+        path=destination,
+        encoding=raw.encoding,
+        rows_before_filter=material.rows_before,
+        rows_after_filter=material.rows_after,
+        rows_removed_by_material=material.rows_removed,
+        material_column=material.material_column,
+        materials_seen=material.materials_seen,
+    )
