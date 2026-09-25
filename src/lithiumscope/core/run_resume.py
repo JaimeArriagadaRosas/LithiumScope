@@ -116,7 +116,7 @@ def _scientific_code_files(model_group: str) -> list[Path]:
     source_root = PROJECT_ROOT / "src" / "lithiumscope"
     model_root = source_root / model_group
     files: list[Path] = []
-    for filename in ("pipeline.py", "schema.py"):
+    for filename in ("pipeline.py", "schema.py", "preflight.py"):
         candidate = model_root / filename
         if candidate.exists():
             files.append(candidate)

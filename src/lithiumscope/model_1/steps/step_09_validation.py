@@ -4,16 +4,18 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import GroupKFold, KFold
 
+from lithiumscope.core.scientific_checks import ScientificValidationError
+
 
 LONGITUDE_CANDIDATES = (
+    "Longitude",
     "Longitude (X)",
     "Logintude (X)",
-    "Longitude",
     "longitude",
 )
 LATITUDE_CANDIDATES = (
-    "Latitude (Y)",
     "Latitude",
+    "Latitude (Y)",
     "latitude",
 )
 
@@ -33,6 +35,59 @@ def _resolve_column(
         if match is not None:
             return match
     return None
+
+
+def spatial_coordinate_diagnostics(
+    frame: pd.DataFrame,
+) -> dict[str, int | float | str | None]:
+    longitude_name = _resolve_column(
+        frame,
+        LONGITUDE_CANDIDATES,
+    )
+    latitude_name = _resolve_column(
+        frame,
+        LATITUDE_CANDIDATES,
+    )
+    total = int(len(frame))
+    if longitude_name is None or latitude_name is None:
+        return {
+            "rows": total,
+            "longitude_column": longitude_name,
+            "latitude_column": latitude_name,
+            "valid_rows": 0,
+            "missing_rows": total,
+            "out_of_range_rows": 0,
+            "coverage_fraction": 0.0,
+        }
+
+    longitude = pd.to_numeric(
+        frame[longitude_name],
+        errors="coerce",
+    )
+    latitude = pd.to_numeric(
+        frame[latitude_name],
+        errors="coerce",
+    )
+    missing = longitude.isna() | latitude.isna()
+    in_range = (
+        longitude.between(-180, 180)
+        & latitude.between(-90, 90)
+    )
+    valid = (~missing) & in_range
+    out_of_range = (~missing) & (~in_range)
+    return {
+        "rows": total,
+        "longitude_column": longitude_name,
+        "latitude_column": latitude_name,
+        "valid_rows": int(valid.sum()),
+        "missing_rows": int(missing.sum()),
+        "out_of_range_rows": int(out_of_range.sum()),
+        "coverage_fraction": (
+            float(valid.mean())
+            if total
+            else 0.0
+        ),
+    }
 
 
 def build_spatial_groups(
@@ -100,13 +155,36 @@ def materialize_regression_splits(
     groups: pd.Series | None,
     folds: int,
     seed: int,
+    *,
+    require_groups: bool = False,
 ) -> tuple[list[tuple[np.ndarray, np.ndarray]], str]:
+    requested_folds = int(folds)
+    group_count = (
+        int(groups.nunique())
+        if groups is not None
+        else 0
+    )
+    if require_groups and groups is None:
+        raise ScientificValidationError(
+            "Spatial validation is required, but no complete valid spatial "
+            "groups could be constructed. Random KFold fallback is disabled."
+        )
+    if (
+        require_groups
+        and group_count < requested_folds
+    ):
+        raise ScientificValidationError(
+            "Spatial validation is required, but only "
+            f"{group_count} groups are available for {requested_folds} folds. "
+            "Random KFold fallback is disabled."
+        )
+
     if (
         groups is not None
-        and int(groups.nunique()) >= int(folds)
+        and group_count >= requested_folds
     ):
         splitter = GroupKFold(
-            n_splits=int(folds)
+            n_splits=requested_folds
         )
         splits = splitter.split(
             x,
@@ -116,7 +194,7 @@ def materialize_regression_splits(
         strategy = "group_kfold_spatial"
     else:
         splitter = KFold(
-            n_splits=int(folds),
+            n_splits=requested_folds,
             shuffle=True,
             random_state=int(seed),
         )

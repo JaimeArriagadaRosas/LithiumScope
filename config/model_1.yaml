@@ -13,7 +13,7 @@ data_sources:
   base:
     key: mamani09_public_mirror
   georoc:
-    enabled: false
+    enabled: true
     input_glob: data/raw/model_1/georoc/*.csv
     harmonized_path: data/interim/model_1/georoc_harmonized.csv
     combined_path: data/processed/model_1/training_combined.csv
@@ -32,6 +32,7 @@ data:
     - "SUM (water)"
   quality_min: 94.0
   quality_max: 102.0
+  # Diagnostic quantiles only; target values are not trimmed before CV.
   target_lower_quantile: 0.025
   target_upper_quantile: 0.975
   age_max_missing_fraction: 0.50
@@ -41,6 +42,7 @@ validation:
   inner_folds: 5
   random_seed: 42
   prefer_spatial_groups: true
+  allow_random_fallback: false
   spatial_group_degrees: 0.5
 
 optimization:
@@ -55,12 +57,10 @@ optimization:
     warmup_folds: 2
 
 competition:
+  # Keep the outer competition unbiased: target transform is fixed.
+  # If log1p is revisited, it must be selected inside inner CV.
   target_transforms:
     identity: all
-    log1p:
-      - random_forest
-      - svm
-      - catboost
   primary_metric: rmse
   tie_breakers:
     - mae

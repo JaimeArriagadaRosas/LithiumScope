@@ -21,8 +21,8 @@ TRACE_ELEMENTS = [
     "Pb_icpms", "Ba_icpms", "Sr_icpms", "Zr_icpms", "V_icpms", "Hf_icpms",
 ]
 SPATIAL_CANDIDATES = [
-    "Longitude (X)", "Logintude (X)", "Longitude", "longitude",
-    "Latitude (Y)", "Latitude", "latitude",
+    "Longitude",
+    "Latitude",
 ]
 CATEGORICAL = ["Geologycal_age", "Sample_type", "Rock_type", "Arc", "Domain"]
 DERIVED = ["Alkali_Sum", "Mg_Number", "A_CNK_proxy", "K_Mg_ratio"]

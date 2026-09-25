@@ -100,11 +100,14 @@ def run() -> None:
         with run_log(
             "training",
             "model_1_competition",
-        ):
+        ) as training_log:
             outcome = run_model_1_competition(
                 model_1_dataset,
                 device,
             )
+        print(
+            f"Log detallado Modelo 1: {training_log}"
+        )
         _print_outcome(
             outcome,
             "Modelo 1",

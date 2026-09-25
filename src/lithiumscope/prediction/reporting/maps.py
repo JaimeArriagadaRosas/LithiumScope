@@ -68,7 +68,7 @@ def _configure_axis(axis, frame: pd.DataFrame) -> None:
         if abs(cosine) > 1e-6:
             axis.set_aspect(
                 1.0 / cosine,
-                adjustable="datalim",
+                adjustable="box",
             )
 
 

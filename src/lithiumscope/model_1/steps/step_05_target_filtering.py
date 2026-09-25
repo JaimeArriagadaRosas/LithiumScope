@@ -23,27 +23,29 @@ def filter_target(
     lower_quantile: float = 0.025,
     upper_quantile: float = 0.975,
 ) -> tuple[pd.DataFrame, str]:
+    """Resolve Li and remove only invalid/missing targets.
+
+    Quantiles are descriptive diagnostics only. They never decide which
+    observations enter cross-validation.
+    """
     target = resolve_target(frame, candidates)
     result = frame.copy()
     result[target] = pd.to_numeric(result[target], errors="coerce")
 
     before = len(result)
-    result = result.dropna(subset=[target])
-    valid_count = len(result)
-
+    result = result.dropna(subset=[target]).copy()
     low = float(result[target].quantile(lower_quantile))
     high = float(result[target].quantile(upper_quantile))
-    result = result[result[target].between(low, high, inclusive="both")].copy()
 
     logger.info(
-        "Target filtering %s: initial=%d valid=%d q%.3f=%.4f q%.3f=%.4f final=%d",
+        "Target preparation %s: initial=%d valid=%d diagnostic_q%.3f=%.4f "
+        "diagnostic_q%.3f=%.4f trimmed=0",
         target,
         before,
-        valid_count,
+        len(result),
         lower_quantile,
         low,
         upper_quantile,
         high,
-        len(result),
     )
     return result, target
