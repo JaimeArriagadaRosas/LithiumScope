@@ -2,16 +2,12 @@ from __future__ import annotations
 
 from io import BytesIO
 from pathlib import Path
-from urllib.parse import urljoin
 import zipfile
 
 import pandas as pd
 import requests
 
 from lithiumscope.runtime.console_status import Spinner
-from lithiumscope.tools.georoc_query_download_links import (
-    resolve_download_href,
-)
 from lithiumscope.tools.georoc_query_html import (
     FormParser,
     norm,
@@ -222,92 +218,3 @@ def validate_export(
             "al contrato LithiumScope. Faltan: "
             + ", ".join(missing)
         )
-
-
-def find_download_link(
-    session: requests.Session,
-    response: requests.Response,
-    parser: FormParser,
-    timeout: float,
-    run_log: BoundedRunLog | None = None,
-) -> requests.Response | None:
-    ranked: list[tuple[int, str]] = []
-    for href, text in parser.links:
-        resolved = resolve_download_href(
-            href
-        )
-        if resolved is None:
-            continue
-        joined = (
-            resolved + " " + text
-        ).lower()
-        score = 0
-        if "download" in joined:
-            score += 5
-        if any(
-            extension in joined
-            for extension in (
-                ".csv",
-                ".txt",
-                ".xlsx",
-                ".xls",
-                ".zip",
-            )
-        ):
-            score += 4
-        if "data" in joined:
-            score += 1
-        if score:
-            ranked.append((score, resolved))
-
-    for _, href in sorted(
-        ranked,
-        reverse=True,
-    ):
-        candidate_url = urljoin(
-            response.url,
-            href,
-        )
-        candidate = session.get(
-            candidate_url,
-            timeout=(
-                max(1.0, min(float(timeout), 30.0)),
-                None,
-            ),
-            stream=True,
-        )
-        candidate.raise_for_status()
-        content_type = candidate.headers.get(
-            "content-type",
-            "",
-        )
-        if run_log is not None:
-            run_log.event(
-                "download_candidate",
-                "respuesta",
-                url=candidate.url,
-                status=candidate.status_code,
-                content_type=content_type,
-                content_length=candidate.headers.get(
-                    "content-length",
-                    "",
-                ),
-            )
-        extension_match = any(
-            href.lower().split("?", 1)[0].endswith(
-                extension
-            )
-            for extension in (
-                ".csv",
-                ".txt",
-                ".xlsx",
-                ".xls",
-                ".zip",
-            )
-        )
-        if (
-            looks_downloadable(candidate)
-            or extension_match
-        ):
-            return candidate
-    return None
