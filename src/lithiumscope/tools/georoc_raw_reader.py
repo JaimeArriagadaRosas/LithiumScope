@@ -21,18 +21,28 @@ _ENCODINGS = (
 
 def detect_georoc_encoding(
     path: Path,
-    *,
-    sample_bytes: int = 512 * 1024,
 ) -> str:
-    raw = path.read_bytes()[:sample_bytes]
-    if not raw:
+    if (
+        not path.is_file()
+        or path.stat().st_size <= 0
+    ):
         raise RuntimeError(
             "La descarga GEOROC está vacía."
         )
 
     for encoding in _ENCODINGS:
         try:
-            raw.decode(encoding)
+            with path.open(
+                "r",
+                encoding=encoding,
+                newline="",
+            ) as handle:
+                for chunk in iter(
+                    lambda: handle.read(1024 * 1024),
+                    "",
+                ):
+                    if not chunk:
+                        break
             return encoding
         except UnicodeDecodeError:
             continue
@@ -50,8 +60,7 @@ def read_georoc_raw(
     try:
         frame = pd.read_csv(
             path,
-            sep=None,
-            engine="python",
+            sep=",",
             encoding=encoding,
             low_memory=False,
         )
