@@ -104,6 +104,7 @@ def test_lab_modules_remain_focused():
         root / "src/lithiumscope/datasets/georoc_query_flow.py",
         root / "src/lithiumscope/tools/georoc_query_models.py",
         root / "src/lithiumscope/tools/georoc_query_actions.py",
+        root / "src/lithiumscope/tools/georoc_query_diagnostics.py",
         root / "src/lithiumscope/tools/georoc_query_html.py",
         root / "src/lithiumscope/tools/georoc_query_payload.py",
         root / "src/lithiumscope/tools/georoc_query_export.py",
