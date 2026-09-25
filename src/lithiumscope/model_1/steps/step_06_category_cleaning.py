@@ -44,6 +44,8 @@ ROCK_RULES_SVM = (
 )
 
 SAMPLE_RULES_GENERAL = (
+    (("whole rock", "wr"), "whole_rock"),
+    (("volcanic glass", "gl"), "volcanic_glass"),
     (("lava",), "lava"),
     (("ignim",), "ignimbrite"),
     (("tuff", "pyro"), "pyroclastic"),
@@ -54,6 +56,8 @@ SAMPLE_RULES_GENERAL = (
 )
 
 SAMPLE_RULES_SVM = (
+    (("whole rock", "wr"), "whole_rock"),
+    (("volcanic glass", "gl"), "volcanic_glass"),
     (("lava",), "lava"),
     (("ignim",), "ignimbrite"),
     (("tuff",), "pyroclastic"),

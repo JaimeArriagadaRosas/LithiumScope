@@ -747,6 +747,73 @@ ruff check src tests main.py
 python main.py
 ```
 
+### Comandos útiles
+
+La aplicación principal continúa siendo:
+
+```bat
+python main.py
+```
+
+o, después de instalar el proyecto:
+
+```bat
+lithiumscope
+```
+
+Para inspeccionar el pipeline de datos **sin entrenar modelos**:
+
+```bat
+lithiumscope-inspect
+```
+
+El laboratorio ejecuta su propio preboot antes de cualquier step. Ese preboot
+comprueba entorno, Mamani09 y una extracción GEOROC filtrada. Si falta GEOROC,
+intenta obtener mediante la consulta pública únicamente el subconjunto requerido
+por LithiumScope; nunca descarga automáticamente los ~22 GiB de Andean Arc como
+fallback.
+
+El inspector permite ejecutar etapas individuales:
+
+```text
+1. Inspeccionar fuentes brutas
+2. Armonizar GEOROC
+3. Concatenar Mamani09 + GEOROC
+4. Deduplicar dataset combinado
+5. Ejecutar limpieza completa de M1
+6. Obtener candidatos para M2
+7. Ejecutar steps 1-6 y mostrar informe completo
+0. Salir
+```
+
+Para ejecutar directamente el flujo completo:
+
+```bat
+lithiumscope-inspect --step 7
+```
+
+Para comprobar la GPU sin descargar datasets:
+
+```bat
+lithiumscope-inspect --gpu
+```
+
+La prueba GPU informa NVIDIA/`nvidia-smi`, VRAM, PyTorch CUDA y realiza pruebas
+mínimas reales de XGBoost CUDA y CatBoost GPU cuando están instalados.
+
+La opción 7 no entrena ningún algoritmo. Reconstruye y audita las etapas de datos
+para obtener el número final de muestras que entrarían a M1 y el número de
+candidatos M2 con Li + coordenadas antes de Sentinel-2.
+
+Los artefactos de inspección se guardan en:
+
+```text
+data/processed/model_1/inspection/
+```
+
+El procedimiento aprobado y el contrato de adquisición se documentan en
+[`docs/LAB_PIPELINE_PROCEDURE.md`](docs/LAB_PIPELINE_PROCEDURE.md).
+
 ---
 
 ## 18. Estructura del repositorio

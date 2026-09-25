@@ -34,6 +34,23 @@ DATASETS: dict[str, DatasetSpec] = {
             "confirmed as the official OASIS copy used by the original student project."
         ),
     ),
+    "georoc_andean_arc": DatasetSpec(
+        key="georoc_andean_arc",
+        model="model_1",
+        provider="manual",
+        destination_name="georoc",
+        source_url=(
+            "https://georoc.eu/georoc/"
+            "precompiled/metadata.php?doi=10.25625/PVFZCE"
+        ),
+        large=True,
+        notes=(
+            "Optional GEOROC Convergent Margins / Andean Arc source. "
+            "The precompiled files are large and are not downloaded "
+            "automatically; reviewed CSV exports are placed under "
+            "data/raw/model_1/georoc/ before harmonization."
+        ),
+    ),
     "fregeneda_almendra": DatasetSpec(
         key="fregeneda_almendra",
         model="model_2",

@@ -68,6 +68,20 @@ def save_integrated_figures(
     )
 
 
+def save_spatial_maps(
+    paired: Any,
+    destination_dir: Path,
+) -> list[Path]:
+    writer = _load_reporting_callable(
+        "lithiumscope.prediction.reporting.maps",
+        "save_spatial_maps",
+    )
+    return writer(
+        paired,
+        destination_dir,
+    )
+
+
 def write_workbook(
     path: Path,
     *,
@@ -114,6 +128,7 @@ def write_pdf_report(
     input_info: dict | None,
     model_1_diagnostics: dict | None,
     model_2_diagnostics: dict | None,
+    maps: list[Path],
     figures: list[Path],
     lithium_threshold_ppm: float | None = None,
     model_2_classification_threshold: float | None = None,
@@ -143,6 +158,7 @@ def write_pdf_report(
         input_info=input_info,
         model_1_diagnostics=model_1_diagnostics,
         model_2_diagnostics=model_2_diagnostics,
+        maps=maps,
         figures=figures,
         lithium_threshold_ppm=lithium_threshold_ppm,
         model_2_classification_threshold=(

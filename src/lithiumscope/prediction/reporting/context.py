@@ -26,6 +26,7 @@ class ReportContext:
     input_info: dict | None
     model_1_diagnostics: dict | None
     model_2_diagnostics: dict | None
+    maps: tuple[Path, ...]
     figures: tuple[Path, ...]
     lithium_threshold_ppm: float | None
     model_2_classification_threshold: float | None

@@ -50,8 +50,12 @@ def rebuild_pdf(run: str | Path) -> Path:
             return {}
         return json.loads(path.read_text(encoding="utf-8"))
 
+    figures_dir = run_dir / "cross_model" / "figures"
+    maps = sorted(
+        (figures_dir / "maps").glob("*.png")
+    )
     figures = sorted(
-        (run_dir / "cross_model" / "figures").glob("*.png")
+        figures_dir.glob("*.png")
     )
     title = (
         "LithiumScope - Demostracion integrada automatica"
@@ -82,6 +86,7 @@ def rebuild_pdf(run: str | Path) -> Path:
         model_2_diagnostics=read_json(
             run_dir / "model_2" / "diagnostics.json"
         ),
+        maps=maps,
         figures=figures,
         lithium_threshold_ppm=manifest.get("thresholds", {}).get(
             "lithium_reference_ppm"

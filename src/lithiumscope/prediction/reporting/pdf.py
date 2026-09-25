@@ -13,6 +13,7 @@ from lithiumscope.prediction.reporting.sections.figures import build_figures
 from lithiumscope.prediction.reporting.sections.notes import build_notes
 from lithiumscope.prediction.reporting.sections.overview import build_overview
 from lithiumscope.prediction.reporting.sections.performance import build_performance
+from lithiumscope.prediction.reporting.sections.spatial import build_spatial
 from lithiumscope.prediction.reporting.styles import (
     build_styles,
     page_footer,
@@ -40,6 +41,7 @@ def write_pdf_report(
     input_info: dict | None,
     model_1_diagnostics: dict | None,
     model_2_diagnostics: dict | None,
+    maps: list[Path],
     figures: list[Path],
     lithium_threshold_ppm: float | None = None,
     model_2_classification_threshold: float | None = None,
@@ -68,6 +70,7 @@ def write_pdf_report(
         input_info=input_info,
         model_1_diagnostics=model_1_diagnostics,
         model_2_diagnostics=model_2_diagnostics,
+        maps=tuple(maps),
         figures=tuple(figures),
         lithium_threshold_ppm=lithium_threshold_ppm,
         model_2_classification_threshold=(
@@ -94,6 +97,7 @@ def write_pdf_report(
 
     story: list = []
     for builder in (
+        build_spatial,
         build_overview,
         build_performance,
         build_figures,

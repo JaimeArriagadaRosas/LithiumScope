@@ -88,3 +88,44 @@ def test_cli_contains_versioned_model_loader():
     ).read_text(encoding="utf-8")
     assert "4. Cargar modelo versionado" in menu
     assert "model_release_command.run()" in menu
+
+
+def test_lab_modules_remain_focused():
+    root = Path(__file__).resolve().parents[1]
+    paths = [
+        root / "src/lithiumscope/tools/pipeline_inspect.py",
+        root / "src/lithiumscope/tools/pipeline_inspection_reporting.py",
+        root / "src/lithiumscope/tools/pipeline_inspection_sources.py",
+        root / "src/lithiumscope/tools/pipeline_inspection_models.py",
+        root / "src/lithiumscope/tools/lab_preboot.py",
+        root / "src/lithiumscope/tools/gpu_probe.py",
+        root / "src/lithiumscope/datasets/georoc_filtered_acquisition.py",
+        root / "src/lithiumscope/datasets/georoc_ingestion.py",
+        root / "src/lithiumscope/datasets/georoc_ingestion_schema.py",
+        root / "src/lithiumscope/datasets/georoc_ingestion_transform.py",
+        root / "src/lithiumscope/tools/georoc_raw_reader.py",
+        root / "src/lithiumscope/tools/georoc_normalizer.py",
+        root / "src/lithiumscope/tools/georoc_material_parser.py",
+        root / "src/lithiumscope/tools/georoc_material_filter.py",
+        root / "src/lithiumscope/tools/georoc_postprocess.py",
+        root / "src/lithiumscope/tools/georoc_source_checkpoint.py",
+        root / "src/lithiumscope/tools/georoc_schema_profile.py",
+        root / "src/lithiumscope/datasets/georoc_query_contract.py",
+        root / "src/lithiumscope/datasets/georoc_query_flow.py",
+        root / "src/lithiumscope/tools/georoc_query_models.py",
+        root / "src/lithiumscope/tools/georoc_query_actions.py",
+        root / "src/lithiumscope/tools/georoc_query_diagnostics.py",
+        root / "src/lithiumscope/tools/georoc_dataset_health.py",
+        root / "src/lithiumscope/tools/georoc_query_download.py",
+        root / "src/lithiumscope/tools/georoc_download_finalize.py",
+        root / "src/lithiumscope/tools/georoc_query_download_links.py",
+        root / "src/lithiumscope/tools/georoc_query_log.py",
+        root / "src/lithiumscope/tools/georoc_query_transfer.py",
+        root / "src/lithiumscope/tools/georoc_query_html.py",
+        root / "src/lithiumscope/tools/georoc_query_payload.py",
+        root / "src/lithiumscope/tools/georoc_query_export.py",
+    ]
+    assert all(
+        len(path.read_text(encoding="utf-8").splitlines()) <= 300
+        for path in paths
+    )

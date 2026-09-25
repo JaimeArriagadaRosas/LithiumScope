@@ -81,6 +81,9 @@ def pair_model_outputs(model_1: pd.DataFrame, model_2: pd.DataFrame) -> pd.DataF
             "applicability_warning",
             "Longitude",
             "Latitude",
+            "Longitude (X)",
+            "Latitude (Y)",
+            "Logintude (X)",
             "longitude",
             "latitude",
         )

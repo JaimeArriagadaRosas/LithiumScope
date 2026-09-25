@@ -9,6 +9,20 @@ model:
     - hist_gradient_boosting
     - catboost
 
+data_sources:
+  base:
+    key: mamani09_public_mirror
+  georoc:
+    enabled: false
+    input_glob: data/raw/model_1/georoc/*.csv
+    harmonized_path: data/interim/model_1/georoc_harmonized.csv
+    combined_path: data/processed/model_1/training_combined.csv
+    audit_path: data/processed/model_1/source_merge_audit.json
+    chunksize: 100000
+    allowed_material_types:
+      - WHOLE ROCK
+    minimum_predictors: 8
+
 data:
   target_candidates:
     - Li_icpms

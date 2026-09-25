@@ -83,8 +83,15 @@ def run() -> None:
     device = detect_device(prefer_gpu=True)
     device_summary(device)
 
+    print(
+        "\nFuente de entrenamiento: Mamani09 + GEOROC. "
+        "GEOROC se armoniza y deduplica antes de entrenar."
+    )
+
     if choice in {"1", "3"}:
-        model_1_dataset = require_model_1_dataset()
+        model_1_dataset = require_model_1_dataset(
+            include_georoc=True
+        )
         print(
             "\nOrden Modelo 1: "
             "RF → XGBoost → SVM → TabNet → "
@@ -104,7 +111,9 @@ def run() -> None:
         )
 
     if choice in {"2", "3"}:
-        model_2_manifest = require_model_2_dataset()
+        model_2_manifest = require_model_2_dataset(
+            include_georoc=True
+        )
         print(
             "\nOrden Modelo 2: "
             "RF → Extra Trees → HistGradientBoosting → "

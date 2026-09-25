@@ -39,6 +39,7 @@ from lithiumscope.prediction.interpretation import (
 )
 from lithiumscope.prediction.report import (
     save_integrated_figures,
+    save_spatial_maps,
     write_json,
     write_pdf_report,
     write_workbook,
@@ -253,6 +254,10 @@ def _write_outputs(
 
     interpretation_path = session.root / "interpretation.txt"
     interpretation_path.write_text(interpretation + "\n", encoding="utf-8")
+    maps = save_spatial_maps(
+        paired,
+        session.figures / "maps",
+    )
     figures = save_integrated_figures(paired, session.figures)
 
     workbook_path = write_workbook(
@@ -289,6 +294,7 @@ def _write_outputs(
         input_info=input_info,
         model_1_diagnostics=model_1_diagnostics,
         model_2_diagnostics=model_2_diagnostics,
+        maps=maps,
         figures=figures,
         lithium_threshold_ppm=lithium_threshold,
         model_2_classification_threshold=probability_threshold,
@@ -332,6 +338,7 @@ def _write_outputs(
             "report_pdf": str(report_path),
             "interpretation": str(interpretation_path),
             "run_log": str(run_log_path),
+            "maps": [str(path) for path in maps],
             "figures": [str(path) for path in figures],
         },
     }

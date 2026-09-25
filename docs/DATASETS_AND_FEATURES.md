@@ -69,6 +69,51 @@ data/raw/model_1/Mamani09_Table_DR2.csv
 
 ---
 
+## 2.1. Extensión opcional con GEOROC
+
+LithiumScope incorpora una capa de ingesta para archivos GEOROC revisados localmente. La fuente registrada es la compilación precompilada de márgenes convergentes / Andean Arc de GEOROC. Por su tamaño y por la necesidad de revisar compatibilidad científica, **no se descarga automáticamente**.
+
+Flujo:
+
+```text
+GEOROC CSV revisado
+        ↓
+adaptación de nombres/unidades
+        ↓
+filtro Li + coordenadas + densidad mínima de predictores
+        ↓
+cálculo de suma de óxidos cuando es posible
+        ↓
+armonización con el contrato LithiumScope
+        ↓
+deduplicación con dataset base
+        ↓
+dataset combinado
+        ↓
+steps comunes del Modelo 1
+```
+
+Los archivos aprobados se colocan en:
+
+```text
+data/raw/model_1/georoc/
+```
+
+La integración se activa explícitamente en `config/model_1.yaml` mediante `data_sources.georoc.enabled: true`. Con la opción desactivada, el comportamiento de entrenamiento permanece igual al dataset bootstrap actual.
+
+La adaptación GEOROC está separada de los `steps` científicos de Modelo 1. El adaptador resuelve diferencias de esquema; los `steps` continúan aplicando las mismas reglas de limpieza, filtrado, control de calidad, categorías e ingeniería de características al dataset ya armonizado.
+
+El proceso genera trazabilidad en:
+
+```text
+data/interim/model_1/georoc_harmonized.csv
+data/processed/model_1/training_combined.csv
+data/processed/model_1/source_merge_audit.json
+```
+
+El dataset combinado conserva `source_dataset`, `source_file` y `source_sample` cuando están disponibles. Esto permite medir cuántas muestras provienen de cada fuente y auditar duplicados.
+
+
 ## 3. Preparación del dataset de Modelo 1
 
 El pipeline aplica, en orden:

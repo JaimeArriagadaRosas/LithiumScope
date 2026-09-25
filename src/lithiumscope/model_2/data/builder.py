@@ -7,6 +7,7 @@ from pathlib import Path
 import pandas as pd
 
 from lithiumscope.core.config import load_config
+from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.logger import get_logger
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.model_2.data.sample_source import load_georeferenced_li_samples
@@ -191,6 +192,10 @@ def ensure_model_2_dataset(
     image_cache = _resolve_project_path(
         str(training["image_cache_dir"])
     )
+    source_fingerprint_path = manifest_path.with_suffix(
+        manifest_path.suffix + ".source.sha256"
+    )
+    current_source_sha256 = file_sha256(model_1_dataset)
     minimum_samples = int(training.get("minimum_samples", 50))
     checkpoint_every = max(
         1,
@@ -205,7 +210,18 @@ def ensure_model_2_dataset(
         int(imagery.get("max_consecutive_sample_failures", 10)),
     )
 
-    if manifest_path.exists() and not force:
+    cached_source_sha256 = (
+        source_fingerprint_path.read_text(
+            encoding="utf-8"
+        ).strip()
+        if source_fingerprint_path.is_file()
+        else ""
+    )
+    source_matches = (
+        cached_source_sha256 == current_source_sha256
+    )
+
+    if manifest_path.exists() and not force and source_matches:
         manifest = _load_valid_manifest(manifest_path)
         if len(manifest) >= minimum_samples:
             logger.info(
@@ -220,6 +236,12 @@ def ensure_model_2_dataset(
                 0,
                 resumed_samples=len(manifest),
             )
+
+    if manifest_path.exists() and not source_matches:
+        logger.info(
+            "Model 2 source dataset changed; rebuilding manifest "
+            "while reusing cached imagery when possible."
+        )
 
     samples = load_georeferenced_li_samples(model_1_dataset)
     provider = Sentinel2Provider(_sentinel_config(config))
@@ -403,6 +425,10 @@ def ensure_model_2_dataset(
             )
 
         _atomic_write_csv(manifest, manifest_path)
+        source_fingerprint_path.write_text(
+            current_source_sha256 + "\n",
+            encoding="utf-8",
+        )
     except (KeyboardInterrupt, SystemExit):
         spinner.stop("Modelo 2 · adquisición interrumpida")
         raise
