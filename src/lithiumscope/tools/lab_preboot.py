@@ -7,11 +7,15 @@ from lithiumscope.core.config import load_config
 from lithiumscope.core.paths import DATA_DIR, PROJECT_ROOT
 from lithiumscope.datasets.downloader import ensure_dataset
 from lithiumscope.datasets.georoc_filtered_acquisition import (
+    GEOROC_FILTERED_NAME,
     acquire_filtered_georoc,
     write_acquisition_contract,
 )
 from lithiumscope.datasets.registry import get_dataset_spec
 from lithiumscope.runtime.preboot import run_preboot
+from lithiumscope.tools.georoc_source_checkpoint import (
+    source_path_for,
+)
 
 
 @dataclass(frozen=True)
@@ -103,18 +107,35 @@ def _ensure_georoc(
             "GEOROC [NO ENCONTRADO]."
         )
 
-    if verbose:
-        print(
-            "[LAB] GEOROC [NO ENCONTRADO] "
-            "→ descargando extracción filtrada"
-        )
-
     target_dir = (
         DATA_DIR
         / "raw"
         / "model_1"
         / "georoc"
     )
+    destination = (
+        target_dir
+        / GEOROC_FILTERED_NAME
+    )
+    checkpoint = source_path_for(
+        destination
+    )
+
+    if verbose:
+        if (
+            checkpoint.is_file()
+            and checkpoint.stat().st_size > 0
+        ):
+            print(
+                "[LAB] GEOROC [FUENTE DESCARGADA] "
+                "→ retomando procesamiento local"
+            )
+        else:
+            print(
+                "[LAB] GEOROC [NO ENCONTRADO] "
+                "→ descargando extracción filtrada"
+            )
+
     target_dir.mkdir(
         parents=True,
         exist_ok=True,
