@@ -395,3 +395,84 @@ def test_dataset_health_rejects_dataset_without_usable_li():
         match="litio utilizables",
     ):
         assess_dataset_health(frame)
+
+
+
+def test_raw_reader_falls_back_to_cp1252(tmp_path):
+    from lithiumscope.tools.georoc_raw_reader import (
+        read_georoc_raw,
+    )
+
+    path = tmp_path / "georoc_cp1252.csv"
+    path.write_bytes(
+        "MATERIAL,LI,LONGITUDE,LATITUDE,NOTE\n"
+        "WHOLE ROCK,12,-70.1,-33.4,Andes\xa0Sur\n".encode(
+            "cp1252"
+        )
+    )
+
+    result = read_georoc_raw(path)
+
+    assert result.encoding == "cp1252"
+    assert len(result.frame) == 1
+
+
+def test_whole_rock_filter_removes_volcanic_glass():
+    import pandas as pd
+    from lithiumscope.tools.georoc_material_filter import (
+        filter_whole_rock,
+    )
+
+    frame = pd.DataFrame(
+        {
+            "TYPE OF MATERIAL": [
+                "WHOLE ROCK",
+                "VOLCANIC GLASS",
+                "WR",
+            ],
+            "LI": [10, 20, 30],
+        }
+    )
+
+    result = filter_whole_rock(frame)
+
+    assert result.rows_before == 3
+    assert result.rows_after == 2
+    assert result.rows_removed == 1
+    assert result.frame["LI"].tolist() == [
+        10,
+        30,
+    ]
+
+
+def test_postprocess_decodes_filters_and_writes_utf8(
+    tmp_path,
+):
+    import pandas as pd
+    from lithiumscope.tools.georoc_postprocess import (
+        process_georoc_text_export,
+    )
+
+    raw = tmp_path / "raw.csv"
+    raw.write_bytes(
+        (
+            "TYPE OF MATERIAL,LI,LONGITUDE,LATITUDE,NOTE\n"
+            "WHOLE ROCK,12,-70.1,-33.4,Andes\xa0Sur\n"
+            "VOLCANIC GLASS,25,-69.9,-22.0,Vidrio\n"
+        ).encode("cp1252")
+    )
+    destination = tmp_path / "filtered.csv"
+
+    result = process_georoc_text_export(
+        raw,
+        destination,
+    )
+    frame = pd.read_csv(destination)
+
+    assert result.encoding == "cp1252"
+    assert result.rows_before_filter == 2
+    assert result.rows_after_filter == 1
+    assert frame["TYPE OF MATERIAL"].tolist() == [
+        "WHOLE ROCK"
+    ]
+    assert "Andes Sur" in frame["NOTE"].iloc[0]
