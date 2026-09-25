@@ -107,6 +107,7 @@ def test_lab_modules_remain_focused():
         root / "src/lithiumscope/tools/georoc_normalizer.py",
         root / "src/lithiumscope/tools/georoc_material_filter.py",
         root / "src/lithiumscope/tools/georoc_postprocess.py",
+        root / "src/lithiumscope/tools/georoc_source_checkpoint.py",
         root / "src/lithiumscope/datasets/georoc_query_contract.py",
         root / "src/lithiumscope/datasets/georoc_query_flow.py",
         root / "src/lithiumscope/tools/georoc_query_models.py",
