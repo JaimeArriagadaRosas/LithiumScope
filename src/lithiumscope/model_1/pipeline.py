@@ -109,6 +109,9 @@ def prepare_training_data(path: Path, model_family: str = "common") -> PreparedM
     frame = add_geochemical_features(frame)
     audit.capture("08_feature_engineering", frame)
 
+    coordinate_report = spatial_coordinate_diagnostics(
+        frame
+    )
     schema = select_feature_schema(frame, include_age=include_age)
     validate_training_schema(target, schema.numeric, schema.categorical)
 
