@@ -55,8 +55,8 @@ def dataset_summary(
         .mul(100)
         .sort_values(ascending=False)
         .head(20)
-        .rename("missing_percent")
-        .reset_index(names="column")
+        .rename_axis("column")
+        .reset_index(name="missing_percent")
     )
     print_table(
         "Top 20 columnas por porcentaje faltante",
