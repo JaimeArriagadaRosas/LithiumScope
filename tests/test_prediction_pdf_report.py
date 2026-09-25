@@ -1,8 +1,12 @@
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from lithiumscope.prediction.report import write_pdf_report
+from lithiumscope.prediction.reporting.charts import (
+    save_satellite_input_preview,
+)
 
 
 def test_pdf_report_is_generated_with_case_sections(tmp_path: Path):
@@ -84,3 +88,39 @@ def test_pdf_report_is_generated_with_case_sections(tmp_path: Path):
     payload = destination.read_bytes()
     assert payload.startswith(b"%PDF")
     assert len(payload) > 1000
+
+
+def test_satellite_input_preview_uses_real_multiband_patches(
+    tmp_path: Path,
+):
+    rows = []
+    for index in range(2):
+        patch = np.zeros((6, 8, 8), dtype=np.float32)
+        gradient = np.linspace(
+            0.0,
+            1.0,
+            64,
+            dtype=np.float32,
+        ).reshape(8, 8)
+        patch[0] = gradient + index
+        patch[1] = gradient.T + index
+        patch[2] = np.flipud(gradient) + index
+        patch_path = tmp_path / f"case_{index}.npy"
+        np.save(patch_path, patch)
+        rows.append(
+            {
+                "case_id": f"case_{index}",
+                "image_path": str(patch_path),
+                "sentinel_status": "ready",
+            }
+        )
+
+    destination = tmp_path / "sentinel_inputs.png"
+    result = save_satellite_input_preview(
+        pd.DataFrame(rows),
+        destination,
+    )
+
+    assert result == destination
+    assert destination.is_file()
+    assert destination.stat().st_size > 1000

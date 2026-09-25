@@ -54,6 +54,20 @@ def _load_reporting_callable(
     )
 
 
+def save_satellite_input_preview(
+    cases: Any,
+    destination: Path,
+) -> Path | None:
+    writer = _load_reporting_callable(
+        "lithiumscope.prediction.reporting.charts",
+        "save_satellite_input_preview",
+    )
+    return writer(
+        cases,
+        destination,
+    )
+
+
 def save_integrated_figures(
     paired: Any,
     figure_dir: Path,

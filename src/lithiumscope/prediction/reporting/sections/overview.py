@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from reportlab.lib.units import cm
-from reportlab.platypus import KeepTogether, Spacer
+from reportlab.platypus import KeepTogether, PageBreak, Spacer
 
 from lithiumscope.prediction.reporting.primitives import (
     paragraph,
@@ -10,7 +10,7 @@ from lithiumscope.prediction.reporting.primitives import (
 
 
 def build_overview(context, styles) -> list:
-    story: list = []
+    story: list = [PageBreak()]
 
     traceability = table(
         [
@@ -99,6 +99,8 @@ def build_overview(context, styles) -> list:
             ]
         )
     )
+
+    story.append(PageBreak())
 
     source_block: list = [
         paragraph(

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pandas as pd
 from reportlab.lib.units import cm
+from reportlab.platypus import PageBreak
 
 from lithiumscope.prediction.reporting.formatting import number
 from lithiumscope.prediction.reporting.primitives import (
@@ -24,6 +25,7 @@ def _metric_rows(metrics: dict) -> list[list]:
 
 def build_performance(context, styles) -> list:
     story: list = [
+        PageBreak(),
         paragraph(
             "4. Metricas externas",
             styles["LS_H1"],
@@ -104,6 +106,7 @@ def build_performance(context, styles) -> list:
 
     story.extend(
         [
+            PageBreak(),
             paragraph(
                 "5. Entrenamiento vs. evaluacion actual",
                 styles["LS_H1"],
@@ -172,11 +175,14 @@ def build_performance(context, styles) -> list:
             )
         )
 
-    story.append(
-        paragraph(
-            "6. Correlaciones y concordancia",
-            styles["LS_H1"],
-        )
+    story.extend(
+        [
+            PageBreak(),
+            paragraph(
+                "6. Correlaciones y concordancia",
+                styles["LS_H1"],
+            ),
+        ]
     )
 
     correlations = context.correlations

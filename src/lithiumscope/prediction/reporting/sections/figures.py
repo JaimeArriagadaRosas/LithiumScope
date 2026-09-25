@@ -1,20 +1,24 @@
 from __future__ import annotations
 
 from reportlab.lib.units import cm
-from reportlab.platypus import Image, KeepTogether, Spacer
+from reportlab.platypus import Image, KeepTogether, PageBreak, Spacer
 
 from lithiumscope.prediction.reporting.primitives import paragraph
 
 
 def build_figures(context, styles) -> list:
     story: list = [
+        PageBreak(),
         paragraph(
             "7. Graficas",
             styles["LS_H1"],
         )
     ]
     for figure in context.figures:
-        if not figure.is_file():
+        if (
+            not figure.is_file()
+            or figure.stem == "sentinel_inputs"
+        ):
             continue
         story.append(
             KeepTogether(

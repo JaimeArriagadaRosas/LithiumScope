@@ -39,6 +39,7 @@ from lithiumscope.prediction.interpretation import (
 )
 from lithiumscope.prediction.report import (
     save_integrated_figures,
+    save_satellite_input_preview,
     save_spatial_maps,
     write_json,
     write_pdf_report,
@@ -225,6 +226,7 @@ def _write_outputs(
     session: PredictionSession,
     model_1_predictions: pd.DataFrame,
     model_2_predictions: pd.DataFrame,
+    model_2_cases: pd.DataFrame,
     paired: pd.DataFrame,
     correlations: pd.DataFrame,
     concordance: pd.DataFrame,
@@ -258,7 +260,13 @@ def _write_outputs(
         paired,
         session.figures / "maps",
     )
+    satellite_preview = save_satellite_input_preview(
+        model_2_cases,
+        session.figures / "sentinel_inputs.png",
+    )
     figures = save_integrated_figures(paired, session.figures)
+    if satellite_preview is not None:
+        figures = [satellite_preview, *figures]
 
     workbook_path = write_workbook(
         session.root / "evaluation.xlsx",
@@ -340,6 +348,11 @@ def _write_outputs(
             "run_log": str(run_log_path),
             "maps": [str(path) for path in maps],
             "figures": [str(path) for path in figures],
+            "satellite_input_preview": (
+                str(satellite_preview)
+                if satellite_preview is not None
+                else None
+            ),
         },
     }
     manifest_path = write_json(session.root / "prediction_manifest.json", manifest)
@@ -491,6 +504,7 @@ def _run_integrated(
             session=session,
             model_1_predictions=model_1_predictions,
             model_2_predictions=model_2_predictions,
+            model_2_cases=model_2_cases,
             paired=paired,
             correlations=correlations,
             concordance=concordance,

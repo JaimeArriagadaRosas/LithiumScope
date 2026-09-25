@@ -33,7 +33,54 @@ def build_spatial(context, styles) -> list:
         ),
     ]
 
-    for item in context.interpretation.splitlines():
+    interpretation_lines = context.interpretation.splitlines()
+    if (
+        interpretation_lines
+        and interpretation_lines[0].strip().upper()
+        == "INTERPRETACIÓN CIENTÍFICA INTEGRADA"
+    ):
+        interpretation_lines = interpretation_lines[1:]
+
+    story.append(
+        paragraph(
+            "Interpretación científica integrada",
+            styles["LS_H2"],
+        )
+    )
+
+    satellite_preview = next(
+        (
+            path
+            for path in context.figures
+            if path.stem == "sentinel_inputs"
+            and path.is_file()
+        ),
+        None,
+    )
+    if satellite_preview is not None:
+        story.append(
+            KeepTogether(
+                [
+                    Image(
+                        str(satellite_preview),
+                        width=15.8 * cm,
+                        height=13.2 * cm,
+                        kind="proportional",
+                    ),
+                    paragraph(
+                        "Vista RGB de los parches Sentinel-2 reales "
+                        "utilizados como entrada del Modelo 2. Cada "
+                        "recuadro corresponde a un caso; el modelo "
+                        "opera sobre el parche multibanda completo, "
+                        "no solo sobre esta visualización RGB.",
+                        styles["LS_Small"],
+                    ),
+                    Spacer(1, 8),
+                ]
+            )
+        )
+
+    for item in interpretation_lines:
         if item.strip():
             story.append(
                 paragraph(
