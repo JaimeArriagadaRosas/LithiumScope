@@ -30,9 +30,9 @@ def evaluate_mean_baseline(prepared, config: dict) -> tuple[dict, pd.DataFrame, 
         validation.get("prefer_spatial_groups", False)
         and not validation.get("allow_random_fallback", False)
     )
-    if prepared.outer_splits is not None:
-        outer_splits = prepared.outer_splits
-        strategy = prepared.validation_strategy or "unknown"
+    if getattr(prepared, "outer_splits", None) is not None:
+        outer_splits = getattr(prepared, "outer_splits")
+        strategy = getattr(prepared, "validation_strategy", None) or "unknown"
     else:
         outer_splits, strategy = materialize_regression_splits(
             prepared.x,
