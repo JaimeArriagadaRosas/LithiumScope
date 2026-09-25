@@ -15,6 +15,11 @@ _CANONICAL = {
     "VOLCANIC GLASS": "GL",
 }
 
+_CANONICAL_LABELS = {
+    "WR": "WHOLE ROCK",
+    "GL": "VOLCANIC GLASS",
+}
+
 
 @dataclass(frozen=True)
 class ParsedMaterial:
@@ -59,3 +64,22 @@ def parse_georoc_material(
         code=match.group("code").upper(),
         batch_id=match.group("batch"),
     )
+
+
+
+def canonical_material_label(
+    code: str | None,
+) -> str | None:
+    if code is None:
+        return None
+    return _CANONICAL_LABELS.get(
+        str(code).strip().upper()
+    )
+
+
+def material_code_for(
+    value: object,
+) -> str | None:
+    return parse_georoc_material(
+        value
+    ).code
