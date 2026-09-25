@@ -176,3 +176,20 @@ def assess_dataset_health(
             frame.duplicated().sum()
         ),
     )
+
+
+
+def assess_dataset_health_file(
+    path,
+) -> DatasetHealth:
+    try:
+        frame = pd.read_csv(
+            path,
+            low_memory=False,
+        )
+    except Exception as exc:
+        raise RuntimeError(
+            "No se pudo evaluar la salud del dataset "
+            f"GEOROC descargado: {exc}"
+        ) from exc
+    return assess_dataset_health(frame)
