@@ -321,3 +321,31 @@ def test_bounded_run_log_keeps_recent_lines(tmp_path):
         "evento-0" in line
         for line in lines
     )
+
+
+
+def test_resolve_download_href_supports_georoc_checkie():
+    from lithiumscope.tools.georoc_query_download_links import (
+        resolve_download_href,
+    )
+
+    href = (
+        "javascript:checkIE("
+        "'/georoc/results/f08867456202692525710.csv',"
+        "'%2Fgeoroc%2Fresults%2Ff08867456202692525710%2Ecsv',"
+        "'f08867456202692525710%2Ecsv');"
+    )
+
+    assert resolve_download_href(href) == (
+        "/georoc/results/f08867456202692525710.csv"
+    )
+
+
+def test_resolve_download_href_leaves_regular_links_unchanged():
+    from lithiumscope.tools.georoc_query_download_links import (
+        resolve_download_href,
+    )
+
+    assert resolve_download_href(
+        "/georoc/results/table.csv"
+    ) == "/georoc/results/table.csv"
