@@ -60,8 +60,8 @@ from lithiumscope.tools.georoc_query_models import (
     Form,
     Input,
 )
-from lithiumscope.tools.georoc_query_payload import (
-    select_submit_by_label,
+from lithiumscope.tools.georoc_query_actions import (
+    resolve_postpage_action,
 )
 
 
@@ -99,70 +99,47 @@ def test_chemloc_continue_form_does_not_require_submit_name():
 
 
 
-def test_select_submit_by_label_prefers_convergent_margin():
-    form = Form(
-        action="ChemistryComb.asp",
-        method="post",
-        inputs=[
-            Input(
-                name="setting",
-                value="ocean",
-                kind="submit",
-                checked=False,
-                nearby_text="to select ocean island(s)",
-            ),
-            Input(
-                name="setting",
-                value="convergent",
-                kind="submit",
-                checked=False,
-                nearby_text="to select convergent margin(s)",
-            ),
-            Input(
-                name="Items",
-                value="LI,SIO2",
-                kind="hidden",
-                checked=False,
-            ),
-        ],
+
+
+def test_parser_preserves_georoc_postpage_onclick():
+    html = """
+    <form id="Chemistry"
+          action="/georoc/Oceanislands/ChemistrySearch.asp"
+          method="post">
+      <input type="button"
+             value="Convergent Margins"
+             onclick="postpage('Chemistry','/georoc/ConvMargin/ChemistrySearch.asp','Convergent Margins');"/>
+      <input type="hidden" name="trackcriteria" value=""/>
+    </form>
+    """
+
+    parser = _parse(html)
+    form = parser.forms[0]
+    button = form.inputs[0]
+
+    assert "ConvMargin/ChemistrySearch.asp" in button.onclick
+
+
+def test_resolve_postpage_action_uses_convergent_margin_target():
+    html = """
+    <form id="Chemistry"
+          action="/georoc/Oceanislands/ChemistrySearch.asp"
+          method="post">
+      <input type="button"
+             value="Ocean Islands"
+             onclick="postpage('Chemistry','/georoc/Oceanislands/ChemistrySearch.asp','Ocean Islands');"/>
+      <input type="button"
+             value="Convergent Margins"
+             onclick="postpage('Chemistry','/georoc/ConvMargin/ChemistrySearch.asp','Convergent Margins');"/>
+      <input type="hidden" name="trackcriteria" value=""/>
+    </form>
+    """
+
+    parser = _parse(html)
+    target, track = resolve_postpage_action(
+        parser.forms[0],
+        "CONVERGENT MARGINS",
     )
 
-    payload = _default_payload(form)
-    selected = select_submit_by_label(
-        form,
-        payload,
-        ("CONVERGENT MARGIN",),
-    )
-
-    assert ("setting", "convergent") in selected
-    assert ("setting", "ocean") not in selected
-    assert ("Items", "LI,SIO2") in selected
-
-
-def test_select_submit_by_label_fails_if_setting_is_missing():
-    form = Form(
-        action="ChemistryComb.asp",
-        method="post",
-        inputs=[
-            Input(
-                name="setting",
-                value="ocean",
-                kind="submit",
-                checked=False,
-                nearby_text="to select ocean island(s)",
-            )
-        ],
-    )
-
-    try:
-        select_submit_by_label(
-            form,
-            [],
-            ("CONVERGENT MARGIN",),
-        )
-    except RuntimeError as exc:
-        assert "CONVERGENT MARGIN" in str(exc)
-    else:
-        raise AssertionError(
-            "Expected explicit geological-setting failure."
-        )
+    assert target == "/georoc/ConvMargin/ChemistrySearch.asp"
+    assert track == "Convergent Margins"
