@@ -186,6 +186,12 @@ def acquire_filtered_georoc(
                 timeout,
             )
             if downloadable is not None:
+                run_log.event(
+                    "download_link",
+                    "detectado",
+                    url=downloadable.url,
+                )
+            if downloadable is not None:
                 return _finish_download(
                     downloadable,
                     destination,
