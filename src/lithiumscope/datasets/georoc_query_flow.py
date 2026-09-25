@@ -91,6 +91,27 @@ def _is_chem_location_form(
     )
 
 
+def compile_file_form(
+    forms: list[Form],
+) -> Form | None:
+    for form in forms:
+        try:
+            target_action, _ = resolve_postpage_action(
+                form,
+                "COMPILE FILE",
+            )
+        except RuntimeError:
+            continue
+
+        return Form(
+            action=target_action,
+            method=form.method,
+            inputs=form.inputs,
+            selects=form.selects,
+        )
+    return None
+
+
 def initial_query(
     session: requests.Session,
     timeout: float,
@@ -208,29 +229,6 @@ def advance_query(
                 default_payload(form),
                 timeout,
             )
-
-    for form in parser.forms:
-        try:
-            target_action, _ = resolve_postpage_action(
-                form,
-                "COMPILE FILE",
-            )
-        except RuntimeError:
-            continue
-
-        routed_form = Form(
-            action=target_action,
-            method=form.method,
-            inputs=form.inputs,
-            selects=form.selects,
-        )
-        return submit_form(
-            session,
-            response.url,
-            routed_form,
-            default_payload(form),
-            timeout,
-        )
 
     convergent = follow_link_by_text(
         session,
