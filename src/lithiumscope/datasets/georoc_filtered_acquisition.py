@@ -22,13 +22,14 @@ from lithiumscope.tools.georoc_query_diagnostics import (
     diagnose_query_exception,
     format_query_failure,
 )
-from lithiumscope.tools.georoc_dataset_health import (
-    assess_dataset_health_file,
+from lithiumscope.tools.georoc_download_finalize import (
+    finish_download,
+)
+from lithiumscope.tools.georoc_query_download import (
+    find_download_link,
 )
 from lithiumscope.tools.georoc_query_export import (
-    find_download_link,
     looks_downloadable,
-    materialize_download,
     validate_export,
 )
 from lithiumscope.tools.georoc_query_log import BoundedRunLog
@@ -64,30 +65,6 @@ def _save_debug(
     )
     return path
 
-
-def _finish_download(
-    response: requests.Response,
-    destination: Path,
-    spinner: Spinner,
-    run_log: BoundedRunLog,
-) -> Path:
-    path = materialize_download(
-        response,
-        destination,
-        spinner=spinner,
-        run_log=run_log,
-    )
-    validate_export(path)
-    health = assess_dataset_health_file(path)
-    run_log.event(
-        "health_check",
-        "salud post-descarga OK",
-        **health.as_log_fields(),
-    )
-    spinner.succeed(
-        "GEOROC filtrado descargado y validado"
-    )
-    return path
 
 
 def acquire_filtered_georoc(
@@ -164,7 +141,7 @@ def acquire_filtered_georoc(
             )
 
             if looks_downloadable(response):
-                return _finish_download(
+                return finish_download(
                     response,
                     destination,
                     spinner,
@@ -201,7 +178,7 @@ def acquire_filtered_georoc(
                     url=downloadable.url,
                 )
             if downloadable is not None:
-                return _finish_download(
+                return finish_download(
                     downloadable,
                     destination,
                     spinner,
