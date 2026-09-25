@@ -83,19 +83,19 @@ def request_compiled_export(
                 url,
                 data=payload,
                 timeout=request_timeout,
-                stream=True,
+                stream=False,
             )
         else:
             response = session.get(
                 url,
                 params=payload,
                 timeout=request_timeout,
-                stream=True,
+                stream=False,
             )
         response.raise_for_status()
         run_log.event(
             "compile_request",
-            "cabeceras recibidas",
+            "respuesta completa recibida",
             status=response.status_code,
             url=response.url,
             content_type=response.headers.get(
