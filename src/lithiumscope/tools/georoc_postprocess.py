@@ -13,6 +13,9 @@ from lithiumscope.tools.georoc_normalizer import (
 from lithiumscope.tools.georoc_raw_reader import (
     read_georoc_raw,
 )
+from lithiumscope.tools.georoc_schema_profile import (
+    profile_georoc_schema,
+)
 
 
 @dataclass(frozen=True)
@@ -29,11 +32,19 @@ class GeorocPostprocessResult:
 def process_georoc_text_export(
     raw_path: Path,
     destination: Path,
+    *,
+    profile_callback=None,
 ) -> GeorocPostprocessResult:
     raw = read_georoc_raw(raw_path)
     normalized = normalize_georoc_frame(
         raw.frame
     )
+    if profile_callback is not None:
+        profile_callback(
+            profile_georoc_schema(
+                normalized
+            )
+        )
     material: MaterialFilterResult = (
         filter_whole_rock(normalized)
     )
