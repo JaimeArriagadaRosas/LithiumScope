@@ -23,7 +23,7 @@ from lithiumscope.tools.georoc_query_diagnostics import (
     format_query_failure,
 )
 from lithiumscope.tools.georoc_dataset_health import (
-    assess_dataset_health,
+    assess_dataset_health_file,
 )
 from lithiumscope.tools.georoc_query_export import (
     find_download_link,
@@ -78,8 +78,7 @@ def _finish_download(
         run_log=run_log,
     )
     validate_export(path)
-    frame = __import__("pandas").read_csv(path)
-    health = assess_dataset_health(frame)
+    health = assess_dataset_health_file(path)
     run_log.event(
         "health_check",
         "salud post-descarga OK",
