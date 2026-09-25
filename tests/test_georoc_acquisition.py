@@ -56,6 +56,7 @@ def test_chemistry_form_selects_only_requested_analytes():
 from lithiumscope.datasets.georoc_query_flow import (
     _is_chem_location_form,
     _is_direct_batch_form,
+    compile_file_form,
 )
 from lithiumscope.tools.georoc_query_models import (
     Form,
@@ -257,3 +258,66 @@ def test_resolve_postpage_action_supports_two_arguments():
 
     assert target == "ChemCompTxt.asp"
     assert track == ""
+
+
+
+def test_compile_file_form_routes_to_chem_comp_txt():
+    html = """
+    <form id="FieldItems_comp"
+          action="Results.asp"
+          method="post">
+      <input type="button"
+             value="Compile File"
+             onclick="postpage('FieldItems_comp','ChemCompTxt.asp');"/>
+      <input type="hidden"
+             name="Items"
+             value="LI + SIO2"/>
+      <input type="hidden"
+             name="Material"
+             value="'WR','GL'"/>
+    </form>
+    """
+
+    parser = _parse(html)
+    form = compile_file_form(
+        parser.forms
+    )
+
+    assert form is not None
+    assert form.action == "ChemCompTxt.asp"
+    assert _default_payload(form) == [
+        ("Items", "LI + SIO2"),
+        ("Material", "'WR','GL'"),
+    ]
+
+
+def test_bounded_run_log_keeps_recent_lines(tmp_path):
+    from lithiumscope.tools.georoc_query_log import (
+        BoundedRunLog,
+    )
+
+    path = tmp_path / "run.log"
+    log = BoundedRunLog(
+        path,
+        max_lines=20,
+        max_chars=4000,
+    )
+    for index in range(40):
+        log.event(
+            "step",
+            f"evento-{index}",
+        )
+
+    lines = path.read_text(
+        encoding="utf-8"
+    ).splitlines()
+
+    assert len(lines) <= 20
+    assert any(
+        "evento-39" in line
+        for line in lines
+    )
+    assert not any(
+        "evento-0" in line
+        for line in lines
+    )
