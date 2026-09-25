@@ -209,6 +209,29 @@ def advance_query(
                 timeout,
             )
 
+    for form in parser.forms:
+        try:
+            target_action, _ = resolve_postpage_action(
+                form,
+                "COMPILE FILE",
+            )
+        except RuntimeError:
+            continue
+
+        routed_form = Form(
+            action=target_action,
+            method=form.method,
+            inputs=form.inputs,
+            selects=form.selects,
+        )
+        return submit_form(
+            session,
+            response.url,
+            routed_form,
+            default_payload(form),
+            timeout,
+        )
+
     convergent = follow_link_by_text(
         session,
         response.url,
