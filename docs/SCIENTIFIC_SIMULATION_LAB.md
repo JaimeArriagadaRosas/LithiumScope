@@ -107,3 +107,12 @@ Para M2/CatBoost se ejecutaron 19 escenarios con una **imagen artificial aleator
 - Resultados en `results/scientific_simulations/extended_2025/`: `extended_manifest.csv`, `batch/batch_m2.csv`, `batch/summary.json` y comparación geográfica.
 - Se implementó un plan de extensión a cuatro ubicaciones y desplazamientos, pero el piloto ejecutado aquí cubrió solo tres parches de Atacama; no deben presentarse los escenarios no ejecutados como resultados.
 - Se creó catálogo de datos químicos externos en `data/external/independent_geochemistry/` (plantilla vacía, validación de material, unidades, método, origen, independencia declarada). Los candidatos requieren auditoría de solapamiento con el entrenamiento antes de llamarlos validación externa ciega. No se han adquirido datos geoquímicos independientes.
+
+## Campaña ampliada de 2025 (30/10/2026)
+Se ejecutaron 9 nuevas adquisiciones en Tara, Maricunga y Pedernales (verano, invierno y desplazamiento hacia el este), que se combinaron con 3 parches Atacama del piloto previo. Todos los **12 parches** fueron `ACCEPT` tras control local SCL (fracción inválida de 0 a 0.032227). Se ejecutaron **228 escenarios M2**, con 156 puntuaciones y 72 abstenciones por eliminación de una banda completa.
+
+Resultados guardados localmente en `results/scientific_simulations/campaign_2025/campaign_manifest.csv`, `batch/batch_m2.csv` y `batch/summary.json`. Scores basales verano/invierno: Atacama 0.315828/0.382427; Tara 0.091350/0.063254; Maricunga 0.366533/0.425180; Pedernales 0.494263/0.329706. El conjunto de desplazamientos del este tiene scores 0.223356, 0.123555, 0.443666 y 0.596672 respectivamente.
+
+**Limitaciones decisivas:** las escenas de desplazamiento se eligieron en diciembre y las basales de verano/invierno en marzo/agosto. Las diferencias por desplazamiento mezclan cambio de lugar y de fecha, por lo que no aíslan causalmente el efecto espacial. Además, se utilizó un parche por escenario/sector y no hay Li medido para esas posiciones. No interpretar los scores como evidencia de depósitos o validación externa. Como siguiente prueba, reutilizar exactamente la misma escena STAC para el punto original y sus coordenadas desplazadas.
+
+Se documentaron GEOROC y recursos geoquímicos SERNAGEOMIN como candidatas de datos, no importadas a los modelos. Ver `docs/GEOCHEMICAL_EVIDENCE_SOURCES.md`.
