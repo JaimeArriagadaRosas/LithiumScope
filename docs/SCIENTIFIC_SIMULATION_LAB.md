@@ -152,3 +152,10 @@ Se documentaron GEOROC y recursos geoquímicos SERNAGEOMIN como candidatas de da
 - Rango intraestacional de score más elevado observado: Pedernales invierno 2025 = **0.127396**; también Pedernales verano 2024 = **0.127045** e invierno 2024 = **0.104785**. Son diferencias entre scores NO mediciones de Li ni errores científicos.
 - Pruebas automatizadas: 26 aprobadas; Ruff sin errores. Las nueve advertencias proceden de deprecaciones de rasterio.
 - Sigue pendiente obtener y auditar mediciones geoquímicas de roca con Li, trazabilidad, ausencia de duplicados y exclusión geográfica respecto del entrenamiento antes de presentar resultados de generalización científica.
+
+## Campaña multiescena adicional y auditoría de evidencia externa (30/10/2026)
+- Se incorporaron otras **16 escenas Sentinel-2 reales** (Atacama, Tara, Maricunga, Pedernales × 2024,2025 × verano temprano/invierno temprano). Las 16 pasaron control local SCL; se ejecutaron **304 evaluaciones M2**: 208 scores y 96 abstenciones por banda eliminada.
+- Los resultados están en `results/scientific_simulations/temporal_multiscene/`. El análisis combina estas 16 escenas y las 16 estacionales existentes, dejando **32 observaciones región+escena únicas**, sin duplicaciones, en 16 grupos región-año-estación con dos imágenes por grupo.
+- En seis grupos las dos imágenes provienen de satélites diferentes. Rango intraestacional destacado de Pedernales invierno 2025: 0.127396; no inferir precisión de Li ni efecto causal estacional.
+- Se creó auditoría de un candidato externo auténtico GEOROC (ID 302366, muestra 385, roca total Llaima, Li=13.1 ppm, lat -38.4, lon -71.6, EPSL 303 2011 pp. 37-47). Distancia geográfica mínima frente a los 706 registros del entrenamiento M2: **1346.137 km**. Faltan prueba del método analítico y verificación de independencia bibliográfica; **cero etiquetas externas aceptadas**.
+- Archivos externos: `results/scientific_simulations/external_geochemistry_audit/georoc_candidates.csv` y `audit_manifest.json`, con fuente, hash SHA256 y conteos. No se usó ninguna muestra para inferencia o entrenamiento.
