@@ -69,3 +69,9 @@ Para M2/CatBoost se ejecutaron 19 escenarios con una **imagen artificial aleator
 - **Verificación técnica:** 11 pruebas del laboratorio aprobadas, Ruff aprobado y compilación Python correcta.
 - **Bloqueo de adquisición:** la API STAC respondió y una lectura real del asset rojo Sentinel-2 produjo una matriz 32x32, pero el primer intento automatizado de adquirir parches completos no finalizó; se detuvo. No se verificaron parches aceptados ni se completó el lote M2 con imágenes reales. Revisar latencia/timeout y aislar lecturas COG por banda antes de ampliar.
 - No inferir precisión, calidad minera ni valores reales de Li a partir de scores sobre imágenes sin etiquetas de referencia. No usar estas imágenes para reentrenamiento en esta fase.
+
+## Diagnóstico del bloqueo COG (30/10/2026)
+- Se incorporó `raster_worker.py` y se reestructuró `acquisition.py` para aislar cada lectura de banda/SCL en un subproceso con límite temporal, registrar errores e ir guardando manifiestos parciales.
+- Prueba real `atacama_2025`: SCL agotó el límite de 35 segundos; entrada documentada en `results/scientific_simulations/sentinel2_real/failures.csv`.
+- Prueba independiente de asset B04.tif del 26/10/2025: agotó 45 segundos. Por tanto, el problema no está restringido a SCL; hay una dificultad de lectura remota de COG desde este entorno.
+- 15 pruebas automatizadas aprobadas; Ruff sin observaciones. No se descargó una imagen completa válida y **no hay evaluación M2 real concluida**. Próximo paso: diagnosticar el acceso HTTP range a S3/GDAL y/o añadir fallback HTTP de ventanas o proveedor alternativo; no iniciar descarga masiva hasta validar una sola imagen completa.
