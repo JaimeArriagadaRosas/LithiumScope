@@ -18,7 +18,8 @@ def main() -> int:
     args = parser.parse_args()
     from lithiumscope.experiments.http_tiles import extract_http_patch
     if args.href.startswith("https://"):
-        array = extract_http_patch(args.href, args.lat, args.lon, args.size, args.pixels)
+        array = extract_http_patch(args.href, args.lat, args.lon, args.size, args.pixels,
+                                   resampling="nearest" if args.mode == "scl" else "bilinear")
     elif args.mode == "reflectance":
         from lithiumscope.model_2.data.sentinel2 import _read_patch
         array = _read_patch(args.href, args.lat, args.lon, args.size, args.pixels)

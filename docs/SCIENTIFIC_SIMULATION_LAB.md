@@ -84,3 +84,11 @@ Para M2/CatBoost se ejecutaron 19 escenarios con una **imagen artificial aleator
 - Primer lote M2 real: 19 escenarios, 13 puntuaciones y 6 abstenciones por banda ausente. Score basal CatBoost 0.326944, fracción de features fuera de dominio 0.02381; **score de priorización relativo, no probabilidad de yacimiento ni validación de litio**. CSV y resumen en `results/scientific_simulations/batch_m2/`.
 - Tests científicos: 15 aprobados; Ruff sin observaciones.
 - Pendientes: validar remuestreo bilineal equivalente al entrenamiento, cuantificar efecto de imágenes en distintas fechas y ubicaciones, añadir comprobación radiométrica independiente, ampliar la muestra. No entrenar con estos parches sin su debida validación.
+
+## Comparación geográfica y temporal M2, 30-10-2026
+- Se corrigió `experiments/http_tiles.py` para interpolación bilineal de bandas continuas, con centros de píxeles, cuatro vecinos y omisión ponderada de nodata; la máscara categórica SCL conserva vecino cercano. Se agregaron pruebas sintéticas de interpolación. La equivalencia numérica exacta respecto a GDAL/rasterio aún requiere un contraste con referencia raster real (distintas resoluciones y bordes).
+- Se ejecutó adquisición de ocho parches válidos: cuatro zonas (Atacama, Tara, Maricunga, Pedernales), años 2024 y 2025. Se regeneró Atacama 2025 para eliminar la mezcla del muestreo anterior; la copia anterior se conserva en `legacy_nearest`. Todos los parches del manifiesto activo usan el método nuevo.
+- Se ejecutaron **152 evaluaciones M2** (8 parches × 19 escenarios), con 104 puntuaciones y 48 abstenciones previstas por banda completa ausente. Resultados en `results/scientific_simulations/batch_m2/batch_m2.csv`, resúmenes en `summary.json`, `geography_comparison.csv` y `geography_comparison.json`.
+- Scores basales 2024/2025: Atacama 0.32958/0.31792; Tara 0.12629/0.13240; Maricunga 0.42148/0.42649; Pedernales 0.61951/0.65227. Son scores relativos, no probabilidades de depósito, y los parches no tienen mediciones de Li para evaluar exactitud.
+- La opción 6 del laboratorio interactivo regenera la comparativa geográfica/temporal.
+- M1 conserva 90 escenarios-semilla sobre 10 muestras conocidas; M2 evalúa 8 escenas reales. No se ejecutaron todavía los 1.000–3.000 casos originalmente propuestos ni una validación externa independiente.

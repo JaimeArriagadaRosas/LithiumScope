@@ -18,8 +18,9 @@ def run() -> None:
         print("3. Mostrar informes existentes")
         print("4. Adquirir parches Sentinel-2 reales (piloto)")
         print("5. Ejecutar simulaciones masivas (M1 y M2 disponibles)")
+        print("6. Generar comparativa geográfica y temporal (M2)")
         print("0. Volver")
-        choice = choose("Seleccione una opción: ", {"0", "1", "2", "3", "4", "5"})
+        choice = choose("Seleccione una opción: ", {"0", "1", "2", "3", "4", "5", "6"})
         if choice == "0":
             return
         if choice == "1":
@@ -69,6 +70,15 @@ def run() -> None:
                 print(f"M2: {result} | {summarize(result, result.parent)}")
             else:
                 print("M2 pendiente: primero adquiera parches Sentinel-2 (opción 4).")
+        elif choice == "6":
+            from lithiumscope.experiments.reporting import compare_geographies
+            folder = RESULTS_DIR / "scientific_simulations" / "batch_m2"
+            batch = folder / "batch_m2.csv"
+            if not batch.exists():
+                print("Primero ejecute las simulaciones M2.")
+            else:
+                csv_file, report_file = compare_geographies(batch, folder)
+                print(f"Comparativa: {csv_file} | Resumen: {report_file}")
         else:
             folder = RESULTS_DIR / "scientific_simulations"
             reports = sorted(folder.glob("**/*metrics.csv")) if folder.exists() else []
