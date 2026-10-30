@@ -19,3 +19,7 @@ Fecha de revisión: 2026-10-30. Este archivo es un inventario de **candidatas**,
 - Mantener las salmueras fuera del test geoquímico de roca; no presentar geometrías de salares como evidencia química.
 
 El esquema de entrada está en `data/external/independent_geochemistry/independent_geochemistry_template.csv`. Nunca inferir concentraciones de Li de scores M2 ni de los nombres de salares.
+
+## Estado tras ampliación temporal (30-10-2026)
+- GEOROC y fuentes geoquímicas de SERNAGEOMIN se mantienen como candidatas: aún no se descargó ni verificó un conjunto externo que contenga litio, material roca, método analítico, coordenadas y procedencia suficientes. Los datos de sedimentos y salmueras no se mezclarán con los de roca.
+- Condición de incorporación: verificar identificadores repetidos, bibliografía, unidades ppm/mg/kg, proximidad espacial frente al entrenamiento de 706 muestras, y variables requeridas para cada modelo. Registrar por muestra las exclusiones y el motivo. Hasta completar esta auditoría: **cero muestras externas aceptadas**.
