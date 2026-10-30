@@ -16,8 +16,10 @@ def run() -> None:
         print("1. Modelo 1: escenarios geoquímicos (10 casos demostrativos)")
         print("2. Modelo 2: escenarios espectrales (archivo NPY/NPZ/TIF)")
         print("3. Mostrar informes existentes")
+        print("4. Adquirir parches Sentinel-2 reales (piloto)")
+        print("5. Ejecutar simulaciones masivas (M1 y M2 disponibles)")
         print("0. Volver")
-        choice = choose("Seleccione una opción: ", {"0", "1", "2", "3"})
+        choice = choose("Seleccione una opción: ", {"0", "1", "2", "3", "4", "5"})
         if choice == "0":
             return
         if choice == "1":
@@ -48,6 +50,25 @@ def run() -> None:
                 RESULTS_DIR / "scientific_simulations" / "model_2",
             )
             print(f"Resultados: {output}")
+        elif choice == "4":
+            from lithiumscope.experiments.acquisition import acquire_pilot
+            destination = RESULTS_DIR / "scientific_simulations" / "sentinel2_real"
+            manifest, failures = acquire_pilot(destination)
+            print(f"Catálogo: {manifest} | Fallos: {failures}")
+        elif choice == "5":
+            from lithiumscope.experiments.batch import run_m1_batch, run_m2_batch, summarize
+            folder = RESULTS_DIR / "scientific_simulations"
+            m1, _ = load_latest_model("model_1")
+            source = PROJECT_ROOT / "examples" / "integrated_demo" / "cases.csv"
+            result = run_m1_batch(m1, pd.read_csv(source), folder / "batch_m1")
+            print(f"M1: {result} | {summarize(result, result.parent)}")
+            manifest = folder / "sentinel2_real" / "manifest.csv"
+            if manifest.is_file():
+                m2, _ = load_latest_model("model_2")
+                result = run_m2_batch(m2, manifest, folder / "batch_m2")
+                print(f"M2: {result} | {summarize(result, result.parent)}")
+            else:
+                print("M2 pendiente: primero adquiera parches Sentinel-2 (opción 4).")
         else:
             folder = RESULTS_DIR / "scientific_simulations"
             reports = sorted(folder.glob("**/*metrics.csv")) if folder.exists() else []
