@@ -100,3 +100,10 @@ Para M2/CatBoost se ejecutaron 19 escenarios con una **imagen artificial aleator
 - Scores basales 2023/2024/2025: Atacama 0.318635/0.329580/0.317917; Tara 0.131538/0.126288/0.132395; Maricunga 0.441520/0.421482/0.426491; Pedernales 0.585484/0.619507/0.652272. Los scores NO son concentraciones ni probabilidades de yacimiento; no existe verdad terreno química asociada.
 - Verificación: 21 pruebas científicas aprobadas, Ruff sin observaciones; rasterio reporta 9 avisos de deprecación pendientes en sus APIs.
 - Pendiente: ampliar a más fechas/escenas con cobertura estacional y disponer de referencias geoquímicas ciegas y compatibles para medición real de exactitud. No se reentrenaron modelos.
+
+## Piloto estacional y espacial (30/10/2026)
+- Se añadió una ventana temporal opcional al descargador de evaluación y una matriz ampliable de desplazamientos geográficos (0.004 grados al norte/este aprox.). Cada campaña usa una carpeta distinta para no confundir escenas con el mismo nombre.
+- Piloto ejecutado con Atacama verano 2025 (01/01-31/03), invierno 2025 (01/06-31/08) y coordenada desplazada 0.004° este. Tres parches Sentinel-2 aceptados y 57 evaluaciones M2: 39 puntuaciones y 18 abstenciones por banda íntegra ausente.
+- Resultados en `results/scientific_simulations/extended_2025/`: `extended_manifest.csv`, `batch/batch_m2.csv`, `batch/summary.json` y comparación geográfica.
+- Se implementó un plan de extensión a cuatro ubicaciones y desplazamientos, pero el piloto ejecutado aquí cubrió solo tres parches de Atacama; no deben presentarse los escenarios no ejecutados como resultados.
+- Se creó catálogo de datos químicos externos en `data/external/independent_geochemistry/` (plantilla vacía, validación de material, unidades, método, origen, independencia declarada). Los candidatos requieren auditoría de solapamiento con el entrenamiento antes de llamarlos validación externa ciega. No se han adquirido datos geoquímicos independientes.

@@ -69,7 +69,8 @@ def quality_from_scl(scl: np.ndarray) -> dict:
 
 
 def acquire_pilot(destination: Path, *, years=YEARS, locations=PILOT_LOCATIONS,
-                  max_patches: int = 40, timeout_seconds: int = 45) -> tuple[Path, Path]:
+                  max_patches: int = 40, timeout_seconds: int = 45,
+                  date_window: tuple[str, str] | None = None) -> tuple[Path, Path]:
     """Download genuine scenes, checking SCL before retrieving six spectral bands."""
     destination.mkdir(parents=True, exist_ok=True)
     cfg = _sentinel_config(load_config("model_2"))
@@ -80,8 +81,9 @@ def acquire_pilot(destination: Path, *, years=YEARS, locations=PILOT_LOCATIONS,
     failures = pd.read_csv(failures_file).to_dict("records") if failures_file.is_file() else []
     attempts = 0
     for year in years:
-        provider = Sentinel2Provider(replace(cfg, datetime=f"{year}-01-01/{year}-12-31",
-                                              search_limit=8))
+        window = (f"{year}-{date_window[0]}/{year}-{date_window[1]}" if date_window
+                  else f"{year}-01-01/{year}-12-31")
+        provider = Sentinel2Provider(replace(cfg, datetime=window, search_limit=8))
         for name, (lat, lon) in locations.items():
             if attempts >= max_patches:
                 break
