@@ -16,8 +16,11 @@ def main() -> int:
     parser.add_argument("--mode", choices=["reflectance","scl"], default="reflectance")
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args()
-    from lithiumscope.model_2.data.sentinel2 import _read_patch
-    if args.mode == "reflectance":
+    from lithiumscope.experiments.http_tiles import extract_http_patch
+    if args.href.startswith("https://"):
+        array = extract_http_patch(args.href, args.lat, args.lon, args.size, args.pixels)
+    elif args.mode == "reflectance":
+        from lithiumscope.model_2.data.sentinel2 import _read_patch
         array = _read_patch(args.href, args.lat, args.lon, args.size, args.pixels)
     else:
         import rasterio

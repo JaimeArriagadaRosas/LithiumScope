@@ -31,7 +31,11 @@ ml = [
 imagery = [
   "Pillow>=10.4",
   "rasterio>=1.4",
-  "pystac-client>=0.8.5"
+  "pystac-client>=0.8.5",
+  "fsspec>=2025.3",
+  "aiohttp>=3.10",
+  "tifffile>=2025.3",
+  "imagecodecs>=2024.12"
 ]
 dev = [
   "pytest>=8.3",

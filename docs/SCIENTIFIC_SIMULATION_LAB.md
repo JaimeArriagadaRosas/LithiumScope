@@ -75,3 +75,12 @@ Para M2/CatBoost se ejecutaron 19 escenarios con una **imagen artificial aleator
 - Prueba real `atacama_2025`: SCL agotó el límite de 35 segundos; entrada documentada en `results/scientific_simulations/sentinel2_real/failures.csv`.
 - Prueba independiente de asset B04.tif del 26/10/2025: agotó 45 segundos. Por tanto, el problema no está restringido a SCL; hay una dificultad de lectura remota de COG desde este entorno.
 - 15 pruebas automatizadas aprobadas; Ruff sin observaciones. No se descargó una imagen completa válida y **no hay evaluación M2 real concluida**. Próximo paso: diagnosticar el acceso HTTP range a S3/GDAL y/o añadir fallback HTTP de ventanas o proveedor alternativo; no iniciar descarga masiva hasta validar una sola imagen completa.
+
+## Solución de acceso COG y primer M2 real (30/10/2026)
+- El acceso HTTP Range contra el bucket de Sentinel-2 respondió `206 Partial Content` en aproximadamente 1.4 s. La lectura GDAL remota seguía agotando 35-45 segundos.
+- Se implementó `experiments/http_tiles.py` con `fsspec`, `tifffile` e `imagecodecs`: lee únicamente los bloques TIFF pertinentes mediante rangos HTTP y extrae una ventana 640 m / 32 píxeles. La implementación actual utiliza muestreo al vecino más próximo, **no** es idéntica al remuestreo bilineal del descargador del entrenamiento. Se debe estudiar el efecto de esta diferencia antes de sacar conclusiones sobre calidad predictiva.
+- El trabajador `raster_worker.py` usa este método para URL HTTPS, manteniendo límites de tiempo por asset y el control de SCL.
+- Primer parche completo aceptado: `atacama_2025`, escena Sentinel-2 `S2C_19KEQ_20251223_0_L2A`, SCL con fracción local inválida 0; seis bandas descargadas y guardadas en `results/scientific_simulations/sentinel2_real/`.
+- Primer lote M2 real: 19 escenarios, 13 puntuaciones y 6 abstenciones por banda ausente. Score basal CatBoost 0.326944, fracción de features fuera de dominio 0.02381; **score de priorización relativo, no probabilidad de yacimiento ni validación de litio**. CSV y resumen en `results/scientific_simulations/batch_m2/`.
+- Tests científicos: 15 aprobados; Ruff sin observaciones.
+- Pendientes: validar remuestreo bilineal equivalente al entrenamiento, cuantificar efecto de imágenes en distintas fechas y ubicaciones, añadir comprobación radiométrica independiente, ampliar la muestra. No entrenar con estos parches sin su debida validación.
