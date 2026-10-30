@@ -116,6 +116,29 @@ def compile_report(root: Path) -> Path:
         "Current release package lacks original OOF evidence tables; model training metrics must not be inferred from this absence.",
       ],
     }
+    recovered_path = output / "recovered_training_validation.json"
+    if recovered_path.is_file():
+        recovered = json.loads(recovered_path.read_text(encoding="utf-8"))
+        report["recovered_oof_evidence"] = {
+            "artifact": str(recovered_path.relative_to(root)),
+            "artifact_sha256": _sha(recovered_path),
+            "training_run_id": recovered["source_training_run_id"],
+            "dataset_hash_matches": recovered["dataset_hash_matches"],
+            "label_match": recovered["label_match"],
+            "split_fold_sizes_match": recovered["split_fold_sizes_match"],
+            "spatial_group_overlaps": recovered["split_group_overlaps"],
+            "fold_means": recovered["fold_means"],
+            "baseline_fold_means": recovered["baseline_fold_means"],
+            "pooled_oof_metrics": recovered["metrics_recomputed"],
+        }
+        report["validation_status"]["out_of_fold_history"] = {
+            "status": "RECOVERED_AND_RECOMPUTED",
+            "details": "Original OOF tables in D:/Descargas/LithiumScope, hashes and numeric agreement recorded.",
+        }
+        report["validation_status"]["spatial_splits"] = {
+            "status": "RECONSTRUCTED_NO_GROUP_OVERLAP",
+            "details": "66 groups, StratifiedGroupKFold 5 folds, seed 42. Sizes match original folds, zero overlap. Exact historical indices not separately archived.",
+        }
     (output/"evidence_manifest.json").write_text(json.dumps(report,indent=2,ensure_ascii=False,default=str),encoding="utf-8")
     lines=[
         "# LithiumScope — Evidencia científica consolidada M2",
@@ -143,6 +166,23 @@ def compile_report(root: Path) -> Path:
         "## Resultado científico",
         "Estabilidad bajo perturbaciones y desplazamientos NO implica precisión de detección de litio ni generalización a regiones independientes.",
     ]
+    if recovered_path.is_file():
+        evidence = report["recovered_oof_evidence"]
+        lines.extend([
+            "",
+            "## Verificación adicional de la validación histórica",
+            f"Se localizaron predicciones OOF originales de {evidence['training_run_id']} en D:/Descargas/LithiumScope.",
+            "Hash de datos, etiquetas q75 y tamaño de folds contrastados con el release activo.",
+            "Partición reconstruida de 66 grupos en 5 folds: ningún solapamiento entre entrenamiento y evaluación.",
+            "Medias por fold CatBoost: ROC-AUC 0.573398; Average Precision 0.308807; Balanced Accuracy 0.498309.",
+            "Medias por fold baseline prior: ROC-AUC 0.500000; Average Precision 0.251140; Balanced Accuracy 0.500000.",
+            "Métricas OOF agrupadas: ROC-AUC 0.561697; Average Precision 0.276532;",
+            "Balanced Accuracy al 0.5: 0.499585; al umbral operativo OOF 0.087522: 0.581769.",
+            "La selección del ganador y del umbral operativo mediante OOF introduce optimismo potencial.",
+            "El umbral de etiquetado q75 global (21.6 ppm) sigue constituyendo riesgo de fuga por validación.",
+            "Ninguna de estas cifras equivale a un test externo geográficamente independiente.",
+            "Ver recovered_training_validation.json y reconstructed_spatial_splits.csv para el cálculo auditable.",
+        ])
     (output/"SCIENTIFIC_EVIDENCE_REPORT.md").write_text("\n".join(lines)+"\n",encoding="utf-8")
     return output
 
