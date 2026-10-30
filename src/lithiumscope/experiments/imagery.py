@@ -78,6 +78,8 @@ def evaluate_model_2_image(bundle: dict, image: np.ndarray, destination: Path, s
             "ood_fraction":out_of_range_fraction(frame[expected],bundle.get("applicability_profile",{}))})
     output = destination/"image_scenario_metrics.csv"
     table = pd.DataFrame(rows)
+    if "score" not in table:
+        table["score"] = np.nan
     base = table.loc[table["scenario"]=="baseline","score"]
     if not base.empty:
         table["absolute_score_shift"] = (table["score"]-float(base.iloc[0])).abs()
