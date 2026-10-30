@@ -92,3 +92,11 @@ Para M2/CatBoost se ejecutaron 19 escenarios con una **imagen artificial aleator
 - Scores basales 2024/2025: Atacama 0.32958/0.31792; Tara 0.12629/0.13240; Maricunga 0.42148/0.42649; Pedernales 0.61951/0.65227. Son scores relativos, no probabilidades de depósito, y los parches no tienen mediciones de Li para evaluar exactitud.
 - La opción 6 del laboratorio interactivo regenera la comparativa geográfica/temporal.
 - M1 conserva 90 escenarios-semilla sobre 10 muestras conocidas; M2 evalúa 8 escenas reales. No se ejecutaron todavía los 1.000–3.000 casos originalmente propuestos ni una validación externa independiente.
+
+## Validación GeoTIFF y ampliación 2023-2025 (30/10/2026)
+- Comparación de remuestreo con `rasterio` sobre GeoTIFF sintéticos locales reales: dos pruebas bilineales (resoluciones 10 m y 20 m) y una prueba nearest sobre categorías SCL; tres aprobadas. Los límites de error para los gradientes fueron tolerancia relativa 1e-5 y absoluta 0.002. Esta equivalencia cubre únicamente los casos probados, no todos los efectos de bordes, formatos radiométricos o georreferenciación.
+- Se adquirieron cuatro parches adicionales de 2023 (Atacama, Tara, Maricunga, Pedernales), 6 bandas, SCL aceptado; se reutilizaron ocho parches existentes de 2024-2025. En total, **12 parches aceptados**, cuatro ubicaciones y tres años.
+- Se recomputó el lote M2 con 12 × 19 = **228 evaluaciones**: 156 puntuadas, 72 abstenciones cuando se eliminó una banda completa. Métricas CSV e informe geográfico/temporal actualizados en `results/scientific_simulations/batch_m2/`.
+- Scores basales 2023/2024/2025: Atacama 0.318635/0.329580/0.317917; Tara 0.131538/0.126288/0.132395; Maricunga 0.441520/0.421482/0.426491; Pedernales 0.585484/0.619507/0.652272. Los scores NO son concentraciones ni probabilidades de yacimiento; no existe verdad terreno química asociada.
+- Verificación: 21 pruebas científicas aprobadas, Ruff sin observaciones; rasterio reporta 9 avisos de deprecación pendientes en sus APIs.
+- Pendiente: ampliar a más fechas/escenas con cobertura estacional y disponer de referencias geoquímicas ciegas y compatibles para medición real de exactitud. No se reentrenaron modelos.
