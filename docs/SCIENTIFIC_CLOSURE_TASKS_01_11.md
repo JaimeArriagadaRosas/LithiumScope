@@ -37,3 +37,7 @@ Modelo fijo del experimento: CatBoost con 240 iteraciones y profundidad 5, sin s
 **Toda la parte computacional verificable del alcance 1–11 quedó ejecutada.** No es metodológicamente correcto marcar las tareas 1–8 como “cerradas científicamente” si no existe evidencia primaria suficiente. Esta conclusión no impide continuar, pero identifica el insumo externo indispensable: procedimientos de ensayo geoquímico por muestra, fuente primaria y verificación geológica del material expuesto.
 
 El resultado no modifica la rama `main`, el modelo de producción ni la entrega académica.
+
+## Auditoría adicional de referencias contra Mamani09
+Se contrastaron las **59 referencias** de los candidatos que superaron filtros automáticos con los registros de autor y año del dataset Mamani09 completo. **Una referencia** presenta coincidencia básica de autor-año; las otras 58 no la presentan en ese criterio limitado. Esto **no significa 58 referencias independientes**: el material puede replicarse en artículos distintos, cambiar de identificador o provenir de compilaciones secundarias.
+Resultados y script: `results/scientific_simulations/external_geochemistry_audit/citation_mamani_overlap_screen.csv`, `citation_mamani_overlap_screen.json` y `src/lithiumscope/experiments/citation_mamani_overlap.py`.
