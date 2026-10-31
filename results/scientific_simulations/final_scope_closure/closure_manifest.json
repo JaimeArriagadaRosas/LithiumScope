@@ -1,0 +1,78 @@
+{
+  "m1_scenarios": 90,
+  "m2_scenarios": 1596,
+  "m2_scored": 1092,
+  "m2_expected_abstained": 504,
+  "m2_unexpected": 0,
+  "spatial": {
+    "scored_patches": 36,
+    "regions": 4,
+    "same_scene_enforced": true,
+    "distances_m": [
+      0,
+      400,
+      1000
+    ],
+    "by_distance": [
+      {
+        "distance_m": 400,
+        "count": 16,
+        "mean": 0.08112096815460831,
+        "max": 0.408152894298776
+      },
+      {
+        "distance_m": 1000,
+        "count": 16,
+        "mean": 0.09353550956493926,
+        "max": 0.5788588455622548
+      }
+    ],
+    "note": "Unlabelled model score stability, not Li prediction accuracy. Overlapping 640 m patches are dependent."
+  },
+  "corrected_cv": {
+    "rows": 706,
+    "spatial_groups": 66,
+    "folds": 5,
+    "mean_fold_roc_auc": 0.5469353186647294,
+    "mean_fold_average_precision": 0.30615961663173735,
+    "mean_fold_balanced_accuracy": 0.5130072652721791,
+    "dataset_sha256": "b04b1291a8a7cbf24538253e521a93f32ff8c765ff437bd7c2ba5666a095121e",
+    "features_sha256": "a4059d0036e861a382a885e0662a096b50ad2e38e76288d1c343e17a09371800",
+    "estimator": "CatBoost fixed 240 trees depth 5, no hyperparameter search",
+    "outer": "StratifiedGroupKFold 5 grouped; global binary stratification proxy only",
+    "label": "q75 from each outer train Li, never from outer test",
+    "operating_threshold": "inner 3-group OOF chosen on outer training only",
+    "not_comparable_to_historical": "Different fixed hyperparameters and fold-specific target definitions",
+    "external_accuracy": null
+  },
+  "historical": {
+    "dataset_hash_matches": true,
+    "label_match": true,
+    "split_fold_sizes_match": true,
+    "split_group_overlaps": 0,
+    "metrics_recomputed": {
+      "roc_auc_oof_pooled": 0.5616966717739189,
+      "average_precision_oof_pooled": 0.27653235386105485,
+      "balanced_accuracy_oof_at_0_5": 0.49958503575076607,
+      "balanced_accuracy_oof_at_operating": 0.5817692373169902
+    },
+    "fold_means": {
+      "roc_auc": 0.5733979072695095,
+      "average_precision": 0.30880690542470585,
+      "balanced_accuracy": 0.4983088743270507
+    },
+    "baseline_fold_means": {
+      "roc_auc": 0.5,
+      "average_precision": 0.2511399273390686,
+      "balanced_accuracy": 0.5
+    }
+  },
+  "external_accuracy": "NOT_EVALUATED",
+  "files_sha256": {
+    "results\\scientific_simulations\\batch_m2\\batch_m2.csv": "648fabd97898731fae9802c0fc965272dfafb82c2c6f2b15f580c80933f7b6aa",
+    "results\\scientific_simulations\\campaign_2025\\batch\\batch_m2.csv": "61ebc3026a2a846b34b8ff6d0e92ae3c2d93a05b78bea2b4b5f819f4ae785a31",
+    "results\\scientific_simulations\\seasonal_2024\\batch\\batch_m2.csv": "447a54e41151f78d2d00b38890d9747d7d565976385f750489679d2749895c20",
+    "results\\scientific_simulations\\temporal_multiscene\\batch\\batch_m2.csv": "f2ce962a155b434e462ca9588a4363d0daf6b9aa23d22d58c54ff008b76afa62",
+    "results\\scientific_simulations\\controlled_spatial\\all_684_scenario_metrics.csv": "b7903bfc8b36e38edb15d8f00a74c890134d43f61258871f1cf739c3accb58e9"
+  }
+}

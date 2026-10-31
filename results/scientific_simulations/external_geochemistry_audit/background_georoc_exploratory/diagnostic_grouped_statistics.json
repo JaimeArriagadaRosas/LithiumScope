@@ -1,0 +1,73 @@
+{
+  "sample_naive": {
+    "roc_auc": 0.6479426246378417,
+    "ap": 0.3583642211134747,
+    "ba_0_5": 0.5041268886320578,
+    "ba_historical_0_0875": 0.6541276802347366,
+    "n": 1010,
+    "high": 249
+  },
+  "site_median_li": {
+    "roc_auc": 0.5101513473606497,
+    "ap": 0.18504906359564785,
+    "ba_0_5": 0.5100590623846437,
+    "ba_historical_0_0875": 0.4870801033591732,
+    "n": 407,
+    "high": 63
+  },
+  "site_median_li_exclude_mixed": {
+    "roc_auc": 0.5003787878787879,
+    "ap": 0.1869443591194403,
+    "ba_0_5": 0.5133116883116884,
+    "ba_historical_0_0875": 0.46650432900432903,
+    "n": 386,
+    "high": 56
+  },
+  "unique_single_sample_sites": {
+    "roc_auc": 0.4707389651182014,
+    "ap": 0.17922438365853122,
+    "ba_0_5": 0.50706728384857,
+    "ba_historical_0_0875": 0.4439163498098859,
+    "n": 309,
+    "high": 46
+  },
+  "sites": 407,
+  "mixed_sites": 21,
+  "multi_sample_sites": 98,
+  "cluster_bootstrap_auc": {
+    "sample_cluster": {
+      "n": 1200,
+      "lower_95": 0.5184781643129247,
+      "median": 0.6332333949878604,
+      "upper_95": 0.7573490415196056
+    },
+    "site_median_li": {
+      "n": 1200,
+      "lower_95": 0.4199196653235865,
+      "median": 0.5110753055320945,
+      "upper_95": 0.5970845676043403
+    }
+  },
+  "source_sensitivity": {
+    "source_count": 46,
+    "min_leave_one_out_auc": 0.5861734641462915,
+    "max_leave_one_out_auc": 0.6690315014894846
+  },
+  "coverage": [
+    {
+      "scored": false,
+      "samples": 297,
+      "high": 22,
+      "median_li": 11.704803367649,
+      "distinct_sites": 91
+    },
+    {
+      "scored": true,
+      "samples": 1010,
+      "high": 249,
+      "median_li": 14.0,
+      "distinct_sites": 407
+    }
+  ],
+  "interpretation": "DIAGNOSTIC_ONLY; no sample-level independent labels verified"
+}

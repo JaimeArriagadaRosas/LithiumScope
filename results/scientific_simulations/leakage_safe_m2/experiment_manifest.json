@@ -1,0 +1,16 @@
+{
+  "rows": 706,
+  "spatial_groups": 66,
+  "folds": 5,
+  "mean_fold_roc_auc": 0.5469353186647294,
+  "mean_fold_average_precision": 0.30615961663173735,
+  "mean_fold_balanced_accuracy": 0.5130072652721791,
+  "dataset_sha256": "b04b1291a8a7cbf24538253e521a93f32ff8c765ff437bd7c2ba5666a095121e",
+  "features_sha256": "a4059d0036e861a382a885e0662a096b50ad2e38e76288d1c343e17a09371800",
+  "estimator": "CatBoost fixed 240 trees depth 5, no hyperparameter search",
+  "outer": "StratifiedGroupKFold 5 grouped; global binary stratification proxy only",
+  "label": "q75 from each outer train Li, never from outer test",
+  "operating_threshold": "inner 3-group OOF chosen on outer training only",
+  "not_comparable_to_historical": "Different fixed hyperparameters and fold-specific target definitions",
+  "external_accuracy": null
+}
