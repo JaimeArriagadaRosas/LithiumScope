@@ -1,0 +1,70 @@
+{
+  "source_training_run_id": "training_20260920_195933_m0300",
+  "source_path": "D:\\Descargas\\LithiumScope\\results\\model_2\\runs\\training_20260920_195933_m0300\\tables",
+  "dataset_manifest_path": "D:\\Descargas\\LithiumScope\\data\\processed\\model_2\\training_manifest.csv",
+  "dataset_sha256_actual": "b04b1291a8a7cbf24538253e521a93f32ff8c765ff437bd7c2ba5666a095121e",
+  "dataset_sha256_release": "b04b1291a8a7cbf24538253e521a93f32ff8c765ff437bd7c2ba5666a095121e",
+  "dataset_hash_matches": true,
+  "row_count_match": true,
+  "label_match": true,
+  "threshold_ppm_reproduced": 21.6,
+  "threshold_ppm_metadata": 21.6,
+  "groups_count": 66,
+  "splitter_reconstructed_from_current_source": "StratifiedGroupKFold(seed=42,5)",
+  "split_fold_sizes_match": true,
+  "split_group_overlaps": 0,
+  "metrics_recomputed": {
+    "roc_auc_oof_pooled": 0.5616966717739189,
+    "average_precision_oof_pooled": 0.27653235386105485,
+    "balanced_accuracy_oof_at_0_5": 0.49958503575076607,
+    "balanced_accuracy_oof_at_operating": 0.5817692373169902
+  },
+  "metrics_metadata": {
+    "balanced_accuracy": 0.49958503575076607,
+    "precision": 0.25,
+    "recall": 0.07303370786516854,
+    "f1": 0.11304347826086956,
+    "average_precision": 0.27653235386105485,
+    "brier_score": 0.21440895489065773,
+    "roc_auc": 0.5616966717739189
+  },
+  "fold_means": {
+    "roc_auc": 0.5733979072695095,
+    "average_precision": 0.30880690542470585,
+    "balanced_accuracy": 0.4983088743270507
+  },
+  "baseline_fold_means": {
+    "roc_auc": 0.5,
+    "average_precision": 0.2511399273390686,
+    "balanced_accuracy": 0.5
+  },
+  "operating_threshold_recorded": [
+    {
+      "threshold": 0.0875222435003305,
+      "objective": "balanced_accuracy",
+      "objective_value": 0.5817692373169902,
+      "candidate_count": 1034,
+      "metric_balanced_accuracy": 0.5817692373169902,
+      "metric_precision": 0.2993492407809111,
+      "metric_recall": 0.7752808988764045,
+      "metric_f1": 0.431924882629108,
+      "metric_average_precision": 0.2765323538610548,
+      "metric_brier_score": 0.2144089548906577,
+      "metric_roc_auc": 0.5616966717739189
+    }
+  ],
+  "source_hashes": {
+    "training_manifest.csv": "b04b1291a8a7cbf24538253e521a93f32ff8c765ff437bd7c2ba5666a095121e",
+    "oof_predictions_catboost.csv": "78209dbd7e7d26703dd71ee134781a050d2af968a5ddc44802eac0965986ecd4",
+    "fold_metrics_catboost.csv": "91042d3b9b684f5d6635eece18022ee4dba88eca83826cf0cefbcc405c80949b",
+    "competition_ranking.csv": "3ca7c091da03eed02c47234df2e7bed8d9433249073d3134c8977bc0548aff16",
+    "baseline_fold_metrics.csv": "1bf50ffcd8ee8d685a15c6d019a02c9d48c0290d6358dad58782822956e59ea2",
+    "winner_operating_threshold.csv": "56ca78dcc5caec9d7c6e90b41f9272b2bd6b49d597d2dd648a7c406a31af701e"
+  },
+  "limitations": [
+    "OOF data generated using global dataset q75 threshold before CV; risk of label leakage.",
+    "Operating threshold selected on winning model OOF; do not consider operating-threshold OOF score as external estimate.",
+    "CV spatial group isolation does not establish independent geographical holdout or real-world prospectivity accuracy.",
+    "Reconstructed group folds reflect current code and seed; agreement of fold sizes is supporting, not conclusive proof of original split indices."
+  ]
+}

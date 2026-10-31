@@ -1,0 +1,14 @@
+{
+  "original_publication_candidates": 219,
+  "same_li_source": 210,
+  "same_li_and_coords": 87,
+  "original_study_filters_pass": 24,
+  "all_three_preliminary_evidence": 9,
+  "full_mamani_100km_pass": 9,
+  "approved_for_external_accuracy": 0,
+  "gate_reason_counts": {
+    "PRIMARY_METHOD_AND_OUTCROP_UNCONFIRMED": 9
+  },
+  "data_sha256": "627ab2313bf3facdf06d116766cb1f24af4272363ca1739acd53d1c63e5a0afb",
+  "note": "Independent Li assay, exact geological surface exposure and sample-to-pixel equivalence not demonstrated; external model metrics forbidden."
+}
