@@ -23,3 +23,9 @@ El esquema de entrada está en `data/external/independent_geochemistry/independe
 ## Estado tras ampliación temporal (30-10-2026)
 - GEOROC y fuentes geoquímicas de SERNAGEOMIN se mantienen como candidatas: aún no se descargó ni verificó un conjunto externo que contenga litio, material roca, método analítico, coordenadas y procedencia suficientes. Los datos de sedimentos y salmueras no se mezclarán con los de roca.
 - Condición de incorporación: verificar identificadores repetidos, bibliografía, unidades ppm/mg/kg, proximidad espacial frente al entrenamiento de 706 muestras, y variables requeridas para cada modelo. Registrar por muestra las exclusiones y el motivo. Hasta completar esta auditoría: **cero muestras externas aceptadas**.
+
+## Auditoría de una fuente UNAB adicional (30-10-2026)
+- Dataset público DOI `10.60483/UNAB/PLCJLQ`, tabla `Table_S01-Chemical&SrNd_Analyses.tab` (archivo Dataverse 592), analizada directamente desde la API pública. Contiene 23 columnas de muestras con coordenadas y parámetros geoquímicos transpuestos, pero **NO incluye el analito litio Li**. No se puede usar para evaluar exactitud del Modelo 2; estado `EXCLUDED_NO_LITHIUM_LABEL`.
+- Evidencia reproducible en `results/scientific_simulations/external_geochemistry_audit/unab_chemistry_review.json`, con URL, SHA256, esquema y motivo de exclusión.
+- La API de Mendeley del candidato `2tskc6rcfm` devolvió HTTP 401; archivo no importado. No atribuirle contenido validado.
+- GEOROC 302366 conserva el estado `REQUIRES_METHOD_AND_OVERLAP_AUDIT`. Sin método analítico ni prueba de independencia, permanece como candidata y **ninguna muestra es aceptada** para validación científica externa.
