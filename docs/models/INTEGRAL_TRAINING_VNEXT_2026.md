@@ -72,3 +72,20 @@ Las alternativas son hipotesis a contrastar, no resultados ya demostrados.
 - Prioridad de experimentacion: B con FeOT total, guardando provenance de hierro convertido, manteniendo test de cierre quimico, y luego C como candidato no verificado.
 - Fuentes: https://geochem.nrcan.gc.ca/cdogs/content/sui/sui00557_e.htm y https://www.nature.com/articles/s41597-023-02324-7 .
 - Ninguna conversion cambia de inmediato el dataset canonico ni el modo actual del menu.
+
+
+## Etapa 2 M1: resultados de desarrollo (realizados)
+- GEOROC FEOT se reexpreso como Fe2O3T equivalente en una COPIA EXPERIMENTAL de la fuente cruda, sin alterar el dataset original.
+- 1.120 muestras A -> 3.420 B tras ingestion GEOROC existente, fusion y deduplicacion; C provisional 3.428.
+- Comparacion sobre **exactamente los mismos registros A de test**, con grupos espaciales excluidos del train A/B/C.
+- SVM A identity: RMSE por fold medio 20.7817, MAE 7.7399 ppm.
+- SVM B FEOT identity: RMSE 19.3999, MAE 7.1796 ppm; mejora relativa 6.65% RMSE, 7.24% MAE.
+- SVM B log1p: RMSE 19.9535, MAE 8.2445: no supera identity.
+- SVM B mas regularizado: RMSE 20.2295, MAE 7.4172: no supera B identity.
+- C provisional: RMSE 19.3910, MAE 7.1693: ganancia demasiado pequena para justificar las 8 muestras no verificadas.
+- M1 GEOROC RMSE sobre mismo test: 39.57 -> 36.34 ppm; Mamani09 8.31 -> 8.19 ppm.
+- Bootstrap por grupos espaciales para la GANANCIA en RMSE A-B: IC exploratorio 95% [-0.204, 3.202] ppm; NO excluye cero. Para la ganancia MAE: [0.047, 0.908] ppm. Ambos se basan en CV de desarrollo que eligio los candidatos, no en holdout independiente.
+- Curva de aprendizaje de un fold: al agregar grupos desde 30% hasta 100% el MAE descendio, mientras el RMSE no fue monotonico. No justificar nuevas fuentes sin ampliar curvas multi-fold.
+- El bundle candidato B se guarda **exclusivamente** en results/scientific_simulations/vnext_20261106/stage2_m1/experimental_models/. No instalar, activar ni publicar.
+- Tablas auditables: m1_development_fold_metrics.csv, m1_paired_oof.csv, m1_paired_by_source.csv, m1_paired_by_lithium.csv, m1_development_diagnostics.json y m1_group_learning_curve.csv.
+- Estado: etapa 2 desarrollo M1 realizado. Entrenamiento final pendiente de la parada y revision de etapa 4.
