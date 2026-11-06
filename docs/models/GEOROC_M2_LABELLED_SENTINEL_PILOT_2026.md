@@ -81,3 +81,7 @@ Documentación adicional: docs/models/INTEGRAL_TRAINING_VNEXT_2026.md y docs/mod
 - Las huellas SHA-256 de los datos originales combinados M1, manifiesto M2 y CSV crudo GEOROC siguen idénticas a las registradas antes del piloto.
 
 **Resultado de cierre:** se demostró el funcionamiento técnico del camino experimental de etiquetas e imágenes Sentinel-2 y se obtuvo evidencia adicional favorable para M1 B. **No se certificaron aún las seis ubicaciones del piloto ni las 110 fuentes analíticas de GEOROC**; por ello no se justifica todavía promover un modelo nuevo ni descargar masivamente miles de imágenes.
+
+
+## Validacion bibliografica y espacial posterior
+La auditoria de referencias oficiales, ubicaciones y criterios de etiquetas de superficie quedo documentada en docs/models/GEOROC_SAMPLE_SITE_VALIDATION_2026.md. Ninguna etiqueta nueva se aprobo automaticamente para entrenamiento.
