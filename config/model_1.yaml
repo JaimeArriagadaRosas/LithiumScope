@@ -22,6 +22,9 @@ data_sources:
     allowed_material_types:
       - WHOLE ROCK
     minimum_predictors: 8
+    # vNext: FeOT (total Fe as FeO) -> Fe2O3 total equivalent; QC unchanged.
+    # Rollback: set to original. No GEOROC raw source is rewritten.
+    iron_total_mode: feot_equivalent
 
 data:
   target_candidates:

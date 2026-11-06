@@ -131,6 +131,7 @@ def prepare_model_1_training_source(
         minimum_predictors=int(
             georoc.get("minimum_predictors", 8)
         ),
+        iron_total_mode=str(georoc.get("iron_total_mode", "original")),
     )
 
     base = _source_name(
@@ -161,6 +162,7 @@ def prepare_model_1_training_source(
             "rows_read": ingestion.rows_read,
             "rows_kept": ingestion.rows_kept,
             "audit_path": str(ingestion.audit_path),
+            "iron_total_mode": str(georoc.get("iron_total_mode", "original")),
         },
         "merge": merge_audit,
         "combined_path": str(merge_path),
