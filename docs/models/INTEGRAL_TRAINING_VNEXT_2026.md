@@ -89,3 +89,33 @@ Las alternativas son hipotesis a contrastar, no resultados ya demostrados.
 - El bundle candidato B se guarda **exclusivamente** en results/scientific_simulations/vnext_20261106/stage2_m1/experimental_models/. No instalar, activar ni publicar.
 - Tablas auditables: m1_development_fold_metrics.csv, m1_paired_oof.csv, m1_paired_by_source.csv, m1_paired_by_lithium.csv, m1_development_diagnostics.json y m1_group_learning_curve.csv.
 - Estado: etapa 2 desarrollo M1 realizado. Entrenamiento final pendiente de la parada y revision de etapa 4.
+
+
+## Etapa 3 M2: comparacion de desarrollo completada
+| Variante | ROC-AUC | AP | Balanced accuracy al umbral 0.5 | Brier |
+|---|---:|---:|---:|---:|
+| CatBoost refit (parametros historicos, 250 iteraciones max) | 0.6041 | 0.3770 | 0.5203 | 0.1801 |
+| RF existente refit (parametros finales fijos) | 0.5761 | 0.3513 | 0.5584 | 0.2072 |
+| RF regularizado | 0.5824 | 0.3614 | 0.5510 | 0.2146 |
+| RF con aumentacion de imagenes | 0.5621 | 0.3333 | 0.5428 | 0.2199 |
+| RF calibrado espacialmente | 0.6011 | 0.3767 | 0.5000 | 0.1823 |
+
+- Mismo conjunto de 706 muestras, mismos 5 folds espaciales, q75 obtenido SOLO en train por fold.
+- El RF aumentado con brillo, ruido y pixels faltantes NO supero la referencia; no incorporarlo en produccion.
+- La calibracion espacial mejoro Brier y ECE respecto al RF no calibrado, pero el score requiere un umbral operativo train-only.
+- Regla adicional train-only: umbral del score que respeta prevalencia positiva del train del fold. Balanced accuracy media calibrada: 0.59446, comparada con 0.5 a corte fijo. Las probabilidades de training para fijar umbral son in-sample, por lo que requiere evaluacion externa para asegurar utilidad.
+- CatBoost refit presento un ROC-AUC ligeramente superior al RF calibrado; no hubo una mejora integral convincente en desarrollo.
+- Tres experimentos GroupShuffleSplit de holdout espacial repetido; graficas y tablas CSV en stage3_m2.
+- Se guardo un bundle RF calibrado **solo para desarrollo**, con su umbral train-only, bajo results/scientific_simulations/vnext_20261106/stage3_m2/experimental_models. No es un release y no se activa.
+- Archivos clave: m2_grouped_fold_metrics.csv, m2_experiment_rankings.csv, m2_grouped_oof_predictions.csv, m2_repeated_group_holdouts.csv, m2_calibrated_train_only_threshold.csv, m2_calibrated_threshold_summary.json.
+- La calibracion y las particiones espaciales no suponen que variaciones temporales sin verdad-terreno sean precision geologica.
+
+## Punto de detencion: etapa 4 (solicita decision del usuario)
+- Las etapas 1-3 ya evaluaron que el problema inmediato de M1 puede abordarse con GEOROC existente usando FeOT: 3.420 registros B frente a 1.120 A. No se justifica una descarga externa adicional sin antes demostrar validez geoquimica y mejora independiente.
+- GEOROC: evaluar modernizacion/nuevas consultas solo DESPUES de confirmar que muestras nuevas no se duplican y aportan Li con el mismo dominio geologico.
+- EarthChem/PetDB: fuente candidata, con riesgo importante de solapamiento con GEOROC; revisar procedencia, licencia y clave de muestra antes de considerar un adaptador tools.
+- SERNAGEOMIN: contraste geologico y potencial validacion de datos de litio; no combinar aguas/salmueras (mg/L) directamente con roca total (ppm).
+- USGS: prioridad baja para el modelo regional andino por desplazamiento de dominio.
+- Propuesta de integracion futura SI se aprueba: nuevo modulo tools/<fuente> con contrato, consulta, descarga validada, checkpoint, armonizacion, procedencia, deduplicacion, auditoria y tests; replicar las garantias del descargador GEOROC.
+- NO se integro nueva fuente, NO se descargo un dataset nuevo y NO se inicio entrenamiento definitivo.
+- Pendiente de revision: la comparacion externa independiente comun (etapa 5) y la decision de activar cualquier cambio al entrenamiento en el menu.
