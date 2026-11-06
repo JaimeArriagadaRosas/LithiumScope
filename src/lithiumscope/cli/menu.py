@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from lithiumscope.cli import model_release_command, predict_command, results_command, train_command, scientific_lab_command
-from lithiumscope.cli.display import header, pause
+from lithiumscope.cli.display import clear_screen, header, pause
 from lithiumscope.cli.prompts import choose
 from lithiumscope.core.logger import (
     configure_logging,
@@ -19,6 +19,7 @@ def main() -> int:
     configure_logging()
     logger.info("LithiumScope started")
     while True:
+        clear_screen()
         header()
         print("1. Entrenar modelos")
         print("2. Realizar predicción")
@@ -29,20 +30,23 @@ def main() -> int:
         choice = choose("\nSeleccione una opción: ", {"0", "1", "2", "3", "4", "5"})
         try:
             if choice == "1":
-                train_command.run()
-                pause()
+                clear_screen()
+                if train_command.run() is not False:
+                    pause()
             elif choice == "2":
-                predict_command.run()
-                pause()
+                clear_screen()
+                if predict_command.run() is not False:
+                    pause()
             elif choice == "3":
-                results_command.run()
-                pause()
+                clear_screen()
+                if results_command.run() is not False:
+                    pause()
             elif choice == "4":
-                model_release_command.run()
-                pause()
+                clear_screen()
+                if model_release_command.run() is not False:
+                    pause()
             elif choice == "5":
                 scientific_lab_command.run()
-                pause()
             else:
                 logger.info("LithiumScope finished")
                 return 0

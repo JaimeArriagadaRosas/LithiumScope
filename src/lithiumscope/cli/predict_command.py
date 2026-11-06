@@ -107,6 +107,9 @@ def run() -> None:
     print("0. Volver")
     choice = choose("> ", {"0", "1", "2", "3", "4"})
 
+    if choice == "0":
+        return False
+
     if choice == "1":
         _run_model_1()
     elif choice == "2":

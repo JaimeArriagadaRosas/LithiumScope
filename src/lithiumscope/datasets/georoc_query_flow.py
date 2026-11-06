@@ -8,17 +8,17 @@ from lithiumscope.datasets.georoc_query_contract import (
     CHEMISTRY,
     GEOROC_QUERY_URL,
 )
-from lithiumscope.tools.georoc_query_actions import (
+from lithiumscope.tools.georoc.query.georoc_query_actions import (
     resolve_postpage_action,
 )
-from lithiumscope.tools.georoc_query_html import (
+from lithiumscope.tools.georoc.query.georoc_query_html import (
     Form,
     follow_link_by_text,
     norm,
     parse,
     submit_form,
 )
-from lithiumscope.tools.georoc_query_payload import (
+from lithiumscope.tools.georoc.query.georoc_query_payload import (
     add_submit,
     best_chemistry_form,
     default_payload,

@@ -18,30 +18,30 @@ from lithiumscope.datasets.georoc_query_flow import (
     initial_query,
 )
 from lithiumscope.runtime.console_status import Spinner
-from lithiumscope.tools.georoc_query_diagnostics import (
+from lithiumscope.tools.georoc.query.georoc_query_diagnostics import (
     diagnose_query_exception,
     format_query_failure,
 )
-from lithiumscope.tools.georoc_download_finalize import (
+from lithiumscope.tools.georoc.processing.georoc_download_finalize import (
     finish_download,
     finish_source_checkpoint,
 )
-from lithiumscope.tools.georoc_query_download import (
+from lithiumscope.tools.georoc.query.georoc_query_download import (
     find_download_link,
 )
-from lithiumscope.tools.georoc_query_export import (
+from lithiumscope.tools.georoc.query.georoc_query_export import (
     looks_downloadable,
     validate_export,
 )
-from lithiumscope.tools.georoc_query_log import BoundedRunLog
-from lithiumscope.tools.georoc_query_models import parse
-from lithiumscope.tools.georoc_query_transfer import (
+from lithiumscope.tools.georoc.query.georoc_query_log import BoundedRunLog
+from lithiumscope.tools.georoc.query.georoc_query_models import parse
+from lithiumscope.tools.georoc.query.georoc_query_transfer import (
     request_compiled_export,
 )
-from lithiumscope.tools.georoc_source_checkpoint import (
+from lithiumscope.tools.georoc.processing.georoc_source_checkpoint import (
     has_source_checkpoint,
 )
-from lithiumscope.tools.georoc_query_payload import (
+from lithiumscope.tools.georoc.query.georoc_query_payload import (
     best_chemistry_form,
     default_payload,
     select_chemistry,

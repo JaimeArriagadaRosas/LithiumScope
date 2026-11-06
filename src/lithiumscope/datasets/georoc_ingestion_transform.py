@@ -7,7 +7,7 @@ import pandas as pd
 from lithiumscope.datasets.georoc_ingestion_schema import (
     MAJOR_OXIDES,
 )
-from lithiumscope.tools.georoc_material_parser import (
+from lithiumscope.tools.georoc.processing.georoc_material_parser import (
     canonical_material_label,
     parse_georoc_material,
 )

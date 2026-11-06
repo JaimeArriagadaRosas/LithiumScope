@@ -51,6 +51,9 @@ def optimize_classifier_with_optuna(
     pruning_enabled: bool = True,
     startup_trials: int = 3,
     warmup_folds: int = 2,
+    lithium_values=None,
+    label_quantile: float = 0.75,
+    fixed_threshold_ppm: float | None = None,
 ) -> dict:
     try:
         import optuna
@@ -78,14 +81,21 @@ def optimize_classifier_with_optuna(
 
         for step, (train_idx, valid_idx) in enumerate(splits):
             estimator = estimator_factory(params)
-            estimator.fit(
-                _take_rows(x, train_idx),
-                _take_rows(y, train_idx),
-            )
-            validation_y = np.asarray(
-                _take_rows(y, valid_idx),
-                dtype=int,
-            )
+            if lithium_values is not None:
+                inner_lithium = np.asarray(lithium_values, dtype=float)
+                label_limit = (
+                    float(fixed_threshold_ppm)
+                    if fixed_threshold_ppm is not None
+                    else float(np.quantile(inner_lithium[train_idx], label_quantile))
+                )
+                training_y = (inner_lithium[train_idx] >= label_limit).astype(int)
+                validation_y = (inner_lithium[valid_idx] >= label_limit).astype(int)
+            else:
+                training_y = np.asarray(_take_rows(y, train_idx), dtype=int)
+                validation_y = np.asarray(_take_rows(y, valid_idx), dtype=int)
+            if np.unique(training_y).size != 2:
+                raise ValueError("Un fold interno no contiene dos clases de entrenamiento.")
+            estimator.fit(_take_rows(x, train_idx), training_y)
             if np.unique(validation_y).size < 2:
                 continue
 

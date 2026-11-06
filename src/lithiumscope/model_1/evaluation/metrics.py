@@ -19,6 +19,8 @@ class RegressionMetrics:
     mae: float
     median_ae: float
     explained_variance: float
+    bias: float = 0.0
+    p90_ae: float = 0.0
 
     def to_dict(self) -> dict[str, float]:
         return asdict(self)
@@ -31,4 +33,6 @@ def regression_metrics(y_true, y_pred) -> RegressionMetrics:
         mae=float(mean_absolute_error(y_true, y_pred)),
         median_ae=float(median_absolute_error(y_true, y_pred)),
         explained_variance=float(explained_variance_score(y_true, y_pred)),
+        bias=float(np.mean(np.asarray(y_pred) - np.asarray(y_true))),
+        p90_ae=float(np.quantile(np.abs(np.asarray(y_true) - np.asarray(y_pred)), 0.90)),
     )

@@ -6,7 +6,7 @@ import time
 
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import StratifiedGroupKFold, StratifiedKFold
+from sklearn.model_selection import StratifiedGroupKFold, StratifiedKFold, GroupKFold
 
 from lithiumscope.core.checkpoints import FoldCheckpointStore
 from lithiumscope.core.device import DeviceInfo
@@ -16,6 +16,7 @@ from lithiumscope.core.scientific_checks import (
     assert_oof_complete,
 )
 from lithiumscope.model_2.evaluation.metrics import classification_metrics
+from lithiumscope.model_2.training.scientific_validation import ScientificFold
 from lithiumscope.model_2.training.factory import (
     create_model,
     get_algorithm,
@@ -123,16 +124,30 @@ def _fit_estimator(
     y_train: pd.Series,
     groups_train: pd.Series | None,
     inner_folds: int,
+    *,
+    strict_spatial: bool = False,
 ):
     calibration_cv = None
     if algorithm == "svm_rbf":
-        calibration_cv = _materialize_splits(
-            x_train,
-            y_train,
-            groups_train,
-            inner_folds,
-            seed + 1000,
-        )
+        if strict_spatial:
+            if groups_train is None or groups_train.nunique() < inner_folds:
+                raise ValueError("SVM calibration requires sufficient spatial groups.")
+            calibration_cv = list(GroupKFold(n_splits=inner_folds).split(
+                x_train, groups=groups_train,
+            ))
+            for train_idx, valid_idx in calibration_cv:
+                if (
+                    np.unique(np.asarray(y_train)[train_idx]).size < 2
+                    or np.unique(np.asarray(y_train)[valid_idx]).size < 2
+                ):
+                    raise ValueError(
+                        "SVM spatial calibration fold lacks both classes; "
+                        "no random fallback allowed."
+                    )
+        else:
+            calibration_cv = _materialize_splits(
+                x_train, y_train, groups_train, inner_folds, seed + 1000,
+            )
 
     estimator = create_model(
         algorithm,
@@ -157,14 +172,20 @@ def run_classification_cv(
     checkpoint_root: Path | None = None,
     optimization: dict | None = None,
     inner_folds: int = 3,
+    scientific_folds: list[ScientificFold] | None = None,
+    lithium_values=None,
+    label_quantile: float = 0.75,
+    fixed_threshold_ppm: float | None = None,
 ) -> ClassificationCVResult:
-    splitter, split_groups = _splitter(
-        y,
-        groups,
-        folds,
-        seed,
-        announce=False,
-    )
+    if scientific_folds is not None:
+        if lithium_values is None or groups is None:
+            raise ValueError("Scientific CV requires Li values and spatial groups.")
+        split_groups = groups
+        splitter = None
+    else:
+        splitter, split_groups = _splitter(
+            y, groups, folds, seed, announce=False,
+        )
     probabilities = np.full(len(y), np.nan, dtype=float)
     records: list[dict] = []
     started = time.perf_counter()
@@ -188,14 +209,16 @@ def run_classification_cv(
     print(f"\n  ▶ {label}")
 
     split_iter = (
-        splitter.split(x, y, split_groups)
-        if split_groups is not None
-        else splitter.split(x, y)
+        [(f.train_idx, f.test_idx) for f in scientific_folds]
+        if scientific_folds is not None else (
+            splitter.split(x, y, split_groups)
+            if split_groups is not None else splitter.split(x, y)
+        )
     )
-    for fold, (train_idx, test_idx) in enumerate(
-        split_iter,
-        start=1,
-    ):
+    for fold, (train_idx, test_idx) in enumerate(split_iter, start=1):
+        scientific_fold = (
+            scientific_folds[fold - 1] if scientific_folds is not None else None
+        )
         if split_groups is not None:
             assert_group_isolation(
                 train_idx,
@@ -222,6 +245,11 @@ def run_classification_cv(
                     "n_train": len(train_idx),
                     "n_test": len(test_idx),
                     "resumed": True,
+                    **({"label_threshold_ppm": scientific_fold.label_threshold_ppm,
+                        "group_overlap": 0,
+                        "n_groups_train": scientific_fold.n_groups_train,
+                        "n_groups_test": scientific_fold.n_groups_test}
+                       if scientific_fold is not None else {}),
                 }
             )
             print(
@@ -236,9 +264,15 @@ def run_classification_cv(
         ).start()
         try:
             x_train = x.iloc[train_idx]
-            y_train = y.iloc[train_idx]
+            y_train = (
+                pd.Series(scientific_fold.y_train)
+                if scientific_fold is not None else y.iloc[train_idx]
+            )
             x_test = x.iloc[test_idx]
-            y_test = y.iloc[test_idx]
+            y_test = (
+                pd.Series(scientific_fold.y_test)
+                if scientific_fold is not None else y.iloc[test_idx]
+            )
             groups_train = (
                 groups.iloc[train_idx]
                 if groups is not None
@@ -247,13 +281,16 @@ def run_classification_cv(
 
             params: dict = {}
             if optimize:
-                inner_splits = _materialize_splits(
-                    x_train,
-                    y_train,
-                    groups_train,
-                    inner_folds,
-                    seed + fold,
-                )
+                if scientific_fold is not None:
+                    if groups_train is None or groups_train.nunique() < inner_folds:
+                        raise ValueError("Insufficient spatial groups for inner CV.")
+                    inner_splits = list(GroupKFold(n_splits=inner_folds).split(
+                        x_train, groups=groups_train,
+                    ))
+                else:
+                    inner_splits = _materialize_splits(
+                        x_train, y_train, groups_train, inner_folds, seed + fold,
+                    )
 
                 def factory(candidate: dict):
                     return create_model(
@@ -292,9 +329,13 @@ def run_classification_cv(
                     startup_trials=int(
                         pruning.get("startup_trials", 3)
                     ),
-                    warmup_folds=int(
-                        pruning.get("warmup_folds", 2)
+                    warmup_folds=int(pruning.get("warmup_folds", 2)),
+                    lithium_values=(
+                        np.asarray(lithium_values, dtype=float)[train_idx]
+                        if scientific_fold is not None else None
                     ),
+                    label_quantile=label_quantile,
+                    fixed_threshold_ppm=fixed_threshold_ppm,
                 )
 
             spinner.update(
@@ -309,6 +350,7 @@ def run_classification_cv(
                 y_train,
                 groups_train,
                 inner_folds,
+                strict_spatial=scientific_fold is not None,
             )
             fold_probabilities = estimator.predict_proba(
                 x_test
@@ -325,6 +367,11 @@ def run_classification_cv(
                     "n_train": len(train_idx),
                     "n_test": len(test_idx),
                     "resumed": False,
+                    **({"label_threshold_ppm": scientific_fold.label_threshold_ppm,
+                        "group_overlap": 0,
+                        "n_groups_train": scientific_fold.n_groups_train,
+                        "n_groups_test": scientific_fold.n_groups_test}
+                       if scientific_fold is not None else {}),
                 }
             )
             if checkpoint:
@@ -373,13 +420,16 @@ def run_classification_cv(
                 f"{label} · optimización final"
             ).start()
             try:
-                final_splits = _materialize_splits(
-                    x,
-                    y,
-                    groups,
-                    inner_folds,
-                    seed + 5000,
-                )
+                if scientific_folds is not None:
+                    if groups is None or groups.nunique() < inner_folds:
+                        raise ValueError("Insufficient groups for final parameter search.")
+                    final_splits = list(GroupKFold(n_splits=inner_folds).split(
+                        x, groups=groups,
+                    ))
+                else:
+                    final_splits = _materialize_splits(
+                        x, y, groups, inner_folds, seed + 5000,
+                    )
 
                 def final_factory(candidate: dict):
                     return create_model(
@@ -417,9 +467,13 @@ def run_classification_cv(
                     startup_trials=int(
                         pruning.get("startup_trials", 3)
                     ),
-                    warmup_folds=int(
-                        pruning.get("warmup_folds", 2)
+                    warmup_folds=int(pruning.get("warmup_folds", 2)),
+                    lithium_values=(
+                        np.asarray(lithium_values, dtype=float)
+                        if scientific_folds is not None else None
                     ),
+                    label_quantile=label_quantile,
+                    fixed_threshold_ppm=fixed_threshold_ppm,
                 )
                 spinner.succeed(
                     f"{label} · hiperparámetros finales listos"

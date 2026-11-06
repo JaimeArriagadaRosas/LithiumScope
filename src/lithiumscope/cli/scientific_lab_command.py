@@ -3,15 +3,17 @@ from pathlib import Path
 
 import pandas as pd
 
+from lithiumscope.cli.display import clear_screen, pause
 from lithiumscope.cli.prompts import choose
 from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR
 from lithiumscope.persistence.load_model import load_latest_model
-from lithiumscope.experiments.scenarios import evaluate_model_1
-from lithiumscope.experiments.imagery import evaluate_model_2_image
+from lithiumscope.experiments.scenarios.scenarios import evaluate_model_1
+from lithiumscope.experiments.scenarios.imagery import evaluate_model_2_image
 
 
 def run() -> None:
     while True:
+        clear_screen()
         print("\nLABORATORIO DE SIMULACIONES")
         print("1. Modelo 1: escenarios geoquímicos (10 casos demostrativos)")
         print("2. Modelo 2: escenarios espectrales (archivo NPY/NPZ/TIF)")
@@ -23,6 +25,7 @@ def run() -> None:
         choice = choose("Seleccione una opción: ", {"0", "1", "2", "3", "4", "5", "6"})
         if choice == "0":
             return
+        clear_screen()
         if choice == "1":
             source = PROJECT_ROOT / "examples" / "integrated_demo" / "cases.csv"
             if not source.is_file():
@@ -52,12 +55,12 @@ def run() -> None:
             )
             print(f"Resultados: {output}")
         elif choice == "4":
-            from lithiumscope.experiments.acquisition import acquire_pilot
+            from lithiumscope.experiments.acquisition.acquisition import acquire_pilot
             destination = RESULTS_DIR / "scientific_simulations" / "sentinel2_real"
             manifest, failures = acquire_pilot(destination)
             print(f"Catálogo: {manifest} | Fallos: {failures}")
         elif choice == "5":
-            from lithiumscope.experiments.batch import run_m1_batch, run_m2_batch, summarize
+            from lithiumscope.experiments.scenarios.batch import run_m1_batch, run_m2_batch, summarize
             folder = RESULTS_DIR / "scientific_simulations"
             m1, _ = load_latest_model("model_1")
             source = PROJECT_ROOT / "examples" / "integrated_demo" / "cases.csv"
@@ -71,7 +74,7 @@ def run() -> None:
             else:
                 print("M2 pendiente: primero adquiera parches Sentinel-2 (opción 4).")
         elif choice == "6":
-            from lithiumscope.experiments.reporting import compare_geographies
+            from lithiumscope.experiments.reporting.reporting import compare_geographies
             folder = RESULTS_DIR / "scientific_simulations" / "batch_m2"
             batch = folder / "batch_m2.csv"
             if not batch.exists():
@@ -86,3 +89,4 @@ def run() -> None:
                 print("Todavía no hay informes generados.")
             for path in reports:
                 print(path)
+        pause()

@@ -4,6 +4,7 @@ from lithiumscope.cli.display import device_summary
 from lithiumscope.cli.prompts import choose
 from lithiumscope.core.device import detect_device
 from lithiumscope.core.logger import run_log
+from lithiumscope.core.training_logs import training_session, register_training_run
 from lithiumscope.datasets.provisioner import (
     require_model_1_dataset,
     require_model_2_dataset,
@@ -56,7 +57,7 @@ def _print_outcome(outcome, model_name: str) -> None:
     )
 
 
-def run() -> None:
+def _run_impl() -> None:
     from lithiumscope.model_1.training.competition import (
         run_model_1_competition,
     )
@@ -77,7 +78,7 @@ def run() -> None:
         {"0", "1", "2", "3"},
     )
     if choice == "0":
-        return
+        return False
 
     require_full_training_environment()
     device = detect_device(prefer_gpu=True)
@@ -105,6 +106,7 @@ def run() -> None:
                 model_1_dataset,
                 device,
             )
+        register_training_run("model_1", outcome.run_dir)
         print(
             f"Log detallado Modelo 1: {training_log}"
         )
@@ -130,7 +132,15 @@ def run() -> None:
                 model_2_manifest,
                 device,
             )
+        register_training_run("model_2", outcome.run_dir)
         _print_outcome(
             outcome,
             "Modelo 2",
         )
+
+
+
+def run() -> None:
+    # Capture preparation, both model runs, and failures in a single session.
+    with training_session("interactive"):
+        return _run_impl()

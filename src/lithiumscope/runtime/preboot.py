@@ -25,6 +25,7 @@ from lithiumscope.core.paths import (
 )
 from lithiumscope.datasets.provisioner import inspect_required_datasets, provision_required_datasets
 from lithiumscope.datasets.status import DatasetStatus
+from lithiumscope.core.states import DatasetState
 from lithiumscope.core.visualization import configure_headless_matplotlib
 from lithiumscope.runtime.console_status import LoadingBar
 from lithiumscope.runtime.dependencies import (
@@ -283,7 +284,7 @@ def _print_datasets(
         if item is None:
             print(f"    - {key}: NO PREPARADO")
             continue
-        state = "OK" if item.ready else "ERROR"
+        state = ("OK" if item.ready else "PENDIENTE" if item.effective_state == DatasetState.MISSING else "ERROR")
         print(
             f"    - {item.key}: {state} — {item.detail}"
         )

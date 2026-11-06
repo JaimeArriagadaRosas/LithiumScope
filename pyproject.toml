@@ -44,7 +44,7 @@ dev = [
 
 [project.scripts]
 lithiumscope = "lithiumscope.cli.menu:main"
-lithiumscope-inspect = "lithiumscope.tools.pipeline_inspect:main"
+lithiumscope-inspect = "lithiumscope.tools.inspection.pipeline_inspect:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
