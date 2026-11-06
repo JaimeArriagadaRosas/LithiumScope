@@ -119,3 +119,14 @@ Las alternativas son hipotesis a contrastar, no resultados ya demostrados.
 - Propuesta de integracion futura SI se aprueba: nuevo modulo tools/<fuente> con contrato, consulta, descarga validada, checkpoint, armonizacion, procedencia, deduplicacion, auditoria y tests; replicar las garantias del descargador GEOROC.
 - NO se integro nueva fuente, NO se descargo un dataset nuevo y NO se inicio entrenamiento definitivo.
 - Pendiente de revision: la comparacion externa independiente comun (etapa 5) y la decision de activar cualquier cambio al entrenamiento en el menu.
+
+
+## Verificacion adicional de suficiencia M1 y M2 (2026-11-06)
+La revision de GEOROC, el defecto de seleccion de coordenadas por columna en M2,
+la curva de aprendizaje espacial (50 ajustes), los 178 grupos GEOROC adicionales
+candidatos y las condiciones cientificas para utilizarlos estan documentados en
+docs/models/DATA_ADEQUACY_VERIFICATION_2026.md.
+
+**Decision:** no integrar fuentes externas, no descargar Sentinel-2, no editar
+el flujo principal de datos ni entrenar modelos definitivos sin revisar
+el nuevo alcance con el usuario.
