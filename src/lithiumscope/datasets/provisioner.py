@@ -258,6 +258,20 @@ def require_frozen_model_2_manifest() -> Path:
     return manifest_path
 
 
+def require_model_2_expanded_manifest() -> Path:
+    """Prepare isolated M2-only extension; preserve M1 and legacy M2."""
+    config = load_config("model_2")
+    if not config["training"].get("expansion", {}).get("enabled", False):
+        return require_frozen_model_2_manifest()
+    from lithiumscope.model_2.data.expansion_vnext import (
+        ensure_expanded_m2_manifest,
+    )
+    path = ensure_expanded_m2_manifest()
+    if path is None:
+        raise RuntimeError("M2 expansion not ready; nothing will be trained")
+    return path
+
+
 def require_model_2_dataset(
     *,
     include_georoc: bool | None = None,

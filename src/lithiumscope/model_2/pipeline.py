@@ -101,9 +101,15 @@ def load_model_2_training_frame(
             "Debe contener una fila por muestra conocida y una columna image_path."
         )
 
-    cache_path = _project_path(
-        str(training_cfg["feature_cache_path"])
-    )
+    original_manifest = _project_path(str(training_cfg["manifest_path"]))
+    if manifest_path.resolve() != original_manifest.resolve():
+        expanded = training_cfg.get("expansion", {})
+        cache_path = _project_path(str(expanded.get(
+            "feature_cache_path",
+            "data/processed/model_2/vnext_expanded/spectral_features.csv",
+        )))
+    else:
+        cache_path = _project_path(str(training_cfg["feature_cache_path"]))
     metadata_path = cache_path.with_suffix(
         cache_path.suffix + ".meta.json"
     )

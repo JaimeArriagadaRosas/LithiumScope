@@ -174,6 +174,8 @@ def _read_patch(
     longitude: float,
     patch_size_m: float,
     patch_pixels: int,
+    *,
+    categorical: bool = False,
 ) -> np.ndarray:
     try:
         import rasterio
@@ -215,7 +217,9 @@ def _read_patch(
                     out_shape=(patch_pixels, patch_pixels),
                     boundless=True,
                     masked=True,
-                    resampling=Resampling.bilinear,
+                    resampling=(
+                        Resampling.nearest if categorical else Resampling.bilinear
+                    ),
                 )
                 return _masked_to_float(data)
     except SentinelAssetError:

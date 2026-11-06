@@ -2,10 +2,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+import json
 
+import numpy as np
 import pandas as pd
 
 from lithiumscope.core.config import load_config
+from lithiumscope.core.hashing import file_sha256
+from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.core.device import DeviceInfo
 from lithiumscope.core.logger import get_logger
 from lithiumscope.core.reproducibility import set_global_seed
@@ -29,7 +33,8 @@ from lithiumscope.model_2.steps.step_05_spectral_features import (
 from lithiumscope.model_2.schema import feature_range_profile
 from lithiumscope.model_2.training.cv_runner import run_classification_cv
 from lithiumscope.model_2.training.scientific_validation import (
-    make_scientific_folds, scientific_labels, evaluate_scientific_baseline,
+    make_scientific_folds, make_anchored_scientific_folds,
+    scientific_labels, evaluate_scientific_baseline,
 )
 from lithiumscope.model_2.training.factory import create_model, get_label
 from lithiumscope.persistence.save_model import save_model_bundle
@@ -175,11 +180,50 @@ def run_model_2_competition(
             if column in frame.columns
         ]
     )
-    scientific_folds = make_scientific_folds(
-        frame[lithium_column], groups,
-        n_splits=requested_folds, random_state=seed,
-        quantile=q, fixed_threshold_ppm=fixed_threshold,
-    )
+    anchor = cfg["validation"].get("anchor_legacy", {})
+    legacy_manifest = PROJECT_ROOT / str(cfg["training"]["manifest_path"])
+    extended_manifest = manifest_path.resolve() != legacy_manifest.resolve()
+    if extended_manifest and bool(anchor.get("enabled", False)):
+        old_sha = str(cfg["training"]["frozen_manifest_sha256"])
+        if file_sha256(legacy_manifest) != old_sha:
+            raise RuntimeError("M2 frozen historical reference dataset changed")
+        base = pd.read_csv(legacy_manifest)
+        expanded = pd.read_csv(manifest_path)
+        baseline_count = int(cfg["training"]["frozen_expected_rows"])
+        if (len(base) != baseline_count
+                or len(expanded) < baseline_count
+                or not np.array_equal(
+                    base.sample_id.to_numpy(),
+                    expanded.sample_id.iloc[:baseline_count].to_numpy(),
+                )
+                or not np.allclose(
+                    base.Li_icpms.to_numpy(dtype=float),
+                    expanded.Li_icpms.iloc[:baseline_count].to_numpy(dtype=float),
+                )
+                or not np.array_equal(
+                    base.spatial_group.to_numpy(),
+                    expanded.spatial_group.iloc[:baseline_count].to_numpy(),
+                )):
+            raise RuntimeError("M2 expanded manifest altered historical sample rows")
+        reference_file = PROJECT_ROOT / str(anchor["folds_file"])
+        if file_sha256(reference_file) != str(anchor["folds_sha256"]):
+            raise RuntimeError("M2 anchored baseline fold snapshot changed")
+        historic_splits = json.loads(reference_file.read_text(encoding="utf-8"))
+        scientific_folds = make_anchored_scientific_folds(
+            frame[lithium_column], groups, historic_splits,
+            baseline_count=baseline_count, quantile=q,
+            fixed_threshold_ppm=fixed_threshold,
+        )
+        print(
+            f"M2: evaluacion pareada con {baseline_count} muestras "
+            "historicas en sus mismos folds espaciales."
+        )
+    else:
+        scientific_folds = make_scientific_folds(
+            frame[lithium_column], groups,
+            n_splits=requested_folds, random_state=seed,
+            quantile=q, fixed_threshold_ppm=fixed_threshold,
+        )
     y = pd.Series(scientific_labels(scientific_folds, len(frame)), index=frame.index)
     y_full = (frame[lithium_column] >= threshold).astype(int)
     fold_ids = pd.Series(-1, index=frame.index, dtype=int)
