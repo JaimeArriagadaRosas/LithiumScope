@@ -130,3 +130,7 @@ docs/models/DATA_ADEQUACY_VERIFICATION_2026.md.
 **Decision:** no integrar fuentes externas, no descargar Sentinel-2, no editar
 el flujo principal de datos ni entrenar modelos definitivos sin revisar
 el nuevo alcance con el usuario.
+
+
+## Actualización experimental aprobada: etiquetas GEOROC para M2 (06/11/2026)
+El usuario autorizó un **piloto acotado** de emparejamiento entre Li y coordenadas de GEOROC B e imágenes Sentinel-2, sin utilizar los elementos químicos como predictores de M2. Se documentaron las diferencias entre etiqueta de muestra y anotación de píxeles, impacto en tiempo/almacenamiento frente al tamaño del modelo, riesgos de correspondencia geológica y resultados reales del piloto. Véase docs/models/GEOROC_M2_LABELLED_SENTINEL_PILOT_2026.md. La documentación anterior sigue como contexto histórico y no implica autorización de una descarga masiva ni de un release.
