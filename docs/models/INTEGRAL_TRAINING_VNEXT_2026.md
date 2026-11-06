@@ -134,3 +134,11 @@ el nuevo alcance con el usuario.
 
 ## Actualización experimental aprobada: etiquetas GEOROC para M2 (06/11/2026)
 El usuario autorizó un **piloto acotado** de emparejamiento entre Li y coordenadas de GEOROC B e imágenes Sentinel-2, sin utilizar los elementos químicos como predictores de M2. Se documentaron las diferencias entre etiqueta de muestra y anotación de píxeles, impacto en tiempo/almacenamiento frente al tamaño del modelo, riesgos de correspondencia geológica y resultados reales del piloto. Véase docs/models/GEOROC_M2_LABELLED_SENTINEL_PILOT_2026.md. La documentación anterior sigue como contexto histórico y no implica autorización de una descarga masiva ni de un release.
+
+
+
+## Cierre aprobado de etapa 4 y preparación para etapa 5 (2026-11-06)
+
+**Esta decisión reemplaza expresamente la instrucción anterior de detenerse en etapa 4 y el texto «etapa 5 sin autorización».** El usuario ha aprobado preparar el entrenamiento siguiente, pero **ha reservado para sí la ejecución del menú interactivo**. Por tanto, ChatGPT no debe iniciar la competencia ni entrenar M1 o M2.
+
+M1 utilizará protocolo B (FEOT equivalente), M2 mantendrá 706 muestras Sentinel-2 y añadirá RF calibrado espacialmente como competidor. La exploración de nuevas etiquetas GEOROC para M2 y nuevas fuentes queda postergada. El plan, pruebas, condiciones y resultados del preflight están en `docs/models/VNEXT_TRAINING_READY_2026.md`. No habrá push, activación automática ni release sin evaluación posterior.
