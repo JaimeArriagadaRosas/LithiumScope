@@ -128,10 +128,10 @@ def _fit_estimator(
     strict_spatial: bool = False,
 ):
     calibration_cv = None
-    if algorithm == "svm_rbf":
+    if algorithm in {"svm_rbf", "random_forest_spatial_calibrated"}:
         if strict_spatial:
             if groups_train is None or groups_train.nunique() < inner_folds:
-                raise ValueError("SVM calibration requires sufficient spatial groups.")
+                raise ValueError("Spatial calibration requires sufficient groups.")
             calibration_cv = list(GroupKFold(n_splits=inner_folds).split(
                 x_train, groups=groups_train,
             ))
@@ -141,7 +141,7 @@ def _fit_estimator(
                     or np.unique(np.asarray(y_train)[valid_idx]).size < 2
                 ):
                     raise ValueError(
-                        "SVM spatial calibration fold lacks both classes; "
+                        "Spatial calibration fold lacks both classes; "
                         "no random fallback allowed."
                     )
         else:

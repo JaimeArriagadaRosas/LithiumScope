@@ -7,7 +7,7 @@ from lithiumscope.core.logger import run_log
 from lithiumscope.core.training_logs import training_session, register_training_run
 from lithiumscope.datasets.provisioner import (
     require_model_1_dataset,
-    require_model_2_dataset,
+    require_frozen_model_2_manifest,
 )
 from lithiumscope.runtime.preboot import (
     require_full_training_environment,
@@ -85,8 +85,8 @@ def _run_impl() -> None:
     device_summary(device)
 
     print(
-        "\nFuente de entrenamiento: Mamani09 + GEOROC. "
-        "GEOROC se armoniza y deduplica antes de entrenar."
+        "\nModelo 1: Mamani09 + GEOROC, protocolo B (FeOT total)."
+        "\nModelo 2: 706 pares Sentinel-2 congelados, sin nuevas etiquetas."
     )
 
     if choice in {"1", "3"}:
@@ -116,13 +116,10 @@ def _run_impl() -> None:
         )
 
     if choice in {"2", "3"}:
-        model_2_manifest = require_model_2_dataset(
-            include_georoc=True
-        )
+        model_2_manifest = require_frozen_model_2_manifest()
         print(
-            "\nOrden Modelo 2: "
-            "RF → Extra Trees → HistGradientBoosting → "
-            "XGBoost → CatBoost → SVM-RBF"
+            "\nModelo 2: RF, RF calibrado espacialmente, Extra Trees, "
+            "HGB, XGBoost, CatBoost y SVM-RBF."
         )
         with run_log(
             "training",

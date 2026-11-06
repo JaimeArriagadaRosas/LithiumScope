@@ -443,11 +443,11 @@ def run_model_2_competition(
     )
 
     final_calibration_cv = None
-    if winner == "svm_rbf":
+    if winner in {"svm_rbf", "random_forest_spatial_calibrated"}:
         from sklearn.model_selection import GroupKFold
 
         if groups is None or groups.nunique() < inner_folds:
-            raise ValueError("No spatial groups for final SVM calibration.")
+            raise ValueError("No spatial groups for final calibration.")
         final_calibration_cv = list(GroupKFold(n_splits=inner_folds).split(
             x, groups=groups,
         ))
@@ -457,7 +457,7 @@ def run_model_2_competition(
                 or y_full.iloc[valid_idx].nunique() < 2
             ):
                 raise ValueError(
-                    "Final SVM calibration requires both classes per spatial fold."
+                    "Final calibration requires both classes per spatial fold."
                 )
 
     final_estimator = create_model(

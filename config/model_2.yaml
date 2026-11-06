@@ -3,6 +3,7 @@ schema_version: 1
 model:
   algorithms:
     - random_forest
+    - random_forest_spatial_calibrated
     - extra_trees
     - hist_gradient_boosting
     - xgboost
@@ -47,6 +48,9 @@ training:
   partial_manifest_path: data/processed/model_2/training_manifest.partial.csv
   failures_path: data/processed/model_2/training_failures.csv
   feature_cache_path: data/processed/model_2/sentinel_features.csv
+  # Frozen manifest avoids re-provisioning M2 from the expanded M1 dataset.
+  frozen_expected_rows: 706
+  frozen_manifest_sha256: 5c42e8b5fac697d6c1a579ef760ad642d736da14fa4e7d605596b7f4813498e1
   image_cache_dir: data/raw/model_2/sentinel2/patches
   sample_id_column: sample_id
   lithium_column: Li_icpms
@@ -63,6 +67,7 @@ optimization:
   enabled: true
   n_trials: 8
   per_algorithm_trials:
+    random_forest_spatial_calibrated: 4
     hist_gradient_boosting: 10
     svm_rbf: 10
   pruning:
