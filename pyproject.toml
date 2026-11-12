@@ -39,6 +39,7 @@ imagery = [
 ]
 dev = [
   "catboost>=1.2.8",
+  "rasterio>=1.4",
   "pytest>=8.3",
   "ruff>=0.6"
 ]

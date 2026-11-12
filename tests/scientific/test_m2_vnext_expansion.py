@@ -105,18 +105,50 @@ def test_spectral_contract_126_features_for_valid_6_band_patch(tmp_path: Path):
 
 
 def test_expansion_plan_is_download_free_and_leaves_legacy_unchanged(monkeypatch,tmp_path):
-    config=ex.load_config("model_2")
+    # CI has no untracked historical Li imagery; reproduce the frozen
+    # 706-row integrity contract without relying on local private datasets.
+    from copy import deepcopy
+
+    config=deepcopy(ex.load_config("model_2"))
     assert config["training"]["expansion"]["enabled"] is True
-    base=ex.frozen_m2(ex.PROJECT_ROOT,config)
-    oldfile=ex.project_path(ex.PROJECT_ROOT,config["training"]["manifest_path"])
-    original=ex.file_sha256(oldfile)
+    image=tmp_path/"reference_patch.npy"
+    np.save(image,np.ones((6,32,32),dtype="float32"))
+    baseline=pd.DataFrame({
+        "sample_id":[f"historical_{i}" for i in range(706)],
+        "Li_icpms":np.resize(_legacy().Li_icpms.to_numpy(float),706),
+        "latitude":[-24.0]*706,
+        "longitude":[-70.0]*706,
+        "spatial_group":["historical_group"]*706,
+        "image_path":[str(image)]*706,
+    })
+    oldfile=tmp_path/"historical_706.csv"
+    baseline.to_csv(oldfile,index=False)
+    audit=tmp_path/"source_audit.csv"
+    _source().to_csv(audit,index=False)
+    config["training"].update({
+        "manifest_path":str(oldfile),
+        "frozen_expected_rows":706,
+        "frozen_manifest_sha256":ex.file_sha256(oldfile),
+    })
+    config["training"]["expansion"].update({
+        "source_audit_path":str(audit),
+        "state_dir":str(tmp_path/"selection_state"),
+        "patch_dir":str(tmp_path/"new_patches"),
+        "target_new_samples":2,
+        "minimum_new_samples":1,
+        "max_li_ppm":100,
+    })
+    monkeypatch.setattr(ex,"load_config",lambda name:config)
     monkeypatch.setattr(ex,"Sentinel2Provider",
                         lambda cfg: pytest.fail("Plan must not use satellite provider"))
+    base=ex.frozen_m2(tmp_path,config)
+    original=oldfile.read_bytes()
     assert ex.ensure_expanded_m2_manifest(
-        acquire=False, max_new_downloads=1
+        root=tmp_path,acquire=False,max_new_downloads=1
     ) is None
-    assert ex.file_sha256(oldfile)==original
+    assert oldfile.read_bytes()==original
     assert len(base)==706
+    assert not (tmp_path/"new_patches").exists()
 
 
 
