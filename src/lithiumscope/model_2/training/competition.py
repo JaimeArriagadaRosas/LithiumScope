@@ -33,7 +33,7 @@ from lithiumscope.model_2.steps.step_05_spectral_features import (
 from lithiumscope.model_2.schema import feature_range_profile
 from lithiumscope.model_2.training.cv_runner import run_classification_cv
 from lithiumscope.model_2.training.quality import training_quality_mask
-from lithiumscope.model_2.training.competition_ranking import save_three_zone_competition
+from lithiumscope.model_2.training.postprocess import finalize_reports
 from lithiumscope.model_2.training.scientific_validation import (
     make_scientific_folds, make_anchored_scientific_folds,
     scientific_labels, evaluate_scientific_baseline,
@@ -80,6 +80,7 @@ def _excel_sheets(
     results: dict[str, object],
     y: pd.Series,
     baseline,
+    evidence_dir: Path | None = None,
 ) -> dict[str, pd.DataFrame]:
     sheets: dict[str, pd.DataFrame] = {
         "ranking": ranking,
@@ -94,6 +95,16 @@ def _excel_sheets(
                 "predicted_class_0_5": (result.probabilities >= 0.5).astype(int),
             }
         )
+    if evidence_dir is not None:
+        for filename,sheet in (
+            ("old_release_protocol_comparison_706.csv","release_706"),
+            ("old_release_protocol_intervals_706.csv","release_intervals"),
+            ("scientific_stratified_metrics.csv","scientific_strata"),
+            ("three_zone_competition_cases.csv","three_zone_cases"),
+        ):
+            evidence_path=evidence_dir/filename
+            if evidence_path.exists():
+                sheets[sheet]=pd.read_csv(evidence_path)
     return sheets
 
 
@@ -438,27 +449,42 @@ def run_model_2_competition(
         sort=False,
     )
     if results:
-        try:
-            triplets=save_three_zone_competition(
-                manifest_path,
-                {name:record.probabilities for name,record in results.items()},
-                fold_ids.to_numpy(),y.to_numpy(),
-                context.tables,
-            )
-            ranking["three_zone_top1_accuracy"] = ranking["algorithm"].map({
+        # All three reports are repairable from saved OOF without retraining.
+        # Preserve a long-running competition even when one report needs repair,
+        # but never hide the reason or mark the report as successful.
+        evidence_status=finalize_reports(
+            manifest_path,context.tables,context.tables,
+        )
+        per_report=evidence_status.get("reports",{})
+        context.tracker.event(
+            "scientific_postprocessing_complete",
+            status=evidence_status["state"],
+            report_statuses={
+                name:details.get("state")
+                for name,details in per_report.items()
+            },
+            recovery_command=evidence_status.get("recovery_command"),
+        )
+        triple=per_report.get("three_zone",{})
+        if triple.get("state")=="complete":
+            arms=triple["result"]["summary"]["arms"]
+            ranking["three_zone_top1_accuracy"]=ranking["algorithm"].map({
                 name:float(value["top1_accuracy"])
-                for name,value in triplets["arms"].items()
+                for name,value in arms.items()
             })
-            print("Comparación de tres zonas por algoritmo:")
-            for name,value in triplets["arms"].items():
-                print(f"  {name}: {value['top1_accuracy']:.2%} top-1")
-        except Exception as exc:
-            # Reporting should not discard several hours of fitted models.
-            logger.exception("Three-zone exploratory reporting failed")
-            (context.tables/"three_zone_reporting_error.txt").write_text(
-                f"{type(exc).__name__}: {exc}\n",encoding="utf-8")
-            print("Aviso: informe de tres zonas no disponible; "
-                  f"revisar evidencia: {type(exc).__name__}: {exc}")
+            print("Priorizacion de tres zonas por algoritmo:",flush=True)
+            for name,value in arms.items():
+                print(f"  {name}: {value['top1_accuracy']:.2%}",flush=True)
+        if evidence_status["state"]!="complete":
+            print(
+                "ATENCION: evidencias complementarias incompletas; "
+                "los modelos y checkpoints quedan conservados. "
+                "Consultar evidence_report_status.json para recuperar "
+                "SIN reentrenar.",flush=True
+            )
+        else:
+            print("Reportes del release previo, QA cientifica y tres zonas: OK",
+                  flush=True)
     ranking.to_csv(
         context.tables / "competition_ranking.csv",
         index=False,
@@ -467,7 +493,7 @@ def run_model_2_competition(
     if candidates.empty:
         export_workbook(
             context.exports / "model_2_results.xlsx",
-            _excel_sheets(ranking, results, y, baseline),
+            _excel_sheets(ranking, results, y, baseline, context.tables),
         )
         build_dashboard(context.root, "LithiumScope — Modelo 2")
         context.tracker.set_state(
@@ -696,7 +722,7 @@ def run_model_2_competition(
 
     export_workbook(
         context.exports / "model_2_results.xlsx",
-        _excel_sheets(ranking, results, y, baseline),
+        _excel_sheets(ranking, results, y, baseline, context.tables),
     )
     (context.exports / "winner.txt").write_text(
         f"algorithm={winner}\nmodel={model_path}\nmetadata={metadata_path}\n",

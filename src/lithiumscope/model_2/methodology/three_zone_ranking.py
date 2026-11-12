@@ -41,6 +41,11 @@ def ranking_evaluation(oof:pd.DataFrame, *,triples_per_fold:int=250,
         ).reset_index()
         units[arm]=summary
     baseline=units[arms[0]]
+    # Index once per competitor rather than rebuilding index for every triplet.
+    indexed_units={
+        name:frame.set_index("site_screening_id")
+        for name,frame in units.items()
+    }
     rng=np.random.default_rng(seed)
     cases=[]
     for fold,sites in baseline.groupby("fold",sort=True):
@@ -52,8 +57,7 @@ def ranking_evaluation(oof:pd.DataFrame, *,triples_per_fold:int=250,
             values=[]
             positive=[]
             for arm in arms:
-                frame=units[arm].set_index("site_screening_id")
-                sample=frame.loc[selected]
+                sample=indexed_units[arm].loc[selected]
                 v=sample.li_ppm.to_numpy(float)
                 s=sample.score.to_numpy(float)
                 if not np.isfinite(s).all():
