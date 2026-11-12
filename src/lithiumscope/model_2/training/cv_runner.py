@@ -25,6 +25,7 @@ from lithiumscope.model_2.training.factory import (
 from lithiumscope.model_2.training.optimizer import (
     optimize_classifier_with_optuna,
 )
+from lithiumscope.model_2.training.search_policy import parameter_space_for
 from lithiumscope.runtime.console_status import Spinner
 
 logger = get_logger("model_2.cv_runner")
@@ -41,124 +42,10 @@ class ClassificationCVResult:
     final_params: dict
 
 
-def _splitter(
-    y: pd.Series,
-    groups: pd.Series | None,
-    folds: int,
-    seed: int,
-    *,
-    announce: bool = False,
-):
-    if groups is not None and groups.nunique() >= folds:
-        if announce:
-            print(
-                "    Validación espacial agrupada: "
-                f"{groups.nunique()} grupos"
-            )
-        logger.info(
-            "Model 2 validation: StratifiedGroupKFold with %d spatial groups",
-            groups.nunique(),
-        )
-        return (
-            StratifiedGroupKFold(
-                n_splits=folds,
-                shuffle=True,
-                random_state=seed,
-            ),
-            groups,
-        )
-
-    if announce:
-        print(
-            "    Aviso: sin grupos espaciales suficientes; "
-            "se usará StratifiedKFold."
-        )
-    logger.warning(
-        "Model 2 spatial groups unavailable/insufficient; "
-        "falling back to StratifiedKFold"
-    )
-    return (
-        StratifiedKFold(
-            n_splits=folds,
-            shuffle=True,
-            random_state=seed,
-        ),
-        None,
-    )
 
 
-def _materialize_splits(
-    x,
-    y,
-    groups,
-    folds: int,
-    seed: int,
-) -> list[tuple[np.ndarray, np.ndarray]]:
-    splitter, split_groups = _splitter(
-        y,
-        groups,
-        folds,
-        seed,
-        announce=False,
-    )
-    iterator = (
-        splitter.split(x, y, split_groups)
-        if split_groups is not None
-        else splitter.split(x, y)
-    )
-    return [
-        (
-            np.asarray(train_idx, dtype=int),
-            np.asarray(valid_idx, dtype=int),
-        )
-        for train_idx, valid_idx in iterator
-    ]
 
 
-def _fit_estimator(
-    algorithm: str,
-    device: DeviceInfo,
-    seed: int,
-    params: dict,
-    x_train: pd.DataFrame,
-    y_train: pd.Series,
-    groups_train: pd.Series | None,
-    inner_folds: int,
-    *,
-    strict_spatial: bool = False,
-):
-    calibration_cv = None
-    if algorithm in {"svm_rbf", "random_forest_spatial_calibrated"}:
-        if strict_spatial:
-            if groups_train is None or groups_train.nunique() < inner_folds:
-                raise ValueError("Spatial calibration requires sufficient groups.")
-            calibration_cv = list(GroupKFold(n_splits=inner_folds).split(
-                x_train, groups=groups_train,
-            ))
-            for train_idx, valid_idx in calibration_cv:
-                if (
-                    np.unique(np.asarray(y_train)[train_idx]).size < 2
-                    or np.unique(np.asarray(y_train)[valid_idx]).size < 2
-                ):
-                    raise ValueError(
-                        "Spatial calibration fold lacks both classes; "
-                        "no random fallback allowed."
-                    )
-        else:
-            calibration_cv = _materialize_splits(
-                x_train, y_train, groups_train, inner_folds, seed + 1000,
-            )
-
-    estimator = create_model(
-        algorithm,
-        device,
-        seed,
-        params,
-        calibrated=True,
-        calibration_cv=calibration_cv,
-    )
-    estimator.fit(x_train, y_train)
-    return estimator
 
 
 def run_classification_cv(
@@ -203,6 +90,7 @@ def run_classification_cv(
     )
 
     optimization = optimization or {}
+    parameter_space = parameter_space_for(algorithm, spec, optimization)
     optimize = bool(optimization.get("enabled", False))
     trials = int(
         optimization.get("per_algorithm_trials", {}).get(
@@ -220,199 +108,7 @@ def run_classification_cv(
             if split_groups is not None else splitter.split(x, y)
         )
     )
-    for fold, (train_idx, test_idx) in enumerate(split_iter, start=1):
-        train_idx = np.asarray(train_idx, dtype=int)
-        test_idx = np.asarray(test_idx, dtype=int)
-        original_train_count = len(train_idx)
-        scientific_fold = (
-            scientific_folds[fold - 1] if scientific_folds is not None else None
-        )
-        if split_groups is not None:
-            assert_group_isolation(
-                train_idx,
-                test_idx,
-                split_groups,
-            )
-        if quality_training_mask is not None:
-            # Never remove any test observation. This affects all algorithms,
-            # including Optuna inner folds and calibration.
-            train_idx = train_idx[quality_training_mask[train_idx]]
-            if len(train_idx) < inner_folds or not len(np.unique(
-                np.asarray(lithium_values, dtype=float)[train_idx]
-                if scientific_fold is not None else y.iloc[train_idx]
-            )) > 1:
-                raise ValueError("Insufficient two-class QA eligible TRAIN examples")
-
-        cached = (
-            checkpoint.load_fold(fold, test_idx)
-            if checkpoint
-            else None
-        )
-        if cached is not None:
-            fold_probabilities = np.asarray(
-                cached["predictions"],
-                dtype=float,
-            )
-            probabilities[test_idx] = fold_probabilities
-            metrics = dict(cached["metrics"])
-            records.append(
-                {
-                    "fold": fold,
-                    **metrics,
-                    "n_train": len(train_idx),
-                    "n_test": len(test_idx),
-                    "resumed": True,
-                    **({"label_threshold_ppm": scientific_fold.label_threshold_ppm,
-                        "group_overlap": 0,
-                        "n_groups_train": scientific_fold.n_groups_train,
-                        "n_groups_test": scientific_fold.n_groups_test}
-                       if scientific_fold is not None else {}),
-                }
-            )
-            print(
-                f"      Fold {fold}/{folds} ↻ reutilizado | "
-                f"ROC-AUC={metrics.get('roc_auc', float('nan')):.4f} | "
-                f"AP={metrics['average_precision']:.4f}"
-            )
-            continue
-
-        spinner = Spinner(
-            f"{label} · fold {fold}/{folds} · preparando"
-        ).start()
-        try:
-            x_train = x.iloc[train_idx]
-            y_train = (
-                pd.Series(
-                    (np.asarray(lithium_values, dtype=float)[train_idx]
-                     >= scientific_fold.label_threshold_ppm).astype(int)
-                )
-                if scientific_fold is not None else y.iloc[train_idx]
-            )
-            x_test = x.iloc[test_idx]
-            y_test = (
-                pd.Series(scientific_fold.y_test)
-                if scientific_fold is not None else y.iloc[test_idx]
-            )
-            groups_train = (
-                groups.iloc[train_idx]
-                if groups is not None
-                else None
-            )
-
-            params: dict = {}
-            if optimize:
-                if scientific_fold is not None:
-                    if groups_train is None or groups_train.nunique() < inner_folds:
-                        raise ValueError("Insufficient spatial groups for inner CV.")
-                    inner_splits = list(GroupKFold(n_splits=inner_folds).split(
-                        x_train, groups=groups_train,
-                    ))
-                else:
-                    inner_splits = _materialize_splits(
-                        x_train, y_train, groups_train, inner_folds, seed + fold,
-                    )
-
-                def factory(candidate: dict):
-                    return create_model(
-                        algorithm,
-                        device,
-                        seed,
-                        candidate,
-                        calibrated=False,
-                    )
-
-                def progress(done: int, total: int) -> None:
-                    spinner.update(
-                        f"{label} · fold {fold}/{folds} · "
-                        f"Optuna {done}/{total}"
-                    )
-
-                params = optimize_classifier_with_optuna(
-                    factory,
-                    spec.module.optuna_space,
-                    x_train,
-                    y_train,
-                    inner_splits,
-                    n_trials=trials,
-                    random_seed=seed + fold,
-                    progress_callback=progress,
-                    storage_path=(
-                        checkpoint.root
-                        / f"optuna_fold_{fold:02d}.db"
-                        if checkpoint
-                        else None
-                    ),
-                    study_name=f"{algorithm}_fold_{fold:02d}",
-                    pruning_enabled=bool(
-                        pruning.get("enabled", True)
-                    ),
-                    startup_trials=int(
-                        pruning.get("startup_trials", 3)
-                    ),
-                    warmup_folds=int(pruning.get("warmup_folds", 2)),
-                    lithium_values=(
-                        np.asarray(lithium_values, dtype=float)[train_idx]
-                        if scientific_fold is not None else None
-                    ),
-                    label_quantile=label_quantile,
-                    fixed_threshold_ppm=fixed_threshold_ppm,
-                )
-
-            spinner.update(
-                f"{label} · fold {fold}/{folds} · ajustando"
-            )
-            estimator = _fit_estimator(
-                algorithm,
-                device,
-                seed,
-                params,
-                x_train,
-                y_train,
-                groups_train,
-                inner_folds,
-                strict_spatial=scientific_fold is not None,
-            )
-            fold_probabilities = estimator.predict_proba(
-                x_test
-            )[:, 1]
-            probabilities[test_idx] = fold_probabilities
-            metrics = classification_metrics(
-                y_test.to_numpy(),
-                fold_probabilities,
-            )
-            records.append(
-                {
-                    "fold": fold,
-                    **metrics,
-                    "n_train": len(train_idx),
-                    "n_test": len(test_idx),
-                    "resumed": False,
-                    **({"label_threshold_ppm": scientific_fold.label_threshold_ppm,
-                        "group_overlap": 0,
-                        "n_groups_train": scientific_fold.n_groups_train,
-                        "n_groups_test": scientific_fold.n_groups_test}
-                       if scientific_fold is not None else {}),
-                }
-            )
-            if checkpoint:
-                checkpoint.save_fold(
-                    fold,
-                    test_idx,
-                    fold_probabilities,
-                    metrics,
-                    params=params,
-                )
-            spinner.succeed(
-                f"{label} · fold {fold}/{folds} | "
-                f"ROC-AUC={metrics.get('roc_auc', float('nan')):.4f} | "
-                f"AP={metrics['average_precision']:.4f} | "
-                f"F1={metrics['f1']:.4f}"
-            )
-        except BaseException:
-            spinner.fail(
-                f"{label} · fold {fold}/{folds} interrumpido"
-            )
-            raise
+    _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_threshold_ppm, folds, groups, inner_folds, label, label_quantile, lithium_values, optimize, probabilities, pruning, quality_training_mask, records, scientific_folds, seed, spec, split_groups, split_iter, trials, x, y, parameter_space)
 
     assert_oof_complete(probabilities, len(y))
     final_indices = (
@@ -478,7 +174,7 @@ def run_classification_cv(
 
                 final_params = optimize_classifier_with_optuna(
                     final_factory,
-                    spec.module.optuna_space,
+                    parameter_space,
                     final_x,
                     final_y,
                     final_splits,
@@ -539,3 +235,7 @@ def run_classification_cv(
         elapsed_seconds=elapsed,
         final_params=final_params,
     )
+
+from lithiumscope.model_2.training.cv_runner_fold_utilities import _splitter, _materialize_splits, _fit_estimator
+
+from lithiumscope.model_2.training.cv_runner_evaluate_outer_classification_folds import _evaluate_outer_classification_folds

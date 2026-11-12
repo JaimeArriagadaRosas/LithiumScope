@@ -90,9 +90,12 @@ quality_training:
 
 optimization:
   enabled: true
+  # Versioned spatial-overfit experiment. Keeps legacy Optuna studies intact.
+  # This setting participates in build_training_signature via model_2.yaml.
+  random_forest_search_profile: regularized_v2
   n_trials: 12
   per_algorithm_trials:
-    random_forest: 12
+    random_forest: 16
     extra_trees: 10
     catboost: 10
     hist_gradient_boosting: 10

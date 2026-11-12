@@ -31,3 +31,26 @@ def optuna_space(trial) -> dict:
             ["sqrt", "log2", 0.5, 1.0],
         ),
     }
+
+
+
+def optuna_space_regularized(trial) -> dict:
+    """Conservative RF spectral search for a new, versioned experiment.
+
+    At 783 observations and 126 correlated spectral features, allow at least
+    six training observations per leaf and cap depth at twelve. This search
+    includes the depth-eight/leaf-ten profile from the spatial pilot.
+    It does not alter previous Optuna checkpoints or trained bundles.
+    """
+    return {
+        "n_estimators": trial.suggest_int("n_estimators", 250, 650),
+        "max_depth": trial.suggest_categorical(
+            "max_depth", [6, 8, 10, 12]
+        ),
+        "min_samples_leaf": trial.suggest_int(
+            "min_samples_leaf", 6, 16
+        ),
+        "max_features": trial.suggest_categorical(
+            "max_features", ["sqrt", "log2", 0.5]
+        ),
+    }
