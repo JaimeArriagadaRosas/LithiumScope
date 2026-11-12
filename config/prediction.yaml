@@ -15,3 +15,6 @@ demonstration:
   source_license: MIT
   sentinel_datetime: 2024-01-01/2025-12-31
   imagery_cache_dir: data/interim/model_2/integrated_demo
+  candidate_models:
+    model_1: training_20261106_111653_m0300
+    model_2: training_20261112_123451_m0300

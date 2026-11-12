@@ -5,8 +5,11 @@ from datetime import datetime
 import json
 from pathlib import Path
 
+import joblib
+
 from lithiumscope.core.hashing import file_sha256
-from lithiumscope.core.paths import RESULTS_DIR
+from lithiumscope.core.paths import MODELS_DIR, RESULTS_DIR
+from lithiumscope.persistence.candidates import read_candidate_status
 from lithiumscope.persistence.load_model import load_latest_model
 
 
@@ -52,8 +55,36 @@ class PredictionSession:
         )
 
 
-def load_model_with_identity(model_group: str):
-    bundle, model_path = load_latest_model(model_group)
+def load_model_with_identity(model_group: str, *, candidate_run_id: str | None = None):
+    """Select an explicit pending candidate for a *single prediction only*.
+
+    Never modifies active_models.json, candidate_status.json or a model bundle.
+    An omitted candidate_run_id preserves the published-active model selection.
+    """
+    if model_group not in {"model_1", "model_2"}:
+        raise ValueError(f"Grupo de modelo desconocido: {model_group}")
+    if candidate_run_id is None:
+        bundle, model_path = load_latest_model(model_group)
+        selected_for = "active_release"
+        candidate_status = None
+    else:
+        run_id = str(candidate_run_id)
+        if not run_id.startswith("training_") or Path(run_id).name != run_id or any(
+            value in run_id for value in ("..", "/", "\\", ":")
+        ):
+            raise ValueError("ID del candidato inválido")
+        model_path = MODELS_DIR / model_group / "trained" / run_id / "model.joblib"
+        if not model_path.is_file():
+            raise FileNotFoundError(f"No existe el candidato solicitado: {model_path}")
+        candidate_status = read_candidate_status(model_path).get("status")
+        if candidate_status != "pending":
+            raise ValueError(
+                f"El modelo {model_group}/{run_id} no está pendiente de aprobación "
+                f"(estado: {candidate_status!r})."
+            )
+        bundle = joblib.load(model_path)
+        selected_for = "experimental_demonstration"
+
     metadata_path = model_path.parent / "metadata.json"
     metadata: dict = {}
     if metadata_path.is_file():
@@ -71,5 +102,8 @@ def load_model_with_identity(model_group: str):
         "training_metrics": metadata.get("metrics", {}),
         "dataset_sha256": metadata.get("dataset_sha256"),
         "metadata_path": str(metadata_path) if metadata_path.is_file() else None,
+        "selection": selected_for,
+        "candidate_status": candidate_status,
+        "release_promoted_by_demonstration": False,
     }
     return bundle, model_path, identity
