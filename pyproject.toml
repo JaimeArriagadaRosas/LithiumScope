@@ -40,6 +40,9 @@ imagery = [
 dev = [
   "catboost>=1.2.8",
   "rasterio>=1.4",
+  "fsspec>=2025.3",
+  "tifffile>=2025.3",
+  "imagecodecs>=2024.12",
   "pytest>=8.3",
   "ruff>=0.6"
 ]
