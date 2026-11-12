@@ -11,6 +11,7 @@ from lithiumscope.core.device import DeviceInfo
 from lithiumscope.core.logger import get_logger
 from lithiumscope.core.reproducibility import set_global_seed
 from lithiumscope.core.run_context import RunContext
+from lithiumscope.core.training_diagnostics import save_oof_diagnostics
 from lithiumscope.core.run_resume import build_training_signature
 from lithiumscope.core.states import RunState
 from lithiumscope.datasets.manifest import build_tabular_manifest, write_manifest
@@ -390,6 +391,12 @@ def run_model_1_competition(dataset_path: Path, device: DeviceInfo) -> Competiti
         context.figures / "winner_feature_importance.png",
     )
 
+    diagnostic = save_oof_diagnostics(
+        context.root / "scientific_diagnostics",
+        winner_prepared.y.to_numpy(), winner_result.predictions,
+        groups=winner_prepared.groups, kind="regression", seed=seed,
+    )
+    context.tracker.attach_summary(scientific_diagnostics=diagnostic["metrics"])
     absolute_residuals = np.abs(
         winner_prepared.y.to_numpy() - winner_result.predictions
     )

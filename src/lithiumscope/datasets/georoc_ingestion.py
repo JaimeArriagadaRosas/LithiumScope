@@ -124,7 +124,10 @@ def ingest_georoc_files(
         "WHOLE ROCK",
     ),
     minimum_predictors: int = 8,
+    iron_total_mode: str = "original",
 ) -> GeorocIngestionResult:
+    if iron_total_mode not in {"original", "feot_equivalent"}:
+        raise ValueError(f"Unsupported GEOROC iron_total_mode: {iron_total_mode}")
     paths = tuple(
         Path(path)
         for path in files
@@ -158,9 +161,14 @@ def ingest_georoc_files(
 
     try:
         for path in paths:
-            mapping = infer_georoc_column_map(
-                _read_header(path)
-            )
+            header = _read_header(path)
+            mapping = infer_georoc_column_map(header)
+            if iron_total_mode == "feot_equivalent":
+                for source_column in header:
+                    key = source_column.upper().replace(" ", "").replace("_", "")
+                    if key in {"FEOT(WT%)", "FEOT"}:
+                        mapping[source_column] = "FeOT_total_as_FeO"
+                        break
             mapped_union.update(mapping)
 
             missing = _validate_core_mapping(
@@ -199,6 +207,7 @@ def ingest_georoc_files(
                         minimum_predictors=(
                             minimum_predictors
                         ),
+                        iron_total_mode=iron_total_mode,
                     )
                 )
                 rejected += dropped

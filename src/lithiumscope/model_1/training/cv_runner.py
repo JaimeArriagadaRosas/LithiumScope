@@ -253,6 +253,42 @@ def run_nested_cv(
                 y_test,
                 fold_predictions,
             ).to_dict()
+            # Paired holdout stress test, never fitted on the outer test set.
+            # Noise is scaled from outer-training features only.
+            numeric = [
+                col for col in prepared.schema.numeric
+                if col in x_test.columns
+            ]
+            if numeric:
+                try:
+                    rng = np.random.default_rng(seed + 10000 + fold)
+                    stressed = x_test.copy(deep=True)
+                    noise_scale = (
+                        x_train[numeric].std(numeric_only=True)
+                        .fillna(0.0).to_numpy(dtype=float)
+                    )
+                    original = stressed[numeric].to_numpy(dtype=float)
+                    noisy = original + rng.normal(
+                        0.0, 0.05 * noise_scale,
+                        size=original.shape,
+                    )
+                    stressed.loc[:, numeric] = noisy
+                    stressed_pred = np.asarray(
+                        estimator.predict(stressed), dtype=float,
+                    )
+                    metrics["stress_noise_5pct_train_std_mae_shift"] = float(
+                        np.mean(np.abs(stressed_pred - fold_predictions))
+                    )
+                    metrics["stress_noise_5pct_train_std_rmse"] = float(
+                        regression_metrics(y_test, stressed_pred).rmse
+                    )
+                    metrics["stress_noise_evaluated"] = 1.0
+                except (ValueError, TypeError, RuntimeError) as exc:
+                    logger.warning(
+                        "Model 1 holdout stress unavailable: algorithm=%s fold=%d error=%s",
+                        algorithm, fold, exc,
+                    )
+                    metrics["stress_noise_evaluated"] = 0.0
             folds.append(
                 {
                     "fold": fold,

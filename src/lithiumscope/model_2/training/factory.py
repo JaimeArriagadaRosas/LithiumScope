@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from sklearn.calibration import CalibratedClassifierCV
+
 from lithiumscope.core.device import DeviceInfo
 from lithiumscope.model_2.training import (
     catboost,
@@ -24,6 +26,11 @@ ALGORITHMS = {
     "random_forest": AlgorithmSpec(
         "random_forest",
         "Random Forest",
+        random_forest,
+    ),
+    "random_forest_spatial_calibrated": AlgorithmSpec(
+        "random_forest_spatial_calibrated",
+        "Random Forest (spatial calibration)",
         random_forest,
     ),
     "extra_trees": AlgorithmSpec(
@@ -97,6 +104,26 @@ def create_model(
             calibrated=calibrated,
             calibration_cv=calibration_cv,
             **params,
+        )
+    if name == "random_forest_spatial_calibrated":
+        defaults = {
+            "n_estimators": 160,
+            "max_depth": 9,
+            "min_samples_leaf": 4,
+        }
+        defaults.update(params)
+        base = random_forest.create_model(seed, **defaults)
+        if not calibrated:
+            return base
+        if calibration_cv is None:
+            raise ValueError(
+                "Spatial RF calibration requires explicit group-isolated folds."
+            )
+        return CalibratedClassifierCV(
+            estimator=base,
+            method="sigmoid",
+            cv=calibration_cv,
+            ensemble=True,
         )
     return spec.module.create_model(
         seed,

@@ -7,7 +7,7 @@ import pandas as pd
 from lithiumscope.datasets.georoc_ingestion_schema import (
     MAJOR_OXIDES,
 )
-from lithiumscope.tools.georoc_material_parser import (
+from lithiumscope.tools.georoc.processing.georoc_material_parser import (
     canonical_material_label,
     parse_georoc_material,
 )
@@ -49,10 +49,31 @@ def harmonize_chunk(
     source_file: str,
     allowed_material_types: tuple[str, ...],
     minimum_predictors: int,
+    iron_total_mode: str = "original",
 ) -> tuple[pd.DataFrame, int]:
+    if iron_total_mode not in {"original", "feot_equivalent"}:
+        raise ValueError(f"Unsupported GEOROC iron_total_mode: {iron_total_mode}")
     frame = chunk.rename(
         columns=column_map
     ).copy()
+    if iron_total_mode == "feot_equivalent":
+        # GEOROC FeOT is total iron expressed as FeO. Never add it to Fe2O3.
+        # Prefer the FeOT total equivalent where reported; otherwise keep
+        # the original Fe2O3/Fe2O3T supplied by the source.
+        feot = pd.to_numeric(frame.get("FeOT_total_as_FeO"), errors="coerce")
+        if not isinstance(feot, pd.Series):
+            feot = pd.Series(float("nan"), index=frame.index)
+        original_fe = pd.to_numeric(frame.get("Fe2O3"), errors="coerce")
+        if not isinstance(original_fe, pd.Series):
+            original_fe = pd.Series(float("nan"), index=frame.index)
+        frame["Fe2O3"] = feot.mul(1.111348).where(feot.notna(), original_fe)
+        frame["Fe_total_provenance"] = (
+            "ORIGINAL_FE2O3"
+        )
+        frame.loc[feot.notna(), "Fe_total_provenance"] = (
+            "FEOT_CONVERTED_TO_FE2O3T"
+        )
+        frame = frame.drop(columns=["FeOT_total_as_FeO"], errors="ignore")
 
     if "Sample_type" in frame.columns:
         frame["Sample_type_raw"] = (

@@ -4,6 +4,10 @@ from dataclasses import dataclass
 from pathlib import Path
 import importlib.util
 
+import pandas as pd
+
+from lithiumscope.core.hashing import file_sha256
+
 from lithiumscope.core.config import load_config
 from lithiumscope.core.logger import get_logger
 from lithiumscope.core.paths import DATA_DIR, PROJECT_ROOT
@@ -219,6 +223,53 @@ def require_model_1_dataset(
             f"{detail}."
         )
     return Path(status.path)
+
+
+def require_frozen_model_2_manifest() -> Path:
+    """Return the existing 706-row Sentinel-2 manifest without provisioning.
+
+    The vNext experiment keeps M2 distinct from the expanded M1 GEOROC source.
+    No imagery acquisition or canonical dataset rewrite happens here.
+    """
+    training = load_config("model_2")["training"]
+    manifest_path = _project_path(str(training["manifest_path"]))
+    if not manifest_path.is_file():
+        raise FileNotFoundError(
+            f"Frozen Model 2 manifest missing: {manifest_path}. "
+            "No automatic re-download is allowed in this training cycle."
+        )
+    expected_sha = str(training.get("frozen_manifest_sha256", "")).strip()
+    if expected_sha and file_sha256(manifest_path) != expected_sha:
+        raise RuntimeError(
+            "The Model 2 training manifest changed. Aborting to avoid "
+            "unintended new labels/images in the frozen training cycle."
+        )
+    frame = pd.read_csv(manifest_path)
+    expected_rows = int(training.get("frozen_expected_rows", 706))
+    if len(frame) != expected_rows:
+        raise RuntimeError(
+            f"Model 2 expected {expected_rows} spectral samples, got {len(frame)}."
+        )
+    required = {"Li_icpms", "spatial_group", "image_path"}
+    if not required.issubset(frame.columns):
+        raise ValueError("Frozen Model 2 manifest lacks essential columns.")
+    if frame["Li_icpms"].isna().any() or frame["spatial_group"].isna().any():
+        raise ValueError("Frozen Model 2 manifest has missing labels or groups.")
+    return manifest_path
+
+
+def require_model_2_expanded_manifest() -> Path:
+    """Prepare isolated M2-only extension; preserve M1 and legacy M2."""
+    config = load_config("model_2")
+    if not config["training"].get("expansion", {}).get("enabled", False):
+        return require_frozen_model_2_manifest()
+    from lithiumscope.model_2.data.expansion_vnext import (
+        ensure_expanded_m2_manifest,
+    )
+    path = ensure_expanded_m2_manifest()
+    if path is None:
+        raise RuntimeError("M2 expansion not ready; nothing will be trained")
+    return path
 
 
 def require_model_2_dataset(

@@ -31,16 +31,25 @@ ml = [
 imagery = [
   "Pillow>=10.4",
   "rasterio>=1.4",
-  "pystac-client>=0.8.5"
+  "pystac-client>=0.8.5",
+  "fsspec>=2025.3",
+  "aiohttp>=3.10",
+  "tifffile>=2025.3",
+  "imagecodecs>=2024.12"
 ]
 dev = [
+  "catboost>=1.2.8",
+  "rasterio>=1.4",
+  "fsspec>=2025.3",
+  "tifffile>=2025.3",
+  "imagecodecs>=2024.12",
   "pytest>=8.3",
   "ruff>=0.6"
 ]
 
 [project.scripts]
 lithiumscope = "lithiumscope.cli.menu:main"
-lithiumscope-inspect = "lithiumscope.tools.pipeline_inspect:main"
+lithiumscope-inspect = "lithiumscope.tools.inspection.pipeline_inspect:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

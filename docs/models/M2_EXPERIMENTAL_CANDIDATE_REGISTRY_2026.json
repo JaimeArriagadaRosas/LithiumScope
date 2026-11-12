@@ -1,0 +1,77 @@
+{
+  "schema_version": 2,
+  "updated": "2026-11-12",
+  "scope": "Model 2 local experimental candidate registry; no standalone release",
+  "prior_release": {
+    "id": "training_20260920_195933_m0300",
+    "status": "promoted",
+    "preserved": true
+  },
+  "restored_pending_candidates": [
+    {
+      "id": "training_20261105_223618_m0300",
+      "status": "pending",
+      "binary_preserved": true
+    },
+    {
+      "id": "training_20261106_135029_m0300",
+      "status": "pending",
+      "binary_preserved": true
+    },
+    {
+      "id": "training_20261111_170832_m0300",
+      "status": "pending",
+      "binary_preserved": true,
+      "source_rows": 783
+    }
+  ],
+  "archived_reduced_experiment": {
+    "id": "training_20261112_112450_m0300",
+    "status": "experimental_awaiting_review",
+    "preserved": true,
+    "not_full_competition": true
+  },
+  "restored_competition": {
+    "menu": "Entrenamiento > 2. Modelo 2 — Competencia de prospectividad espacial",
+    "algorithms": [
+      "random_forest",
+      "extra_trees",
+      "hist_gradient_boosting",
+      "xgboost",
+      "catboost",
+      "svm_rbf"
+    ],
+    "expanded_source_rows": 783,
+    "quality_eligible_final_fit": 767,
+    "full_oof_test_rows": 783,
+    "optimization": "Optuna per algorithm",
+    "candidate_activation": false,
+    "individual_release": false,
+    "manually_triggered": true
+  },
+  "notes": "Prior candidates preserved. Final scientific closure is experimental; previous-release contrast has better descriptive AUC/AP, worse Brier and CI crossing zero for AUC/AP. No standalone release.",
+  "latest_experimental_closure": {
+    "run_id": "training_20261112_123451_m0300",
+    "date": "2026-11-12",
+    "status": "completed_experimental_candidate_pending",
+    "winner": "random_forest",
+    "six_algorithms_completed": 6,
+    "total_evaluated": 783,
+    "final_fit_eligible": 767,
+    "source_provisional_georoc": 77,
+    "roc_auc_fold_mean": 0.624513683390461,
+    "average_precision_fold_mean": 0.37400890293915806,
+    "balanced_accuracy_fold_mean": 0.5784304037648108,
+    "auc_global_oof": 0.6538112680969823,
+    "ap_global_oof": 0.38420906568205226,
+    "brier_global_oof": 0.2089270197983918,
+    "three_site_top1_accuracy": 0.4565916398713826,
+    "evidence": "docs/models/M2_CIERRE_EXPERIMENTAL_20261112_RF.md",
+    "three_reports_complete": true,
+    "independent_external_validation": false,
+    "metric_improvement_mixed": true,
+    "model_path": "models/model_2/trained/training_20261112_123451_m0300/model.joblib",
+    "activated": false,
+    "released": false
+  }
+}

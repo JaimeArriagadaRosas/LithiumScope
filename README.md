@@ -27,8 +27,8 @@ LithiumScope **no descarga ni reutiliza notebooks**. Cada etapa del procedimient
 
 ### Documentación técnica de datos
 
-- [Variables de entrada y salida](docs/INPUT_OUTPUT_VARIABLES.md)
-- [Datasets y features](docs/DATASETS_AND_FEATURES.md)
+- [Variables de entrada y salida](docs/data/INPUT_OUTPUT_VARIABLES.md)
+- [Datasets y features](docs/data/DATASETS_AND_FEATURES.md)
 
 ---
 
@@ -683,7 +683,7 @@ En ejecuciones posteriores, preboot reutiliza el manifiesto y los parches existe
 
 ## 16. Estructura SOLID
 
-La descripción completa está en [docs/SOLID.md](docs/SOLID.md).
+La descripción completa está en [docs/architecture/SOLID.md](docs/architecture/SOLID.md).
 
 Resumen:
 
@@ -812,7 +812,7 @@ data/processed/model_1/inspection/
 ```
 
 El procedimiento aprobado y el contrato de adquisición se documentan en
-[`docs/LAB_PIPELINE_PROCEDURE.md`](docs/LAB_PIPELINE_PROCEDURE.md).
+[`docs/scientific/lab/LAB_PIPELINE_PROCEDURE.md`](docs/scientific/lab/LAB_PIPELINE_PROCEDURE.md).
 
 ---
 
@@ -996,7 +996,7 @@ models/<modelo>/trained/<run_id>/
 
 Los loaders mantienen compatibilidad con artefactos antiguos.
 
-La documentación detallada está en [docs/REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md).
+La documentación detallada está en [docs/operations/REPRODUCIBILITY.md](docs/operations/REPRODUCIBILITY.md).
 
 ### Aplicabilidad de una predicción
 
@@ -1033,7 +1033,7 @@ tag GitHub
 
 Desde la opción **3. Métricas y resultados** puede evaluarse el candidato local. Esa acción solo genera un manifest; no modifica GitHub.
 
-La estrategia completa está en [docs/VERSIONING.md](docs/VERSIONING.md).
+La estrategia completa está en [docs/models/VERSIONING.md](docs/models/VERSIONING.md).
 
 ---
 
@@ -1080,7 +1080,7 @@ TabNet utiliza una validación interna tomada exclusivamente del conjunto de ent
 
 El modelo final ganador puede reajustarse con todos los datos usando el número de épocas seleccionado durante la validación interna.
 
-La estrategia de versionado asociada se documenta en [docs/VERSIONING.md](docs/VERSIONING.md).
+La estrategia de versionado asociada se documenta en [docs/models/VERSIONING.md](docs/models/VERSIONING.md).
 
 
 ### Predicción integrada
@@ -1103,7 +1103,7 @@ correlaciones, concordancias, diagnósticos, Excel, PDF, manifest e
 interpretación reproducible. El PDF se abre automáticamente en el navegador
 predeterminado del sistema cuando la ejecución finaliza.
 
-Consulte `docs/PREDICTION_WORKFLOWS.md` para el contrato científico y los
+Consulte `docs/models/PREDICTION_WORKFLOWS.md` para el contrato científico y los
 artefactos generados.
 
 

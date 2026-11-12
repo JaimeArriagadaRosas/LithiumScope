@@ -4,9 +4,10 @@ from lithiumscope.cli.display import device_summary
 from lithiumscope.cli.prompts import choose
 from lithiumscope.core.device import detect_device
 from lithiumscope.core.logger import run_log
+from lithiumscope.core.training_logs import training_session, register_training_run
 from lithiumscope.datasets.provisioner import (
     require_model_1_dataset,
-    require_model_2_dataset,
+    require_model_2_expanded_manifest,
 )
 from lithiumscope.runtime.preboot import (
     require_full_training_environment,
@@ -56,7 +57,7 @@ def _print_outcome(outcome, model_name: str) -> None:
     )
 
 
-def run() -> None:
+def _run_impl() -> None:
     from lithiumscope.model_1.training.competition import (
         run_model_1_competition,
     )
@@ -77,16 +78,19 @@ def run() -> None:
         {"0", "1", "2", "3"},
     )
     if choice == "0":
-        return
+        return False
 
     require_full_training_environment()
     device = detect_device(prefer_gpu=True)
     device_summary(device)
 
-    print(
-        "\nFuente de entrenamiento: Mamani09 + GEOROC. "
-        "GEOROC se armoniza y deduplica antes de entrenar."
-    )
+    if choice in {"1", "3"}:
+        print("\nModelo 1: candidato B conservado; sin cambios de datos.")
+    if choice in {"2", "3"}:
+        print(
+            "\nModelo 2: ampliación GEOROC/Sentinel-2 filtrada y reanudable; "
+            "706 muestras anteriores preservadas."
+        )
 
     if choice in {"1", "3"}:
         model_1_dataset = require_model_1_dataset(
@@ -105,6 +109,7 @@ def run() -> None:
                 model_1_dataset,
                 device,
             )
+        register_training_run("model_1", outcome.run_dir)
         print(
             f"Log detallado Modelo 1: {training_log}"
         )
@@ -114,13 +119,10 @@ def run() -> None:
         )
 
     if choice in {"2", "3"}:
-        model_2_manifest = require_model_2_dataset(
-            include_georoc=True
-        )
+        model_2_manifest = require_model_2_expanded_manifest()
         print(
-            "\nOrden Modelo 2: "
-            "RF → Extra Trees → HistGradientBoosting → "
-            "XGBoost → CatBoost → SVM-RBF"
+            "\nModelo 2: RF, Extra Trees, HGB, "
+            "XGBoost, CatBoost y SVM-RBF."
         )
         with run_log(
             "training",
@@ -130,7 +132,15 @@ def run() -> None:
                 model_2_manifest,
                 device,
             )
+        register_training_run("model_2", outcome.run_dir)
         _print_outcome(
             outcome,
             "Modelo 2",
         )
+
+
+
+def run() -> None:
+    # Capture preparation, both model runs, and failures in a single session.
+    with training_session("interactive"):
+        return _run_impl()

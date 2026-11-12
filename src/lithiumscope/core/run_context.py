@@ -40,6 +40,11 @@ class RunContext:
         training_signature: str | None = None,
         resume: bool = True,
     ) -> "RunContext":
+        from lithiumscope.core.training_logs import (
+            active_training_dir,
+            register_training_run,
+        )
+        parent_log = active_training_dir()
         existing = (
             find_compatible_run(model_group, training_signature)
             if resume and training_signature
@@ -47,6 +52,9 @@ class RunContext:
         )
         if existing is not None:
             tracker = ExperimentTracker.load(existing)
+            if parent_log:
+                tracker.attach_summary(training_session_log=str(parent_log))
+                register_training_run(model_group, existing)
             return cls(
                 model_group=model_group,
                 run_id=existing.name,
@@ -103,7 +111,10 @@ class RunContext:
             config_hashes=config_hashes,
             training_signature=training_signature,
             display_name=run_id,
+            training_session_log=str(parent_log) if parent_log else None,
         )
+        if parent_log:
+            register_training_run(model_group, root)
         return cls(
             model_group=model_group,
             run_id=run_id,

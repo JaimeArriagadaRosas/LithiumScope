@@ -47,6 +47,24 @@ training:
   partial_manifest_path: data/processed/model_2/training_manifest.partial.csv
   failures_path: data/processed/model_2/training_failures.csv
   feature_cache_path: data/processed/model_2/sentinel_features.csv
+  # Frozen manifest avoids re-provisioning M2 from the expanded M1 dataset.
+  frozen_expected_rows: 706
+  frozen_manifest_sha256: 5c42e8b5fac697d6c1a579ef760ad642d736da14fa4e7d605596b7f4813498e1
+  # Expands ONLY model 2. Legacy 706-row training and M1 B are read-only.
+  expansion:
+    enabled: true
+    source_audit_path: results/scientific_simulations/vnext_20261106/georoc_source_validation/georoc_B_screened_sites.csv
+    state_dir: data/interim/model_2/vnext_georoc
+    patch_dir: data/raw/model_2/vnext_georoc/patches
+    output_manifest_path: data/processed/model_2/vnext_expanded/training_manifest.csv
+    feature_cache_path: data/processed/model_2/vnext_expanded/spectral_features.csv
+    target_new_samples: 80
+    minimum_new_samples: 40
+    max_per_publication: 10
+    max_li_ppm: 100.6
+    max_scene_cloud_percent: 25
+    max_patch_cloud_fraction: 0.25
+    max_consecutive_failures: 18
   image_cache_dir: data/raw/model_2/sentinel2/patches
   sample_id_column: sample_id
   lithium_column: Li_icpms
@@ -58,11 +76,25 @@ validation:
   folds: 5
   inner_folds: 3
   prefer_spatial_groups: true
+  # Preserve all 706 historical test indices/labels while adding new groups.
+  anchor_legacy:
+    enabled: true
+    folds_file: config/model_2_frozen_spatial_folds_706.json
+    folds_sha256: de48ea656c26b9e44a0ebab46c7a1a507ef16eee6ec70e5784329144ccc2a2bd
+
+quality_training:
+  enabled: true
+  minimum_joint_valid_fraction: 0.95
+  inventory_path: results/scientific_simulations/sentinel_methodology_20261112/inventory/local_patch_inventory_783.csv
+  policy: train_only_preserve_all_outer_test
 
 optimization:
   enabled: true
-  n_trials: 8
+  n_trials: 12
   per_algorithm_trials:
+    random_forest: 12
+    extra_trees: 10
+    catboost: 10
     hist_gradient_boosting: 10
     svm_rbf: 10
   pruning:

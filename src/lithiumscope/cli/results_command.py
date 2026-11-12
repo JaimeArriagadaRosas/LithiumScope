@@ -62,6 +62,9 @@ def run() -> None:
         {str(i) for i in range(11)},
     )
 
+    if choice == "0":
+        return False
+
     if choice == "1":
         _preview("model_1")
     elif choice == "2":

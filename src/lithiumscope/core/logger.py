@@ -283,6 +283,9 @@ def run_log(category: str, name: str) -> Iterator[Path]:
     logger = configure_logging()
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     directory = _log_root() / category
+    if category == "training":
+        from lithiumscope.core.training_logs import active_training_dir
+        directory = active_training_dir() or directory
     directory.mkdir(parents=True, exist_ok=True)
     path = directory / f"{name}_{timestamp}.log"
     handler = logging.FileHandler(path, encoding="utf-8")

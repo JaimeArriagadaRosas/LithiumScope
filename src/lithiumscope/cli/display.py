@@ -1,5 +1,18 @@
 from __future__ import annotations
 
+import os
+import sys
+
+
+def clear_screen() -> None:
+    """Clear interactive terminal screens without erasing log files or redirected output."""
+    if not sys.stdout.isatty():
+        return
+    if os.name == "nt":
+        os.system("cls")
+    elif os.environ.get("TERM") not in (None, "", "dumb"):
+        os.system("clear")
+
 from lithiumscope.core.device import DeviceInfo
 
 

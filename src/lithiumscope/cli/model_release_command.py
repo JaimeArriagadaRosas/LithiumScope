@@ -80,7 +80,7 @@ def run() -> None:
         allowed,
     )
     if choice == "0":
-        return
+        return False
 
     release = releases[
         int(choice) - 1
