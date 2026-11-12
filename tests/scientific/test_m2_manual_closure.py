@@ -80,9 +80,10 @@ def test_prior_release_params_reuse_exact_estimator_without_optimizing():
     assert closure.LIFECYCLE=="experimental_not_for_individual_release"
 
 
-def test_model2_menu_option_2_calls_corrected_only(monkeypatch):
+def test_model2_menu_option_2_restores_six_algorithm_competition(monkeypatch):
     from lithiumscope.cli import train_command as menu
     from lithiumscope.datasets import provisioner
+    from lithiumscope.model_2.training import competition
     called=[]
     monkeypatch.setattr(menu,"choose",lambda *a,**k:"2")
     monkeypatch.setattr(menu,"require_full_training_environment",
@@ -90,18 +91,20 @@ def test_model2_menu_option_2_calls_corrected_only(monkeypatch):
     monkeypatch.setattr(menu,"detect_device",lambda **kw:types.SimpleNamespace(
         accelerator="cpu",name="CPU"))
     monkeypatch.setattr(menu,"device_summary",lambda device:None)
-    monkeypatch.setattr(provisioner,"require_model_2_expanded_manifest",
-                        lambda:(_ for _ in ()).throw(
-                            AssertionError("GEOROC provisioning should not run")))
+    monkeypatch.setattr(menu,"require_model_2_expanded_manifest",
+                        lambda:(called.append("expanded_783") or Path("783.csv")))
     @contextmanager
     def fake_log(*args,**kwargs):
         yield "mock log"
     monkeypatch.setattr(menu,"run_log",fake_log)
-    monkeypatch.setattr(closure,"train",lambda:(
-        called.append("corrected") or {
-            "run_dir":"test","model_path":"inactive.joblib"}))
+    monkeypatch.setattr(menu,"register_training_run",lambda *a:None)
+    monkeypatch.setattr(competition,"run_model_2_competition",
+        lambda manifest,device:(called.append("six_algorithms")
+                               or types.SimpleNamespace(
+                                   run_dir=Path("results"),winner="catboost",
+                                   ranking=pd.DataFrame(),failed=[])))
     menu._run_impl()
-    assert called==["environment","corrected"]
+    assert called==["environment","expanded_783","six_algorithms"]
 
 
 def test_model2_menu_option_0_leaves_everything_untouched(monkeypatch):

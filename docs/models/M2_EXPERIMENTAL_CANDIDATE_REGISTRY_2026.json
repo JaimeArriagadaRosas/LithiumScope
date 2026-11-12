@@ -1,39 +1,53 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "updated": "2026-11-12",
-  "scope": "local experimental model lifecycle, no standalone model 2 release",
-  "prior_joint_release_reference": {
+  "scope": "Model 2 local experimental candidate registry; no standalone release",
+  "prior_release": {
     "id": "training_20260920_195933_m0300",
-    "role": "active previous release M2; keep unchanged"
+    "status": "promoted",
+    "preserved": true
   },
-  "archived_discarded_experiments": [
+  "restored_pending_candidates": [
     {
       "id": "training_20261105_223618_m0300",
-      "status": "discarded_experimental",
-      "record_kept": true
+      "status": "pending",
+      "binary_preserved": true
     },
     {
       "id": "training_20261106_135029_m0300",
-      "status": "discarded_experimental",
-      "record_kept": true
+      "status": "pending",
+      "binary_preserved": true
     },
     {
       "id": "training_20261111_170832_m0300",
-      "status": "discarded_experimental",
-      "record_kept": true,
-      "notes": "783 source samples including 77 provisional GEOROC; not for release"
+      "status": "pending",
+      "binary_preserved": true,
+      "source_rows": 783
     }
   ],
-  "planned_manual_experiment": {
-    "id": "generated only by next manual Menu > Training > Model 2 execution",
-    "status": "prepared_not_trained",
-    "algorithm": "CatBoost",
-    "historical_training_rows": 690,
-    "original_historical_test_rows": 706,
-    "provisional_georoc_in_fit": 0,
-    "standalone_release_allowed": false,
-    "automatic_activation": false,
-    "future_release_condition": "explicit later joint Model 1 and corrected Model 2 decision"
+  "archived_reduced_experiment": {
+    "id": "training_20261112_112450_m0300",
+    "status": "experimental_awaiting_review",
+    "preserved": true,
+    "not_full_competition": true
   },
-  "notes": "Status files on this workstation were updated outside Git to block accidental promotion; this registry preserves the intended lifecycle within tracked project documentation."
+  "restored_competition": {
+    "menu": "Entrenamiento > 2. Modelo 2 — Competencia de prospectividad espacial",
+    "algorithms": [
+      "random_forest",
+      "extra_trees",
+      "hist_gradient_boosting",
+      "xgboost",
+      "catboost",
+      "svm_rbf"
+    ],
+    "expanded_source_rows": 783,
+    "quality_eligible_final_fit": 767,
+    "full_oof_test_rows": 783,
+    "optimization": "Optuna per algorithm",
+    "candidate_activation": false,
+    "individual_release": false,
+    "manually_triggered": true
+  },
+  "notes": "Previous discarded_experimental status was reverted for the three preexisting M2 pending candidates; future full competition generates new candidate while keeping the active release intact."
 }

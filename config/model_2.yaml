@@ -82,6 +82,12 @@ validation:
     folds_file: config/model_2_frozen_spatial_folds_706.json
     folds_sha256: de48ea656c26b9e44a0ebab46c7a1a507ef16eee6ec70e5784329144ccc2a2bd
 
+quality_training:
+  enabled: true
+  minimum_joint_valid_fraction: 0.95
+  inventory_path: results/scientific_simulations/sentinel_methodology_20261112/inventory/local_patch_inventory_783.csv
+  policy: train_only_preserve_all_outer_test
+
 optimization:
   enabled: true
   n_trials: 12

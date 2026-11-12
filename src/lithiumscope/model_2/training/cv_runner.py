@@ -176,7 +176,12 @@ def run_classification_cv(
     lithium_values=None,
     label_quantile: float = 0.75,
     fixed_threshold_ppm: float | None = None,
+    quality_training_mask: np.ndarray | None = None,
 ) -> ClassificationCVResult:
+    if quality_training_mask is not None:
+        quality_training_mask = np.asarray(quality_training_mask, dtype=bool)
+        if quality_training_mask.shape != (len(x),) or not quality_training_mask.any():
+            raise ValueError("Train-only quality mask must align with all observations")
     if scientific_folds is not None:
         if lithium_values is None or groups is None:
             raise ValueError("Scientific CV requires Li values and spatial groups.")
@@ -216,6 +221,9 @@ def run_classification_cv(
         )
     )
     for fold, (train_idx, test_idx) in enumerate(split_iter, start=1):
+        train_idx = np.asarray(train_idx, dtype=int)
+        test_idx = np.asarray(test_idx, dtype=int)
+        original_train_count = len(train_idx)
         scientific_fold = (
             scientific_folds[fold - 1] if scientific_folds is not None else None
         )
@@ -225,6 +233,15 @@ def run_classification_cv(
                 test_idx,
                 split_groups,
             )
+        if quality_training_mask is not None:
+            # Never remove any test observation. This affects all algorithms,
+            # including Optuna inner folds and calibration.
+            train_idx = train_idx[quality_training_mask[train_idx]]
+            if len(train_idx) < inner_folds or not len(np.unique(
+                np.asarray(lithium_values, dtype=float)[train_idx]
+                if scientific_fold is not None else y.iloc[train_idx]
+            )) > 1:
+                raise ValueError("Insufficient two-class QA eligible TRAIN examples")
 
         cached = (
             checkpoint.load_fold(fold, test_idx)
@@ -265,7 +282,10 @@ def run_classification_cv(
         try:
             x_train = x.iloc[train_idx]
             y_train = (
-                pd.Series(scientific_fold.y_train)
+                pd.Series(
+                    (np.asarray(lithium_values, dtype=float)[train_idx]
+                     >= scientific_fold.label_threshold_ppm).astype(int)
+                )
                 if scientific_fold is not None else y.iloc[train_idx]
             )
             x_test = x.iloc[test_idx]
@@ -395,6 +415,16 @@ def run_classification_cv(
             raise
 
     assert_oof_complete(probabilities, len(y))
+    final_indices = (
+        np.flatnonzero(quality_training_mask)
+        if quality_training_mask is not None
+        else np.arange(len(y), dtype=int)
+    )
+    final_x = x.iloc[final_indices]
+    final_y = y.iloc[final_indices]
+    final_groups = (
+        groups.iloc[final_indices] if groups is not None else None
+    )
     overall = classification_metrics(
         y.to_numpy(),
         probabilities,
@@ -421,14 +451,14 @@ def run_classification_cv(
             ).start()
             try:
                 if scientific_folds is not None:
-                    if groups is None or groups.nunique() < inner_folds:
+                    if final_groups is None or final_groups.nunique() < inner_folds:
                         raise ValueError("Insufficient groups for final parameter search.")
                     final_splits = list(GroupKFold(n_splits=inner_folds).split(
-                        x, groups=groups,
+                        final_x, groups=final_groups,
                     ))
                 else:
                     final_splits = _materialize_splits(
-                        x, y, groups, inner_folds, seed + 5000,
+                        final_x, final_y, final_groups, inner_folds, seed + 5000,
                     )
 
                 def final_factory(candidate: dict):
@@ -449,8 +479,8 @@ def run_classification_cv(
                 final_params = optimize_classifier_with_optuna(
                     final_factory,
                     spec.module.optuna_space,
-                    x,
-                    y,
+                    final_x,
+                    final_y,
                     final_splits,
                     n_trials=trials,
                     random_seed=seed + 5000,
@@ -469,7 +499,7 @@ def run_classification_cv(
                     ),
                     warmup_folds=int(pruning.get("warmup_folds", 2)),
                     lithium_values=(
-                        np.asarray(lithium_values, dtype=float)
+                        np.asarray(lithium_values, dtype=float)[final_indices]
                         if scientific_folds is not None else None
                     ),
                     label_quantile=label_quantile,

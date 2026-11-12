@@ -32,6 +32,8 @@ from lithiumscope.model_2.steps.step_05_spectral_features import (
 )
 from lithiumscope.model_2.schema import feature_range_profile
 from lithiumscope.model_2.training.cv_runner import run_classification_cv
+from lithiumscope.model_2.training.quality import training_quality_mask
+from lithiumscope.model_2.training.competition_ranking import save_three_zone_competition
 from lithiumscope.model_2.training.scientific_validation import (
     make_scientific_folds, make_anchored_scientific_folds,
     scientific_labels, evaluate_scientific_baseline,
@@ -180,6 +182,28 @@ def run_model_2_competition(
             if column in frame.columns
         ]
     )
+    quality_cfg=cfg.get("quality_training", {})
+    quality_mask=None
+    quality_audit={"enabled": False, "manifest_rows":len(frame),
+                   "training_eligible":len(frame),"training_excluded":0}
+    if bool(quality_cfg.get("enabled",False)):
+        inventory=PROJECT_ROOT / str(quality_cfg["inventory_path"])
+        quality_mask,quality_audit=training_quality_mask(
+            manifest_path,inventory_path=inventory,
+            minimum_joint_valid=float(
+                quality_cfg.get("minimum_joint_valid_fraction",0.95)),
+        )
+        if len(quality_mask)!=len(frame):
+            raise ValueError("Model 2 QA mask must align with all feature rows")
+        (context.manifests/"train_only_quality_policy.json").write_text(
+            json.dumps(quality_audit,indent=2,ensure_ascii=False),
+            encoding="utf-8")
+        print(
+            "Calidad científica SOLO TRAIN: "
+            f"{quality_audit['training_eligible']} / {len(frame)} "
+            "observaciones elegibles, sin eliminar ninguna observación TEST.",
+            flush=True
+        )
     anchor = cfg["validation"].get("anchor_legacy", {})
     legacy_manifest = PROJECT_ROOT / str(cfg["training"]["manifest_path"])
     extended_manifest = manifest_path.resolve() != legacy_manifest.resolve()
@@ -321,6 +345,7 @@ def run_model_2_competition(
                 lithium_values=frame[lithium_column].to_numpy(dtype=float),
                 label_quantile=q,
                 fixed_threshold_ppm=fixed_threshold,
+                quality_training_mask=quality_mask,
             )
             results[algorithm] = result
             rows.append(_ranking_row(result))
@@ -412,6 +437,28 @@ def run_model_2_competition(
         ignore_index=True,
         sort=False,
     )
+    if results:
+        try:
+            triplets=save_three_zone_competition(
+                manifest_path,
+                {name:record.probabilities for name,record in results.items()},
+                fold_ids.to_numpy(),y.to_numpy(),
+                context.tables,
+            )
+            ranking["three_zone_top1_accuracy"] = ranking["algorithm"].map({
+                name:float(value["top1_accuracy"])
+                for name,value in triplets["arms"].items()
+            })
+            print("Comparación de tres zonas por algoritmo:")
+            for name,value in triplets["arms"].items():
+                print(f"  {name}: {value['top1_accuracy']:.2%} top-1")
+        except Exception as exc:
+            # Reporting should not discard several hours of fitted models.
+            logger.exception("Three-zone exploratory reporting failed")
+            (context.tables/"three_zone_reporting_error.txt").write_text(
+                f"{type(exc).__name__}: {exc}\n",encoding="utf-8")
+            print("Aviso: informe de tres zonas no disponible; "
+                  f"revisar evidencia: {type(exc).__name__}: {exc}")
     ranking.to_csv(
         context.tables / "competition_ranking.csv",
         index=False,
@@ -486,19 +533,28 @@ def run_model_2_competition(
         index=False,
     )
 
+    final_fit_idx=(
+        np.flatnonzero(quality_mask)
+        if quality_mask is not None else np.arange(len(x),dtype=int)
+    )
+    x_final=x.iloc[final_fit_idx]
+    y_final=y_full.iloc[final_fit_idx]
+    groups_final=groups.iloc[final_fit_idx] if groups is not None else None
+    if y_final.nunique()!=2:
+        raise ValueError("M2 quality TRAIN has only one class")
     final_calibration_cv = None
     if winner in {"svm_rbf", "random_forest_spatial_calibrated"}:
         from sklearn.model_selection import GroupKFold
 
-        if groups is None or groups.nunique() < inner_folds:
+        if groups_final is None or groups_final.nunique() < inner_folds:
             raise ValueError("No spatial groups for final calibration.")
         final_calibration_cv = list(GroupKFold(n_splits=inner_folds).split(
-            x, groups=groups,
+            x_final, groups=groups_final,
         ))
         for train_idx, valid_idx in final_calibration_cv:
             if (
-                y_full.iloc[train_idx].nunique() < 2
-                or y_full.iloc[valid_idx].nunique() < 2
+                y_final.iloc[train_idx].nunique() < 2
+                or y_final.iloc[valid_idx].nunique() < 2
             ):
                 raise ValueError(
                     "Final calibration requires both classes per spatial fold."
@@ -512,8 +568,8 @@ def run_model_2_competition(
         calibrated=True,
         calibration_cv=final_calibration_cv,
     )
-    final_estimator.fit(x, y_full)
-    profile = feature_range_profile(x)
+    final_estimator.fit(x_final, y_final)
+    profile = feature_range_profile(x_final)
 
     baseline_row = baseline[0]
     roc_gain = float(
@@ -556,6 +612,11 @@ def run_model_2_competition(
         "algorithm": winner,
         "label": get_label(winner),
         "samples": len(frame),
+        "training_samples_after_quality": len(x_final),
+        "train_only_quality": quality_audit,
+        "experimental_only": True,
+        "eligible_for_individual_release": False,
+        "provisional_georoc_sample_count": max(0,len(frame)-706),
         "threshold_ppm": threshold,
         "target_quantile": (
             None if fixed_threshold is not None else q
@@ -614,6 +675,12 @@ def run_model_2_competition(
         "operating_threshold_objective": threshold_selection.objective,
         "operating_threshold_metrics": threshold_selection.metrics,
         "applicability_profile": profile,
+        "experimental_only": True,
+        "quality_min_joint_valid": (
+            float(quality_cfg.get("minimum_joint_valid_fraction",0.95))
+            if quality_mask is not None else None
+        ),
+        "spectral_representation": "legacy_DN_median_126",
     }
     model_path, metadata_path = save_model_bundle(
         "model_2",
