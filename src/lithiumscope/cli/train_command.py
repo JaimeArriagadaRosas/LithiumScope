@@ -19,11 +19,11 @@ def _print_outcome(outcome, model_name: str) -> None:
     print(f"Resultados: {outcome.run_dir}")
     if outcome.winner:
         print(
-            f"Ganador candidato de esta ejecuci├│n: {outcome.winner}"
+            f"Ganador candidato de esta ejecución: {outcome.winner}"
         )
         print(
             "El modelo activo no se reemplaza durante el entrenamiento. "
-            "Eval├║e el candidato desde M├®tricas y resultados."
+            "Evalúe el candidato desde Métricas y resultados."
         )
     if outcome.failed:
         print(
@@ -66,9 +66,9 @@ def _run_impl() -> None:
     )
 
     print("\nENTRENAMIENTO")
-    print("1. Modelo 1 ÔÇö Competencia de predicci├│n de Li")
+    print("1. Modelo 1 — Competencia de predicción de Li")
     print(
-        "2. Modelo 2 ÔÇö "
+        "2. Modelo 2 — "
         "Competencia de prospectividad espacial"
     )
     print("3. Entrenar ambos")
@@ -88,7 +88,7 @@ def _run_impl() -> None:
         print("\nModelo 1: candidato B conservado; sin cambios de datos.")
     if choice in {"2", "3"}:
         print(
-            "\nModelo 2: ampliacion GEOROC/Sentinel-2 filtrada y reanudable; "
+            "\nModelo 2: ampliación GEOROC/Sentinel-2 filtrada y reanudable; "
             "706 muestras anteriores preservadas."
         )
 
@@ -98,8 +98,8 @@ def _run_impl() -> None:
         )
         print(
             "\nOrden Modelo 1: "
-            "RF ÔåÆ XGBoost ÔåÆ SVM ÔåÆ TabNet ÔåÆ "
-            "HistGradientBoosting ÔåÆ CatBoost"
+            "RF → XGBoost → SVM → TabNet → "
+            "HistGradientBoosting → CatBoost"
         )
         with run_log(
             "training",
