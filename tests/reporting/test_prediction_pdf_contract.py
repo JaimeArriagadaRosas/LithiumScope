@@ -18,10 +18,20 @@ def test_integrated_prediction_uses_pdf_not_html():
         / "report.py"
     ).read_text(encoding="utf-8")
 
-    assert 'session.root / "report.pdf"' in integrated
-    assert '"report_pdf": str(report_path)' in integrated
+    output_writer = (
+        root
+        / "src"
+        / "lithiumscope"
+        / "prediction"
+        / "integrated_write_outputs.py"
+    ).read_text(encoding="utf-8")
+
+    assert "integrated_write_outputs import _write_outputs" in integrated
+    assert 'session.root / "report.pdf"' in output_writer
+    assert '"report_pdf": str(report_path)' in output_writer
     assert "def write_pdf_report" in report
     assert "write_html_report" not in integrated
+    assert "write_html_report" not in output_writer
 
 
 def test_report_facade_does_not_import_reportlab_eagerly():

@@ -34,7 +34,7 @@ def demonstration_imagery_cache() -> Path:
     return path if path.is_absolute() else PROJECT_ROOT / path
 
 
-def audit_demo_overlap(cases: pd.DataFrame) -> dict:
+def _audit_demo_overlap_historical(cases: pd.DataFrame) -> dict:
     training_path = DATA_DIR / "raw" / "model_1" / "Mamani09_Table_DR2.csv"
     base = {
         "training_dataset_path": str(training_path),
@@ -103,4 +103,47 @@ def audit_demo_overlap(cases: pd.DataFrame) -> dict:
         "status": status,
         "sample_id_matches": sample_matches,
         "coordinate_matches": coordinate_matches,
+    }
+
+
+
+def audit_demo_overlap(cases: pd.DataFrame) -> dict:
+    """Check historical M1 AND expanded M2 before claiming external evidence.
+
+    The original PDF caller/interface is unchanged; the status becomes honest.
+    Audit failures preserve uncertainty rather than certifying independence.
+    """
+    from lithiumscope.model_2.evaluation.independence import audit_external_overlap
+
+    previous = _audit_demo_overlap_historical(cases)
+    cfg = load_config("model_2")["training"]["expansion"]
+    manifest = PROJECT_ROOT / str(cfg["output_manifest_path"])
+    if not manifest.is_file():
+        return {
+            **previous,
+            "status": "independencia no verificada: faltan fuentes M2 expandidas",
+            "model_2_independence": {"external_independence_verified": False},
+        }
+    try:
+        expanded = pd.read_csv(manifest)
+        audit = audit_external_overlap(cases, expanded)
+    except (OSError, ValueError, KeyError) as error:
+        return {
+            **previous,
+            "status": "independencia no verificada: auditor?a M2 incompleta",
+            "model_2_independence": {
+                "external_independence_verified": False,
+                "error": str(error),
+            },
+        }
+    return {
+        **previous,
+        "model_2_independence": audit,
+        "status": (
+            "posibles duplicados del entrenamiento Modelo 2 detectados; "
+            "esta demostraci?n NO es una prueba externa independiente"
+            if audit["possible_duplicate_count"]
+            else "sin duplicados geogr?ficos cercanos M2 detectados; "
+            "independencia externa a?n no certificada"
+        ),
     }

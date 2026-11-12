@@ -1,0 +1,12 @@
+{
+  "src/lithiumscope/model_2/training/competition.py": 760,
+  "src/lithiumscope/model_2/training/cv_runner.py": 541,
+  "src/lithiumscope/model_1/training/competition.py": 513,
+  "src/lithiumscope/model_1/training/cv_runner.py": 433,
+  "tests/datasets/test_georoc_acquisition.py": 727,
+  "tests/scientific/test_m2_satellite_quality_radiometry.py": 370,
+  "src/lithiumscope/model_2/data/builder.py": 464,
+  "src/lithiumscope/model_2/data/expansion_vnext.py": 536,
+  "src/lithiumscope/model_2/data/sentinel2.py": 368,
+  "src/lithiumscope/results/release.py": 305
+}
