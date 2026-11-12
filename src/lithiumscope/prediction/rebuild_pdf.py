@@ -99,7 +99,6 @@ def rebuild_pdf(run: str | Path) -> Path:
 
     artifacts = manifest.setdefault("artifacts", {})
     artifacts["report_pdf"] = str(destination)
-    manifest["pdf_rendered"] = True
     manifest_path.write_text(
         json.dumps(manifest, indent=2, ensure_ascii=False, default=str),
         encoding="utf-8",

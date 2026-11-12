@@ -14,43 +14,13 @@ def _print_integrated_result(result) -> None:
     print("\n" + result.interpretation)
     print("\nARTEFACTOS")
     print(f"  Ejecución: {result.session.root}")
+    print(f"  Reporte:   {result.report_path}")
     print(f"  Excel:     {result.workbook_path}")
     print(f"  Manifest:  {result.manifest_path}")
-    if result.session.mode == "demonstration":
-        print(f"  Imágenes:  {result.session.model_2 / 'case_imagery_status.csv'}")
-    if result.report_path is None:
-        print("  PDF:       no generado; las predicciones quedaron guardadas")
-        print("  Para renderizar más adelante, desde la raíz del proyecto:")
-        print('    set "PYTHONPATH=%CD%\\src"')
-        print(
-            "    python -m lithiumscope.prediction.rebuild_pdf "
-            f'--run "{result.session.run_id}"'
-        )
+    if open_report_in_default_browser(result.report_path):
+        print("  Apertura:   reporte PDF enviado al navegador predeterminado")
     else:
-        print(f"  Reporte:   {result.report_path}")
-        if open_report_in_default_browser(result.report_path):
-            print("  Apertura: PDF enviado al navegador predeterminado")
-        else:
-            print("  Apertura: PDF guardado; no fue posible abrir el navegador")
-
-    if result.session.mode == "demonstration":
-        for label, frame, columns in (
-            (
-                "MODELO 1 — CONCENTRACIÓN",
-                result.model_1_predictions,
-                ["case_id", "Li_icpms", "Li_icpms_predicted", "applicability_warning"],
-            ),
-            (
-                "MODELO 2 — PROSPECTIVIDAD",
-                result.model_2_predictions,
-                ["case_id", "prospectivity_score", "priority",
-                 "quality_status", "applicability_warning"],
-            ),
-        ):
-            print(f"\n{label}")
-            selected = [column for column in columns if column in frame.columns]
-            print(frame[selected].to_string(index=False) if selected else "Sin casos evaluables")
-        print("\nResultados experimentales: no se activó ningún candidato.")
+        print("  Apertura:   no fue posible abrir el navegador automáticamente")
 
 
 def _run_model_1() -> None:
@@ -118,28 +88,13 @@ def _run_complete() -> None:
 
 
 def _run_demonstration() -> None:
-    from lithiumscope.core.config import load_config
     from lithiumscope.prediction.integrated import run_automatic_demonstration
 
-    versions = load_config("prediction")["demonstration"]["candidate_models"]
-    print("\nDEMOSTRACIÓN INTEGRADA — 10 CASOS")
-    print(f"1. Candidatos nuevos: M1 {versions['model_1']} / M2 {versions['model_2']}")
-    print("   Solo evaluación; NO activa ni publica modelos.")
-    print("2. Modelos activos del release anterior")
-    print("0. Volver")
-    mode = choose("Seleccione modelos [0-2]: ", {"0", "1", "2"})
-    if mode == "0":
-        return
-
-    print("\n1. Generar Excel, CSV, evidencias y PDF")
-    print("2. Generar Excel, CSV y evidencias SIN PDF (renderizable después)")
-    render_choice = choose("Seleccione salida [1-2]: ", {"1", "2"})
-
-    result = run_automatic_demonstration(
-        model_1_candidate_run_id=versions["model_1"] if mode == "1" else None,
-        model_2_candidate_run_id=versions["model_2"] if mode == "1" else None,
-        render_pdf=render_choice == "1",
+    print(
+        "\nLithiumScope ejecutará automáticamente el conjunto externo versionado, "
+        "preparará Sentinel-2 y evaluará ambos modelos."
     )
+    result = run_automatic_demonstration()
     _print_integrated_result(result)
 
 

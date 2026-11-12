@@ -14,7 +14,8 @@ from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.core.reproducibility import runtime_fingerprint
 from lithiumscope.model_1.prediction.input_parser import load_prediction_input
 from lithiumscope.model_1.prediction.predictor import predict_model_1_frame
-from lithiumscope.model_2.prediction.predictor import score_model_2_image
+from lithiumscope.model_2.prediction.image_parser import image_to_feature_frame
+from lithiumscope.model_2.schema import out_of_range_fraction
 from lithiumscope.prediction.analysis import (
     concordance_table,
     correlation_table,
@@ -63,7 +64,7 @@ class IntegratedPredictionResult:
     model_1_metrics: dict
     model_2_metrics: dict
     interpretation: str
-    report_path: Path | None
+    report_path: Path
     workbook_path: Path
     manifest_path: Path
 
@@ -81,34 +82,46 @@ def _score_model_2_cases(
     cases: pd.DataFrame,
     bundle: dict,
 ) -> tuple[pd.DataFrame, dict]:
-    """Respect the very same candidate QA gate as single-image inference."""
     records: list[dict] = []
     missing_feature_counts: dict[str, int] = {}
-    quality_abstentions: list[dict] = []
+    expected = list(bundle["features"])
 
     for _, row in cases.iterrows():
         if str(row.get("sentinel_status", "ready")) != "ready":
             continue
         image_path = Path(str(row["image_path"]))
-        payload, evidence = score_model_2_image(image_path, bundle=bundle)
-        if payload.get("prospectivity_score") is None:
-            quality_abstentions.append({
-                "case_id": str(row["case_id"]),
-                "image_path": str(image_path),
-                "quality_status": payload.get("quality_status", "ABSTAIN"),
-                "joint_valid_fraction": payload.get("joint_valid_fraction"),
-                "required_joint_valid_fraction": evidence.get(
-                    "required_joint_valid_fraction"
-                ),
-                "reason": payload.get("warning"),
-            })
-            continue
-        for feature in evidence.get("missing_features", []):
-            missing_feature_counts[feature] = missing_feature_counts.get(feature, 0) + 1
+        frame = image_to_feature_frame(
+            image_path,
+            band_names=bundle.get("band_names", ()),
+            normalize_per_band=bool(bundle.get("normalize_per_band", False)),
+        )
+        missing = [column for column in expected if column not in frame.columns]
+        for column in missing:
+            missing_feature_counts[column] = missing_feature_counts.get(column, 0) + 1
+            frame[column] = 0.0
+
+        score = float(bundle["estimator"].predict_proba(frame[expected])[0, 1])
+        operating_threshold = float(
+            bundle.get("operating_threshold", 0.5)
+        )
+        priority = "alta" if score >= 0.70 else "media" if score >= 0.40 else "baja"
+        applicability = out_of_range_fraction(
+            frame[expected],
+            bundle.get("applicability_profile", {}),
+        )
         record = {
-            **payload,
             "case_id": str(row["case_id"]),
             "Li_icpms": row.get("Li_icpms"),
+            "image": str(image_path),
+            "prospectivity_score": score,
+            "priority": priority,
+            "operating_positive": bool(
+                score >= operating_threshold
+            ),
+            "operating_threshold": operating_threshold,
+            "algorithm": bundle.get("algorithm", "unknown"),
+            "out_of_training_range_fraction": float(applicability),
+            "applicability_warning": "OUT_OF_DOMAIN" if applicability > 0.25 else "OK",
             "sentinel_scene_id": row.get("sentinel_scene_id"),
             "sentinel_cloud_cover": row.get("sentinel_cloud_cover"),
             "sentinel_datetime": row.get("sentinel_datetime"),
@@ -118,16 +131,17 @@ def _score_model_2_cases(
         records.append(record)
 
     diagnostics = {
-        "expected_features": list(bundle["features"]),
+        "expected_features": expected,
         "missing_feature_counts": missing_feature_counts,
         "ready_cases": len(records),
         "requested_cases": len(cases),
         "failed_cases": int(len(cases) - len(records)),
-        "quality_abstentions": quality_abstentions,
-        "quality_abstention_count": len(quality_abstentions),
-        "quality_min_joint_valid": bundle.get("quality_min_joint_valid"),
-        "operating_threshold": float(bundle.get("operating_threshold", 0.5)),
-        "operating_threshold_objective": bundle.get("operating_threshold_objective"),
+        "operating_threshold": float(
+            bundle.get("operating_threshold", 0.5)
+        ),
+        "operating_threshold_objective": bundle.get(
+            "operating_threshold_objective"
+        ),
     }
     return pd.DataFrame(records), diagnostics
 
@@ -230,35 +244,9 @@ def _write_outputs(
     lithium_threshold: float,
     probability_threshold: float,
     model_2_predicted_positive_count: int,
-    render_pdf: bool = True,
-) -> tuple[Path | None, Path, Path]:
+) -> tuple[Path, Path, Path]:
     model_1_predictions.to_csv(session.model_1 / "predictions.csv", index=False)
     model_2_predictions.to_csv(session.model_2 / "predictions.csv", index=False)
-    case_audit = model_2_cases.copy()
-    scored = (
-        set(model_2_predictions["case_id"].astype(str))
-        if "case_id" in model_2_predictions else set()
-    )
-    abstained = {
-        item["case_id"]: item
-        for item in model_2_diagnostics.get("quality_abstentions", [])
-    }
-    case_audit["model_2_scoring_status"] = [
-        "SCORED" if str(row["case_id"]) in scored else
-        abstained[str(row["case_id"])].get("quality_status", "ABSTAINED")
-        if str(row["case_id"]) in abstained else
-        "SENTINEL_" + str(row.get("sentinel_status", "unknown")).upper()
-        for _, row in case_audit.iterrows()
-    ]
-    case_audit["model_2_joint_valid_fraction"] = [
-        abstained.get(str(key), {}).get("joint_valid_fraction")
-        for key in case_audit["case_id"]
-    ]
-    case_audit["model_2_quality_reason"] = [
-        abstained.get(str(key), {}).get("reason")
-        for key in case_audit["case_id"]
-    ]
-    case_audit.to_csv(session.model_2 / "case_imagery_status.csv", index=False)
     paired.to_csv(session.cross_model / "joined_cases.csv", index=False)
     correlations.to_csv(session.cross_model / "correlations.csv", index=False)
     concordance.to_csv(session.cross_model / "concordance.csv", index=False)
@@ -290,8 +278,7 @@ def _write_outputs(
         training_vs_external=training_vs_external,
     )
     runtime = runtime_fingerprint()
-    if render_pdf:
-        report_path = write_pdf_report(
+    report_path = write_pdf_report(
         session.root / "report.pdf",
         title=(
             "LithiumScope - Demostración integrada automática"
@@ -320,15 +307,12 @@ def _write_outputs(
         lithium_threshold_ppm=lithium_threshold,
         model_2_classification_threshold=probability_threshold,
         runtime=runtime,
-        )
-    else:
-        report_path = None
+    )
 
     manifest = {
         "schema_version": 1,
         "run_id": session.run_id,
         "mode": session.mode,
-        "pdf_rendered": bool(render_pdf),
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "models": {
             "model_1": model_1_identity,
@@ -359,8 +343,7 @@ def _write_outputs(
             "concordance": str(session.cross_model / "concordance.csv"),
             "training_vs_external": str(session.root / "training_vs_external.csv"),
             "workbook": str(workbook_path),
-            "report_pdf": str(report_path) if report_path is not None else None,
-            "case_imagery_status": str(session.model_2 / "case_imagery_status.csv"),
+            "report_pdf": str(report_path),
             "interpretation": str(interpretation_path),
             "run_log": str(run_log_path),
             "maps": [str(path) for path in maps],
@@ -383,9 +366,6 @@ def _run_integrated(
     model_2_cases: pd.DataFrame,
     input_info: dict,
     overlap_audit: dict | None = None,
-    model_1_candidate_run_id: str | None = None,
-    model_2_candidate_run_id: str | None = None,
-    render_pdf: bool = True,
 ) -> IntegratedPredictionResult:
     prediction_cfg = load_config("prediction")["interpretation"]
     fallback_probability_threshold = float(
@@ -400,11 +380,20 @@ def _run_integrated(
             session.mode,
         )
 
+        # Demonstration only: use the explicitly pinned new candidates.
+        # All other prediction routes continue to load the published active models.
+        demonstration_candidates = (
+            load_config("prediction")["demonstration"]["candidate_models"]
+            if session.mode == "demonstration"
+            else {}
+        )
         model_1_bundle, _, model_1_identity = load_model_with_identity(
-            "model_1", candidate_run_id=model_1_candidate_run_id
+            "model_1",
+            candidate_run_id=demonstration_candidates.get("model_1"),
         )
         model_2_bundle, _, model_2_identity = load_model_with_identity(
-            "model_2", candidate_run_id=model_2_candidate_run_id
+            "model_2",
+            candidate_run_id=demonstration_candidates.get("model_2"),
         )
         logger.info(
             "Models loaded model_1=%s model_2=%s",
@@ -513,7 +502,6 @@ def _run_integrated(
             model_2_case_count=len(model_2_predictions),
             paired_case_count=len(paired),
             model_2_predicted_positive_count=model_2_predicted_positive_count,
-            render_pdf=render_pdf,
         )
         logger.info(
             "Cross-model analysis completed paired=%d correlations=%d",
@@ -543,7 +531,6 @@ def _run_integrated(
             lithium_threshold=lithium_threshold,
             probability_threshold=probability_threshold,
             model_2_predicted_positive_count=model_2_predicted_positive_count,
-            render_pdf=render_pdf,
         )
         logger.info(
             "Integrated prediction finished run=%s report=%s workbook=%s",
@@ -616,12 +603,7 @@ def run_complete_prediction(
         input_info=input_info,
     )
 
-def run_automatic_demonstration(
-    *,
-    model_1_candidate_run_id: str | None = None,
-    model_2_candidate_run_id: str | None = None,
-    render_pdf: bool = True,
-) -> IntegratedPredictionResult:
+def run_automatic_demonstration() -> IntegratedPredictionResult:
     session = PredictionSession.create("demonstration")
     cases = ensure_case_ids(load_demonstration_cases())
     demo_snapshot = session.inputs / "demonstration_cases.csv"
@@ -654,7 +636,4 @@ def run_automatic_demonstration(
         model_2_cases=imagery,
         input_info=input_info,
         overlap_audit=overlap,
-        model_1_candidate_run_id=model_1_candidate_run_id,
-        model_2_candidate_run_id=model_2_candidate_run_id,
-        render_pdf=render_pdf,
     )

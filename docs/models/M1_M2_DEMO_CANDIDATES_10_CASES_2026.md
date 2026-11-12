@@ -1,58 +1,37 @@
-# Demostración integrada de diez casos — candidatos experimentales
+# LithiumScope — demostración original de diez casos con candidatos nuevos
 
-Fecha: 12 de noviembre de 2026. Implementado **solo en el clon local de main**, pendiente de aprobación del usuario. Ninguna activación, push, tag ni release.
+Fecha: 12/11/2026. Reparación local en main. Sin push, release ni promoción de modelos.
 
-## Modelos disponibles
+## Alcance autorizado
 
-El menú de demostración permite seleccionar una pareja de candidatos **explícita y fijada en config/prediction.yaml**, evitando que una nueva fecha de modificación de un archivo cambie accidentalmente la selección:
+La opción original Realizar predicción → 4. Demostración integrada automática ejecuta directamente los diez casos, prepara Sentinel-2, realiza ambas predicciones, calcula métricas, escribe Excel, CSV, figuras e informe PDF de ReportLab y abre el PDF con el navegador predeterminado. No hay submenús ni opción de omitir el PDF.
 
-- Modelo 1, SVM: `training_20261106_111653_m0300` (candidate_status = pending).
-- Modelo 2, Random Forest: `training_20261112_123451_m0300` (candidate_status = pending).
+**Único cambio de comportamiento en la demostración:** cargar los candidatos fijados en config/prediction.yaml:
 
-Alternativamente, puede seleccionarse la pareja del release anterior. Los modelos activos en `models/active_models.json` no se modifican ni se reemplazan al usar los candidatos.
+- Modelo 1: SVM, training_20261106_111653_m0300.
+- Modelo 2: Random Forest, training_20261112_123451_m0300.
 
-El Modelo 2 utiliza su umbral operativo de aproximadamente 0,4416 y **aplica a cada imagen el control QA95 de píxeles válidos conjuntos**, como hace su predictor individual. Una imagen insuficiente produce abstención motivada; nunca una puntuación artificial. El fichero `model_2/case_imagery_status.csv` registra los diez casos, su estado Sentinel, si se puntuó, si se abstuvo y por qué. Los casos sin imagen o rechazados no se cuentan como predicciones verificadas.
+Las predicciones individuales y la predicción completa siguen utilizando los modelos activos del release anterior. El registro models/active_models.json no se modifica. Los candidatos siguen pending.
 
-## Procedimiento desde CMD
+El menú src/lithiumscope/cli/predict_command.py, rebuild_pdf.py y la canalización de análisis, tablas, reporte y apertura en integrated.py se restauraron desde origin/main. La única diferencia en integrated.py es la selección de modelos según session.mode == demonstration. El módulo de PDF y sus secciones y estilos permanecen intactos.
 
-```cmd
-cd /d "D:\Documentos\MDL\Informatico\Apredizaje\LithiumScope-Scientific-Lab"
-"D:\Librerias\Python312\python.exe" main.py
-```
+## Error corregido
 
-Seleccionar **2. Realizar predicción**, luego **4. Demostración integrada automática**.
+La sesión demonstration_20261112_163353_m0300 falló porque build_overall_interpretation recibió un argumento render_pdf que no existe en su firma. La modificación anterior lo había propagado incorrectamente. Ese argumento y los submenús añadidos se retiraron. La sesión fallida no se eliminó.
 
-En el submenú escoger **1. Candidatos nuevos** y después:
+## Ejecutar desde CMD
 
-- **2. Datos y evidencias sin PDF**: se ejecutan ambos modelos, se guardan predicciones, fuentes, tablas, figuras, métricas y manifiesto de versiones; el PDF no se genera ni abre. Útil para revisar primero los valores.
-- **1. Datos, evidencias y PDF**: mismo análisis, generando y abriendo `report.pdf` al finalizar si el navegador está disponible.
+    cd /d "D:\Documentos\MDL\Informatico\Apredizaje\LithiumScope-Scientific-Lab"
+    "D:\Librerias\Python312\python.exe" main.py
 
-Se utiliza el conjunto de diez casos externos versionado `examples/integrated_demo/cases.csv` (Castro et al. 2021), y se preparan sus imágenes Sentinel-2 mediante el caché configurado en `data/interim/model_2/integrated_demo`. Si la adquisición satelital falla o los datos no están disponibles, no se fabrican predicciones.
+Seleccionar Realizar predicción y luego 4. Demostración integrada automática; el reporte se genera y se abre automáticamente sin preguntas adicionales.
 
-Los artefactos se generan bajo `results/predictions/demonstration_<fecha>_<hora>_<offset>/`, incluyendo:
+## Evidencia de ejecución real
 
-- `model_1/predictions.csv` — Li estimado, concentraciones observadas y advertencias de dominio.
-- `model_2/predictions.csv` — scores espectrales de los casos con imagen válida.
-- `model_2/case_imagery_status.csv` y `model_2/diagnostics.json` — trazabilidad de casos fallidos o abstenciones QA.
-- `cross_model/joined_cases.csv`, `correlations.csv`, `concordance.csv` — comparación entre modelos.
-- `evaluation.xlsx`, `training_vs_external.csv`, `prediction_manifest.json`, `prediction.log`, figuras y mapas.
-- Opcionalmente, `report.pdf`.
+Se ejecutó con ambos candidatos y las diez imágenes Sentinel-2. Sesión: results/predictions/demonstration_20261112_164710_m0300. Código de salida 0, diez predicciones M1, diez M2 y diez emparejadas. El programa confirmó que envió el PDF al navegador predeterminado.
 
-El manifiesto incorpora los ID, algoritmos y hashes SHA-256 de **ambos modelos seleccionados**, además de `pdf_rendered`. Los candidatos se usan solo en la sesión de demostración; las opciones individuales de predicción siguen usando los modelos activos.
+Artefactos: report.pdf, evaluation.xlsx, prediction_manifest.json, model_1/predictions.csv, model_2/predictions.csv, cross_model/joined_cases.csv, figuras, mapas y logs. El manifiesto registra las versiones y SHA-256 de los dos modelos realmente utilizados.
 
-## Renderizar PDF posteriormente sin reentrenar ni volver a descargar
+Métricas exploratorias de los diez casos: Modelo 1 RMSE 3,230 ppm, MAE 2,746 ppm, R² 0,807; Modelo 2 ROC-AUC 0,562, AP 0,611, sin positivos bajo su umbral operativo. No son métricas del entrenamiento ni validación geológica definitiva.
 
-Una vez terminada una demostración **sin PDF**, desde la raíz del repositorio:
-
-```cmd
-set "PYTHONPATH=%CD%\src"
-"D:\Librerias\Python312\python.exe" -X utf8 -m lithiumscope.prediction.rebuild_pdf --run "demonstration_YYYYMMDD_HHMMSS_m0300"
-```
-
-Sustituir el nombre por el ID de la carpeta de resultados. La utilidad reconstruye el PDF a partir de predicciones, tablas, figuras y metadatos guardados. Actualiza el manifiesto de esa ejecución; no vuelve a ejecutar inferencia, no cambia modelos activos y no publica un release.
-
-## Límites
-
-La muestra demostrativa de diez casos es pequeña y su procedencia externa **no demuestra** independencia completa de los datos de entrenamiento sin un contraste adicional. El score del Modelo 2 ordena candidatos de estudio; no es probabilidad de encontrar o poder explotar un depósito. Los PDF futuros son evidencia de una **ejecución reproducible**, no una validación geológica definitiva.
-
-Este cambio habilita la revisión y corrección posterior del informe. El empaquetado final de release conjunto Modelo 1 + Modelo 2 y los cambios visuales del PDF quedan fuera del alcance, a la espera de la aprobación explícita del usuario.
+La generación del PDF no implica aprobación editorial ni autorización para publicar un release. Las correcciones visuales del informe se revisarán posteriormente con el usuario.
