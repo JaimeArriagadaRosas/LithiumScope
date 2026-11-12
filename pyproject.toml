@@ -38,6 +38,7 @@ imagery = [
   "imagecodecs>=2024.12"
 ]
 dev = [
+  "catboost>=1.2.8",
   "pytest>=8.3",
   "ruff>=0.6"
 ]
