@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "updated": "2026-11-12",
+  "scope": "local experimental model lifecycle, no standalone model 2 release",
+  "prior_joint_release_reference": {
+    "id": "training_20260920_195933_m0300",
+    "role": "active previous release M2; keep unchanged"
+  },
+  "archived_discarded_experiments": [
+    {
+      "id": "training_20261105_223618_m0300",
+      "status": "discarded_experimental",
+      "record_kept": true
+    },
+    {
+      "id": "training_20261106_135029_m0300",
+      "status": "discarded_experimental",
+      "record_kept": true
+    },
+    {
+      "id": "training_20261111_170832_m0300",
+      "status": "discarded_experimental",
+      "record_kept": true,
+      "notes": "783 source samples including 77 provisional GEOROC; not for release"
+    }
+  ],
+  "planned_manual_experiment": {
+    "id": "generated only by next manual Menu > Training > Model 2 execution",
+    "status": "prepared_not_trained",
+    "algorithm": "CatBoost",
+    "historical_training_rows": 690,
+    "original_historical_test_rows": 706,
+    "provisional_georoc_in_fit": 0,
+    "standalone_release_allowed": false,
+    "automatic_activation": false,
+    "future_release_condition": "explicit later joint Model 1 and corrected Model 2 decision"
+  },
+  "notes": "Status files on this workstation were updated outside Git to block accidental promotion; this registry preserves the intended lifecycle within tracked project documentation."
+}

@@ -7,7 +7,6 @@ from lithiumscope.core.logger import run_log
 from lithiumscope.core.training_logs import training_session, register_training_run
 from lithiumscope.datasets.provisioner import (
     require_model_1_dataset,
-    require_model_2_expanded_manifest,
 )
 from lithiumscope.runtime.preboot import (
     require_full_training_environment,
@@ -61,15 +60,15 @@ def _run_impl() -> None:
     from lithiumscope.model_1.training.competition import (
         run_model_1_competition,
     )
-    from lithiumscope.model_2.training.competition import (
-        run_model_2_competition,
+    from lithiumscope.model_2.training.closure import (
+        train as run_model_2_manual_closure,
     )
 
     print("\nENTRENAMIENTO")
     print("1. Modelo 1 — Competencia de predicción de Li")
     print(
         "2. Modelo 2 — "
-        "Competencia de prospectividad espacial"
+        "Entrenamiento experimental corregido (sin release)"
     )
     print("3. Entrenar ambos")
     print("0. Volver")
@@ -88,8 +87,9 @@ def _run_impl() -> None:
         print("\nModelo 1: candidato B conservado; sin cambios de datos.")
     if choice in {"2", "3"}:
         print(
-            "\nModelo 2: ampliacion GEOROC/Sentinel-2 filtrada y reanudable; "
-            "706 muestras anteriores preservadas."
+            "\nModelo 2: entrenamiento experimental CORREGIDO, no publicable. "
+            "706 muestras historicas, 5 folds congelados y filtro de "
+            "calidad 95% solo en entrenamiento; 77 GEOROC no participan."
         )
 
     if choice in {"1", "3"}:
@@ -119,24 +119,22 @@ def _run_impl() -> None:
         )
 
     if choice in {"2", "3"}:
-        model_2_manifest = require_model_2_expanded_manifest()
         print(
-            "\nModelo 2: RF, Extra Trees, HGB, "
-            "XGBoost, CatBoost y SVM-RBF."
+            "\nModelo 2: CatBoost CPU de parametros fijos; "
+            "comparacion pareada y ranking de tres zonas. "
+            "No genera release ni sustituye modelos activos."
         )
         with run_log(
             "training",
-            "model_2_competition",
-        ):
-            outcome = run_model_2_competition(
-                model_2_manifest,
-                device,
-            )
-        register_training_run("model_2", outcome.run_dir)
-        _print_outcome(
-            outcome,
-            "Modelo 2",
-        )
+            "model_2_experimental_closure",
+        ) as training_log:
+            result = run_model_2_manual_closure()
+        print("\nModelo 2 experimental completado.")
+        print(f"Resultados: {result['run_dir']}")
+        print(f"Candidato NO activo: {result['model_path']}")
+        print(f"Log: {training_log}")
+        print("Este entrenamiento NO esta destinado a release individual.")
+
 
 
 

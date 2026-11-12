@@ -21,6 +21,36 @@ def score_model_2_image(
     if bundle is None:
         bundle, _ = load_latest_model("model_2")
 
+    # Only newly trained experimental candidates opt in. The published Model 2
+    # has no quality_min_joint_valid and retains its historical behavior.
+    required_coverage = bundle.get("quality_min_joint_valid")
+    valid_coverage = None
+    if required_coverage is not None:
+        import numpy as np
+        from lithiumscope.model_2.steps.step_01_load_imagery import load_imagery
+        raw = np.asarray(load_imagery(path), dtype=float)
+        if raw.ndim != 3 or raw.shape[0] != 6:
+            raise ValueError("Expected a six-band spectral patch for candidate QA")
+        valid_coverage = float(np.isfinite(raw).all(axis=0).mean())
+        if valid_coverage < float(required_coverage):
+            return ({
+                "image": str(path),
+                "prospectivity_score": None,
+                "priority": "abstencion",
+                "operating_positive": None,
+                "operating_threshold": bundle.get("operating_threshold", 0.5),
+                "algorithm": bundle.get("algorithm", "unknown"),
+                "applicability_warning": "INSUFFICIENT_SPECTRAL_COVERAGE",
+                "quality_status": "ABSTAIN_LOW_SPECTRAL_COVERAGE",
+                "joint_valid_fraction": valid_coverage,
+                "warning": "No rank: insufficient valid Sentinel-2 pixel coverage.",
+            }, {
+                "quality_status": "ABSTAIN_LOW_SPECTRAL_COVERAGE",
+                "joint_valid_fraction": valid_coverage,
+                "required_joint_valid_fraction": float(required_coverage),
+                "experimental_model": True,
+            })
+
     frame = image_to_feature_frame(
         path,
         band_names=bundle.get("band_names", DEFAULT_BAND_NAMES),
@@ -53,6 +83,9 @@ def score_model_2_image(
         "applicability_warning": "OUT_OF_DOMAIN" if applicability > 0.25 else "OK",
         "warning": "Prioritization score, not deposit probability.",
     }
+    if required_coverage is not None:
+        payload["quality_status"] = "EVALUATED"
+        payload["joint_valid_fraction"] = valid_coverage
     diagnostics = {
         "expected_features": expected,
         "missing_features": missing,
@@ -64,6 +97,10 @@ def score_model_2_image(
             "operating_threshold_objective"
         ),
     }
+    if required_coverage is not None:
+        diagnostics["quality_status"] = "EVALUATED"
+        diagnostics["joint_valid_fraction"] = valid_coverage
+        diagnostics["required_joint_valid_fraction"] = float(required_coverage)
     return payload, diagnostics
 
 
