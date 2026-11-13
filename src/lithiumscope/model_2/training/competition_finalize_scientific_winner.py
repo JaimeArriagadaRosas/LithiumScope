@@ -83,15 +83,21 @@ def _finalize_scientific_winner(baseline, candidates, cfg, context, dataset_mani
                     "Final calibration requires both classes per spatial fold."
                 )
 
-    final_estimator = create_model(
-        winner,
-        device,
-        seed,
-        winner_result.final_params,
-        calibrated=True,
-        calibration_cv=final_calibration_cv,
+    from lithiumscope.model_2.training.calibration_policy import (
+        calibration_policy, fit_spatially_calibrated,
     )
-    final_estimator.fit(x_final, y_final)
+    selected_calibration = calibration_policy(cfg.get('optimization', {}))
+    if selected_calibration == 'spatial_sigmoid':
+        final_estimator = fit_spatially_calibrated(
+            winner, device, seed, winner_result.final_params,
+            x_final, y_final, groups_final, inner_folds,
+        )
+    else:
+        final_estimator = create_model(
+            winner, device, seed, winner_result.final_params,
+            calibrated=True, calibration_cv=final_calibration_cv,
+        )
+        final_estimator.fit(x_final, y_final)
     profile = feature_range_profile(x_final)
 
     baseline_row = baseline[0]
@@ -142,6 +148,7 @@ def _finalize_scientific_winner(baseline, candidates, cfg, context, dataset_mani
         "random_forest_search_profile": cfg.get("optimization", {}).get(
             "random_forest_search_profile", "legacy"
         ),
+        "calibration_policy": selected_calibration,
         "provisional_georoc_sample_count": max(0,len(frame)-706),
         "threshold_ppm": threshold,
         "target_quantile": (
@@ -202,6 +209,7 @@ def _finalize_scientific_winner(baseline, candidates, cfg, context, dataset_mani
         "operating_threshold_metrics": threshold_selection.metrics,
         "applicability_profile": profile,
         "experimental_only": True,
+        "calibration_policy": selected_calibration,
         "quality_min_joint_valid": (
             float(quality_cfg.get("minimum_joint_valid_fraction",0.95))
             if quality_mask is not None else None

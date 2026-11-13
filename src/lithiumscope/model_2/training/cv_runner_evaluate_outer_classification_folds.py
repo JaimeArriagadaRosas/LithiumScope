@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 
-def _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_threshold_ppm, folds, groups, inner_folds, label, label_quantile, lithium_values, optimize, probabilities, pruning, quality_training_mask, records, scientific_folds, seed, spec, split_groups, split_iter, trials, x, y, parameter_space):
+def _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_threshold_ppm, folds, groups, inner_folds, label, label_quantile, lithium_values, optimize, probabilities, pruning, quality_training_mask, records, scientific_folds, seed, spec, split_groups, split_iter, trials, x, y, parameter_space, calibration_mode='legacy'):
     from lithiumscope.model_2.training.cv_runner import GroupKFold, Spinner, _fit_estimator, _materialize_splits, assert_group_isolation, classification_metrics, create_model, np, optimize_classifier_with_optuna, pd
     for fold, (train_idx, test_idx) in enumerate(split_iter, start=1):
         train_idx = np.asarray(train_idx, dtype=int)
@@ -145,17 +145,20 @@ def _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_th
             spinner.update(
                 f"{label} · fold {fold}/{folds} · ajustando"
             )
-            estimator = _fit_estimator(
-                algorithm,
-                device,
-                seed,
-                params,
-                x_train,
-                y_train,
-                groups_train,
-                inner_folds,
-                strict_spatial=scientific_fold is not None,
-            )
+            if calibration_mode == 'spatial_sigmoid':
+                from lithiumscope.model_2.training.calibration_policy import (
+                    fit_spatially_calibrated,
+                )
+                estimator = fit_spatially_calibrated(
+                    algorithm, device, seed, params, x_train, y_train,
+                    groups_train, inner_folds,
+                )
+            else:
+                estimator = _fit_estimator(
+                    algorithm, device, seed, params, x_train, y_train,
+                    groups_train, inner_folds,
+                    strict_spatial=scientific_fold is not None,
+                )
             fold_probabilities = estimator.predict_proba(
                 x_test
             )[:, 1]

@@ -31,3 +31,20 @@ def optuna_space(trial) -> dict:
             ["sqrt", "log2", 0.5, 1.0],
         ),
     }
+
+
+def optuna_space_regularized_v2(trial) -> dict:
+    """Class-balance diagnostic available to Extra Trees as well as RF."""
+    return {
+        "n_estimators": trial.suggest_int("n_estimators", 250, 650),
+        "max_depth": trial.suggest_categorical(
+            "max_depth", [6, 8, 10, 12]
+        ),
+        "min_samples_leaf": trial.suggest_int("min_samples_leaf", 6, 16),
+        "max_features": trial.suggest_categorical(
+            "max_features", ["sqrt", "log2", 0.5]
+        ),
+        "class_weight": trial.suggest_categorical(
+            "class_weight", [None, "balanced"]
+        ),
+    }

@@ -92,11 +92,16 @@ optimization:
   enabled: true
   # Versioned spatial-overfit experiment. Keeps legacy Optuna studies intact.
   # This setting participates in build_training_signature via model_2.yaml.
-  random_forest_search_profile: regularized_v2
+  random_forest_search_profile: regularized_v3
+  extra_trees_search_profile: regularized_v2
+  # Optional experimental spatial sigmoid for ALL algorithms; do not enable
+  # until nested TRAIN-only threshold checks show recall is retained.
+  # Real-data smoke: sigmoid with fixed 0.5 produced zero VP in fold 1.
+  calibration_policy: legacy
   n_trials: 12
   per_algorithm_trials:
     random_forest: 16
-    extra_trees: 10
+    extra_trees: 12
     catboost: 10
     hist_gradient_boosting: 10
     svm_rbf: 10

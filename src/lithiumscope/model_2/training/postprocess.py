@@ -117,6 +117,16 @@ def science_report(root, manifest, folds, y, scores, output):
     return _implementation(root, manifest, folds, y, scores, output)
 
 
+def diagnostic_report(manifest_path, tables, output, *, root=PROJECT_ROOT):
+    """Four-way confusion/error audit for all completed competitors."""
+    from lithiumscope.model_2.training.diagnostic_audit import (
+        analyse_saved_competition,
+    )
+    return analyse_saved_competition(
+        manifest_path, tables, output, root=root,
+    )
+
+
 def three_zone_report(manifest_path,folds,labels,scores,output):
     data=save_three_zone_competition(manifest_path,scores,folds,labels,output)
     cases=pd.read_csv(output/"three_zone_competition_cases.csv")
@@ -162,6 +172,8 @@ def finalize_reports(manifest_path,source_tables,output,*,root=PROJECT_ROOT,stri
             root,source,folds,labels,scores,output),
         "three_zone":lambda:three_zone_report(
             manifest_path,folds,labels,scores,output),
+        "competition_diagnostics":lambda:diagnostic_report(
+            manifest_path,source_tables,output,root=root),
     }
     for name,task in tasks.items():
         try:

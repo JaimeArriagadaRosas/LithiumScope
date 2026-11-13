@@ -90,6 +90,8 @@ def run_classification_cv(
     )
 
     optimization = optimization or {}
+    from lithiumscope.model_2.training.calibration_policy import calibration_policy
+    calibration_mode = calibration_policy(optimization)
     parameter_space = parameter_space_for(algorithm, spec, optimization)
     optimize = bool(optimization.get("enabled", False))
     trials = int(
@@ -108,7 +110,7 @@ def run_classification_cv(
             if split_groups is not None else splitter.split(x, y)
         )
     )
-    _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_threshold_ppm, folds, groups, inner_folds, label, label_quantile, lithium_values, optimize, probabilities, pruning, quality_training_mask, records, scientific_folds, seed, spec, split_groups, split_iter, trials, x, y, parameter_space)
+    _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_threshold_ppm, folds, groups, inner_folds, label, label_quantile, lithium_values, optimize, probabilities, pruning, quality_training_mask, records, scientific_folds, seed, spec, split_groups, split_iter, trials, x, y, parameter_space, calibration_mode)
 
     assert_oof_complete(probabilities, len(y))
     final_indices = (

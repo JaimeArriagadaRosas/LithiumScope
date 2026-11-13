@@ -79,6 +79,9 @@ def test_recovery_status_is_persisted_and_reports_retry_without_retraining(
     monkeypatch.setattr(pp,"fixed_old_release_comparison",old)
     monkeypatch.setattr(pp,"science_report",science)
     monkeypatch.setattr(pp,"three_zone_report",triple)
+    monkeypatch.setattr(pp,"diagnostic_report",lambda *args,**kwargs: {
+        "state":"completed_exploratory_diagnostic"
+    })
     one=pp.finalize_reports(tmp_path/"manifest.csv",tables,output,root=root)
     assert one["state"]=="partial_requires_recovery"
     assert one["reports"]["old_release_comparison"]["state"]=="requires_recovery"
