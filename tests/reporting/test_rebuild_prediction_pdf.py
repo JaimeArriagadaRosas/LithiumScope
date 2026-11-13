@@ -90,3 +90,20 @@ def test_rebuild_pdf_updates_existing_manifest(monkeypatch, tmp_path: Path):
         (run / "prediction_manifest.json").read_text(encoding="utf-8")
     )
     assert manifest["artifacts"]["report_pdf"].endswith("report.pdf")
+
+
+def test_rebuild_preserves_manifest_figure_and_map_order(tmp_path: Path):
+    folder = tmp_path / "figures"
+    folder.mkdir()
+    for name in ("map_a.png", "map_b.png", "map_c.png"):
+        (folder / name).write_bytes(b"mock")
+    order = rebuild_module._ordered_session_images(
+        folder,
+        [
+            r"D:\old_clone\figures\map_b.png",
+            r"D:\old_clone\figures\map_a.png",
+        ],
+    )
+    assert [item.name for item in order] == [
+        "map_b.png", "map_a.png", "map_c.png"
+    ]

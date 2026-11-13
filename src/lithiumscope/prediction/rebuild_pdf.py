@@ -24,6 +24,19 @@ def _read_csv(path: Path) -> pd.DataFrame:
     return pd.read_csv(path) if path.is_file() else pd.DataFrame()
 
 
+def _ordered_session_images(folder: Path, recorded: object) -> list[Path]:
+    """Preserve the original rendered sequence recorded in prediction_manifest."""
+    available = {path.name: path for path in folder.glob("*.png")}
+    result: list[Path] = []
+    if isinstance(recorded, list):
+        for raw in recorded:
+            name = Path(str(raw).replace("\\", "/")).name
+            if name in available:
+                result.append(available.pop(name))
+    result.extend(path for _, path in sorted(available.items()))
+    return result
+
+
 def rebuild_pdf(run: str | Path) -> Path:
     run_dir = _resolve_run(str(run))
     manifest_path = run_dir / "prediction_manifest.json"
@@ -51,16 +64,17 @@ def rebuild_pdf(run: str | Path) -> Path:
         return json.loads(path.read_text(encoding="utf-8"))
 
     figures_dir = run_dir / "cross_model" / "figures"
-    maps = sorted(
-        (figures_dir / "maps").glob("*.png")
+    recorded = manifest.get("artifacts", {})
+    maps = _ordered_session_images(
+        figures_dir / "maps", recorded.get("maps")
     )
-    figures = sorted(
-        figures_dir.glob("*.png")
+    figures = _ordered_session_images(
+        figures_dir, recorded.get("figures")
     )
     title = (
-        "LithiumScope - Demostracion integrada automatica"
+        "LithiumScope - Demostración integrada automática"
         if manifest.get("mode") == "demonstration"
-        else "LithiumScope - Prediccion completa"
+        else "LithiumScope - Predicción completa"
     )
     destination = write_pdf_report(
         run_dir / "report.pdf",

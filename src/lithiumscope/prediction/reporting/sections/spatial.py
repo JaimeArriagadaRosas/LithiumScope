@@ -4,6 +4,7 @@ from reportlab.lib.units import cm
 from reportlab.platypus import Image, KeepTogether, PageBreak, Spacer
 
 from lithiumscope.prediction.reporting.primitives import paragraph
+from lithiumscope.prediction.reporting.sections.decision import build_decision_page
 
 
 def build_spatial(context, styles) -> list:
@@ -83,6 +84,13 @@ def build_spatial(context, styles) -> list:
     for item in interpretation_lines:
         stripped = item.strip()
         if stripped == "Cobertura de la ejecución:":
+            paired = getattr(context, "paired", None)
+            if (context.mode in ("demonstration", "complete")
+                    and paired is not None and len(paired) >= 3):
+                # Preserve page one and the former page-two contents: insert
+                # one independently calculated decision page between them.
+                story.append(PageBreak())
+                story.extend(build_decision_page(context, styles))
             story.append(PageBreak())
         if stripped:
             story.append(
