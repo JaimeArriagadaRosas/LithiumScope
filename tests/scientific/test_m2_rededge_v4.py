@@ -144,12 +144,12 @@ def test_partial_real_matrix_cannot_be_competed(monkeypatch, tmp_path):
             {"sample_id": str(row.sample_id), "rededge_joint_valid_fraction": 1.0},
         ),
     )
-    state = builder.build(706, limit=3, root=root)
+    state = builder.build(706, limit=3, workers=3, root=root)
     assert state["status"] == "incomplete_no_training"
     assert state["downloaded"] == 3
     with pytest.raises(FileNotFoundError):
         competition.compare(706, root=root)
-    done = builder.build(706, root=root)
+    done = builder.build(706, workers=6, root=root)
     assert done["status"] == "complete"
     matrix = pd.read_csv(root / "results/scientific_simulations/m2_rededge_v4_20261113/cohort_706/training_v4_170.csv")
     assert matrix.shape == (706, 172)

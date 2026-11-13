@@ -7,6 +7,7 @@ Then without --limit to complete. A partial dataset CANNOT train a model.
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import json
 from pathlib import Path
@@ -28,8 +29,8 @@ from lithiumscope.model_2.pipeline import load_model_2_training_frame
 BASE = PROJECT_ROOT / "results/scientific_simulations/m2_rededge_v4_20261113"
 
 
-def build(cohort: int, *, limit: int | None = None, root: Path = PROJECT_ROOT) -> dict:
-    if cohort not in (706, 783) or (limit is not None and limit < 1):
+def build(cohort: int, *, limit: int | None = None, workers: int = 1, root: Path = PROJECT_ROOT) -> dict:
+    if cohort not in (706, 783) or (limit is not None and limit < 1) or workers not in range(1, 17):
         raise ValueError("M2 v4 supports only the frozen 706 or expanded 783")
     manifest_path = root / (
         "data/processed/model_2/training_manifest.csv"
@@ -57,41 +58,52 @@ def build(cohort: int, *, limit: int | None = None, root: Path = PROJECT_ROOT) -
     quality = []
     failures = []
     subset = manifest if limit is None else manifest.iloc[:limit]
-    for i, sample in enumerate(subset.itertuples(index=False)):
+
+    def acquire(item):
+        i, sample = item
         try:
             extra, evidence = cached_rededge_sample(
                 sample,
                 output=output / "patches",
                 min_joint_valid=0.05,
             )
-            row = append_rededge_features(
-                original.iloc[i].to_dict(),
-                extra,
-            )
-            results.append(row)
-            quality.append(evidence)
+            row = append_rededge_features(original.iloc[i].to_dict(), extra)
+            return i, sample, row, evidence, None
         except Exception as exc:
-            failures.append(
+            return (
+                i,
+                sample,
+                None,
+                None,
                 {
                     "row_index": i,
                     "sample_id": str(sample.sample_id),
                     "error_type": type(exc).__name__,
                     "error": str(exc)[:380],
-                }
+                },
             )
-            print("RED_EDGE_FAILURE", i, str(sample.sample_id), str(exc)[:190], flush=True)
-        if (i + 1) % 10 == 0 or i + 1 == len(subset):
-            print(
-                "RED_EDGE_PROGRESS",
-                i + 1,
-                "/",
-                len(subset),
-                "successful",
-                len(quality),
-                "failed",
-                len(failures),
-                flush=True,
-            )
+
+    tasks = enumerate(subset.itertuples(index=False))
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        for i, sample, row, evidence, failure in pool.map(acquire, tasks):
+            if failure is None:
+                results.append(row)
+                quality.append(evidence)
+            else:
+                failures.append(failure)
+                print("RED_EDGE_FAILURE", i, str(sample.sample_id), failure["error"][:190], flush=True)
+            if (i + 1) % 10 == 0 or i + 1 == len(subset):
+                print(
+                    "RED_EDGE_PROGRESS",
+                    i + 1,
+                    "/",
+                    len(subset),
+                    "successful",
+                    len(quality),
+                    "failed",
+                    len(failures),
+                    flush=True,
+                )
     audit = pd.DataFrame(quality)
     audit.to_csv(folder / "rededge_quality.csv", index=False)
     pd.DataFrame(
@@ -146,8 +158,9 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("--cohort", type=int, choices=(706, 783), default=706)
     p.add_argument("--limit", type=int, default=None)
+    p.add_argument("--workers", type=int, default=1)
     args = p.parse_args()
-    outcome = build(args.cohort, limit=args.limit)
+    outcome = build(args.cohort, limit=args.limit, workers=args.workers)
     # Partial pilot is deliberately not a process failure; it is never trainable.
     if args.limit is None and outcome["status"] != "complete":
         raise SystemExit(2)
