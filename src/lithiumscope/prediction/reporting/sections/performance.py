@@ -92,18 +92,6 @@ def build_performance(context, styles) -> list:
                 styles["LS_Small"],
             )
         )
-        if not scores.empty and positive_count == 0:
-            story.append(
-                paragraph(
-                    "No se predijo ningun positivo con el umbral "
-                    "operativo actual. Esto no anula una posible "
-                    "capacidad de ranking reflejada por ROC-AUC o "
-                    "Average Precision; ambas lecturas se reportan "
-                    "por separado y el score no se interpreta como "
-                    "probabilidad.",
-                    styles["LS_Warning"],
-                )
-            )
 
     story.extend(
         [

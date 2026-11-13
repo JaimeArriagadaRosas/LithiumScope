@@ -159,15 +159,6 @@ def build_overview(context, styles) -> list:
                 )
             )
 
-    source_block.append(
-        paragraph(
-            "El Li real, cuando existe, se conserva como verdad de "
-            "referencia para evaluar la demostracion. No se utiliza "
-            "como variable de entrada para predecir Li ni para "
-            "calcular el score espacial.",
-            styles["LS_Warning"],
-        )
-    )
     story.append(KeepTogether(source_block))
 
     if (

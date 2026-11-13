@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 
 from lithiumscope.core.config import load_config
+from lithiumscope.prediction.reporting.chart_guides import bar_guides, scatter_guides
 from lithiumscope.model_2.steps.step_01_load_imagery import load_imagery
 
 
@@ -131,9 +132,8 @@ def _scatter(
     if len(values) < 2:
         return None
     figure, axis = plt.subplots(figsize=(7, 5))
-    axis.scatter(values[x], values[y])
-    axis.set_xlabel(x)
-    axis.set_ylabel(y)
+    axis.scatter(values[x], values[y], label=f"Casos (n={len(values)})")
+    scatter_guides(axis, values, x=x, y=y)
     axis.set_title(title)
     axis.grid(True, alpha=0.25)
     figure.tight_layout()
@@ -171,12 +171,10 @@ def _case_bar(
         values["case_id"].astype(str),
         values[value_column],
     )
-    for threshold in horizontal_lines:
-        axis.axhline(
-            threshold,
-            linestyle="--",
-            linewidth=1,
-        )
+    bar_guides(
+        axis, values[value_column], thresholds=horizontal_lines,
+        is_ood=value_column.endswith("out_of_training_range_fraction"),
+    )
     axis.set_ylabel(ylabel)
     axis.set_title(title)
     axis.tick_params(axis="x", rotation=45)

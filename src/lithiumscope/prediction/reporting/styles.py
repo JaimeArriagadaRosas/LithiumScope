@@ -78,20 +78,6 @@ def build_styles():
             leading=10.5,
         )
     )
-    styles.add(
-        ParagraphStyle(
-            name="LS_Warning",
-            parent=styles["BodyText"],
-            fontName="Helvetica-Bold",
-            fontSize=9,
-            leading=13,
-            textColor=colors.HexColor("#7A3E00"),
-            backColor=colors.HexColor("#FFF3D6"),
-            borderPadding=7,
-            spaceBefore=4,
-            spaceAfter=8,
-        )
-    )
     return styles
 
 

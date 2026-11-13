@@ -22,13 +22,6 @@ def build_spatial(context, styles) -> list:
             styles["LS_Subtitle"],
         ),
         paragraph(
-            "Alcance: apoyo preliminar para analisis y priorizacion. "
-            "No confirma un recurso, no sustituye ICP-MS y no "
-            "reemplaza validacion geologica, mineralogica ni de "
-            "terreno.",
-            styles["LS_Warning"],
-        ),
-        paragraph(
             "1. Resultado espacial e interpretacion general",
             styles["LS_H1"],
         ),
@@ -103,13 +96,6 @@ def build_spatial(context, styles) -> list:
             story.append(Spacer(1, 4))
 
     if not context.maps:
-        story.append(
-            paragraph(
-                "No fue posible generar mapas espaciales porque "
-                "los casos no contienen coordenadas compatibles.",
-                styles["LS_Warning"],
-            )
-        )
         return story
 
     labels = {

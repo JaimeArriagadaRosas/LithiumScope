@@ -94,7 +94,6 @@ def build_decision_page(context, styles) -> list:
         paragraph("Etapa 1 - Preselección por Modelo 1", styles["LS_H2"]),
     ]
     if decision.ranked.empty:
-        story.append(paragraph(decision.reason, styles["LS_Warning"]))
         return story
 
     top_ids = set(decision.selected.case_id.astype(str)) if not decision.selected.empty else set()
@@ -143,7 +142,6 @@ def build_decision_page(context, styles) -> list:
         styles["LS_Small"],
     ))
     if decision.selected.empty:
-        story.append(paragraph(decision.reason, styles["LS_Warning"]))
         return story
 
     story.extend([
