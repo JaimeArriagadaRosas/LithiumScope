@@ -1,9 +1,8 @@
-"""Train-only optical coverage policy for the full six-algorithm M2 competition.
+"""Train-only optical quality policy for 706- or 783-row M2 competitions.
 
-The 783-row source manifest, expanded 77 GEOROC observations, all outer
-held-out examples, five anchored folds, model families and optimizer stay
-unchanged. Only fitting subsets can exclude pixels with too little six-band
-coverage. No image is rewritten and no sample is silently removed from OOF.
+QA95 is applied only to fitting subsets; all outer TEST observations remain.
+The frozen historical 706 are the verified prefix of the 783-row inventory.
+No original image or audit CSV is rewritten by the policy.
 """
 from __future__ import annotations
 
@@ -27,8 +26,12 @@ def training_quality_mask(
         raise ValueError("Quality minimum must be in (0,1]")
     manifest=pd.read_csv(manifest_path)
     inventory=pd.read_csv(inventory_path)
+    if len(manifest)==706 and len(inventory)==783:
+        # The frozen historical set is the validated prefix of the existing
+        # immutable 783-row QA audit; do not regenerate or rewrite the audit.
+        inventory=inventory.iloc[:706].copy()
     if len(manifest)!=len(inventory) or not len(manifest):
-        raise ValueError("Quality inventory count must equal complete training manifest")
+        raise ValueError("Quality inventory count must equal selected training manifest")
     if not {"sample_id","image_path"}.issubset(manifest):
         raise ValueError("Model 2 manifest lacks sample identity or image path")
     if not {"sample_id","image_sha256","sixband_joint_valid_fraction",

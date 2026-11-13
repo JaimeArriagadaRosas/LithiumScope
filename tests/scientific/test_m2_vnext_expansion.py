@@ -110,7 +110,8 @@ def test_expansion_plan_is_download_free_and_leaves_legacy_unchanged(monkeypatch
     from copy import deepcopy
 
     config=deepcopy(ex.load_config("model_2"))
-    assert config["training"]["expansion"]["enabled"] is True
+    # Re-enable in test only: production experiment must remain legacy-only.
+    config["training"]["expansion"]["enabled"] = True
     image=tmp_path/"reference_patch.npy"
     np.save(image,np.ones((6,32,32),dtype="float32"))
     baseline=pd.DataFrame({
@@ -212,6 +213,7 @@ def test_isolated_end_to_end_manifest_preparation_with_mocked_download(
     source=tmp_path/"source.csv"
     audit.to_csv(source,index=False)
     cfg=deepcopy(ex.load_config("model_2"))
+    cfg["training"]["expansion"]["enabled"] = True
     cfg["training"].update({
       "manifest_path":str(oldfile),
       "frozen_expected_rows":len(base),

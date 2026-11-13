@@ -50,9 +50,10 @@ training:
   # Frozen manifest avoids re-provisioning M2 from the expanded M1 dataset.
   frozen_expected_rows: 706
   frozen_manifest_sha256: 5c42e8b5fac697d6c1a579ef760ad642d736da14fa4e7d605596b7f4813498e1
-  # Expands ONLY model 2. Legacy 706-row training and M1 B are read-only.
+  # Controlled 706-sample ablation against the previous 783-sample M2 runs.
+  # Reversible: true restores the GEOROC/Sentinel-2 expansion; no data deleted.
   expansion:
-    enabled: true
+    enabled: false
     source_audit_path: results/scientific_simulations/vnext_20261106/georoc_source_validation/georoc_B_screened_sites.csv
     state_dir: data/interim/model_2/vnext_georoc
     patch_dir: data/raw/model_2/vnext_georoc/patches
@@ -76,7 +77,7 @@ validation:
   folds: 5
   inner_folds: 3
   prefer_spatial_groups: true
-  # Preserve all 706 historical test indices/labels while adding new groups.
+  # When expanded, preserve 706 historical folds; frozen mode uses original folds.
   anchor_legacy:
     enabled: true
     folds_file: config/model_2_frozen_spatial_folds_706.json

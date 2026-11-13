@@ -1,4 +1,4 @@
-"""Full 783-sample six-algorithm competition: fit-only QA regression guards.
+"""Six-algorithm 706/783-row competition: fit-only QA regression guards.
 
 Synthetic tests do not launch the costly complete Optuna competition.
 """
@@ -94,10 +94,12 @@ def test_six_algorithm_cv_training_quality_does_not_filter_outer_test(monkeypatc
     assert set(np.concatenate([f.test_idx for f in folds]))==set(range(n))
 
 
-def test_no_silent_georoc_exclusion_in_restored_config():
+def test_historical_706_control_is_explicit_and_reversible():
     from lithiumscope.core.config import load_config
     cfg=load_config("model_2")
-    assert cfg["training"]["expansion"]["enabled"] is True
+    assert cfg["training"]["expansion"]["enabled"] is False
+    assert cfg["training"]["frozen_expected_rows"] == 706
+    assert cfg["quality_training"]["policy"] == "train_only_preserve_all_outer_test"
     assert cfg["quality_training"]["enabled"] is True
     assert cfg["quality_training"]["minimum_joint_valid_fraction"]==.95
     assert cfg["optimization"]["enabled"] is True

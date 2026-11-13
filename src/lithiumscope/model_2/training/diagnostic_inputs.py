@@ -70,19 +70,58 @@ def loaded_competitions(
         raise ValueError("At least two completed algorithms are needed")
     if set(current) - SIX_ALGORITHMS:
         raise ValueError("Unknown M2 competition algorithms")
+    compare_legacy = len(manifest) == 706
+    older_run = (
+        "training_20261113_114607_m0300"
+        if compare_legacy else OLDER_RUN
+    )
     older_tables = older_tables or (
-        root / "results" / "model_2" / "runs" / OLDER_RUN / "tables"
+        root / "results" / "model_2" / "runs" / older_run / "tables"
     )
     previous = {}
+    prior_n = None
     if older_tables.is_dir():
-        previous, old_folds, old_y = load_predictions(manifest, older_tables)
-        if set(previous) != set(current):
+        if compare_legacy:
+            # This is the desired 706-vs-783 ablation: compare only common
+            # historical held-out cases, whose fold IDs/labels are identical.
+            prior_manifest = pd.read_csv(
+                root / "data/processed/model_2/vnext_expanded/training_manifest.csv"
+            )
+            if len(prior_manifest) != 783 or not np.array_equal(
+                manifest.sample_id.astype(str),
+                prior_manifest.sample_id.iloc[:706].astype(str)
+            ) or not np.allclose(
+                manifest.Li_icpms.to_numpy(float),
+                prior_manifest.Li_icpms.iloc[:706].to_numpy(float)
+            ) or not np.array_equal(
+                manifest.spatial_group.astype(str),
+                prior_manifest.spatial_group.iloc[:706].astype(str)
+            ):
+                raise ValueError("Prior 783 records do not preserve frozen 706")
+        else:
+            prior_manifest = manifest
+        old_scores, old_folds, old_y = load_predictions(
+            prior_manifest, older_tables
+        )
+        prior_n = len(prior_manifest)
+        if compare_legacy:
+            old_scores = {key: values[:706] for key, values in old_scores.items()}
+            old_folds = old_folds[:706]
+            old_y = old_y[:706]
+        if set(old_scores) != set(current):
             raise ValueError("Previous and current M2 algorithm sets differ")
         if (not np.array_equal(folds, old_folds) or
             not np.array_equal(y, old_y)):
             raise ValueError("Two competitions lack matching fold labels/order")
+        previous = old_scores
     metadata = {
         "historical_rows": min(706, len(manifest)),
+        "current_training_source_rows": len(manifest),
+        "previous_training_source_rows": prior_n,
+        "previous_run": older_run if previous else None,
+        "historical_706_vs_expanded_783_ablation": (
+            compare_legacy and prior_n == 783
+        ),
         "current_algorithms": sorted(current),
         "previous_competition_available": bool(previous),
         "same_folds_and_labels": bool(previous),

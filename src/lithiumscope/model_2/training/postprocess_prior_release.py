@@ -54,7 +54,7 @@ def fixed_old_release_comparison(root,manifest,folds,scores,output):
            **metrics(label,old.score)}]
     paired=[pd.DataFrame({**common,"arm":PREVIOUS_ARM,"score":old.score.to_numpy(float)})]
     for name,value in sorted(scores.items()):
-        rows.append({"algorithm":name,"method":"new_competition_783",
+        rows.append({"algorithm":name,"method":f"new_competition_{len(manifest)}",
                      **metrics(label,value[:706])})
         paired.append(pd.DataFrame({**common,"arm":name,"score":value[:706]}))
     pd.DataFrame(rows).to_csv(output/"old_release_protocol_comparison_706.csv",index=False)
@@ -78,8 +78,10 @@ def fixed_old_release_comparison(root,manifest,folds,scores,output):
         "fixed_old_release_Li_cutoff_ppm":cutoff,
         "historical_heldout":706,"same_test_cases":True,"same_folds":True,
         "old_training_706_historical":True,
-        "new_training_includes_77_provisional_georoc":True,
-        "train_sets_and_fold_thresholds_are_not_identical":True,
+        "new_training_includes_77_provisional_georoc":len(manifest)>706,
+        "new_training_uses_original_706_source_only":len(manifest)==706,
+        "train_sets_and_fold_thresholds_are_not_identical":len(manifest)>706,
+        "other_train_only_quality_and_optimization_policies_may_differ":True,
         "exploratory_reused_development_data":True,
         "not_independent_external_validation":True,
         "algorithms":sorted(scores),
@@ -91,8 +93,11 @@ def fixed_old_release_comparison(root,manifest,folds,scores,output):
     pretty=["# Comparacion con protocolo del release M2 anterior","",
             "**Referencia reconstruida**, no evaluacion del mismo artefacto publicado.",
             "Los 706 casos y folds historicos son identicos, con corte Li fijo de "+
-            str(cutoff)+" ppm. Los entrenamientos NO usan igual numero de muestras:",
-            "el antiguo usa 706 historicas y el nuevo incluye 77 GEOROC provisionales.",
+            str(cutoff)+" ppm. Fuente nueva: "+str(len(manifest))+ " registros.",
+            ("El nuevo conjunto incluye 77 GEOROC provisionales."
+             if len(manifest)>706 else
+             "El nuevo conjunto usa solo las 706 muestras historicas; "
+             "QA train-only y optimizacion pueden diferir del release."),
             "Los datos se reutilizaron para desarrollo; NO son test externo.","",
             "| Algoritmo | AUC | AP | Brier |",
             "|---|---:|---:|---:|"]

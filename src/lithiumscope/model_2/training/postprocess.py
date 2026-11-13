@@ -76,8 +76,8 @@ def metrics(labels,probabilities):
 
 
 def load_predictions(manifest,tables):
-    if len(manifest)!=783:
-        raise ValueError("Expected 783 original Model 2 records")
+    if len(manifest) not in (706,783):
+        raise ValueError("Expected a frozen 706- or expanded 783-row M2 manifest")
     scores={}
     common_fold=None
     common_y=None
@@ -85,7 +85,7 @@ def load_predictions(manifest,tables):
         name=path.stem.removeprefix("oof_predictions_")
         df=pd.read_csv(path)
         required={"y_true","li_ppm","outer_fold","prospectivity_score"}
-        if not required.issubset(df) or len(df)!=783:
+        if not required.issubset(df) or len(df)!=len(manifest):
             raise ValueError("Incomplete OOF for "+name)
         if not np.allclose(df.li_ppm,manifest.Li_icpms):
             raise ValueError("OOF geochemistry differs for "+name)

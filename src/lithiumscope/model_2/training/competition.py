@@ -113,6 +113,12 @@ def run_model_2_competition(
     device: DeviceInfo,
 ) -> CompetitionOutcome:
     cfg = load_config("model_2")
+    if not cfg["training"].get("expansion", {}).get("enabled", False):
+        frozen_path = PROJECT_ROOT / str(cfg["training"]["manifest_path"])
+        if Path(manifest_path).resolve() != frozen_path.resolve():
+            raise ValueError(
+                "M2 historical-only mode requires the frozen 706-row manifest"
+            )
     app_cfg = load_config("app")
     algorithms = list(cfg["model"]["algorithms"])
     seed = int(cfg["model"]["random_seed"])

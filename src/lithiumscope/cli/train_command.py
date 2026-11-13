@@ -87,10 +87,20 @@ def _run_impl() -> None:
     if choice in {"1", "3"}:
         print("\nModelo 1: candidato B conservado; sin cambios de datos.")
     if choice in {"2", "3"}:
-        print(
-            "\nModelo 2: ampliación GEOROC/Sentinel-2 filtrada y reanudable; "
-            "706 muestras anteriores preservadas."
+        from lithiumscope.core.config import load_config
+        expansion_enabled = bool(
+            load_config("model_2")["training"]["expansion"]["enabled"]
         )
+        if expansion_enabled:
+            print(
+                "\nModelo 2: ampliación GEOROC/Sentinel-2 filtrada y "
+                "reanudable; 706 muestras anteriores preservadas."
+            )
+        else:
+            print(
+                "\nModelo 2: control experimental SOLO 706 históricos "
+                "(77 GEOROC excluidos; sin borrar los datos)."
+            )
 
     if choice in {"1", "3"}:
         model_1_dataset = require_model_1_dataset(

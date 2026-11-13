@@ -46,7 +46,7 @@ def analyse_saved_competition(
     group = manifest.spatial_group.astype(str).to_numpy()
     cohort = np.where(np.arange(len(manifest)) < 706,
                       "historical", "GEOROC_provisional")
-    audit_path = tables / "scientific_sample_audit_783.csv"
+    audit_path = tables / f"scientific_sample_audit_{len(manifest)}.csv"
     audit = pd.read_csv(audit_path) if audit_path.is_file() else None
     if audit is not None and (
         len(audit) != len(manifest)
@@ -235,7 +235,8 @@ def analyse_saved_competition(
         "sample_error_diagnostics.csv, calibration_reliability_bins.csv",
         "y paired_competition_deltas.csv.",
         "",
-        "**Limitación:** 783 muestras de desarrollo con 77 GEOROC provisionales;",
+        f"**Limitación:** {len(manifest)} muestras de desarrollo con "
+        f"{max(0, len(manifest)-706)} GEOROC provisionales;",
         "no hay conjunto externo independiente ni tasa Top-1@3 condicionada a M1.",
     ])
     (destination / "DIAGNOSTICO_MODELO2.md").write_text(
