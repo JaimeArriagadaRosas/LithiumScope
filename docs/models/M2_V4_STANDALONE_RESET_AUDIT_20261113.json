@@ -1,0 +1,40 @@
+{
+  "operation": "remove_standalone_v4_training_only",
+  "executed": true,
+  "timestamp_utc": "2026-11-13T22:48:39.403781+00:00",
+  "cleanup_scope": [
+    "comparison_706",
+    "comparison_783",
+    "nested_170_706",
+    "data_ablation_170_new_sites",
+    "candidate_bundle_not_published"
+  ],
+  "training_directories_found": [
+    {
+      "relative_path": "results\\scientific_simulations\\m2_rededge_v4_20261113\\comparison_706",
+      "files": 48,
+      "bytes": 1813901
+    },
+    {
+      "relative_path": "results\\scientific_simulations\\m2_rededge_v4_20261113\\comparison_783",
+      "files": 27,
+      "bytes": 178866
+    },
+    {
+      "relative_path": "results\\scientific_simulations\\m2_rededge_v4_20261113\\nested_170_706",
+      "files": 70,
+      "bytes": 3638512
+    }
+  ],
+  "protected_input_directories_before": {
+    "cohort_706": true,
+    "cohort_783": true,
+    "patches": true,
+    "stac_cache": true,
+    "new_sites": true,
+    "integration_m1nov_m2sep": true
+  },
+  "historical_706_and_expanded_783_manifests_unchanged": true,
+  "models_active_registry_untouched": true,
+  "interactive_menu_not_executed": true
+}

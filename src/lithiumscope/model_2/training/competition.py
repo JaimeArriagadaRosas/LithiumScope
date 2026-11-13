@@ -15,7 +15,6 @@ from lithiumscope.core.logger import get_logger
 from lithiumscope.core.reproducibility import set_global_seed
 from lithiumscope.core.run_context import RunContext
 from lithiumscope.core.training_diagnostics import save_oof_diagnostics
-from lithiumscope.core.run_resume import build_training_signature
 from lithiumscope.core.states import RunState
 from lithiumscope.datasets.manifest import build_tabular_manifest, write_manifest
 from lithiumscope.model_2.evaluation.baseline import evaluate_prior_baseline
@@ -139,11 +138,10 @@ def run_model_2_competition(
     optimization_cfg = cfg.get("optimization", {})
     inner_folds = int(cfg["validation"].get("inner_folds", 3))
 
-    signature = build_training_signature(
-        "model_2",
-        manifest_path,
-        ("app", "model_2"),
+    from lithiumscope.model_2.training.v4_inputs import (
+        build_scientific_training_signature,
     )
+    signature = build_scientific_training_signature(manifest_path, cfg)
     context = RunContext.create(
         "model_2",
         training_signature=signature,

@@ -1,50 +1,85 @@
 """Extracted responsibility; original public entrypoint remains stable."""
+
 from __future__ import annotations
 
 
-def _prepare_scientific_data(cfg, context, fixed_threshold, lithium_column, manifest_path, q, requested_folds, seed, spatial_group_column):
-    from lithiumscope.model_2.training.competition import PROJECT_ROOT, file_sha256, json, load_model_2_training_frame, make_anchored_scientific_folds, make_scientific_folds, np, pd, scientific_labels, training_quality_mask
-    frame = load_model_2_training_frame(manifest_path)
+def _prepare_scientific_data(
+    cfg, context, fixed_threshold, lithium_column, manifest_path, q, requested_folds, seed, spatial_group_column
+):
+    from lithiumscope.model_2.training.competition import (
+        PROJECT_ROOT,
+        file_sha256,
+        json,
+        load_model_2_training_frame,
+        make_anchored_scientific_folds,
+        make_scientific_folds,
+        np,
+        pd,
+        scientific_labels,
+        training_quality_mask,
+    )
+    from lithiumscope.model_2.training.v4_inputs import (
+        spectral_v4_enabled,
+        load_spectral_v4_training_frame,
+        combine_v4_quality_mask,
+        verify_spectral_v4_source,
+    )
+
+    v4 = spectral_v4_enabled(cfg)
+    frame = load_spectral_v4_training_frame(manifest_path, cfg) if v4 else load_model_2_training_frame(manifest_path)
     # Full-data target threshold is reserved for the final fitted model.
     # Evaluation labels are defined independently in each outer training fold.
-    threshold = (
-        float(fixed_threshold)
-        if fixed_threshold is not None
-        else float(frame[lithium_column].quantile(q))
-    )
-    groups = (
-        frame[spatial_group_column]
-        if spatial_group_column in frame.columns
-        else None
-    )
-    x = frame.drop(
-        columns=[
-            column
-            for column in (lithium_column, spatial_group_column)
-            if column in frame.columns
-        ]
-    )
-    quality_cfg=cfg.get("quality_training", {})
-    quality_mask=None
-    quality_audit={"enabled": False, "manifest_rows":len(frame),
-                   "training_eligible":len(frame),"training_excluded":0}
-    if bool(quality_cfg.get("enabled",False)):
-        inventory=PROJECT_ROOT / str(quality_cfg["inventory_path"])
-        quality_mask,quality_audit=training_quality_mask(
-            manifest_path,inventory_path=inventory,
-            minimum_joint_valid=float(
-                quality_cfg.get("minimum_joint_valid_fraction",0.95)),
+    threshold = float(fixed_threshold) if fixed_threshold is not None else float(frame[lithium_column].quantile(q))
+    groups = frame[spatial_group_column] if spatial_group_column in frame.columns else None
+    x = frame.drop(columns=[column for column in (lithium_column, spatial_group_column) if column in frame.columns])
+    quality_cfg = cfg.get("quality_training", {})
+    quality_mask = None
+    quality_audit = {
+        "enabled": False,
+        "manifest_rows": len(frame),
+        "training_eligible": len(frame),
+        "training_excluded": 0,
+    }
+    if bool(quality_cfg.get("enabled", False)):
+        inventory = PROJECT_ROOT / str(quality_cfg["inventory_path"])
+        quality_mask, quality_audit = training_quality_mask(
+            manifest_path,
+            inventory_path=inventory,
+            minimum_joint_valid=float(quality_cfg.get("minimum_joint_valid_fraction", 0.95)),
         )
-        if len(quality_mask)!=len(frame):
+        if len(quality_mask) != len(frame):
             raise ValueError("Model 2 QA mask must align with all feature rows")
-        (context.manifests/"train_only_quality_policy.json").write_text(
-            json.dumps(quality_audit,indent=2,ensure_ascii=False),
-            encoding="utf-8")
+        (context.manifests / "train_only_quality_policy.json").write_text(
+            json.dumps(quality_audit, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
         print(
             "Calidad científica SOLO TRAIN: "
             f"{quality_audit['training_eligible']} / {len(frame)} "
             "observaciones elegibles, sin eliminar ninguna observación TEST.",
-            flush=True
+            flush=True,
+        )
+    if v4:
+        if quality_mask is None:
+            raise ValueError("M2 v4 requires TRAIN-only spectral QA95 enabled")
+        quality_mask, quality_audit = combine_v4_quality_mask(
+            quality_mask,
+            manifest_path,
+            cfg,
+        )
+        _, source_evidence = verify_spectral_v4_source(manifest_path, cfg)
+        (context.manifests / "spectral_v4_source.json").write_text(
+            json.dumps(source_evidence, indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        (context.manifests / "train_only_quality_policy.json").write_text(
+            json.dumps(quality_audit, indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        print(
+            "Modelo 2 v4: control QA95 de bandas anteriores y red-edge "
+            f"SOLO TRAIN: {quality_audit['training_eligible']} / {len(frame)}. "
+            "Ninguna fila eliminada de TEST.",
+            flush=True,
         )
     anchor = cfg["validation"].get("anchor_legacy", {})
     legacy_manifest = PROJECT_ROOT / str(cfg["training"]["manifest_path"])
@@ -56,39 +91,44 @@ def _prepare_scientific_data(cfg, context, fixed_threshold, lithium_column, mani
         base = pd.read_csv(legacy_manifest)
         expanded = pd.read_csv(manifest_path)
         baseline_count = int(cfg["training"]["frozen_expected_rows"])
-        if (len(base) != baseline_count
-                or len(expanded) < baseline_count
-                or not np.array_equal(
-                    base.sample_id.to_numpy(),
-                    expanded.sample_id.iloc[:baseline_count].to_numpy(),
-                )
-                or not np.allclose(
-                    base.Li_icpms.to_numpy(dtype=float),
-                    expanded.Li_icpms.iloc[:baseline_count].to_numpy(dtype=float),
-                )
-                or not np.array_equal(
-                    base.spatial_group.to_numpy(),
-                    expanded.spatial_group.iloc[:baseline_count].to_numpy(),
-                )):
+        if (
+            len(base) != baseline_count
+            or len(expanded) < baseline_count
+            or not np.array_equal(
+                base.sample_id.to_numpy(),
+                expanded.sample_id.iloc[:baseline_count].to_numpy(),
+            )
+            or not np.allclose(
+                base.Li_icpms.to_numpy(dtype=float),
+                expanded.Li_icpms.iloc[:baseline_count].to_numpy(dtype=float),
+            )
+            or not np.array_equal(
+                base.spatial_group.to_numpy(),
+                expanded.spatial_group.iloc[:baseline_count].to_numpy(),
+            )
+        ):
             raise RuntimeError("M2 expanded manifest altered historical sample rows")
         reference_file = PROJECT_ROOT / str(anchor["folds_file"])
         if file_sha256(reference_file) != str(anchor["folds_sha256"]):
             raise RuntimeError("M2 anchored baseline fold snapshot changed")
         historic_splits = json.loads(reference_file.read_text(encoding="utf-8"))
         scientific_folds = make_anchored_scientific_folds(
-            frame[lithium_column], groups, historic_splits,
-            baseline_count=baseline_count, quantile=q,
+            frame[lithium_column],
+            groups,
+            historic_splits,
+            baseline_count=baseline_count,
+            quantile=q,
             fixed_threshold_ppm=fixed_threshold,
         )
-        print(
-            f"M2: evaluacion pareada con {baseline_count} muestras "
-            "historicas en sus mismos folds espaciales."
-        )
+        print(f"M2: evaluacion pareada con {baseline_count} muestras historicas en sus mismos folds espaciales.")
     else:
         scientific_folds = make_scientific_folds(
-            frame[lithium_column], groups,
-            n_splits=requested_folds, random_state=seed,
-            quantile=q, fixed_threshold_ppm=fixed_threshold,
+            frame[lithium_column],
+            groups,
+            n_splits=requested_folds,
+            random_state=seed,
+            quantile=q,
+            fixed_threshold_ppm=fixed_threshold,
         )
     y = pd.Series(scientific_labels(scientific_folds, len(frame)), index=frame.index)
     y_full = (frame[lithium_column] >= threshold).astype(int)
@@ -97,16 +137,21 @@ def _prepare_scientific_data(cfg, context, fixed_threshold, lithium_column, mani
         fold_ids.iloc[split.test_idx] = fold_number
     (context.manifests / "scientific_folds.json").write_text(
         __import__("json").dumps(
-            [{
-                "fold": i, "n_train": len(f.train_idx),
-                "n_test": len(f.test_idx),
-                "label_threshold_ppm": f.label_threshold_ppm,
-                "n_groups_train": f.n_groups_train,
-                "n_groups_test": f.n_groups_test,
-                "train_indices": f.train_idx.tolist(),
-                "test_indices": f.test_idx.tolist(),
-            } for i, f in enumerate(scientific_folds, 1)],
-            indent=2, ensure_ascii=False,
+            [
+                {
+                    "fold": i,
+                    "n_train": len(f.train_idx),
+                    "n_test": len(f.test_idx),
+                    "label_threshold_ppm": f.label_threshold_ppm,
+                    "n_groups_train": f.n_groups_train,
+                    "n_groups_test": f.n_groups_test,
+                    "train_indices": f.train_idx.tolist(),
+                    "test_indices": f.test_idx.tolist(),
+                }
+                for i, f in enumerate(scientific_folds, 1)
+            ],
+            indent=2,
+            ensure_ascii=False,
         ),
         encoding="utf-8",
     )

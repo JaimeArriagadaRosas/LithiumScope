@@ -18,18 +18,13 @@ def _print_outcome(outcome, model_name: str) -> None:
     print(f"\n{model_name} completado.")
     print(f"Resultados: {outcome.run_dir}")
     if outcome.winner:
-        print(
-            f"Ganador candidato de esta ejecución: {outcome.winner}"
-        )
+        print(f"Ganador candidato de esta ejecución: {outcome.winner}")
         print(
             "El modelo activo no se reemplaza durante el entrenamiento. "
             "Evalúe el candidato desde Métricas y resultados."
         )
     if outcome.failed:
-        print(
-            "Algoritmos omitidos/fallidos: "
-            + ", ".join(outcome.failed)
-        )
+        print("Algoritmos omitidos/fallidos: " + ", ".join(outcome.failed))
     if outcome.ranking.empty:
         return
 
@@ -44,17 +39,9 @@ def _print_outcome(outcome, model_name: str) -> None:
         "balanced_accuracy_mean",
         "status",
     }
-    columns = [
-        column
-        for column in outcome.ranking.columns
-        if column in allowed
-    ]
+    columns = [column for column in outcome.ranking.columns if column in allowed]
     print("\nRanking:")
-    print(
-        outcome.ranking[
-            columns
-        ].to_string(index=False)
-    )
+    print(outcome.ranking[columns].to_string(index=False))
 
 
 def _run_impl() -> None:
@@ -67,10 +54,7 @@ def _run_impl() -> None:
 
     print("\nENTRENAMIENTO")
     print("1. Modelo 1 — Competencia de predicción de Li")
-    print(
-        "2. Modelo 2 — "
-        "Competencia de prospectividad espacial"
-    )
+    print("2. Modelo 2 — Competencia de prospectividad espacial")
     print("3. Entrenar ambos")
     print("0. Volver")
     choice = choose(
@@ -88,29 +72,30 @@ def _run_impl() -> None:
         print("\nModelo 1: candidato B conservado; sin cambios de datos.")
     if choice in {"2", "3"}:
         from lithiumscope.core.config import load_config
-        expansion_enabled = bool(
-            load_config("model_2")["training"]["expansion"]["enabled"]
-        )
-        if expansion_enabled:
+
+        expansion_enabled = bool(load_config("model_2")["training"]["expansion"]["enabled"])
+        model_2_config = load_config("model_2")
+        if model_2_config["training"].get("spectral_v4", {}).get("enabled"):
+            cohort = "783 ampliadas" if expansion_enabled else "706 históricas"
             print(
-                "\nModelo 2: ampliación GEOROC/Sentinel-2 filtrada y "
-                "reanudable; 706 muestras anteriores preservadas."
+                "\nModelo 2 v4: 170 características espectrales reales "
+                "(126 originales + 44 red-edge), seis algoritmos, "
+                f"{cohort}; QA95 SOLO TRAIN."
+            )
+            print(
+                "Se iniciará una competencia nueva desde el flujo normal. "
+                "El release activo no cambiará automáticamente."
+            )
+        elif expansion_enabled:
+            print(
+                "\nModelo 2: ampliación GEOROC/Sentinel-2 filtrada y reanudable; 706 muestras anteriores preservadas."
             )
         else:
-            print(
-                "\nModelo 2: control experimental SOLO 706 históricos "
-                "(77 GEOROC excluidos; sin borrar los datos)."
-            )
+            print("\nModelo 2: control experimental SOLO 706 históricos (77 GEOROC excluidos; sin borrar los datos).")
 
     if choice in {"1", "3"}:
-        model_1_dataset = require_model_1_dataset(
-            include_georoc=True
-        )
-        print(
-            "\nOrden Modelo 1: "
-            "RF → XGBoost → SVM → TabNet → "
-            "HistGradientBoosting → CatBoost"
-        )
+        model_1_dataset = require_model_1_dataset(include_georoc=True)
+        print("\nOrden Modelo 1: RF → XGBoost → SVM → TabNet → HistGradientBoosting → CatBoost")
         with run_log(
             "training",
             "model_1_competition",
@@ -120,9 +105,7 @@ def _run_impl() -> None:
                 device,
             )
         register_training_run("model_1", outcome.run_dir)
-        print(
-            f"Log detallado Modelo 1: {training_log}"
-        )
+        print(f"Log detallado Modelo 1: {training_log}")
         _print_outcome(
             outcome,
             "Modelo 1",
@@ -130,10 +113,7 @@ def _run_impl() -> None:
 
     if choice in {"2", "3"}:
         model_2_manifest = require_model_2_expanded_manifest()
-        print(
-            "\nModelo 2: RF, Extra Trees, HGB, "
-            "XGBoost, CatBoost y SVM-RBF."
-        )
+        print("\nModelo 2: RF, Extra Trees, HGB, XGBoost, CatBoost y SVM-RBF.")
         with run_log(
             "training",
             "model_2_competition",
@@ -147,7 +127,6 @@ def _run_impl() -> None:
             outcome,
             "Modelo 2",
         )
-
 
 
 def run() -> None:
