@@ -17,4 +17,4 @@ demonstration:
   imagery_cache_dir: data/interim/model_2/integrated_demo
   candidate_models:
     model_1: training_20261106_111653_m0300
-    model_2: training_20261112_123451_m0300
+    model_2: training_20260920_195933_m0300

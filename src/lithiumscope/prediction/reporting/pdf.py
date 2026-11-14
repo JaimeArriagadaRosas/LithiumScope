@@ -11,6 +11,7 @@ from lithiumscope.prediction.reporting.context import ReportContext
 from lithiumscope.prediction.reporting.sections.cases import build_cases
 from lithiumscope.prediction.reporting.sections.figures import build_figures
 from lithiumscope.prediction.reporting.sections.notes import build_notes
+from lithiumscope.prediction.reporting.sections.model_selection import build_model_selection
 from lithiumscope.prediction.reporting.sections.overview import build_overview
 from lithiumscope.prediction.reporting.sections.performance import build_performance
 from lithiumscope.prediction.reporting.sections.spatial import build_spatial
@@ -100,6 +101,7 @@ def write_pdf_report(
         build_spatial,
         build_overview,
         build_performance,
+        build_model_selection,
         build_figures,
         build_cases,
         build_notes,

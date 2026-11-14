@@ -63,6 +63,16 @@ def _write_outputs(
         training_vs_external=training_vs_external,
     )
     runtime = runtime_fingerprint()
+    if session.mode == "demonstration":
+        from lithiumscope.prediction.reporting.model_selection_evidence import (
+            gather_selection_evidence,
+        )
+
+        selection_evidence = gather_selection_evidence(
+            model_1_identity, model_2_identity
+        )
+        write_json(session.root / "model_selection_evidence.json", selection_evidence)
+        runtime["model_selection_evidence"] = selection_evidence
     report_path = write_pdf_report(
         session.root / "report.pdf",
         title=(

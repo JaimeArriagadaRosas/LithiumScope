@@ -56,7 +56,7 @@ class PredictionSession:
 
 
 def load_model_with_identity(model_group: str, *, candidate_run_id: str | None = None):
-    """Select an explicit pending candidate for a *single prediction only*.
+    """Select an explicit candidate or published release for a *single demo*.
 
     Never modifies active_models.json, candidate_status.json or a model bundle.
     An omitted candidate_run_id preserves the published-active model selection.
@@ -77,13 +77,17 @@ def load_model_with_identity(model_group: str, *, candidate_run_id: str | None =
         if not model_path.is_file():
             raise FileNotFoundError(f"No existe el candidato solicitado: {model_path}")
         candidate_status = read_candidate_status(model_path).get("status")
-        if candidate_status != "pending":
+        if candidate_status not in {"pending", "promoted"}:
             raise ValueError(
-                f"El modelo {model_group}/{run_id} no está pendiente de aprobación "
-                f"(estado: {candidate_status!r})."
+                f"El modelo {model_group}/{run_id} no es un candidato pendiente "
+                f"ni un release publicado (estado: {candidate_status!r})."
             )
         bundle = joblib.load(model_path)
-        selected_for = "experimental_demonstration"
+        selected_for = (
+            "pinned_published_release_for_demonstration"
+            if candidate_status == "promoted"
+            else "experimental_demonstration"
+        )
 
     metadata_path = model_path.parent / "metadata.json"
     metadata: dict = {}
