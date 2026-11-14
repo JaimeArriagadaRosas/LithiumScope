@@ -37,9 +37,9 @@ Se construyó un worktree temporal exclusivamente de QA en D:\Documentos\MDL\Inf
 |---|---|
 | Ruff en código fuente y tests | OK |
 | Contrato de tamaño (máximo 300 líneas) | OK, ningún módulo nuevo excede |
-| Suite en Windows, Python 3.12, checkout limpio inicial | 439 aprobadas, 10 omisiones justificadas, 0 fallos |
+| Suite en Windows, Python 3.12, checkout limpio final | 441 aprobadas, 10 omisiones locales justificadas, 0 fallos |
 | Suite original local con los artefactos de usuario | Pruebas dirigidas 27/27 aprobadas antes de los cambios finales |
-| Matriz final de siete jobs en GitHub | Pendiente de confirmar tras push |
+| CI GitHub final de commit 8d568ca | [7/7 SUCCESS, run 43544298345](https://github.com/JaimeArriagadaRosas/LithiumScope/actions/runs/43544298345) |
 
 Los skips por datos locales evitan comparar el checkout público con los resultados privados y no sustituyen las pruebas unitarias. Es una limitación explícita, no una validación científica independiente.
 
@@ -78,3 +78,19 @@ El worktree temporal se usa únicamente para pruebas de un checkout limpio; no r
 | Baja | Considerar siguiente release con correcciones | Usar nuevo tag con autorización, jamás mover o reemplazar la publicación existente |
 
 **Regla de continuidad:** mantener seis algoritmos de M2; conservar versiones históricas y trazabilidad; no hacer entrenamientos ni nuevos releases por corregir CI. Este documento registra causas, límites, resultados y pasos reproducibles.
+
+## 7. Comprobaci?n remota posterior al push (CI verde)
+
+El push a main del commit 8d568ca5ed2d05bbe4fd6e2fe1d52210856c5ce2 con la identidad GitHub JaimeArriagadaRosas fue confirmado por el SHA de origin/main. GitHub Actions ejecut? [run 43544298345](https://github.com/JaimeArriagadaRosas/LithiumScope/actions/runs/43544298345) y complet? los **siete jobs sin fallos**.
+
+| Job GitHub | Estado del run 43544298345 |
+|---|---|
+| lint | success |
+| test Ubuntu 3.11 | success |
+| test Ubuntu 3.12 | success |
+| test Ubuntu 3.13 | success |
+| test Windows 3.11 | success |
+| test Windows 3.12 | success |
+| test Windows 3.13 | success |
+
+El tag de release permaneci? en el commit 3534828. Ninguna acci?n actualiz? el PDF original, ZIP, datasets, modelos activos ni configuraciones de entrenamiento. El c?digo correctivo se encuentra en main; este informe de cierre puede recibir una actualizaci?n documental posterior sin reescribir la versi?n publicada.
