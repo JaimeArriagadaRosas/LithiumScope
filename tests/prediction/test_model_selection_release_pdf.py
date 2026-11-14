@@ -8,6 +8,7 @@ import joblib
 import pytest
 
 from lithiumscope.core.config import load_config
+from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.prediction.reporting.model_selection_evidence import (
     gather_selection_evidence,
 )
@@ -18,12 +19,29 @@ from lithiumscope.prediction.reporting.styles import build_styles
 from lithiumscope.prediction.session import load_model_with_identity
 
 
+# These optional integration tests require the locally archived release
+# artifacts, which are deliberately excluded from source-control checkouts.
+# Lightweight dispatch and renderer-structure tests still execute in CI.
+LOCAL_RELEASE_ARTIFACTS = all(
+    (PROJECT_ROOT / "models" / group / "trained" / run / "model.joblib").is_file()
+    for group, run in (
+        ("model_1", "training_20261106_111653_m0300"),
+        ("model_2", "training_20260920_195933_m0300"),
+    )
+)
+requires_local_release = pytest.mark.skipif(
+    not LOCAL_RELEASE_ARTIFACTS,
+    reason="Requires local versioned .joblib files excluded from source control",
+)
+
+
 def test_demonstration_pins_proposed_release_pair_without_activation():
     cfg = load_config("prediction")["demonstration"]["candidate_models"]
     assert cfg["model_1"] == "training_20261106_111653_m0300"
     assert cfg["model_2"] == "training_20260920_195933_m0300"
 
 
+@requires_local_release
 def test_current_promoted_release_is_accepted_as_explicit_demo_pin():
     bundle, model_path, ident = load_model_with_identity(
         "model_2",
@@ -36,6 +54,7 @@ def test_current_promoted_release_is_accepted_as_explicit_demo_pin():
     assert ident["release_promoted_by_demonstration"] is False
 
 
+@requires_local_release
 def test_selected_proposal_has_three_m1_and_all_eight_m2_runs():
     cfg = load_config("prediction")["demonstration"]["candidate_models"]
     id1 = load_model_with_identity("model_1",candidate_run_id=cfg["model_1"])[2]
@@ -51,6 +70,7 @@ def test_selected_proposal_has_three_m1_and_all_eight_m2_runs():
     json.dumps(report,allow_nan=False)
 
 
+@requires_local_release
 def test_pdf_section_is_only_added_to_integrated_demonstration():
     cfg = load_config("prediction")["demonstration"]["candidate_models"]
     id1 = load_model_with_identity("model_1",candidate_run_id=cfg["model_1"])[2]
@@ -76,3 +96,44 @@ def test_integrated_renderer_stays_original_and_has_selection_section():
     assert "build_model_selection" in source
     assert "build_performance" in source
     assert "build_notes" in source
+
+
+
+@pytest.mark.parametrize(
+    "status, selection",
+    [
+        ("promoted", "pinned_published_release_for_demonstration"),
+        ("pending", "experimental_demonstration"),
+    ],
+)
+def test_versioned_demo_loads_synthetic_model_without_local_artifacts(
+    tmp_path, monkeypatch, status, selection
+):
+    """CI verifies both permitted states even without historical .joblib files."""
+    from lithiumscope.prediction import session
+
+    root = tmp_path / "models"
+    run_id = "training_20261106_111653_m0300"
+    directory = root / "model_2" / "trained" / run_id
+    directory.mkdir(parents=True)
+    joblib.dump(
+        {"algorithm": "catboost", "features": [f"feature_{i}" for i in range(126)]},
+        directory / "model.joblib",
+    )
+    (directory / "candidate_status.json").write_text(
+        json.dumps({"status": status}), encoding="utf-8"
+    )
+    (directory / "metadata.json").write_text(
+        json.dumps({"run_id": run_id, "algorithm": "catboost"}), encoding="utf-8"
+    )
+    monkeypatch.setattr(session, "MODELS_DIR", root)
+    bundle, path, ident = session.load_model_with_identity(
+        "model_2", candidate_run_id=run_id
+    )
+    assert path.is_file() and len(bundle["features"]) == 126
+    assert ident["candidate_status"] == status
+    assert ident["selection"] == selection
+    assert ident["release_promoted_by_demonstration"] is False
+    assert json.loads((directory / "candidate_status.json").read_text()) == {
+        "status": status
+    }

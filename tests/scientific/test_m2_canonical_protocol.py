@@ -186,7 +186,13 @@ def test_outer_test_labels_cannot_change_training_or_predictions(
     assert calls == [(39, 39), (39, 39)]
     assert first["test_unfiltered"] == 20
     assert first["train_eligible"] == 39
-    assert first["evaluations"]["raw"]["scores"] == second["evaluations"]["raw"]["scores"]
+    # A refit may differ by ~1e-16 between NumPy/BLAS builds. Preserve
+    # the test-label isolation contract with a strict numerical tolerance.
+    assert np.allclose(
+        first["evaluations"]["raw"]["scores"],
+        second["evaluations"]["raw"]["scores"],
+        rtol=0.0, atol=1e-12,
+    )
     assert np.allclose(
         first["evaluations"]["inner_sigmoid"]["scores"],
         second["evaluations"]["inner_sigmoid"]["scores"],

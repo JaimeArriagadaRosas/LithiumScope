@@ -29,6 +29,35 @@ from lithiumscope.model_2.training.v4_inputs import (
 )
 
 
+# Historical training matrices, QA inventories and imagery caches are
+# deliberately untracked and cannot be present on clean GitHub runners.
+# These are explicit OPTIONAL integration checks, not unit-test substitutes.
+LOCAL_V4_AVAILABLE = all(
+    (PROJECT_ROOT / name).is_file()
+    for name in (
+        "data/processed/model_2/training_manifest.csv",
+        "results/scientific_simulations/m2_rededge_v4_20261113/cohort_706/training_v4_170.csv",
+        "results/scientific_simulations/m2_rededge_v4_20261113/cohort_706/rededge_quality.csv",
+        "results/scientific_simulations/sentinel_methodology_20261112/inventory/local_patch_inventory_783.csv",
+    )
+)
+LOCAL_V4_EXPANDED_AVAILABLE = LOCAL_V4_AVAILABLE and all(
+    (PROJECT_ROOT / name).is_file()
+    for name in (
+        "data/processed/model_2/vnext_expanded/training_manifest.csv",
+        "results/scientific_simulations/m2_rededge_v4_20261113/cohort_783/training_v4_170.csv",
+    )
+)
+requires_local_v4 = pytest.mark.skipif(
+    not LOCAL_V4_AVAILABLE,
+    reason="Requires local 706-sample real Sentinel-2 matrices not tracked in Git",
+)
+requires_local_expanded_v4 = pytest.mark.skipif(
+    not LOCAL_V4_EXPANDED_AVAILABLE,
+    reason="Requires local 783-sample provisional extension not tracked in Git",
+)
+
+
 @pytest.fixture
 def model2_v4():
     cfg = load_config("model_2")
@@ -47,6 +76,7 @@ def test_six_algorithms_and_no_new_menu_options(model2_v4):
     assert model2_v4["training"]["expansion"]["enabled"] is False
 
 
+@requires_local_v4
 def test_real_v4_source_has_170_and_original_126(model2_v4):
     manifest = PROJECT_ROOT / model2_v4["training"]["manifest_path"]
     matrix, state = verify_spectral_v4_source(manifest, model2_v4)
@@ -58,6 +88,7 @@ def test_real_v4_source_has_170_and_original_126(model2_v4):
     assert list(frame.columns[:2]) == ["Li_icpms", "spatial_group"]
 
 
+@requires_local_v4
 def test_quality_mask_excludes_only_train_not_test(model2_v4):
     from lithiumscope.model_2.training.quality import training_quality_mask
 
@@ -74,6 +105,7 @@ def test_quality_mask_excludes_only_train_not_test(model2_v4):
     assert evidence["original_and_new_spectral_quality"]["all_outer_test_retained"] is True
 
 
+@requires_local_v4
 def test_main_data_preparation_uses_v4_and_spatial_folds_no_fit(
     model2_v4,
     tmp_path,
@@ -102,6 +134,7 @@ def test_main_data_preparation_uses_v4_and_spatial_folds_no_fit(
     assert (tmp_path / "scientific_folds.json").is_file()
 
 
+@requires_local_v4
 def test_first_real_main_run_must_use_v4_matrix_signature(
     model2_v4,
     monkeypatch,
@@ -177,6 +210,7 @@ def test_menu_option_two_routes_normal_competition_without_fit(monkeypatch, caps
     assert "Modelo 2: RF, Extra Trees, HGB, XGBoost, CatBoost y SVM-RBF." in displayed
 
 
+@requires_local_expanded_v4
 def test_v4_extended_783_can_be_selected_by_config_without_menu_changes(model2_v4):
     from copy import deepcopy
 

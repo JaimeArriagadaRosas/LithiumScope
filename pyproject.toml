@@ -39,6 +39,10 @@ imagery = [
 ]
 dev = [
   "catboost>=1.2.8",
+  # Six-family M2 unit/CI tests require a working XGBoost estimator.
+  "xgboost>=2.1",
+  # Nested scientific optimization imports Optuna when exercised.
+  "optuna>=4.0",
   "rasterio>=1.4",
   "fsspec>=2025.3",
   "tifffile>=2025.3",
@@ -59,7 +63,7 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
+pythonpath = ["src", "."]
 addopts = "--basetemp=.pytest_tmp"
 
 [tool.ruff]
