@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "Cita LithiumScope como software independiente; cita por separado la memoria y las fuentes de datos académicas."
+type: software
+title: "LithiumScope"
+abstract: "Aplicación académica local y modular para predicción de concentración de litio y análisis experimental de prospectividad espacial."
+authors:
+  - family-names: "Arriagada Rosas"
+    given-names: "Jaime"
+repository-code: "https://github.com/JaimeArriagadaRosas/LithiumScope"
+url: "https://github.com/JaimeArriagadaRosas/LithiumScope"
+version: "0.3.0"
+license: "MIT"
+keywords:
+  - lithium
+  - geochemistry
+  - machine-learning
+  - scientific-reproducibility
+  - spatial-prospectivity

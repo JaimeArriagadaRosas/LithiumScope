@@ -1,0 +1,17 @@
+name: Corrección documental
+description: Señalar documentación desactualizada, enlaces rotos o atribución incorrecta
+title: "[Docs] "
+labels: ["documentation"]
+body:
+  - type: textarea
+    id: location
+    attributes:
+      label: Documento o sección
+      description: URL o ruta y contenido que requiere revisión
+    validations:
+      required: true
+  - type: textarea
+    id: update
+    attributes:
+      label: Corrección sugerida
+      description: Explica la evidencia de que la información está desactualizada

@@ -48,7 +48,7 @@ Una ejecución solo se considera candidata a versión cuando:
 4. existe hash SHA-256 del dataset;
 5. se conoce el commit Git utilizado.
 
-Para versionar LithiumScope con ambos modelos, Modelo 1 y Modelo 2 deben además haber sido generados desde **el mismo commit**.
+**Para una candidatura automática conjunta desde entrenamientos nuevos**, la política original exige que los dos modelos provengan del mismo commit. **Esto no describe todos los releases publicados:** el paquete del 14-11-2026 reutiliza M2 CatBoost histórico y M1 SVM ampliado procedentes de entrenamientos distintos. Una selección manual de modelos de distinta procedencia debe reflejar explícitamente cada origen, comprobar los contratos del manifest y validar la instalación y la inferencia antes de publicarse. No se deben falsear los commits para satisfacer el criterio automático.
 
 ## Flujo propuesto
 

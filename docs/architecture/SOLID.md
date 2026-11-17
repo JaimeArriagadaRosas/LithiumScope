@@ -1,6 +1,8 @@
-# Diseño SOLID en LithiumScope
+# SOLID como referencia parcial de diseño (documento complementario)
 
-LithiumScope no pretende demostrar los principios SOLID mediante un número mágico de líneas. La arquitectura los utiliza como restricciones de diseño y añade algunos tests estructurales para evitar regresiones obvias.
+> **No es el documento de arquitectura vigente.** LithiumScope es software modular Python, no una demostración integral de diseño orientado a objetos. La documentación principal está en [arquitectura](ARCHITECTURE.md), [principios de diseño y Clean Code](DESIGN_PRINCIPLES.md) y [pipelines científicos](SCIENTIFIC_PIPELINES.md).
+
+Las ideas SOLID de responsabilidad única, extensibilidad y contratos de estimadores se utilizan **cuando son pertinentes**, junto a Clean Code. No se afirma cumplimiento general de los cinco principios ni se usa un número de líneas como prueba. Los ejemplos siguientes documentan decisiones de diseño históricas y técnicas aún útiles.
 
 ## S — Single Responsibility
 
@@ -31,7 +33,7 @@ Los orquestadores dependen de factories y contratos, no de una única implementa
 
 ## Tests estructurales
 
-`tests/test_architecture.py` protege tres decisiones explícitas:
+`tests/core/test_architecture.py` contiene controles estructurales asociados a estas decisiones:
 
 1. no introducir notebooks;
 2. mantener `menu.py` como despachador pequeño;

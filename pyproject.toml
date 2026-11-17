@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=70", "wheel"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,6 +8,8 @@ version = "0.3.0"
 description = "Modular local ML toolkit for lithium prediction and spatial prospectivity."
 readme = "README.md"
 requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
 dependencies = [
   "joblib>=1.4",
   "matplotlib>=3.9",
@@ -19,6 +21,11 @@ dependencies = [
   "reportlab>=4.2",
   "scikit-learn>=1.5"
 ]
+
+[project.urls]
+Homepage = "https://github.com/JaimeArriagadaRosas/LithiumScope"
+Repository = "https://github.com/JaimeArriagadaRosas/LithiumScope"
+Issues = "https://github.com/JaimeArriagadaRosas/LithiumScope/issues"
 
 [project.optional-dependencies]
 ml = [

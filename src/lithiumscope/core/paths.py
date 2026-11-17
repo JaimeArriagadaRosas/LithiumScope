@@ -1,8 +1,21 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
+
+def _project_root() -> Path:
+    """Preserve checkout paths; use a writable home for installed wheels."""
+    override = os.environ.get("LITHIUMSCOPE_HOME")
+    if override:
+        return Path(override).expanduser().resolve()
+    checkout = Path(__file__).resolve().parents[3]
+    if (checkout / "pyproject.toml").is_file() and (checkout / "src" / "lithiumscope").is_dir():
+        return checkout
+    return (Path.home() / ".lithiumscope").resolve()
+
+
+PROJECT_ROOT = _project_root()
 
 DATA_DIR = PROJECT_ROOT / "data"
 MODELS_DIR = PROJECT_ROOT / "models"

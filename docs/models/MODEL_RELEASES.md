@@ -1,5 +1,7 @@
 # Modelos publicados
 
+**Estado público verificado a 17-11-2026:** el release más reciente disponible en GitHub es [lithiumscope-training_20261106_111653_m0300](https://github.com/JaimeArriagadaRosas/LithiumScope/releases/tag/lithiumscope-training_20261106_111653_m0300), publicado el 14-11-2026. Contiene M1 SVM ampliado (`training_20261106_111653_m0300`), M2 CatBoost histórico (`training_20260920_195933_m0300`), un ZIP de modelos y un PDF de demostración como segundo asset. **La procedencia de ambos modelos es distinta y debe conservarse como tal.** M2 espectral v4 de 170 features sigue siendo experimental, no el modelo publicado. La selección activa en un equipo local puede seguir siendo otra; publicar un release no activa automáticamente pesos locales.
+
 LithiumScope no utiliza tags de versión del producto como `v1`, `v2` o `v3`.
 
 Los tags `lithiumscope-training_...` identifican entrenamientos concretos por fecha/hora y sirven como ancla de trazabilidad para los modelos publicados.
