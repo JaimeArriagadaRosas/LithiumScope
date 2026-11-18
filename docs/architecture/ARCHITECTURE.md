@@ -1,82 +1,118 @@
 # Arquitectura de LithiumScope
 
-**Estado:** descripción técnica del diseño actual del repositorio, 17 de noviembre de 2026. El software fue desarrollado íntegramente por **Jaime Arriagada Rosas**, independientemente de la memoria académica utilizada como referencia. Ver [autoría](../../CREDITS.md).
+LithiumScope es un **monolito modular local en Python**, implementado íntegramente por **Jaime Arriagada Rosas**. Su relación con OASIS y la memoria de referencia es exclusivamente académica y metodológica; consultar [autoría](../../CREDITS.md).
 
-## Visión general
+Este documento reúne la arquitectura de componentes, los dos pipelines científicos y los criterios de diseño que antes estaban repartidos en varios archivos. Para instalación y uso, comenzar por el [README principal](../../README.md).
 
-LithiumScope es una **aplicación de consola local, monolítica y modular** escrita en Python. No utiliza microservicios ni requiere un servidor propio para ejecutar el menú. El proyecto agrupa dos problemas científicos independientes, infraestructura común y herramientas experimentales:
+![Arquitectura modular](../assets/architecture.svg)
 
-- **M1:** predicción de concentración de litio en roca (regresión en ppm) utilizando datos geoquímicos/geológicos.
-- **M2:** clasificación y prioridad exploratoria espacial a partir de características espectrales obtenidas con Sentinel-2 y etiquetas geoquímicas conocidas.
-- **Integración:** combina resultados posteriores de M1 y M2 mediante casos/candidatos y genera evidencia; **no hay encadenamiento de la predicción M1 como feature del estimador M2**.
+## Entradas y responsabilidades
 
-![Diagrama modular](../assets/architecture.svg)
+La aplicación no requiere un servidor propio ni microservicios. `main.py` inicia la ejecución desde el clon; `lithiumscope` es la entrada del paquete instalado; `lithiumscope-inspect` permite auditar el pipeline sin iniciar entrenamiento. El menú debe ser un despachador y delegar en comandos y servicios.
 
-## Entrada y ejecución
-
-- `main.py`: arranque desde un checkout; prepara la importación del paquete, configura matplotlib sin interfaz gráfica y comprueba dependencias de ejecución.
-- `src/lithiumscope/runtime/`: preboot, ciclo de vida y cierre seguro.
-- `src/lithiumscope/cli/menu.py`: despacha cinco acciones: entrenamiento, predicción, métricas/resultados, carga de modelos versionados y laboratorio.
-- `src/lithiumscope/cli/*_command.py`: adapta entrada de consola a operaciones del dominio.
-- `pyproject.toml`: metadatos, dependencias y entradas `lithiumscope` y `lithiumscope-inspect`.
-
-## Componentes y límites
-
-| Módulo | Responsabilidad principal |
+| Directorio | Responsabilidad |
 |---|---|
-| `cli/` | Interacción con el usuario, selección de flujos y presentación |
-| `runtime/` | Inicialización, dependencias, reanudación de proceso y cierre |
-| `core/` | Configuración, paths, logging, hashes, políticas de recursos y ejecución |
-| `datasets/` | Adquisición, armonización, contratos, validación y manifests |
-| `model_1/` | Pasos, selección de características, regresión, validación y evaluación de M1 |
-| `model_2/` | Datos espectrales, metodología espacial, clasificación, validación y evaluación de M2 |
-| `prediction/` | Predicción individual, integración de casos y generación de informes |
-| `persistence/` | Modelos guardados, registro de candidatos y modelos activos |
-| `results/` | Catálogo, consulta, exportación y preparación de candidatos a release |
-| `distribution/` | Descarga, validación e instalación de bundles de GitHub Releases |
-| `experiments/` | Simulaciones, auditorías y pruebas científicas fuera del flujo operativo principal |
-| `tools/` | Diagnósticos e inspección reproducible de fuentes, entorno y pipeline |
+| `src/lithiumscope/cli/` | Menús, selección de operaciones y comandos |
+| `runtime/` | Preboot, control de dependencias, ciclo de vida y cierre seguro |
+| `core/` | Configuración, paths, recursos CPU/GPU, logs, tracking y controles compartidos |
+| `datasets/` | Adquisición, contratos, armonización y manifiestos |
+| `model_1/` | Preparación, entrenamiento, validación, evaluación y predicción geoquímica |
+| `model_2/` | Parches Sentinel-2, features, validación espacial y clasificación |
+| `prediction/` | Inferencia individual, combinación posterior y reportes PDF/Excel |
+| `persistence/` | Persistencia, metadatos y modelos activos |
+| `results/` | Catálogo de resultados, dashboards y candidatos a versión |
+| `distribution/` | Consulta, descarga y validación de paquetes de modelos |
+| `experiments/` | Estudios y campañas científicos independientes |
+| `tools/` | Inspector y diagnósticos del entorno y de fuentes |
 
-**Regla de dependencia:** el menú no ejecuta preprocesamiento o cálculo científico; los algoritmos no necesitan conocer GitHub, archivos de presentación, el visor PDF ni las decisiones de interfaz. Las capas reutilizables no deben importar el menú.
+**Límite de dependencia:** el menú no implementa algoritmos; el cálculo científico no depende de la interfaz, de GitHub ni del generador de PDF. Las operaciones de infraestructura se comparten sin acoplar M1 y M2.
 
-## Flujo de datos
+![Flujos de ejecución](../assets/workflow.svg)
 
-![Flujo de ejecución](../assets/workflow.svg)
+## Pipeline M1: predicción geoquímica
 
-1. Adquirir o identificar datos, con manifest y verificación de procedencia.
-2. Transformar y validar datos en pasos independientes.
-3. Entrenar y evaluar familias de algoritmos utilizando el esquema de validación correspondiente.
-4. Registrar métricas, OOF, configuración, versión, hashes, logs y selección.
-5. Persistir modelos por `run_id` y, cuando procede, registrarlos como activos.
-6. Realizar inferencia individual o integración de resultados, y generar PDF, Excel, CSV, figuras y evidencia.
+**Entrada:** propiedades geoquímicas/geológicas de muestras de roca. **Salida:** concentración estimada `Li_icpms` (ppm).
 
-M1 y M2 también pueden ejecutarse por separado; el flujo de entrenamiento **no es obligatorio** si se instala un release de modelos ya publicado.
+La secuencia conceptual es:
 
-## Experimentos frente a operación
+1. **Carga:** CSV/XLS/XLSX y normalización de codificaciones.
+2. **Límites de detección:** conversión y auditoría de valores censurados.
+3. **Faltantes:** diagnóstico y tratamiento sin introducir información del fold de prueba.
+4. **Filtro del objetivo:** verificar disponibilidad y calidad del Li medido.
+5. **Control geoquímico:** reglas de calidad y coherencia composicional.
+6. **Categorías:** codificación de variables geológicas y textuales.
+7. **Ingeniería de variables:** derivados geoquímicos según el contrato de datos.
+8. **Preprocesamiento:** ajuste dentro de particiones adecuadas para evitar leakage.
+9. **Entrenamiento y validación:** competencia, nested CV, OOF y estimador ganador.
 
-`experiments/` y `scripts/scientific/` permiten investigar hipótesis, crear candidatos y estudiar robustez sin cambiar los modelos activos por defecto. Un ganador experimental no se convierte automáticamente en release ni garantiza validación externa. Los protocolos y limitaciones están en [pipelines científicos](SCIENTIFIC_PIPELINES.md), [documentación de modelos](../models/README.md) y [laboratorio](../scientific/README.md).
+Los seis candidatos son Random Forest, XGBoost, SVM-RBF, TabNet, HistGradientBoosting y CatBoost. Las métricas relevantes son **RMSE, MAE y R²**; DummyRegressor proporciona referencia sin competir como modelo final. Una comparación justa exige considerar las mismas observaciones y protocolos de validación.
 
-## Datos y artefactos
+El código reside en `model_1/steps/`, `training/` y `evaluation/`. La fuente, unidades, variables y recortes están detallados en [datasets](../data/DATASETS_AND_FEATURES.md) y [contratos](../data/INPUT_OUTPUT_VARIABLES.md).
 
-- `config/`: configuración de entrenamiento, datos y distribución.
-- `data/raw/`, `data/interim/`, `data/processed/`: fuentes y etapas de procesamiento.
-- `models/model_*/trained/`, `models/model_*/metadata/`: modelos y metadatos locales.
-- `models/active_models.json`: selección activa local, no necesariamente equivalente al último release público.
-- `results/model_*/runs/<run_id>/`: evidencias de cada entrenamiento.
-- `results/predictions/`: predicción integrada/demostración y sus outputs.
-- `results/scientific_simulations/`: campañas experimentales y evidencia de investigación.
-- `logs/`: trazas de ejecución.
+## Pipeline M2: clasificación y prioridad espacial
 
-Gran parte de datos, pesos y cachés **no se versiona en Git**; los `.gitkeep` son solo placeholders. No confundir un clon limpio con un laboratorio completo. Ver [reproducibilidad](../operations/REPRODUCIBILITY.md) y [empaquetado](../operations/PACKAGING.md).
+**Entrada:** muestras con Li conocido y coordenadas asociadas a parches multibanda Sentinel-2 L2A. **Salida:** score de prioridad exploratoria, sin implicar certeza geológica o económica.
 
-## Interfaces y pruebas
+Flujo conceptual:
 
-El proyecto mantiene contratos Python, configuración YAML, manifests JSON/CSV y artefactos por `run_id`. `tests/` contiene pruebas funcionales, científicas, de CLI, reportes, recuperación y releases. `.github/workflows/ci.yml` ejecuta Ruff, guardas de tamaño y pytest en Ubuntu y Windows con Python 3.11–3.13.
+```text
+Li conocido + coordenadas
+    -> asociación muestra/escena Sentinel-2
+    -> extracción y cache del parche
+    -> características espectrales y etiquetas
+    -> validación espacial agrupada
+    -> comparación, calibración y selección
+    -> modelo persistido -> score de inferencia
+```
 
-## Principios de implementación
+Compiten Random Forest, Extra Trees, HistGradientBoosting, XGBoost, CatBoost y SVM-RBF. La evaluación incluye ROC-AUC, Average Precision, Brier y estudios de calibración. Los cuantiles y umbrales derivados del entrenamiento no pueden ajustarse utilizando el test que se pretende evaluar.
 
-La arquitectura es **modular y orientada a responsabilidades**, no una aplicación diseñada alrededor de una jerarquía de clases. Las ideas pertinentes de SOLID se aplican como buenas prácticas, junto a Clean Code, alta cohesión, bajo acoplamiento, funciones comprobables y reproducibilidad. Ver [principios de diseño](DESIGN_PRINCIPLES.md).
+**Esquemas de entrada:** el M2 histórico publicado trabaja con **126 características** y el candidato espectral v4 investiga **170**. Esta diferencia no es decorativa: cargar un modelo con features incompatibles y rellenarlas con valores artificiales puede invalidar la predicción. El candidato de investigación no sustituye al release antes de verificar inferencia y superioridad bajo protocolos comparables.
 
-## Límites de alcance
+Los grupos espaciales y la procedencia de etiquetas son parte del diseño de evaluación. Una simulación estable, un mayor AUC en otra población o un piloto GEOROC no equivalen a validación externa certificada. Ver [metodología M2](../models/MODEL_2_METHODOLOGY.md), [versiones](../models/VERSIONING.md) y [evidencia científica](../scientific/georoc/GEOCHEMICAL_EVIDENCE_SOURCES.md).
 
-Los scores y rankings espectrales de M2 son exploratorios: **no representan la probabilidad de descubrir un yacimiento rentable**. La integración de dos modelos no es validación externa; cualquier afirmación sobre generalización requiere el protocolo y evidencia adecuados.
+## Integración y resultados
+
+M1 y M2 pueden entrenarse, evaluarse e inferirse de forma **independiente**. La predicción integrada relaciona casos y resultados a posteriori. **El score calculado por M1 no se usa como entrada del estimador M2** en este flujo.
+
+La demostración automática de diez casos se ejecuta desde el menú de predicción y produce evidencia mediante los módulos originales del software: PDF, Excel, CSV, figuras, diagnósticos y manifiesto de la ejecución. No genera otra familia de modelos ni prueba por sí sola la validez externa.
+
+![Competencia y trazabilidad de resultados](../assets/competition-results.svg)
+
+## Infraestructura, identidad y distribución
+
+- `config/` guarda configuración YAML/JSON del checkout; el wheel incluye defaults generados desde esos archivos.
+- `data/raw/`, `data/interim/` y `data/processed/` guardan entradas y productos intermedios locales.
+- `models/model_*/trained/` conserva modelos identificados por `run_id`; `models/active_models.json` identifica la selección activa del equipo.
+- `results/model_*/runs/` conserva métricas, OOF, figuras, datasets hashes y manifests.
+- `results/predictions/` y `results/scientific_simulations/` contienen predicciones y campañas científicas.
+- `logs/` registra ejecución, entrenamiento, predicción y errores.
+- `distribution/` instala los assets de GitHub Releases mediante comprobaciones de manifiestos, rutas ZIP, hashes y compatibilidad de los modelos.
+
+Los modelos activos locales **no tienen por qué coincidir** con el release público más reciente. La selección de un nuevo ganador no crea automáticamente un tag. Consultar [reproducibilidad](../operations/REPRODUCIBILITY.md), [empaquetado](../operations/PACKAGING.md) y [modelos publicados](../models/MODEL_RELEASES.md).
+
+## Criterios de diseño: Clean Code, modularidad y SOLID
+
+La arquitectura se basa en **alta cohesión, bajo acoplamiento, funciones comprobables, contratos explícitos y reproducibilidad**. Se aplican ideas de SOLID donde aportan valor, sin describir todo el sistema Python como orientación a objetos ni afirmar que superar un test demuestra SOLID.
+
+| Idea | Aplicación concreta |
+|---|---|
+| Responsabilidad única (S) | `steps/` transforma, `pipeline.py` coordina, la CLI despacha y los reportes presentan |
+| Extensión sin rehacer pipelines (O) | `factory.py` registra algoritmos y el runner emplea contratos comunes |
+| Sustitución cuando aplica (L) | Los estimadores respetan `fit/predict` o `fit/predict_proba` según la tarea |
+| Interfaces separadas (I) | M1 usa regresión, M2 clasificación; no se fuerza un contrato mezclado |
+| Inversión de dependencias cuando aplica (D) | El runner y los orquestadores emplean interfaces/adaptadores en vez de fijar un algoritmo |
+
+Estas son **pautas de diseño**, no una certificación formal de los cinco principios. Además:
+
+- El preprocesamiento y ajuste de hiperparámetros deben respetar las particiones de validación.
+- Semillas, fingerprints científicos, commits, dataset hashes, esquemas de features y `run_id` deben permitir auditar una ejecución.
+- Ninguna mejora visual o documental debería sobrescribir la evidencia de un entrenamiento histórico.
+- `tests/core/test_architecture.py` y `scripts/check_code_size.py` protegen algunas decisiones estructurales, **no definen la calidad de una arquitectura por su número de líneas**.
+- El laboratorio de inspección separa adquisición, HTTP, parsing, verificación de datos, reportes y diagnóstico de GPU. No debe concentrar esas funciones en el menú.
+
+## Pruebas y limitaciones
+
+Los tests y el pipeline de integración continua verifican contratos, regresiones, compatibilidad de plataforma y propiedades científicas implementadas. Se prueban Python 3.11–3.13, Windows y Ubuntu; la batería automatizada no sustituye una auditoría científica independiente.
+
+**Límites de interpretación:** M1 puede extrapolar fuera del dominio de entrenamiento; M2 estima prioridad exploratoria, no depósitos certificados. El entrenamiento sobre fuentes heterogéneas, firmas espectrales redundantes y cercanía espacial entre muestras requieren protocolos explícitos. Las bitácoras históricas se mantienen en `docs/models/` y `docs/scientific/` con su fecha y contexto, sin reescritura retrospectiva.

@@ -1,140 +1,45 @@
 # LithiumScope
 
-> Sistema local, modular y reproducible para predicción de concentración de litio y análisis experimental de prospectividad espacial.
+**Sistema local de investigación aplicada para estimar concentración de litio y estudiar prospectividad espacial mediante aprendizaje automático.**
 
-**Autor y desarrollador del software:** Jaime Arriagada Rosas. **Proyecto académico independiente, implementado desde cero.** La memoria sobre litio y el Proyecto Anillo OASIS ATE240015 constituyen **antecedentes académicos y contexto de investigación**, no coautoría, implementación ni aval del software. Ver [autoría y fuentes](CREDITS.md).
+**Autor del código:** **Jaime Arriagada Rosas**. LithiumScope es un trabajo académico propio, implementado desde cero. La memoria de otros estudiantes y el **Proyecto Anillo OASIS ATE240015** se utilizan únicamente como *referencia y contexto académico*; **no desarrollaron ni son coautores de este software**. Consulta [autoría y referencias](CREDITS.md).
 
-**Estado público (noviembre de 2026):** [release M1 SVM ampliado + M2 CatBoost histórico](https://github.com/JaimeArriagadaRosas/LithiumScope/releases/tag/lithiumscope-training_20261106_111653_m0300). Los modelos activos de un clon local pueden diferir; M2 espectral v4 continúa como línea experimental.
+![Arquitectura modular](docs/assets/architecture.svg)
 
-**Acceso rápido:** [Instalación](docs/operations/INSTALLATION.md) · [Arquitectura](docs/architecture/ARCHITECTURE.md) · [Documentación](docs/INDEX.md) · [Modelos](docs/models/README.md) · [Empaquetado](docs/operations/PACKAGING.md) · [Citación](CITATION.cff) · [Licencia](LICENSE).
+## Qué hace
 
-<p align="center">
-  <img src="docs/assets/architecture.svg" alt="Arquitectura modular de LithiumScope con sus dos modelos e integración posterior" width="100%">
-</p>
+LithiumScope es una única aplicación Python, modular y sin servidor obligatorio. Resuelve dos problemas que permanecen científicamente independientes:
 
-## 1. Antecedentes
+| | Modelo 1 (M1) | Modelo 2 (M2) |
+|---|---|---|
+| Objetivo | Estimar concentración de litio en muestras de roca | Priorizar áreas según características espectrales asociadas a Li conocido |
+| Entrada | Geoquímica, geología y datos de la muestra | Parches Sentinel-2 L2A, coordenadas y etiquetas geoquímicas |
+| Salida | `Li_icpms` estimado en ppm | Score de prospectividad/prioridad exploratoria |
+| Evaluación | RMSE, MAE, R² | ROC-AUC, Average Precision y calibración |
 
-LithiumScope es un **desarrollo de software propio, realizado desde cero por Jaime Arriagada Rosas**, que toma como **referencia metodológica** una memoria académica orientada a predecir la concentración de litio (`Li_icpms`, ppm) en muestras de roca mediante información geoquímica, geológica y geoespacial. El trabajo se sitúa temáticamente en el contexto del **Proyecto Anillo OASIS ATE240015**, pero este repositorio no es un desarrollo de OASIS ni de los autores de la memoria. Sus resultados y estadísticas son los obtenidos con los protocolos y datos de LithiumScope, no los del documento original.
+La integración **compara los resultados después de ejecutar cada modelo**, sin incorporar automáticamente las predicciones de M1 como variables de entrenamiento de M2. La prioridad de M2 **no es una probabilidad de encontrar un yacimiento económicamente viable** ni sustituye una validación geológica.
 
-El estudio base trabaja con una tabla donde cada fila representa una muestra y las columnas incluyen:
+## Instalación
 
-- óxidos mayores: `SiO2`, `TiO2`, `Al2O3`, `Fe2O3`, `MnO`, `MgO`, `CaO`, `Na2O`, `K2O`, `P2O5`;
-- elementos traza: `Th_icpms`, `U_icpms`, `Rb_icpms`, `Cs_icpms`, `Nb_icpms`, `Ta_icpms`, `Pb_icpms`, `Ba_icpms`, `Sr_icpms`, `Zr_icpms`, `V_icpms`, `Hf_icpms`;
-- coordenadas;
-- edad geológica;
-- tipo de muestra;
-- tipo de roca;
-- arco y dominio;
-- `Li_icpms` como variable objetivo.
+**Requiere Python 3.11 o superior.** Desde un clon del repositorio:
 
-El documento de referencia informa 2.635 registros iniciales, 787 muestras con `Li_icpms` válido y 681 muestras finales después de los filtros definidos por sus autores.
-
-LithiumScope **no descarga ni reutiliza notebooks**. Cada etapa del procedimiento se traduce a un módulo `.py` independiente, testeable y reutilizable.
-
-### Documentación técnica de datos
-
-- [Variables de entrada y salida](docs/data/INPUT_OUTPUT_VARIABLES.md)
-- [Datasets y features](docs/data/DATASETS_AND_FEATURES.md)
-
----
-
-## 2. Qué intenta resolver
-
-LithiumScope separa dos preguntas científicas.
-
-### Modelo 1 — Predicción de Li
-
-**Pregunta:** dadas las propiedades conocidas de una muestra, ¿qué concentración de litio estima el modelo?
-
-Entrada:
-
-```text
-geoquímica + geología + coordenadas
-```
-
-Salida:
-
-```text
-Li_icpms estimado (ppm)
-```
-
-### Modelo 2 — Prospectividad espacial
-
-**Pregunta:** a partir de muestras conocidas y de información espectral/multibanda del terreno, ¿qué sectores presentan características compatibles con aquellos asociados a concentraciones relativamente altas de litio?
-
-Entrada:
-
-```text
-imagen multibanda + muestra conocida + Li real
-```
-
-Salida:
-
-```text
-score de prioridad exploratoria
-```
-
-El score del Modelo 2 **no debe interpretarse como probabilidad de un yacimiento económicamente viable**.
-
----
-
-## 3. Utilidad esperada
-
-El Modelo 1 permite reproducir y mejorar el problema predictivo original.
-
-El Modelo 2 busca responder una pregunta operacional posterior:
-
-```text
-¿dónde sería razonable mirar, revisar o muestrear después?
-```
-
-LithiumScope no pretende reemplazar:
-
-- ICP-MS;
-- interpretación geológica;
-- trabajo de terreno;
-- validación mineralógica;
-- evaluación económica de un depósito.
-
-Su utilidad es actuar como herramienta de **apoyo, comparación y priorización**.
-
----
-
-## 4. Filosofía de implementación
-
-El proyecto sigue una arquitectura de aplicación única y modular:
-
-```text
-un programa
-+
-dos modelos independientes
-+
-infraestructura compartida
-```
-
-No utiliza microservicios y no necesita un servidor para funcionar.
-
-El punto de entrada es:
-
-```bash
+```powershell
+git clone https://github.com/JaimeArriagadaRosas/LithiumScope.git
+cd LithiumScope
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -e ".[ml,imagery]"
 python main.py
 ```
 
-o:
+En Linux/macOS se activa el entorno con `source .venv/bin/activate`. Para desarrollar y ejecutar la suite, se puede instalar `python -m pip install -e ".[ml,imagery,dev]"`.
 
-```bash
-lithiumscope
-```
+También están disponibles `lithiumscope` y `lithiumscope-inspect` tras instalar el paquete. En un *wheel* instalado fuera del clon, los recursos predeterminados se incluyen en el paquete y los datos de usuario se almacenan en `~/.lithiumscope/`, salvo que se configure `LITHIUMSCOPE_HOME`. Ver [empaquetado](docs/operations/PACKAGING.md).
 
----
-
-## 5. Menú principal
+## Menú de la aplicación
 
 ```text
-====================================================
-                    LITHIUMSCOPE
-====================================================
-
 1. Entrenar modelos
 2. Realizar predicción
 3. Métricas y resultados
@@ -143,734 +48,27 @@ lithiumscope
 0. Salir
 ```
 
-### Opción 1 — Entrenar modelos
+**1. Entrenar modelos.** Ejecuta la competencia de M1, M2 o ambos. Cada familia de problema evalúa seis algoritmos de manera controlada, conserva métricas por fold, selección de hiperparámetros y modelo ganador. La adquisición de datos necesaria se prepara cuando corresponde; abrir el menú no requiere descargar todos los datasets.
 
-Ya no se selecciona un algoritmo individual.
+**2. Realizar predicción.** Permite usar M1, M2, ambos en una predicción integrada o la **demostración integrada automática de 10 casos**. La demostración produce desde la propia aplicación tablas, figuras, Excel, PDF científico y manifiestos; no es un PDF redactado manualmente.
 
-El usuario elige qué **familia de problema** entrenar:
+**3. Métricas y resultados.** Consulta ejecuciones, dashboards, evidencias y posibles candidatos para versión. Evaluar un candidato **no crea un release automáticamente**.
 
-```text
-1. Modelo 1 — Competencia de predicción de Li
-2. Modelo 2 — Competencia de prospectividad espacial
-3. Entrenar ambos
-```
+**4. Cargar modelo versionado.** Descarga desde GitHub Releases el asset `-artifacts.zip`, valida estructura e integridad y prepara los modelos para inferencia. No utiliza los archivos automáticos *Source code* de GitHub. Esta opción permite probar modelos publicados sin entrenarlos de nuevo.
 
-Cada competencia entrena sus algoritmos **uno detrás de otro**, registra métricas independientes y genera un ranking reproducible.
+**5. Laboratorio de simulaciones.** Ejecuta auditorías, estudios de sensibilidad y experimentos científicos separados de la selección operativa de modelos. Sus resultados **no reemplazan automáticamente** los modelos publicados o activos.
 
-### Opción 2 — Realizar predicción
+## Métodos y datos
 
-Utiliza el modelo ganador persistido.
+M1 utiliza seis familias: **Random Forest, XGBoost, SVM-RBF, TabNet, HistGradientBoosting y CatBoost**; su validación contempla esquemas anidados, predicciones fuera de fold y baselines. Los pasos incluyen carga, límites de detección, control de faltantes, selección del objetivo, control geoquímico, categorías, ingeniería de variables y preprocesamiento.
 
-- Modelo 1: CSV / XLS / XLSX.
-- Modelo 2: GeoTIFF / TIFF / NPY multibanda.
+M2 compara **Random Forest, Extra Trees, HistGradientBoosting, XGBoost, CatBoost y SVM-RBF**. Sus etiquetas y features deben mantener trazabilidad y respetar la validación espacial agrupada cuando corresponda. El modelo histórico utiliza un esquema de **126 características**; el experimento espectral v4 de **170 características** es una línea de investigación distinta y no debe activarse sin resolver su compatibilidad de inferencia.
 
-En Windows se abre el explorador de archivos del sistema para seleccionar el archivo.
+Para M1 se utiliza un mirror público de `Mamani09_Table_DR2` mientras no se confirme la fuente oficial de la memoria. **No se presenta como repositorio oficial de OASIS.** Para M2, el sistema puede obtener y almacenar temporalmente parches Sentinel-2 asociados a muestras conocidas; `training_manifest.csv` es un artefacto generado por el pipeline, no un archivo que el usuario deba preparar manualmente.
 
-### Opción 3 — Métricas y resultados
+La memoria académica de referencia informa la siguiente baseline; **no representa resultados medidos por LithiumScope** ni garantiza una comparación bajo el mismo protocolo:
 
-Funciona como un **centro local de resultados**.
-
-Permite:
-
-- abrir el dashboard HTML del último entrenamiento;
-- abrir el Excel de resultados;
-- listar ejecuciones históricas;
-- comparar ejecuciones anteriores;
-- identificar ejecuciones aptas como candidatas a publicación;
-- generar un manifest y un ZIP local con los modelos entrenados;
-- abrir la carpeta completa `results/`.
-
-### Opción 4 — Cargar modelo versionado
-
-Consulta los GitHub Releases del proyecto y muestra únicamente los releases que contienen un asset de modelos compatible (`*-artifacts.zip`).
-
-Al seleccionar uno:
-
-1. descarga únicamente el asset de modelos, nunca los archivos automáticos `Source code` de GitHub;
-2. verifica el SHA-256 disponible y los hashes internos de cada modelo;
-3. valida el manifest del bundle;
-4. comprueba que ambos artefactos pueden deserializarse en el entorno actual;
-5. instala Modelo 1 y Modelo 2;
-6. los registra como modelos activos para las predicciones posteriores.
-
-Un clon nuevo puede llegar al menú sin descargar los datasets de entrenamiento. Los datasets se preparan recién al elegir la opción de entrenamiento.
-
-### Opción 5 — Laboratorio de simulaciones
-
-Accede a los procedimientos experimentales y científicos del laboratorio: simulaciones, auditorías, sensibilidad, validación espacial y análisis de evidencia. Sus resultados se preservan como **experimentos**, sin reemplazar automáticamente los modelos activos ni crear un nuevo release. Véase [documentación del laboratorio](docs/scientific/README.md).
-
----
-
-## 6. Competencia del Modelo 1
-
-LithiumScope replica los cuatro algoritmos principales del trabajo base y agrega dos alternativas tabulares modernas.
-
-### Algoritmos
-
-1. **Random Forest**
-2. **XGBoost**
-3. **SVM RBF**
-4. **TabNet**
-5. **HistGradientBoosting**
-6. **CatBoost**
-
-Los primeros cuatro permiten comparar directamente con la metodología previa.
-
-HistGradientBoosting y CatBoost se incorporan como nuevas alternativas para evaluar si un método tabular adicional mejora generalización sin cambiar la pregunta científica.
-
-### Validación
-
-Se mantiene el esquema:
-
-```text
-Nested Cross Validation
-5 folds externos
-5 folds internos
-seed = 42
-```
-
-Cuando Optuna está instalado, la optimización se realiza dentro del conjunto de entrenamiento del fold externo.
-
-### Métricas
-
-La competencia registra por fold:
-
-- RMSE;
-- MAE;
-- R²;
-- Median Absolute Error;
-- Explained Variance;
-- tiempo de entrenamiento.
-
-Además calcula media y desviación estándar entre folds.
-
-### ¿Cómo se determina el ganador?
-
-Regla principal:
-
-```text
-menor RMSE promedio de validación externa
-```
-
-Desempates:
-
-1. menor MAE promedio;
-2. mayor R² promedio.
-
-El ganador se vuelve a entrenar con todas las muestras disponibles y se persiste para predicción posterior.
-
-Además se evalúa un **baseline trivial** (`DummyRegressor` con la media del conjunto de entrenamiento). El baseline aparece en los resultados para demostrar cuánto aporta el ML, pero no participa como candidato a ganador.
-
-> El ranking es una comparación experimental del conjunto y esquema de validación usados. No demuestra superioridad universal de un algoritmo.
-
----
-
-## 7. Competencia del Modelo 2
-
-Modelo 2 es un problema distinto y por eso utiliza una competencia distinta.
-
-### Algoritmos
-
-1. Random Forest
-2. Extra Trees
-3. HistGradientBoosting
-4. XGBoost
-5. CatBoost
-6. SVM RBF
-
-Estos algoritmos trabajan inicialmente sobre características espectrales extraídas de cada parche multibanda.
-
-### Objetivo inicial
-
-El baseline transforma la concentración conocida de Li en una clase relativa:
-
-```text
-muestras >= cuantil configurado de Li → referencia de Li alto
-muestras < cuantil                    → referencia restante
-```
-
-La configuración inicial utiliza el cuantil 0,75.
-
-### Validación
-
-Si el manifiesto contiene `spatial_group`, LithiumScope utiliza:
-
-```text
-StratifiedGroupKFold
-```
-
-para evitar que observaciones del mismo grupo espacial queden simultáneamente en entrenamiento y validación.
-
-Si los grupos no están disponibles, utiliza `StratifiedKFold` y deja una advertencia explícita en consola y logs.
-
-### Métricas
-
-- ROC-AUC;
-- Average Precision;
-- Balanced Accuracy;
-- F1;
-- Precision;
-- Recall;
-- Brier Score.
-
-### Ganador
-
-1. mayor ROC-AUC medio;
-2. mayor Average Precision;
-3. mayor Balanced Accuracy.
-
-Modelo 2 también incluye un baseline de prevalencia (`DummyClassifier(strategy="prior")`). Se informa junto con la competencia, pero queda excluido de la selección del ganador.
-
----
-
-## 8. Proceso reproducido para el Modelo 1
-
-Cada bloque conceptual tiene su propio archivo.
-
-### Step 01 — Carga
-
-`step_01_load_data.py`
-
-Soporta:
-
-- CSV;
-- XLS;
-- XLSX.
-
-Los CSV se prueban de forma segura con:
-
-1. UTF-8;
-2. UTF-8-SIG;
-3. Windows-1252;
-4. Latin-1.
-
-La codificación seleccionada queda registrada en consola y logs.
-
-### Step 02 — Límites de detección
-
-`step_02_detection_limits.py`
-
-Reglas documentadas:
-
-```text
-<10  → 5
->100 → 100
-```
-
-### Step 03 — Valores faltantes
-
-`step_03_missing_values.py`
-
-Normaliza representaciones de ausencia y decide la disponibilidad de `Age (Ma)`.
-
-### Step 04 — Filtro de objetivo
-
-`step_05_target_filtering.py`
-
-- elimina `Li_icpms` ausente;
-- conserva el intervalo percentil 2,5–97,5.
-
-### Step 05 — Control geoquímico
-
-`step_04_quality_control.py`
-
-Conserva valores del total de óxidos dentro de:
-
-```text
-94 <= SUM (no water) <= 102
-```
-
-### Step 06 — Categorías
-
-`step_06_category_cleaning.py`
-
-Normaliza y agrupa:
-
-- `Geologycal_age`;
-- `Sample_type`;
-- `Rock_type`;
-- `Arc`;
-- `Domain`.
-
-### Step 07 — Ingeniería geoquímica
-
-`step_07_feature_engineering.py`
-
-```text
-Alkali_Sum = Na2O + K2O
-
-Mg_Number = MgO / (MgO + Fe2O3 + 1e-6)
-
-A_CNK_proxy = Al2O3 / (CaO + Na2O + K2O + 1e-6)
-
-K_Mg_ratio = K2O / (MgO + 1e-6)
-```
-
-### Step 08 — Preprocesamiento
-
-`step_08_preprocessing.py`
-
-- imputación dentro del pipeline;
-- OneHotEncoder;
-- categorías desconocidas ignoradas;
-- StandardScaler cuando corresponde.
-
-### Step 09 — Validación
-
-`step_09_validation.py`
-
-Define los folds y evita mezclar responsabilidades con los algoritmos.
-
----
-
-## 9. Auditoría del pipeline
-
-Cada etapa imprime en consola y registra en logs:
-
-```text
-nombre de etapa
-número de filas
-número de columnas
-cantidad de celdas faltantes
-```
-
-Ejemplo conceptual:
-
-```text
-✓ 01_load_data                filas=2635 columnas=...
-✓ 02_detection_limits         filas=2635 columnas=...
-✓ 03_missing_values           filas=2635 columnas=...
-✓ 04_target_filtering         filas=...  columnas=...
-✓ 05_quality_control          filas=...  columnas=...
-✓ 06_category_cleaning        filas=...  columnas=...
-✓ 07_feature_engineering      filas=...  columnas=...
-```
-
-La auditoría también se exporta a:
-
-```text
-pipeline_steps.csv
-```
-
----
-
-## 10. Resultados generados automáticamente
-
-Cada entrenamiento crea una ejecución independiente:
-
-```text
-results/
-└── model_1/
-    └── runs/
-        └── YYYYMMDDTHHMMSSZ/
-            ├── config/
-            ├── manifests/
-            ├── figures/
-            ├── tables/
-            ├── exports/
-            ├── run.json
-            └── dashboard.html
-```
-
-Modelo 2 utiliza la misma convención.
-
-### Figuras del Modelo 1
-
-- distribución de `Li_icpms`;
-- porcentaje de datos faltantes;
-- pérdida/conservación de muestras por etapa;
-- heatmap de correlaciones numéricas;
-- RMSE de la competencia;
-- real vs. predicho por algoritmo;
-- residuos por algoritmo;
-- importancia de variables del ganador cuando el algoritmo la expone.
-
-### Tablas
-
-- auditoría del pipeline;
-- resumen descriptivo;
-- matriz de correlaciones;
-- métricas por fold;
-- predicciones OOF;
-- residuos;
-- ranking final.
-
-### Excel
-
-Cada ejecución exporta un libro Excel con:
-
-- ranking;
-- auditoría del pipeline;
-- resumen del dataset;
-- correlaciones;
-- métricas por fold;
-- predicciones por algoritmo.
-
-### Dashboard local
-
-`dashboard.html` carga automáticamente:
-
-- estado y trazabilidad de `run.json`;
-- manifest del dataset y su hash;
-- todas las figuras PNG de la ejecución;
-- previews de las tablas CSV;
-- enlaces a exportaciones Excel;
-- resultados organizados por sección.
-
-No necesita servidor web.
-
----
-
-## 11. Runtime: preboot y cierre seguro
-
-LithiumScope incorpora una capa de ciclo de vida independiente en:
-
-```text
-src/lithiumscope/runtime/
-├── preboot.py
-├── graceful_shutdown.py
-└── lifecycle.py
-```
-
-### Preboot
-
-Antes de mostrar el menú, `preboot.py` verifica y prepara:
-
-- Python 3.11 o superior;
-- dependencias esenciales;
-- dependencias ML completas;
-- dependencias de imágenes;
-- configuración YAML;
-- permisos de escritura en `data/`, `models/`, `results/` y `logs/`;
-- acelerador CPU / CUDA / MPS;
-- estado local del dataset geoquímico del Modelo 1, sin descargarlo durante el arranque;
-- estado local del dataset espacial del Modelo 2, sin construir pares Sentinel-2 durante el arranque;
-- placeholders `.gitkeep` locales.
-
-Si faltan paquetes opcionales para ejecutar una competencia completa, el preboot los informa de una sola vez y entrega el comando recomendado:
-
-```bat
-pip install -e ".[ml,imagery,dev]"
-```
-
-Además genera un reporte JSON en:
-
-```text
-logs/preboot/preboot_<timestamp>.json
-```
-
-Los archivos `.gitkeep` **se mantienen versionados intencionalmente** para que GitHub y un clon recién creado muestren la arquitectura completa de directorios aunque todavía estén vacíos. Al ejecutar LithiumScope, el preboot elimina esos `.gitkeep` únicamente del working tree local, porque en ese momento las carpetas ya existen y comenzarán a contener datos, modelos, logs y resultados reales. Esta limpieza local no elimina los placeholders del repositorio remoto.
-
-### Graceful shutdown
-
-`graceful_shutdown.py` registra manejadores para:
-
-- Ctrl+C / SIGINT;
-- SIGTERM;
-- Ctrl+Break en Windows;
-- cierre de consola de Windows mediante `SetConsoleCtrlHandler`;
-- finalización normal del proceso.
-
-El gestor:
-
-1. registra el motivo del cierre;
-2. detiene procesos hijo conocidos;
-3. espera un tiempo breve;
-4. fuerza su terminación solo si no responden;
-5. ejecuta callbacks de limpieza;
-6. cierra correctamente el sistema de logging.
-
-El selector de archivos ya no utiliza Tkinter. En Windows usa el diálogo nativo de WinForms mediante PowerShell; en macOS usa `osascript`; en Linux intenta `zenity` o `kdialog`. Esto evita mantener un event loop de Tkinter durante entrenamientos largos.
-
----
-
-## 12. Logs centralizados
-
-```text
-logs/
-├── lithiumscope.log
-├── training/
-├── prediction/
-└── errors/
-```
-
-El log general conserva el flujo completo.
-
-Cada entrenamiento crea además un archivo independiente como:
-
-```text
-logs/training/model_1_competition_YYYYMMDD_HHMMSS.log
-```
-
----
-
-## 13. CPU y GPU
-
-`src/lithiumscope/core/device.py`
-
-Prioridad:
-
-```text
-CUDA → MPS → CPU
-```
-
-El backend se utiliza solo cuando el algoritmo lo soporta.
-
-- scikit-learn Random Forest: CPU;
-- scikit-learn SVM: CPU;
-- XGBoost: CUDA cuando está disponible;
-- CatBoost: GPU cuando está disponible;
-- TabNet: CUDA cuando está disponible;
-- modelos visuales futuros: acelerador compatible.
-
-Una GPU no es requisito para utilizar LithiumScope.
-
----
-
-## 14. Datasets
-
-### Modelo 1
-
-Mientras se confirma la fuente oficial, se utiliza como bootstrap un mirror público de `Mamani09_Table_DR2`.
-
-> Este mirror no se presenta como repositorio oficial de los autores del trabajo académico.
-
-### Modelo 2
-
-El dataset de entrenamiento del Modelo 2 se construye **automáticamente**. El usuario no tiene que crear ni seleccionar manualmente un `training_manifest.csv`.
-
-Al preparar datos para entrenamiento se realiza este flujo (no como requisito para abrir el menú):
-
-```text
-dataset geoquímico
-      ↓
-muestras con Li + latitud + longitud
-      ↓
-búsqueda Sentinel-2 L2A por coordenada
-      ↓
-selección de escena por nubosidad
-      ↓
-extracción y cache de parche multibanda
-      ↓
-data/processed/model_2/training_manifest.csv
-```
-
-Las imágenes se obtienen mediante el catálogo público STAC Earth Search y se almacenan como parches locales cacheados. Si una muestra no dispone de escena válida, queda registrada y se omite; el entrenamiento exige un mínimo configurable de muestras preparadas.
-
-El manifiesto generado contiene, entre otros:
-
-- `sample_id`;
-- `Li_icpms`;
-- longitud;
-- latitud;
-- `spatial_group`;
-- ruta del parche multibanda;
-- identificador de escena Sentinel-2;
-- nubosidad de la escena.
-
-Fuentes espectrales como Fregeneda–Almendra y GREENPEG continúan registradas como **referencias auxiliares**; no se mezclan automáticamente con las muestras andinas porque corresponden a dominios geológicos diferentes.
-
----
-
-## 15. Manifiesto automático del Modelo 2
-
-`training_manifest.csv` es un artefacto interno reproducible, no un archivo que el usuario deba preparar.
-
-Ruta predeterminada:
-
-```text
-data/processed/model_2/training_manifest.csv
-```
-
-Los parches Sentinel-2 se cachean en:
-
-```text
-data/raw/model_2/sentinel2/patches/
-```
-
-En entrenamientos posteriores se pueden reutilizar el manifiesto y los parches cacheados mientras sigan siendo compatibles, evitando descargar nuevamente los mismos datos. El preboot inicial del menú no requiere ejecutar esa provisión.
-
----
-
-## 16. Arquitectura modular y principios de diseño
-
-LithiumScope sigue una **arquitectura monolítica modular**, organizada por responsabilidades, funciones y contratos científicos; no se presenta como un sistema de orientación a objetos ni como una demostración general de SOLID.
-
-```text
-main.py / runtime / cli  → arranque y orquestación
-datasets/                → adquisición, armonización y manifests
-model_1/ y model_2/      → pasos, entrenamiento, validación y evaluación
-prediction/              → inferencia, integración posterior y reportes
-persistence/             → carga y guardado de modelos
-results/ y distribution/ → evidencia, catálogo y releases
-experiments/ y tools/    → laboratorio, auditorías y diagnóstico
-```
-
-Clean Code, cohesión, bajo acoplamiento y responsabilidad única son los criterios principales. **SOLID aporta algunas ideas aplicables** a contratos y adaptadores, sin definir por sí solo la arquitectura del programa.
-
-Documentos: [arquitectura real](docs/architecture/ARCHITECTURE.md), [principios de diseño](docs/architecture/DESIGN_PRINCIPLES.md) y [pipelines científicos](docs/architecture/SCIENTIFIC_PIPELINES.md). Los tests estructurales son guardas prácticas y no certificaciones de SOLID.
-
----
-
-## 17. Instalación
-
-### Requisito
-
-Python 3.11 o superior.
-
-Verifique su versión:
-
-```bat
-python --version
-```
-
-### Windows
-
-```bat
-git clone https://github.com/JaimeArriagadaRosas/LithiumScope.git
-cd LithiumScope
-
-python -m venv .venv
-.venv\Scripts\activate
-
-python -m pip install --upgrade pip
-pip install -e ".[ml,imagery,dev]"
-```
-
-La instalación `.[ml,imagery,dev]` permite probar las seis alternativas de ambas competencias.
-
-### Ejecutar tests
-
-```bat
-pytest -v
-ruff check src tests main.py
-```
-
-### Ejecutar
-
-```bat
-python main.py
-```
-
-### Comandos útiles
-
-La aplicación principal continúa siendo:
-
-```bat
-python main.py
-```
-
-o, después de instalar el proyecto:
-
-```bat
-lithiumscope
-```
-
-Para inspeccionar el pipeline de datos **sin entrenar modelos**:
-
-```bat
-lithiumscope-inspect
-```
-
-El laboratorio ejecuta su propio preboot antes de cualquier step. Ese preboot
-comprueba entorno, Mamani09 y una extracción GEOROC filtrada. Si falta GEOROC,
-intenta obtener mediante la consulta pública únicamente el subconjunto requerido
-por LithiumScope; nunca descarga automáticamente los ~22 GiB de Andean Arc como
-fallback.
-
-El inspector permite ejecutar etapas individuales:
-
-```text
-1. Inspeccionar fuentes brutas
-2. Armonizar GEOROC
-3. Concatenar Mamani09 + GEOROC
-4. Deduplicar dataset combinado
-5. Ejecutar limpieza completa de M1
-6. Obtener candidatos para M2
-7. Ejecutar steps 1-6 y mostrar informe completo
-0. Salir
-```
-
-Para ejecutar directamente el flujo completo:
-
-```bat
-lithiumscope-inspect --step 7
-```
-
-Para comprobar la GPU sin descargar datasets:
-
-```bat
-lithiumscope-inspect --gpu
-```
-
-La prueba GPU informa NVIDIA/`nvidia-smi`, VRAM, PyTorch CUDA y realiza pruebas
-mínimas reales de XGBoost CUDA y CatBoost GPU cuando están instalados.
-
-La opción 7 no entrena ningún algoritmo. Reconstruye y audita las etapas de datos
-para obtener el número final de muestras que entrarían a M1 y el número de
-candidatos M2 con Li + coordenadas antes de Sentinel-2.
-
-Los artefactos de inspección se guardan en:
-
-```text
-data/processed/model_1/inspection/
-```
-
-El procedimiento aprobado y el contrato de adquisición se documentan en
-[`docs/scientific/lab/LAB_PIPELINE_PROCEDURE.md`](docs/scientific/lab/LAB_PIPELINE_PROCEDURE.md).
-
----
-
-## 18. Estructura del repositorio
-
-```text
-LithiumScope/
-├── .github/                 # CI y plantillas de colaboración
-├── config/                  # Configuraciones de datasets y modelos
-├── data/                    # Datos raw, interim y processed (locales)
-├── docs/                    # Arquitectura, datos, modelos, operaciones y ciencia
-│   ├── architecture/        # ARCHITECTURE, DESIGN_PRINCIPLES, SCIENTIFIC_PIPELINES
-│   ├── assets/              # SVG utilizados por el README
-│   ├── data/
-│   ├── models/
-│   ├── operations/
-│   └── scientific/
-├── examples/
-├── logs/                    # Logs locales
-├── models/                  # Modelos entrenados, metadatos y selección activa
-├── results/                 # Runs, predicciones y experimentos locales
-├── scripts/                 # Auditorías y utilidades científicas
-├── src/lithiumscope/
-│   ├── cli/                 # Menús y comandos
-│   ├── core/                # Recursos y servicios transversales
-│   ├── datasets/            # Obtención y validación de fuentes
-│   ├── distribution/        # Releases e instalador de artefactos
-│   ├── experiments/         # Experimentos y simulaciones
-│   ├── model_1/             # Regresión geoquímica
-│   ├── model_2/             # Prospectividad espectral
-│   ├── persistence/         # Registro y serialización de modelos
-│   ├── prediction/          # Predicción integrada y PDF/Excel
-│   ├── results/             # Catálogo y exportación
-│   ├── runtime/             # Preboot y ciclo de vida
-│   └── tools/               # Inspecciones y diagnósticos
-├── tests/                   # Pruebas automatizadas
-├── main.py                  # Entrada del checkout
-└── pyproject.toml           # Metadatos y dependencias
-```
-
-La documentación navegable y los criterios de vigencia están en [docs/INDEX.md](docs/INDEX.md). Los datos y pesos locales grandes no se incluyen automáticamente en Git.
-
----
-
-## 19. Representación de la baseline académica
-
-La figura siguiente reproduce los valores reportados en la **memoria académica de referencia**. **No son métricas obtenidas por LithiumScope** y sus protocolos no deben interpretarse automáticamente como comparaciones equivalentes con los entrenamientos actuales.
-
-<p align="center">
-  <img src="docs/assets/baseline-reference.svg" alt="Baseline de referencia" width="100%">
-</p>
-
-| Modelo | R² promedio | RMSE promedio (ppm) |
+| Algoritmo de referencia | R² medio | RMSE medio (ppm) |
 |---|---:|---:|
 | Random Forest | 0.499 | 5.361 |
 | XGBoost | 0.467 | 5.528 |
@@ -878,243 +76,52 @@ La figura siguiente reproduce los valores reportados en la **memoria académica 
 | TabNet | 0.399 | 5.828 |
 | GPT* | -0.157 | 6.934 |
 
-* GPT fue evaluado con un esquema diferente y no debe interpretarse como comparación equivalente con la nested CV.
+*GPT fue evaluado con un procedimiento distinto; su cifra no es directamente comparable con las demás.*
 
----
+![Gráfico de resultados reportados por la memoria](docs/assets/baseline-reference.svg)
 
-## 20. Flujo técnico
+## Resultados y reproducibilidad
 
-<p align="center">
-  <img src="docs/assets/workflow.svg" alt="Flujo de LithiumScope" width="100%">
-</p>
+Cada entrenamiento registra una identidad `run_id`, versión del código, hashes de datos, configuración, entorno, métricas y evidencias. Los modelos se conservan con metadatos y esquema de características. Las salidas locales se organizan principalmente en `models/`, `results/` y `logs/`.
 
-<p align="center">
-  <img src="docs/assets/competition-results.svg" alt="Competencia y resultados" width="100%">
-</p>
+Las ejecuciones compatibles pueden reanudarse reutilizando checkpoints; los cambios relevantes de datos, configuración o código científico originan una identidad diferente. **Los pesos, imágenes y datasets grandes del laboratorio no forman parte necesariamente del repositorio Git.**
 
----
+El release público del **14 de noviembre de 2026** publica **M1 SVM ampliado** (`training_20261106_111653_m0300`) y **M2 CatBoost histórico** (`training_20260920_195933_m0300`), además de un PDF de demostración como asset independiente. La procedencia de ambos modelos es distinta y la selección activa de un equipo puede diferir de la publicación.
 
-## 21. Estado del proyecto
+[Ver el release publicado](https://github.com/JaimeArriagadaRosas/LithiumScope/releases/tag/lithiumscope-training_20261106_111653_m0300).
 
-### Implementado
+## Documentación técnica y evidencia
 
-- arquitectura modular sin notebooks;
-- carga robusta CSV/Excel;
-- fallback de codificaciones CSV;
-- auditoría de steps;
-- Modelo 1 con seis algoritmos;
-- competencia y ranking;
-- nested CV para Modelo 1;
-- Modelo 2 con seis algoritmos;
-- validación espacial agrupada cuando existe `spatial_group`;
-- CPU/GPU detection;
-- persistencia del ganador;
-- logs centralizados;
-- exportación CSV/Excel;
-- dashboard HTML local;
-- gráficos automáticos;
-- selector nativo de archivos sin Tkinter;
-- preboot de dependencias/configuración/permisos;
-- graceful shutdown multiplataforma;
-- `.gitkeep` versionados para representar la arquitectura y limpieza local de esos placeholders durante preboot;
-- tracking de experimentos mediante `run_id` y `run.json`;
-- manifest SHA-256 de datasets por ejecución;
-- snapshots de configuración;
-- modelos autocontenidos por `run_id`;
-- baselines científicos;
-- tests automáticos contra leakage y OOF incompleto;
-- perfil de aplicabilidad / fuera de dominio;
-- comparación de ejecuciones y preparación de candidatos para futuros tags;
-- tests funcionales y estructurales;
-- CI con GitHub Actions.
+La documentación se organiza por **contenido**, no por múltiples índices. Estos son los puntos de entrada:
 
-### Limitaciones y validaciones científicas pendientes
+| Tema | Documento |
+|---|---|
+| Componentes, flujos científicos y principios de diseño | [Arquitectura](docs/architecture/ARCHITECTURE.md) |
+| Procedencia, preparación y características | [Datasets y features](docs/data/DATASETS_AND_FEATURES.md) |
+| Contratos de entradas y salidas | [Variables](docs/data/INPUT_OUTPUT_VARIABLES.md) |
+| Metodología espacial | [Modelo 2](docs/models/MODEL_2_METHODOLOGY.md) |
+| Predicción, integración y demostración | [Flujos de predicción](docs/models/PREDICTION_WORKFLOWS.md) |
+| Instalación de artefactos y wheel | [Distribución y empaquetado](docs/operations/PACKAGING.md) |
+| Registro y trazabilidad | [Reproducibilidad](docs/operations/REPRODUCIBILITY.md) |
+| Versiones y releases | [Modelos publicados](docs/models/MODEL_RELEASES.md) · [Versionado](docs/models/VERSIONING.md) |
+| Evidencia M1/M2 por experimentos fechados | [Selección y limitaciones de M1/M2](docs/models/M1_M2_SELECCION_Y_PDF_MENU_20261113.md) |
+| Laboratorio y validaciones científicas | [Laboratorio](docs/scientific/lab/SCIENTIFIC_SIMULATION_LAB.md) · [Evidencia geoquímica](docs/scientific/georoc/GEOCHEMICAL_EVIDENCE_SOURCES.md) |
 
-- confirmar si la fuente de datos de OASIS utilizada en la memoria corresponde al mirror público de trabajo;
-- conservar comparaciones realizadas con el baseline académico, indicando diferencias de muestras y protocolos, sin presentar resultados heterogéneos como equivalentes;
-- verificar independientemente los pares muestra ↔ Sentinel-2 y su representatividad geológica;
-- estudiar la robustez de la adquisición, los años, el tamaño de parche y el cambio de sensor, sin confundir estabilidad con exactitud;
-- obtener validación externa geoquímica y espacial suficientemente independiente para M2;
-- revisar extrapolación de M1 ante Li extremo, cambios de folds y fuentes heterogéneas;
-- finalizar la compatibilidad de inferencia del candidato espectral M2 v4 antes de considerarlo para publicación.
+Las bitácoras fechadas de `docs/models/` y los informes de `docs/scientific/` **se conservan completos**: documentan qué se observó en cada experimento, aunque un documento antiguo indique un estado anterior a la publicación actual.
 
-La situación del release estable y los experimentos se resume en [documentación de modelos](docs/models/README.md).
+## Calidad, limitaciones y derechos
 
----
+El repositorio utiliza tests automatizados, Ruff y controles estructurales; la integración continua verifica Python 3.11–3.13 en Windows y Ubuntu. Para ejecutarlos:
 
-## 22. Criterio de éxito
-
-Primera etapa:
-
-```text
-procedimiento académico
-        ↓
-reproducción modular
-        ↓
-competencia de 6 algoritmos
-        ↓
-métricas y evidencia
-        ↓
-modelo ganador persistido
-        ↓
-predicción local
+```powershell
+python -m pip install -e ".[dev]"
+python -m pytest -q
+python -m ruff check src tests main.py
+python scripts/check_code_size.py --check
 ```
 
-Segunda etapa:
+Permanecen abiertos problemas científicos como la procedencia definitiva del dataset académico, extrapolación de Li extremo, independencia espacial, comparabilidad de conjuntos y validación externa de la prospectividad. El sistema **no sustituye ICP-MS, interpretación geológica, trabajo de terreno ni evaluación económica**.
 
-```text
-muestras georreferenciadas
-        +
-imágenes espectrales
-        ↓
-competencia de prospectividad
-        ↓
-validación espacial
-        ↓
-priorización de sectores
-```
+**Seguridad:** cargar archivos `.joblib` puede ejecutar código; utilizar solamente modelos de procedencia confiable. La verificación SHA-256 comprueba integridad, no confianza en el origen.
 
-LithiumScope debe mantener siempre una separación explícita entre **reproducción**, **mejora** y **experimentación**.
-
-
----
-
-## 23. Reproducibilidad, manifests y artefactos
-
-Cada entrenamiento es un experimento identificado por un `run_id`.
-
-Además de métricas y gráficos, LithiumScope captura:
-
-- commit Git;
-- versiones de Python y librerías;
-- recursos CPU/GPU;
-- configuración exacta;
-- hash SHA-256 del dataset;
-- estado de la ejecución;
-- eventos de algoritmos completados o fallidos;
-- ganador y métrica primaria.
-
-Los modelos nuevos se almacenan como artefactos autocontenidos:
-
-```text
-models/<modelo>/trained/<run_id>/
-├── model.joblib
-├── metadata.json
-├── feature_schema.json
-├── training_config.yaml
-└── dataset_manifest.json
-```
-
-Los loaders mantienen compatibilidad con artefactos antiguos.
-
-La documentación detallada está en [docs/operations/REPRODUCIBILITY.md](docs/operations/REPRODUCIBILITY.md).
-
-### Aplicabilidad de una predicción
-
-Modelo 1 y Modelo 2 guardan un perfil empírico de los rangos observados durante entrenamiento. Las predicciones indican qué fracción de variables cae fuera del intervalo percentil 1–99 de ese entrenamiento.
-
-Esto funciona como **advertencia de extrapolación**, no como garantía estadística ni geológica.
-
-Modelo 1 agrega además un intervalo empírico basado en el percentil 90 del error absoluto out-of-fold del ganador.
-
----
-
-## 24. Versionado y publicación de modelos
-
-LithiumScope **ya tiene releases públicos**. No se crea un tag automáticamente al entrenar; la publicación es una decisión independiente de la selección del ganador.
-
-```text
-entrenamientos identificados por run_id
-        ↓
-métricas, procedencia y compatibilidad de inferencia
-        ↓
-evaluación de candidatos y revisión de evidencia
-        ↓
-manifest y bundle con los dos modelos y sus hashes
-        ↓
-validación de instalación y predicción en entorno limpio
-        ↓
-publicación manual de un nuevo tag y assets
-```
-
-En el release del **14 de noviembre de 2026** se combinaron M1 SVM ampliado y M2 CatBoost histórico. Cada modelo conserva su origen real, por lo que la documentación no debe afirmar que ambos se entrenaron en el mismo commit. Los criterios automáticos de candidatos nuevos pueden ser más restrictivos que el empaquetado revisado manualmente.
-
-La opción **3. Métricas y resultados** permite evaluar candidatos sin publicar automáticamente. Consultar [versionado](docs/models/VERSIONING.md), [modelos publicados](docs/models/MODEL_RELEASES.md) y [empaquetado](docs/operations/PACKAGING.md).
-
----
-
-## 25. CI y compatibilidad
-
-La integración continua existente prueba:
-
-- Ruff;
-- Python 3.11, 3.12 y 3.13;
-- Ubuntu;
-- Windows.
-
-Esto es especialmente importante porque LithiumScope utiliza rutas, selectores de archivos, señales y comportamiento de consola que pueden variar entre sistemas operativos.
-
-`pyproject.toml` es la única fuente de dependencias del proyecto; se eliminó el `requirements.txt` duplicado. Para wheel/sdist, los recursos YAML/JSON se incorporan desde el directorio canónico `config/` durante la construcción y se materializan en la carpeta de usuario al instalar fuera del checkout. Ver [empaquetado](docs/operations/PACKAGING.md).
-
-
----
-
-## 26. Reanudación de entrenamiento
-
-LithiumScope evita generar carpetas y modelos repetidos cuando una competencia se interrumpe.
-
-Cada entrenamiento nuevo recibe una identidad local como:
-
-```text
-training_20260919_154100_m0300
-```
-
-Antes de crear una ejecución nueva se calcula una firma con el dataset, las configuraciones relevantes y el commit Git. Si existe un entrenamiento compatible, se reutiliza.
-
-La reanudación opera en varios niveles:
-
-- ejecución completa: si ya terminó, se reutiliza sin volver a generar el modelo;
-- algoritmo: conserva sus resultados y parámetros finales;
-- fold: un fold terminado no vuelve a ejecutarse;
-- Optuna: los estudios se persisten en SQLite y continúan los trials pendientes.
-
-Una interrupción dentro de un fold solo obliga a repetir el trabajo que todavía no había alcanzado un checkpoint seguro.
-
-### TabNet
-
-TabNet utiliza una validación interna tomada exclusivamente del conjunto de entrenamiento de cada fit para que el early stopping sea real y no utilice el fold externo de prueba. Los warnings de la librería se capturan y deduplican en los logs, mientras la consola usa progreso reescribible.
-
-El modelo final ganador puede reajustarse con todos los datos usando el número de épocas seleccionado durante la validación interna.
-
-La estrategia de versionado asociada se documenta en [docs/models/VERSIONING.md](docs/models/VERSIONING.md).
-
-
-### Predicción integrada
-
-Dentro de `2. Realizar predicción`:
-
-```text
-1. Modelo 1 — Predicción de concentración
-2. Modelo 2 — Prospectividad espacial
-3. Predicción completa
-4. Demostración integrada automática
-0. Volver
-```
-
-La predicción completa solicita los inputs del usuario para ambos modelos. La
-demostración utiliza un conjunto externo versionado y obtiene automáticamente
-Sentinel-2 para los mismos casos. Ambas conservan los modelos científicamente
-separados y realizan la integración después de predecir, generando métricas,
-correlaciones, concordancias, diagnósticos, Excel, PDF, manifest e
-interpretación reproducible. El PDF se abre automáticamente en el navegador
-predeterminado del sistema cuando la ejecución finaliza.
-
-Consulte `docs/models/PREDICTION_WORKFLOWS.md` para el contrato científico y los
-artefactos generados.
-
-
-### Reparación automática de dependencias
-
-`python main.py` verifica y repara dependencias runtime faltantes dentro de un
-entorno virtual antes de cargar la aplicación. Solo instala extras ML/imagery
-cuando son necesarios y no modifica automáticamente el Python global.
+**Autoría y distribución:** [Créditos y referencias](CREDITS.md) · [Citación](CITATION.cff) · [Licencia MIT del código](LICENSE). La licencia del software **no amplía** los permisos sobre datasets, imágenes o documentos de terceros.
