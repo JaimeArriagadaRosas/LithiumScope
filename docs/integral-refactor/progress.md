@@ -91,3 +91,7 @@
 - Lector compartido valida encabezados, filas y delimitador; registra formato, codificacion y hoja. Excepcion de cuatro encabezados vacios restringida al SHA256 de Mamani09 (1788 x 101, CP1252).
 - EDA real M1: 1073 descartes por Li ausente/no interpretable; QC 160 bajo minimo, 3 sobre maximo, 109 faltantes. 3420 filas, 33 predictores y 244 grupos conservados. Derivados v2: 7 ausencias adicionales, sin divisiones invalidas ni negativos; v1 mantiene formulas anteriores. Evidencia results/model_1/eda/eda_20261124T210147_943982Z_60f8d415.
 - Pruebas focalizadas 79 aprobadas, 0 fallos (20261124T210128Z_5a61039109644304808379ed6bb9cb1c). Pendiente confirmar unidades, censura y equivalencia quimica de sumas por fuente. No se ha entrenado un candidato.
+
+## Contrato de inferencia y aplicabilidad M1/M2
+- M1 distingue generacion real de columnas y padding de ausencias, verifica perfil completo, marca salidas fisicamente invalidas sin alterar estimaciones historicas. Normalizacion numerica v2 comun a inferencia y entrenamiento. M1/M2 comparten comprobacion de perfil marginal.
+- 91 aprobadas, 4 omitidas (20261124T210254Z_d10ad5522e724aac819c0c302c58aac0); tests GLOBAL de pickle resuelven ambos nombres historicos. No se probaron bundles reales ni se certifica incertidumbre independiente.

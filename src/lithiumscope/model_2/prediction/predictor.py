@@ -10,6 +10,7 @@ from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import RESULTS_DIR
 from lithiumscope.model_2.prediction.spectral_contract import prepare_spectral_input, SpectralAbstention
 from lithiumscope.model_2.schema import out_of_range_fraction
+from lithiumscope.core.scientific.applicability import complete_range_profile
 from lithiumscope.persistence.load_model import load_latest_model
 
 
@@ -44,13 +45,7 @@ def score_model_2_image(
     operating_positive = score >= operating_threshold
     label = "alta" if score >= 0.70 else "media" if score >= 0.40 else "baja"
     profile = bundle.get("applicability_profile", {})
-    profile_complete = isinstance(profile, dict) and set(profile) == set(expected)
-    if profile_complete:
-        try:
-            profile_complete = all(np.isfinite([float(v["q01"]), float(v["q99"])]).all()
-                                   and float(v["q01"]) <= float(v["q99"]) for v in profile.values())
-        except (KeyError, TypeError, ValueError):
-            profile_complete = False
+    profile_complete = complete_range_profile(profile, expected)
     applicability = out_of_range_fraction(frame, profile) if profile_complete else float("nan")
 
     payload = {

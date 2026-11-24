@@ -55,7 +55,10 @@ def model_1_case_text(row: pd.Series, *, lithium_threshold_ppm: float | None = N
             f" El intervalo empírico q90 asociado va aproximadamente de "
             f"{_fmt_nonnegative(interval_low, 2)} a {_fmt(interval_high, 2)} ppm."
         )
-    if ood > 0.25:
+    warning = row.get("applicability_warning")
+    if warning in {"INSUFFICIENT_PROFILE", "INSUFFICIENT_INPUT", "INVALID_PHYSICAL_PREDICTION"}:
+        text += " Evidencia de aplicabilidad insuficiente o salida físicamente inválida; no se certifica la estimación."
+    elif ood > 0.25:
         text += (
             f" La entrada presenta {ood:.0%} de variables numéricas fuera del "
             "dominio empírico observado; la estimación debe interpretarse con cautela."

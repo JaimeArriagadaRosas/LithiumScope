@@ -124,8 +124,7 @@ def prepare_training_data(path: Path, model_family: str = "common") -> PreparedM
     schema = select_feature_schema(frame, include_age=include_age, preparation_version=version)
     validate_training_schema(target, schema.numeric, schema.categorical)
 
-    for column in schema.numeric:
-        frame[column] = pd.to_numeric(frame[column], errors="coerce")
+    frame = _normalize_numeric_predictors(frame, schema)
 
     columns = schema.numeric + schema.categorical
     if not columns:
@@ -185,6 +184,24 @@ def prepare_training_data(path: Path, model_family: str = "common") -> PreparedM
     )
 
 
+def _normalize_numeric_predictors(frame: pd.DataFrame, schema: FeatureSchema) -> pd.DataFrame:
+    result = frame.copy()
+    version = getattr(schema, "preparation_version", 1)
+    for name in schema.numeric:
+        values = pd.to_numeric(result[name], errors="coerce")
+        if version >= 2:
+            valid = np.isfinite(values)
+            if name == "Longitude":
+                valid &= values.between(-180, 180)
+            elif name == "Latitude":
+                valid &= values.between(-90, 90)
+            else:
+                valid &= values.ge(0)
+            values = values.where(valid)
+        result[name] = values
+    return result
+
+
 def prepare_prediction_data(frame: pd.DataFrame, model_family: str, schema: FeatureSchema) -> pd.DataFrame:
     version = getattr(schema, "preparation_version", 1)
     result = clean_detection_limits(frame, version=version)
@@ -201,9 +218,13 @@ def prepare_prediction_data(frame: pd.DataFrame, model_family: str, schema: Feat
     if missing:
         logger.warning("Prediction input is missing %d expected columns: %s", len(missing), missing)
 
+    generated = [name for name in schema.numeric + schema.categorical
+                 if name not in frame.columns and name in result.columns and result[name].notna().any()]
     for column in schema.numeric + schema.categorical:
         if column not in result.columns:
-            result[column] = pd.NA
-    for column in schema.numeric:
-        result[column] = pd.to_numeric(result[column], errors="coerce")
-    return result[schema.numeric + schema.categorical].copy()
+            result[column] = np.nan
+    result = _normalize_numeric_predictors(result, schema)
+    output = result[schema.numeric + schema.categorical].copy()
+    output.attrs["prediction_provenance"] = {"missing_expected_columns": missing,
+        "generated_during_preparation": generated}
+    return output

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 
 from lithiumscope.core.scientific_checks import assert_no_target_leakage
@@ -15,7 +16,8 @@ def validate_training_schema(target: str, numeric: list[str], categorical: list[
 def applicability_profile(frame: pd.DataFrame, numeric_columns: list[str]) -> dict[str, dict[str, float]]:
     profile: dict[str, dict[str, float]] = {}
     for column in numeric_columns:
-        values = pd.to_numeric(frame[column], errors="coerce").dropna()
+        values = pd.to_numeric(frame[column], errors="coerce")
+        values = values[np.isfinite(values)]
         if values.empty:
             continue
         profile[column] = {
@@ -27,7 +29,7 @@ def applicability_profile(frame: pd.DataFrame, numeric_columns: list[str]) -> di
 
 def applicability_fraction(frame: pd.DataFrame, profile: dict[str, dict[str, float]]) -> pd.Series:
     if not profile:
-        return pd.Series(0.0, index=frame.index)
+        return pd.Series(np.nan, index=frame.index)
     flags = []
     for column, bounds in profile.items():
         if column not in frame.columns:

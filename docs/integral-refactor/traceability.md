@@ -206,9 +206,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 947.
 - Diagnóstico de origen: **Estado: Defecto confirmado de diagnóstico y limitación de calibración. Prioridad: Alta. Decisión: Corregir la procedencia de entradas y validar el significado de las advertencias.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: predictor.py, pipeline.py, core/scientific/applicability.py; test_m1_input_provenance.py.
+- Implementación / evidencia: distinguir derivadas, padding y faltantes; exigir perfil marginal completo; salida negativa/no finita marcada invalida; 91 pruebas aprobadas, 4 omitidas. Pendiente incertidumbre calibrada independiente y validacion multivariada.
+- Estado: parcialmente verificado.
 
 ## M1-27 — Step 29 Release — Diagnóstico del versionamiento y publicación
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 953.
