@@ -19,13 +19,15 @@ def score_model_2_image(
     *,
     bundle: dict | None = None,
     allow_acquisition: bool = True,
+    spectral_cache: Path | None = None,
 ) -> tuple[dict, dict]:
     if bundle is None:
         bundle, _ = load_latest_model("model_2")
 
     required_coverage = bundle.get("quality_min_joint_valid")
     try:
-        frame, spectral = prepare_spectral_input(path, bundle, **({} if allow_acquisition else {"allow_acquisition": False}))
+        frame, spectral = prepare_spectral_input(path, bundle, **({} if allow_acquisition else {"allow_acquisition": False}),
+            **({} if spectral_cache is None else {"spectral_cache":spectral_cache}))
     except SpectralAbstention as exc:
         warning = "INSUFFICIENT_SPECTRAL_COVERAGE" if exc.status == "ABSTAIN_LOW_SPECTRAL_COVERAGE" else "INSUFFICIENT_SPECTRAL_EVIDENCE"
         return ({
@@ -43,6 +45,8 @@ def score_model_2_image(
     operating_threshold = float(
         bundle.get("operating_threshold", 0.5)
     )
+    if not np.isfinite(operating_threshold) or not 0<=operating_threshold<=1:
+        raise ValueError("Invalid operating score threshold")
     operating_positive = score >= operating_threshold
     label = "alta" if score >= 0.70 else "media" if score >= 0.40 else "baja"
     profile = bundle.get("applicability_profile", {})

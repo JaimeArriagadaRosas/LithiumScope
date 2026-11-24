@@ -81,7 +81,9 @@ def import_evidence(source: Path, root: Path) -> dict:
             copied += 1
         finally:
             temp.unlink(missing_ok=True)
-    report = {"cohort": 706, "verified_files": len(artifacts), "copied": copied,
+    from lithiumscope.model_2.prediction.frozen_rededge import register_frozen_catalog
+    catalog=register_frozen_catalog(root)
+    report = {"frozen_catalog":str(catalog.relative_to(root)),"cohort": 706, "verified_files": len(artifacts), "copied": copied,
               "source_root": str(source), "files": artifacts}
     path = root/"results/diagnostics/rededge_import.json"
     path.parent.mkdir(parents=True,exist_ok=True)

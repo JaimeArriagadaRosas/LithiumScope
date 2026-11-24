@@ -23,7 +23,10 @@ class SpectralAbstention(ValueError):
 
 
 def _source_metadata(path: Path) -> dict:
-    for sidecar in (path.with_suffix(path.suffix + ".json"), path.with_suffix(".json")):
+    sidecars=[candidate for candidate in (path.with_suffix(path.suffix + ".json"),path.with_suffix(".json")) if candidate.is_file()]
+    if len(sidecars)!=1:
+        raise SpectralAbstention("ABSTAIN_MISSING_SCENE_PROVENANCE","Exactly one V4 scene sidecar is required.")
+    for sidecar in sidecars:
         if sidecar.is_file():
             try:
                 value = json.loads(sidecar.read_text(encoding="utf-8"))
@@ -43,7 +46,7 @@ def _source_metadata(path: Path) -> dict:
                              "V4 requires same-scene Sentinel-2 provenance and coordinates.")
 
 
-def prepare_spectral_input(path: Path, bundle: dict, *, allow_acquisition: bool = True) -> tuple[pd.DataFrame, dict]:
+def prepare_spectral_input(path: Path, bundle: dict, *, allow_acquisition: bool = True, spectral_cache: Path | None = None) -> tuple[pd.DataFrame, dict]:
     version = int(bundle.get("feature_extractor_version", 3))
     if version not in {1, 2, 3, 4}:
         raise SpectralAbstention("ABSTAIN_UNSUPPORTED_EXTRACTOR", "Unsupported spectral extractor version.")
@@ -77,17 +80,23 @@ def prepare_spectral_input(path: Path, bundle: dict, *, allow_acquisition: bool 
     if version == 4:
         from lithiumscope.tools.acquisition.sentinel2.rededge import cached_rededge_sample
         from lithiumscope.model_2.preparation.features.rededge import append_rededge_features
+        from lithiumscope.model_2.prediction.frozen_rededge import find_frozen_rededge
 
         if bands != DEFAULT_BAND_NAMES or len(expected) != 170:
             raise SpectralAbstention("ABSTAIN_INVALID_FEATURE_SCHEMA", "V4 requires the 126 + 44 feature contract.")
         metadata = verified_meta if verified_meta is not None else _source_metadata(path)
         try:
-            red, evidence = cached_rededge_sample(
-                SimpleNamespace(sample_id=f"inference_{file_sha256(path)[:24]}_{metadata['scene_id']}",
-                                sentinel_scene_id=metadata["scene_id"], latitude=metadata["latitude"],
-                                longitude=metadata["longitude"], image_path=str(path)),
-                output=RESULTS_DIR / "predictions" / "spectral_cache_v4", min_joint_valid=.05,
-                **({} if allow_acquisition else {"allow_acquisition": False}))
+            frozen = find_frozen_rededge(path, metadata)
+            if frozen is not None:
+                red, evidence = frozen
+            else:
+                red, evidence = cached_rededge_sample(
+                    SimpleNamespace(sample_id=f"inference_{file_sha256(path)[:24]}_{metadata['scene_id']}",
+                                    sentinel_scene_id=metadata["scene_id"], latitude=metadata["latitude"],
+                                    longitude=metadata["longitude"], image_path=str(path)),
+                    output=spectral_cache or RESULTS_DIR / "predictions" / "spectral_cache_v4", min_joint_valid=.05,
+                    **({} if allow_acquisition else {"allow_acquisition": False}))
+                evidence={**evidence,"rededge_cache_source":"inference_cache_or_acquisition"}
         except Exception as exc:
             raise SpectralAbstention("ABSTAIN_REDEDGE_UNAVAILABLE", str(exc)) from exc
         diagnostics.update(evidence)

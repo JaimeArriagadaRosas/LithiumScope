@@ -102,9 +102,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 867.
 - Diagnóstico de origen: **Estado: Correcto para aislamiento del TEST, metodológicamente limitado en TabNet. Prioridad: Alta. Decisión: Conservar el runner y rediseñar la selección de épocas.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: training/preprocessing/spatial_tabnet.py; training/algorithms/tabnet.py; cv_runner.py; optimizer.py; test_spatial_tabnet.py; audit_m1_spatial_training_contract.py
+- Implementación / evidencia: Separacion espacial anterior al ajuste del preprocesador, epocas elegidas en validacion de TRAIN, reajuste de todo TRAIN; sin fallback aleatorio. 36 particiones reales verificadas sin solapamiento, estimador simulado prueba identidad/log1p/Optuna. PyTorch/TabNet ausentes, falta ajuste neuronal real y evaluacion externa.
+- Estado: parcialmente verificado.
 
 ## M1-14 — Step 14 Histórico ↔ Step 21 Release — Diagnóstico de la evaluación y almacenamiento de predicciones
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 873.
@@ -438,8 +438,8 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 589.
 - Diagnóstico de origen: **Estado: Defecto confirmado. Prioridad: Alta. Decisión: Corregir el perfil de aplicabilidad y gestionar incertidumbre de inferencia.**
 - Criterio de aceptación (extracto): El criterio de aceptación será informar correctamente el grado de respaldo de una predicción y rechazar o advertir entradas incompatibles, sin presentar los percentiles marginales como intervalos de predicción.
-- Componentes / corrección detallada / tests: prediction/spectral_contract.py; predictor.py; preparation/patch_contract.py; verify_historical_inference.py
-- Implementación / evidencia: Abstencion ante esquema faltante, perfil incompleto marcado insuficiente, contrato estricto nuevo. Inferencia real CatBoost historico 10/10 identica en score/advertencias/OOD; no se descarga. Falta inferencia real v4 y perfiles independientes.
+- Componentes / corrección detallada / tests: prediction/spectral_contract.py; predictor.py; prediction/frozen_rededge.py; preparation/patch_contract.py; audit_m2_v4_inference_parity.py; test_frozen_rededge_lookup.py
+- Implementación / evidencia: Inferencia real CatBoost historico 10/10 exacta y RF v4 experimental: 690/706 scores equivalentes a matriz de 170 features (delta max 1.11e-16), 16 abstenciones QA, sin red. Catalogo congelado por SHA, bytes+escena+coordenadas, rechazo de ambiguedad/corrupcion; script experimental usa predictor comun. Geometria NPY legacy no certificada, no es holdout ni aprobacion de release.
 - Estado: parcialmente verificado.
 
 ## M2-29 — Step 29 Release — Diagnóstico de la generación de resultados gráficos
