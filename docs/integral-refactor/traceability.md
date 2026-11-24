@@ -1,6 +1,6 @@
-# Matriz de trazabilidad inicial
+# Matriz de trazabilidad científica M1/M2
 
-Identificadores según orden de aparición en la sección Diagnostico. Criterios de origen extraídos cuando identificables. Ninguna fila se considera verificada. La revisión íntegra y la asignación de componentes/tests siguen pendientes.
+Identificadores según orden de aparición en la sección Diagnostico. Criterios de origen extraídos cuando identificables. Estado acumulado: 57 criterios con verificación parcial; ninguno tiene cierre integral registrado. Consultar HANDOFF.md y requirements/repository-requirements.md para la arquitectura y el estado actual. Las referencias históricas de componentes pueden requerir el mapa module-relocation.json.
 
 ## M1-01 — Step 01 Histórico ↔ Step 03 Release — Diagnóstico de la carga del dataset
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 795.

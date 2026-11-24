@@ -1,4 +1,6 @@
-# Plan de implementación integral
+# Plan de implementación integral (histórico)
+
+**Estado vigente:** consultar [HANDOFF.md](HANDOFF.md), [matriz de requisitos del repositorio](requirements/repository-requirements.md) y [trazabilidad científica](traceability.md). Los estados y restricciones de publicación anteriores a la primera CI son registros históricos; ahora el usuario autorizó push en la rama de trabajo y commits intermedios con skip ci.
 
 Base: e12b877699fe97f301e2c87d07f4833084e1306f. Rama feat/integral-scientific-refactor.
 Entorno nuevo: LithiumScope. Prohibido escribir en LithiumScope-Scientific-Lab o en seminario.
