@@ -166,17 +166,17 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 917.
 - Diagnóstico de origen: **Estado: Correcto operativamente, limitado como comparación de familias. Prioridad: Alta. Decisión: Conservar los seis candidatos y estandarizar las condiciones experimentales.**
 - Criterio de aceptación (extracto): El criterio de aceptación será que los rankings solo agrupen resultados comparables bajo condiciones declaradas; la decisión de agregar o eliminar algoritmos dependerá de estabilidad y valor predictivo, no de que el algoritmo haya ganado una única ejecución.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: core/candidate_evidence.py; competition_evaluate_model_1_candidates.py; test_candidate_evidence.py
+- Implementación / evidencia: Separacion evaluacion y artefactos. Se conserva una fila por variante; figuras fallidas no anulan metricas, tablas esenciales fallidas excluyen del ranking. Cobertura OOF exacta y metricas finitas. Pendiente estandarizar presupuestos y comparar seis candidatos reales.
+- Estado: parcialmente verificado.
 
 ## M1-22 — Step 22 Release — Diagnóstico de la selección del ganador
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 923.
 - Diagnóstico de origen: **Estado: Limitación metodológica confirmada. Prioridad: Alta. Decisión: Conservar el ranking histórico y separar el ganador relativo del candidato científicamente elegible.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: core/candidate_evidence.py; competition.py; competition_finalize_model_1_winner.py
+- Implementación / evidencia: Ranking excluye candidatos con evidencia esencial fallida. No equivale a puerta cientifica; falta beneficio frente a baseline, estabilidad y holdout.
+- Estado: parcialmente verificado.
 
 ## M1-23 — Step 23 Release — Diagnóstico de las pruebas de robustez
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 929.
@@ -198,9 +198,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 941.
 - Diagnóstico de origen: **Estado: Problema predictivo demostrado, causa experimentalmente insuficiente. Prioridad: Alta. Decisión: Investigar primero los registros de gran error y después evaluar soluciones de aprendizaje.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: scripts/scientific/audit_m1_historical_extremes.py; ejecucion sobre evidencia real.
+- Implementación / evidencia: 27240 OOF de seis regresores y dos cohortes; RMSE, MAE y sesgo reconciliados. Top10 por candidato, fraccion SSE, sesgo Li alto. Pendiente expediente analitico por muestra, causas y experimentos prospectivos.
+- Estado: parcialmente verificado.
 
 ## M1-26 — Step 27 Release — Diagnóstico de la incertidumbre y el dominio de aplicabilidad
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 947.
@@ -382,9 +382,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 547.
 - Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Alta. Decisión: Fortalecer el runner, los checkpoints y los diagnósticos de aprendizaje.**
 - Criterio de aceptación (extracto): El criterio de aceptación será reproducir la ejecución sin mezclar estados incompatibles y disponer de evidencias suficientes para estudiar las causas de las diferencias de rendimiento.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: core/checkpoints.py; core/scientific_checks.py; cv_runner.py; tests/runtime/test_checkpoints.py
+- Implementación / evidencia: Checkpoint versionado con SHA256 y escritura atomica; rechaza alteracion, indices invalidos, predicciones incompletas/no finitas. Metricas principales recalculadas al reanudar. OOF cubre cada observacion exactamente una vez. Pendiente curvas de aprendizaje y comparacion real.
+- Estado: parcialmente verificado.
 
 ## M2-22 — Step 22 Release — Diagnóstico de el cálculo de métricas de clasificación
 - Origen: 04. Diagnostico M2 Release.md, línea 553.
@@ -406,9 +406,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 565.
 - Diagnóstico de origen: **Estado: Metodológicamente limitado. Prioridad: Alta. Decisión: Separar la elección del ganador de su evaluación independiente.**
 - Criterio de aceptación (extracto): El criterio de aceptación será distinguir un ganador interno de un modelo cuya superioridad y generalización han sido evaluadas independientemente; no se garantizará que el algoritmo final deba seguir siendo CatBoost.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: core/candidate_evidence.py; competition_evaluate_algorithm_candidates.py; competition.py
+- Implementación / evidencia: Ranking filtra metricas indefinidas y evidencia esencial fallida. Figura fallida no invalida evaluacion numerica. Falta holdout no utilizado para seleccionar.
+- Estado: parcialmente verificado.
 
 ## M2-25 — Step 25 Release — Diagnóstico de la optimización del umbral operativo
 - Origen: 04. Diagnostico M2 Release.md, línea 571.
@@ -446,9 +446,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 595.
 - Diagnóstico de origen: **Estado: Correcto con mejoras de trazabilidad. Prioridad: Media. Decisión: Mejorar las representaciones diagnósticas y sus contratos.**
 - Criterio de aceptación (extracto): El criterio de aceptación será que cada figura pueda reproducirse a partir de sus tablas y que no confunda un mapa de puntos conocidos con una superficie de prospectividad continua ni una simulación ilustrativa con un resultado real.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: evaluation/oof_evidence.py; evaluation/maps.py; evaluation/plots.py; test_candidate_evidence.py
+- Implementación / evidencia: OOF registra ID, posicion, fold, etiqueta, corte Li, score, clase a 0.5 y elegibilidad TRAIN; mapa por ID con escala 0-1; histogramas con bins comunes; tabla de fiabilidad. Falta verificar figuras de entrenamiento real.
+- Estado: parcialmente verificado.
 
 ## M2-30 — Step 30 Release — Diagnóstico de el almacenamiento y trazabilidad
 - Origen: 04. Diagnostico M2 Release.md, línea 601.
