@@ -11,9 +11,8 @@ from reportlab.lib import colors
 from reportlab.lib.units import cm
 from reportlab.platypus import Image, KeepTogether, Spacer, Table, TableStyle
 
-from lithiumscope.prediction.reporting.charts import _rgb_preview
-from lithiumscope.prediction.reporting.decision import calculate_decision
-from lithiumscope.prediction.reporting.primitives import paragraph, table
+from lithiumscope.prediction.exports.charts import _rgb_preview
+from lithiumscope.reporting.primitives import paragraph, table
 
 
 def _fmt(value, digits: int = 2) -> str:
@@ -82,7 +81,7 @@ def _image_cards(selected: pd.DataFrame, winner_id: str | None, styles):
 
 def build_decision_page(context, styles) -> list:
     """No static candidate IDs, positions, scores, images or winners."""
-    decision = calculate_decision(context.paired)
+    decision = context.decision
     n_cases = len(decision.ranked)
     story = [
         paragraph("Decisión integrada: de candidatos a una prioridad", styles["LS_H1"]),

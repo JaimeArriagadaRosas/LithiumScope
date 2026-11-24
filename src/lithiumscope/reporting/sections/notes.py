@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from reportlab.platypus import PageBreak
 
-from lithiumscope.prediction.reporting.formatting import number
-from lithiumscope.prediction.reporting.primitives import paragraph
+from lithiumscope.reporting.formatting import number
+from lithiumscope.reporting.primitives import paragraph
 
 
 def build_notes(context, styles) -> list:

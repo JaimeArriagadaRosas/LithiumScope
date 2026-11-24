@@ -4,7 +4,7 @@ from reportlab.lib import colors
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.platypus import LongTable, Paragraph, TableStyle
 
-from lithiumscope.prediction.reporting.formatting import pdf_text
+from lithiumscope.reporting.formatting import pdf_text
 
 
 def paragraph(text, style):

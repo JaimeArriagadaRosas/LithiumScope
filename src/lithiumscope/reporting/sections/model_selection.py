@@ -4,7 +4,7 @@ from __future__ import annotations
 from reportlab.lib.units import cm
 from reportlab.platypus import PageBreak, Spacer
 
-from lithiumscope.prediction.reporting.primitives import paragraph, table
+from lithiumscope.reporting.primitives import paragraph, table
 
 
 def _number(x, digits=3):

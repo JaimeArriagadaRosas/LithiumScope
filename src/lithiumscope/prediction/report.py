@@ -59,7 +59,7 @@ def save_satellite_input_preview(
     destination: Path,
 ) -> Path | None:
     writer = _load_reporting_callable(
-        "lithiumscope.prediction.reporting.charts",
+        "lithiumscope.prediction.exports.charts",
         "save_satellite_input_preview",
     )
     return writer(
@@ -73,7 +73,7 @@ def save_integrated_figures(
     figure_dir: Path,
 ) -> list[Path]:
     writer = _load_reporting_callable(
-        "lithiumscope.prediction.reporting.charts",
+        "lithiumscope.prediction.exports.charts",
         "save_integrated_figures",
     )
     return writer(
@@ -87,7 +87,7 @@ def save_spatial_maps(
     destination_dir: Path,
 ) -> list[Path]:
     writer = _load_reporting_callable(
-        "lithiumscope.prediction.reporting.maps",
+        "lithiumscope.prediction.exports.maps",
         "save_spatial_maps",
     )
     return writer(
@@ -107,7 +107,7 @@ def write_workbook(
     training_vs_external: Any,
 ) -> Path:
     writer = _load_reporting_callable(
-        "lithiumscope.prediction.reporting.workbook",
+        "lithiumscope.prediction.exports.workbook",
         "write_workbook",
     )
     return writer(
@@ -148,8 +148,14 @@ def write_pdf_report(
     model_2_classification_threshold: float | None = None,
     runtime: dict | None = None,
 ) -> Path:
+    from lithiumscope.prediction.analysis.decision import calculate_decision
+    from lithiumscope.prediction.analysis.report_statistics import report_statistics
+
+    decision = calculate_decision(paired)
+    statistics = report_statistics(model_1_predictions, model_2_predictions, concordance,
+                                   model_2_classification_threshold, model_1_diagnostics)
     writer = _load_reporting_callable(
-        "lithiumscope.prediction.reporting.pdf",
+        "lithiumscope.reporting.pdf",
         "write_pdf_report",
     )
     return writer(
@@ -179,4 +185,6 @@ def write_pdf_report(
             model_2_classification_threshold
         ),
         runtime=runtime,
+        decision=decision,
+        statistics=statistics,
     )

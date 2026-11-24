@@ -1,4 +1,4 @@
-"""M1 -> three -> M2 -> one: report-only reproducible decision contracts."""
+"""M1 -> three -> M2 -> one: post-inference reproducible decision contracts."""
 from __future__ import annotations
 
 from types import SimpleNamespace
@@ -9,10 +9,10 @@ import pytest
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, PageBreak
 
-from lithiumscope.prediction.reporting.decision import calculate_decision
-from lithiumscope.prediction.reporting.sections.decision import build_decision_page
-from lithiumscope.prediction.reporting.sections.spatial import build_spatial
-from lithiumscope.prediction.reporting.styles import build_styles
+from lithiumscope.prediction.analysis.decision import calculate_decision
+from lithiumscope.reporting.sections.decision import build_decision_page
+from lithiumscope.reporting.sections.spatial import build_spatial
+from lithiumscope.reporting.styles import build_styles
 
 
 def _cases():
@@ -27,7 +27,7 @@ def _cases():
     })
 
 
-def test_independent_model_predictions_reduced_only_in_renderer():
+def test_independent_model_predictions_reduced_after_inference():
     result = calculate_decision(_cases())
     assert set(result.selected.case_id) == {"site-2", "site-3", "site-8"}
     assert result.winner_id == "site-8"
@@ -96,6 +96,7 @@ def test_rendered_page_is_dynamic_and_exactly_page_two(tmp_path):
             figures=(),
             maps=(),
             paired=data,
+            decision=calculate_decision(data),
         )
         story = build_spatial(context, build_styles())
         assert len([x for x in story if isinstance(x, PageBreak)]) == 2

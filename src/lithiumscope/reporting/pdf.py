@@ -7,15 +7,15 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
 from reportlab.platypus import SimpleDocTemplate
 
-from lithiumscope.prediction.reporting.context import ReportContext
-from lithiumscope.prediction.reporting.sections.cases import build_cases
-from lithiumscope.prediction.reporting.sections.figures import build_figures
-from lithiumscope.prediction.reporting.sections.notes import build_notes
-from lithiumscope.prediction.reporting.sections.model_selection import build_model_selection
-from lithiumscope.prediction.reporting.sections.overview import build_overview
-from lithiumscope.prediction.reporting.sections.performance import build_performance
-from lithiumscope.prediction.reporting.sections.spatial import build_spatial
-from lithiumscope.prediction.reporting.styles import (
+from lithiumscope.reporting.context import ReportContext
+from lithiumscope.reporting.sections.cases import build_cases
+from lithiumscope.reporting.sections.figures import build_figures
+from lithiumscope.reporting.sections.notes import build_notes
+from lithiumscope.reporting.sections.model_selection import build_model_selection
+from lithiumscope.reporting.sections.overview import build_overview
+from lithiumscope.reporting.sections.performance import build_performance
+from lithiumscope.reporting.sections.spatial import build_spatial
+from lithiumscope.reporting.styles import (
     build_styles,
     page_footer,
 )
@@ -47,6 +47,8 @@ def write_pdf_report(
     lithium_threshold_ppm: float | None = None,
     model_2_classification_threshold: float | None = None,
     runtime: dict | None = None,
+    decision,
+    statistics: dict,
 ) -> Path:
     path.parent.mkdir(
         parents=True,
@@ -78,6 +80,8 @@ def write_pdf_report(
             model_2_classification_threshold
         ),
         runtime=dict(runtime or {}),
+        decision=decision,
+        statistics=statistics,
     )
     styles = build_styles()
 

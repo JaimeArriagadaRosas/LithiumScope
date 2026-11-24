@@ -9,13 +9,13 @@ import pytest
 
 from lithiumscope.core.config import load_config
 from lithiumscope.core.paths import PROJECT_ROOT
-from lithiumscope.prediction.reporting.model_selection_evidence import (
+from lithiumscope.prediction.analysis.model_selection_evidence import (
     gather_selection_evidence,
 )
-from lithiumscope.prediction.reporting.sections.model_selection import (
+from lithiumscope.reporting.sections.model_selection import (
     build_model_selection,
 )
-from lithiumscope.prediction.reporting.styles import build_styles
+from lithiumscope.reporting.styles import build_styles
 from lithiumscope.prediction.session import load_model_with_identity
 
 
@@ -91,7 +91,7 @@ def test_pdf_section_is_only_added_to_integrated_demonstration():
 
 def test_integrated_renderer_stays_original_and_has_selection_section():
     from inspect import getsource
-    from lithiumscope.prediction.reporting.pdf import write_pdf_report
+    from lithiumscope.reporting.pdf import write_pdf_report
     source = getsource(write_pdf_report)
     assert "build_model_selection" in source
     assert "build_performance" in source

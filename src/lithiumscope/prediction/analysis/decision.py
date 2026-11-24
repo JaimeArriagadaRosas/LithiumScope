@@ -1,4 +1,4 @@
-"""Deterministic M1 -> M2 decision analysis ONLY at report-render time.
+"""Deterministic M1 -> M2 decision analysis after independent inference and before rendering.
 
 M1 and M2 inference remain independent. No true Li, model refitting, weights
 or release labels influence the decision. True Li is optional retrospective QA.

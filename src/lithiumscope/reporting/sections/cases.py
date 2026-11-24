@@ -4,15 +4,15 @@ import pandas as pd
 from reportlab.lib.units import cm
 from reportlab.platypus import PageBreak, Spacer
 
-from lithiumscope.prediction.reporting.case_cards import (
+from lithiumscope.reporting.case_cards import (
     case_lookup,
     case_story,
 )
-from lithiumscope.prediction.reporting.formatting import (
+from lithiumscope.reporting.formatting import (
     number,
     operating_classification,
 )
-from lithiumscope.prediction.reporting.primitives import (
+from lithiumscope.reporting.primitives import (
     paragraph,
     table,
 )

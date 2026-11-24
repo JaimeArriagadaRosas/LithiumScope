@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import pandas as pd
 from reportlab.lib.units import cm
 from reportlab.platypus import PageBreak
 
-from lithiumscope.prediction.reporting.formatting import number
-from lithiumscope.prediction.reporting.sections.performance_concordance import performance_concordance
-from lithiumscope.prediction.reporting.primitives import (
+from lithiumscope.reporting.formatting import number
+from lithiumscope.reporting.sections.performance_concordance import performance_concordance
+from lithiumscope.reporting.primitives import (
     paragraph,
     table,
 )
@@ -73,21 +72,13 @@ def build_performance(context, styles) -> list:
 
     threshold = context.model_2_classification_threshold
     if threshold is not None:
-        scores = pd.to_numeric(
-            context.model_2_predictions.get(
-                "prospectivity_score",
-                pd.Series(dtype=float),
-            ),
-            errors="coerce",
-        ).dropna()
-        positive_count = int(
-            (scores >= float(threshold)).sum()
-        )
+        positive_count = context.statistics["positive_count"]
+        score_count = context.statistics["score_count"]
         story.append(
             paragraph(
                 f"Con el umbral operativo actual "
                 f"({threshold:.3f}), Modelo 2 clasifico "
-                f"{positive_count}/{len(scores)} casos como "
+                f"{positive_count}/{score_count} casos como "
                 "positivos.",
                 styles["LS_Small"],
             )

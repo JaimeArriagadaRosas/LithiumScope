@@ -3,7 +3,7 @@ from __future__ import annotations
 from reportlab.lib.units import cm
 from reportlab.platypus import Image, KeepTogether, PageBreak, Spacer
 
-from lithiumscope.prediction.reporting.primitives import paragraph
+from lithiumscope.reporting.primitives import paragraph
 
 
 FIGURE_EXPLANATIONS = {

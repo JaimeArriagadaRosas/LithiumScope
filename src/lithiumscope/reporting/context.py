@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import pandas as pd
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -31,3 +32,5 @@ class ReportContext:
     lithium_threshold_ppm: float | None
     model_2_classification_threshold: float | None
     runtime: dict
+    decision: Any
+    statistics: dict

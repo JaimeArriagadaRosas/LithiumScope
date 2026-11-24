@@ -61,3 +61,7 @@
 ## Preparacion M1 versionada
 - Censura analitica v2 y categorias semanticas v2, conservando version 1 para esquemas historicos. EDA incluye censura por observacion y categorias antes/despues. 27 pruebas aprobadas (20261124T203956Z_cee575ed0ecf4797a2305d83d479379c).
 - Pendiente validar convenciones decimales y politica de ceros por fuente; no se afirma superioridad ni equivalencia metrica.
+
+## Separacion del renderer PDF
+- reporting/ trasladado a la raiz. Excel, graficos y mapas en prediction/exports/; decision integrada y evidencia de seleccion en prediction/analysis/. Estadisticas de aplicabilidad, clasificacion y concordancia calculadas antes del renderer. Conservada la interfaz write_pdf_report de prediction/report.py y la numeracion del informe.
+- Regresion 50 passed, 4 skipped, sin fallos (20261124T204255Z_33955736185646f69b496fd90f75a2fe). Falta prueba visual con modelos reales, reorganizacion interna restante y separar decisiones de presentacion historicas aun existentes.

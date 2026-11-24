@@ -3,8 +3,8 @@ from __future__ import annotations
 from reportlab.lib.units import cm
 from reportlab.platypus import Image, KeepTogether, PageBreak, Spacer
 
-from lithiumscope.prediction.reporting.primitives import paragraph
-from lithiumscope.prediction.reporting.sections.decision import build_decision_page
+from lithiumscope.reporting.primitives import paragraph
+from lithiumscope.reporting.sections.decision import build_decision_page
 
 
 def build_spatial(context, styles) -> list:

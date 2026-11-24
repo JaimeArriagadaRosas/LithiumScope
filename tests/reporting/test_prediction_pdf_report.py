@@ -11,21 +11,21 @@ from lithiumscope.prediction.interpretation import (
     model_2_case_text,
 )
 from lithiumscope.prediction.report import write_pdf_report
-from lithiumscope.prediction.reporting.charts import (
+from lithiumscope.prediction.exports.charts import (
     _satellite_preview_grid_shape,
     save_satellite_input_preview,
 )
-from lithiumscope.prediction.reporting.formatting import (
+from lithiumscope.reporting.formatting import (
     nonnegative_interval,
     operating_classification,
 )
-from lithiumscope.prediction.reporting.sections.overview import (
+from lithiumscope.prediction.analysis.report_statistics import (
     _out_of_domain_count,
 )
-from lithiumscope.prediction.reporting.sections.spatial import (
+from lithiumscope.reporting.sections.spatial import (
     build_spatial,
 )
-from lithiumscope.prediction.reporting.styles import build_styles
+from lithiumscope.reporting.styles import build_styles
 
 
 def test_pdf_report_is_generated_with_case_sections(tmp_path: Path):

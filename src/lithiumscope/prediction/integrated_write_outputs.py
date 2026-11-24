@@ -64,7 +64,7 @@ def _write_outputs(
     )
     runtime = runtime_fingerprint()
     if session.mode == "demonstration":
-        from lithiumscope.prediction.reporting.model_selection_evidence import (
+        from lithiumscope.prediction.analysis.model_selection_evidence import (
             gather_selection_evidence,
         )
 

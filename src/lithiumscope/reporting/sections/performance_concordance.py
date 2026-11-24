@@ -4,8 +4,8 @@ from __future__ import annotations
 from reportlab.lib.units import cm
 from reportlab.platypus import PageBreak
 
-from lithiumscope.prediction.reporting.formatting import number
-from lithiumscope.prediction.reporting.primitives import paragraph, table
+from lithiumscope.reporting.formatting import number
+from lithiumscope.reporting.primitives import paragraph, table
 
 
 def performance_concordance(context, styles) -> list:
@@ -77,7 +77,7 @@ def performance_concordance(context, styles) -> list:
         not concordance.empty
         and "concordance" in concordance.columns
     ):
-        counts = concordance["concordance"].value_counts()
+        counts = context.statistics["concordance_counts"]
         story.append(
             paragraph(
                 "Distribucion de concordancia",
