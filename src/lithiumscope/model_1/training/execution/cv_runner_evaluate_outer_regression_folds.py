@@ -2,8 +2,9 @@
 from __future__ import annotations
 
 
-def _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, groups, label, optimize, outer_splits, outer_strategy, predictions, prepared, pruning, require_groups, seed, spec, target_transform, trials, validation):
+def _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, groups, label, optimize, outer_splits, outer_strategy, predictions, prepared, pruning, require_groups, seed, spec, target_transform, trials, validation, robustness_records, physical_scenarios_enabled):
     from lithiumscope.model_1.training.execution.cv_runner import Spinner, assert_group_isolation, build_pipeline, logger, materialize_regression_splits, np, optimize_with_optuna, regression_metrics
+    from lithiumscope.model_1.training.preprocessing.spatial_tabnet import fit_regression_estimator, early_stopping_evidence
     for fold, (train_idx, test_idx) in enumerate(
         outer_splits,
         start=1,
@@ -19,6 +20,7 @@ def _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, group
             )
         cached = checkpoint.load_fold(fold, test_idx) if checkpoint else None
         if cached is not None:
+            robustness_records.extend(cached.get('robustness',[]))
             fold_predictions = np.asarray(
                 cached["predictions"],
                 dtype=float,
@@ -89,6 +91,7 @@ def _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, group
                     y_train,
                     inner_splits,
                     trials,
+                    groups=groups_train,
                     progress_callback=progress,
                     storage_path=(
                         checkpoint.root / f"optuna_fold_{fold:02d}.db"
@@ -119,7 +122,8 @@ def _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, group
                 params,
                 target_transform=target_transform,
             )
-            estimator.fit(x_train, y_train)
+            fit_regression_estimator(estimator,x_train,y_train,groups_train)
+            epoch_evidence=early_stopping_evidence(estimator)
             fold_predictions = estimator.predict(x_test)
             predictions[test_idx] = fold_predictions
             metrics = regression_metrics(
@@ -128,6 +132,9 @@ def _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, group
             ).to_dict()
             train_predictions = estimator.predict(x_train)
             metrics.update({f"train_{k}":v for k,v in regression_metrics(y_train,train_predictions).to_dict().items()})
+            if epoch_evidence is not None:
+                metrics.update({"tabnet_best_epoch":epoch_evidence["best_epoch"],"tabnet_refit_n":epoch_evidence["refit_n"],
+                                "tabnet_validation_n":epoch_evidence["n_validation"],"tabnet_validation_groups":len(epoch_evidence["validation_groups"])})
             # Paired holdout stress test, never fitted on the outer test set.
             # Noise is scaled from outer-training features only.
             numeric = [
@@ -164,6 +171,14 @@ def _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, group
                         algorithm, fold, exc,
                     )
                     metrics["stress_noise_evaluated"] = 0.0
+            scenario_records=[]
+            if physical_scenarios_enabled:
+                from lithiumscope.model_1.evaluation.robustness import evaluate_stress
+                scenario_records=evaluate_stress(estimator,x_test,y_test,fold_predictions,prepared.schema,fold=fold,seed=seed)
+                robustness_records.extend(scenario_records)
+                metrics['stress_physical_scenarios_ok']=sum(row['status']=='ok' for row in scenario_records)
+                metrics['stress_physical_scenarios_failed']=sum(row['status']=='failed' for row in scenario_records)
+                metrics['stress_physical_scenarios_unavailable']=sum(row['status']=='unavailable' for row in scenario_records)
             folds.append(
                 {
                     "fold": fold,
@@ -181,6 +196,8 @@ def _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, group
                     fold_predictions,
                     metrics,
                     params=params,
+                    early_stopping=epoch_evidence,
+                    robustness=scenario_records,
                 )
 
             spinner.succeed(

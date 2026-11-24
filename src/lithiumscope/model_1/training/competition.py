@@ -152,6 +152,8 @@ def _excel_sheets(prepared, ranking: pd.DataFrame, results: dict[str, tuple], ba
     }
     for algorithm, (result, algorithm_prepared) in results.items():
         sheets[f"folds_{algorithm}"[:31]] = result.fold_table
+        if result.robustness_table is not None and not result.robustness_table.empty:
+            sheets[f"stress_{algorithm}"[:31]]=result.robustness_table
         from lithiumscope.model_1.evaluation.oof_evidence import regression_oof_table
         sheets[f"pred_{algorithm}"[:31]] = regression_oof_table(algorithm_prepared,result.predictions,result.outer_splits).rename(
             columns={"Li_icpms_real":"Li_real","Li_icpms_predicted":"Li_pred"})

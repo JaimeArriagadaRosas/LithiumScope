@@ -166,8 +166,8 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 917.
 - Diagnóstico de origen: **Estado: Correcto operativamente, limitado como comparación de familias. Prioridad: Alta. Decisión: Conservar los seis candidatos y estandarizar las condiciones experimentales.**
 - Criterio de aceptación (extracto): El criterio de aceptación será que los rankings solo agrupen resultados comparables bajo condiciones declaradas; la decisión de agregar o eliminar algoritmos dependerá de estabilidad y valor predictivo, no de que el algoritmo haya ganado una única ejecución.
-- Componentes / corrección detallada / tests: training/competition.py; training/execution/cv_runner.py; core/checkpoint_identity.py; test_statistical_baselines.py
-- Implementación / evidencia: Folds exactos comunes y conteo verificados para ranking, TRAIN/TEST y OOF, identidad de reanudacion incluye esquema/config/particiones/datos y versiones. Falta ejecutar competencia real de seis familias y evaluar equidad de presupuestos.
+- Componentes / corrección detallada / tests: training/preprocessing/spatial_tabnet.py; training/algorithms/tabnet.py; optimizer.py; cv_runner.py; test_spatial_tabnet.py; audit_m1_spatial_training_contract.py
+- Implementación / evidencia: Conserva seis familias, folds comunes y checkpoints vinculados; nuevo TabNet separa grupos antes de preprocesar, elige epocas y reajusta en todo TRAIN. 36 particiones reales sin interseccion espacial ni filas reservadas (validacion 14.39-15.63%); tests simulados incluyen log1p, Optuna y categorias fuera de TRAIN. Falta ajuste real de TabNet y competencia completa.
 - Estado: parcialmente verificado.
 
 ## M1-22 — Step 22 Release — Diagnóstico de la selección del ganador
@@ -182,9 +182,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 929.
 - Diagnóstico de origen: **Estado: Correcto como prueba de sensibilidad, metodológicamente limitado. Prioridad: Media. Decisión: Conservar el ensayo sintético y diseñar perturbaciones coherentes con el dominio.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: evaluation/robustness.py; cv_runner_evaluate_outer_regression_folds.py; evaluation/artifacts.py; test_physical_robustness.py; audit_m1_spatial_training_contract.py
+- Implementación / evidencia: Conserva ensayo historico gaussiano y agrega escenarios sinteticos predefinidos: oxidos (conserva suma observada, factores 1/5%), trazas (1/5%), perdida de mediciones (5/15%), coordenadas (100/500 m); dos semillas, recalcula razones derivadas, registra rechazos/ausencia/fallos, compara RMSE/MAE y desplazamiento en TEST sin refit. 80 escenarios en 3420 muestras reales, invariantes aprobados, 0 celdas invalidas preexistentes o rechazadas. Falta rendimiento por candidato real; escalas no son incertidumbre de laboratorio.
+- Estado: parcialmente verificado.
 
 ## M1-24 — Step 24 Release — Diagnóstico de los diagnósticos científicos complementarios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 935.

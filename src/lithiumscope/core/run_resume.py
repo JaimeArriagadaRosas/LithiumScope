@@ -128,7 +128,7 @@ def _scientific_code_files(model_group: str) -> list[Path]:
         directory = model_root / "data"
         if directory.exists():
             files.extend(directory.rglob("*.py"))
-    for filename in ("evaluation/metrics.py", "evaluation/baseline.py", "evaluation/thresholds.py", "evaluation/oof_evidence.py", "evaluation/selection.py", "evaluation/artifacts.py", "methodology/decision.py"):
+    for filename in ("evaluation/metrics.py", "evaluation/baseline.py", "evaluation/thresholds.py", "evaluation/oof_evidence.py", "evaluation/selection.py", "evaluation/robustness.py", "evaluation/artifacts.py", "methodology/decision.py"):
         candidate = model_root / filename
         if candidate.exists():
             files.append(candidate)

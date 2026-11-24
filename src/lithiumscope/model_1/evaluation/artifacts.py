@@ -61,7 +61,12 @@ def save_algorithm_tables(prepared, cv_result, run_context) -> dict[str, Path]:
     prediction_path = run_context.tables / f"oof_predictions_{artifact_key}.csv"
     predictions.to_csv(prediction_path, index=False)
 
-    return {"folds": fold_path, "predictions": prediction_path}
+    artifacts={"folds": fold_path, "predictions": prediction_path}
+    if cv_result.robustness_table is not None and not cv_result.robustness_table.empty:
+        stress_path=run_context.tables / f"robustness_{artifact_key}.csv"
+        cv_result.robustness_table.to_csv(stress_path,index=False)
+        artifacts["robustness"]=stress_path
+    return artifacts
 
 
 def save_algorithm_figures(prepared, cv_result, run_context) -> dict[str, Path]:

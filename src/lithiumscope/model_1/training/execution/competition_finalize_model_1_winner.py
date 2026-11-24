@@ -61,7 +61,9 @@ def _finalize_model_1_winner(baseline, config, context, dataset_manifest, device
         f"{winner_result.label}"
     )
     print("Entrenando ganador con todas las muestras disponibles...")
-    final_estimator.fit(winner_prepared.x, winner_prepared.y)
+    from lithiumscope.model_1.training.preprocessing.spatial_tabnet import fit_regression_estimator, early_stopping_evidence
+    fit_regression_estimator(final_estimator,winner_prepared.x,winner_prepared.y,winner_prepared.groups)
+    tabnet_evidence=early_stopping_evidence(final_estimator)
 
     save_feature_importance(
         final_estimator,
@@ -93,6 +95,7 @@ def _finalize_model_1_winner(baseline, config, context, dataset_manifest, device
         "samples": len(winner_prepared.y),
         "metrics": winner_result.overall_metrics,
         "competition_primary_metric": "rmse_mean",
+        "tabnet_early_stopping": tabnet_evidence,
         "relative_winner": relative_winner,
         "baseline_policy": str(eligible.iloc[0]["baseline_policy"]),
         "rmse_gain_over_best_baseline":float(eligible.iloc[0]["rmse_gain_over_best_baseline"]),

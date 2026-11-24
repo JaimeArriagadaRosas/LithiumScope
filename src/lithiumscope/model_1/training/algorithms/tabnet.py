@@ -193,6 +193,49 @@ class TabNetRegressorAdapter(BaseEstimator, RegressorMixin):
         self.model_ = model
         return self
 
+    @staticmethod
+    def _batch_policy(n):
+        if n < 2:
+            raise ValueError("TabNet fit needs at least two observations")
+        batch = min(256, n)
+        while n % batch == 1:
+            batch -= 1
+        return {"batch_size": batch, "virtual_batch_size": min(128,batch), "drop_last": False}
+
+    def _fit_explicit(self, x, y, *, epochs, patience, validation=None):
+        x = np.asarray(x, dtype=np.float32)
+        y = np.asarray(y, dtype=np.float32).reshape(-1, 1)
+        if x.ndim != 2 or len(x) != len(y) or not np.isfinite(x).all() or not np.isfinite(y).all():
+            raise ValueError("Invalid TabNet fit arrays")
+        kwargs = self._batch_policy(len(x))
+        if validation is not None:
+            vx, vy = validation
+            vx, vy = np.asarray(vx, dtype=np.float32), np.asarray(vy,dtype=np.float32).reshape(-1,1)
+            if vx.ndim != 2 or vx.shape[1] != x.shape[1] or len(vx) != len(vy) or len(vx) < 2 or not np.isfinite(vx).all() or not np.isfinite(vy).all():
+                raise ValueError("Invalid TabNet validation arrays")
+            kwargs.update(eval_set=[(vx,vy)],eval_name=["spatial_validation"],eval_metric=["rmse"])
+        model = self._new_model()
+        with warnings.catch_warnings(record=True) as captured:
+            warnings.simplefilter("always")
+            _fit_quietly(model,x,y,max_epochs=int(epochs),patience=int(patience),**kwargs)
+        _log_warnings(captured)
+        return model
+
+    def fit_explicit_validation(self, x, y, vx, vy):
+        model = self._fit_explicit(x,y,epochs=self.max_epochs,patience=self.patience,validation=(vx,vy))
+        epoch = int(getattr(model,"best_epoch",self.max_epochs-1))+1
+        if not 1 <= epoch <= self.max_epochs:
+            raise ValueError("Invalid TabNet selected epoch")
+        self.model_,self.best_epoch_=model,epoch
+        return epoch
+
+    def fit_fixed_epochs(self, x, y, epochs):
+        if not 1 <= int(epochs) <= self.max_epochs:
+            raise ValueError("Invalid TabNet fixed epoch count")
+        self.model_=self._fit_explicit(x,y,epochs=epochs,patience=0)
+        self.best_epoch_=int(epochs)
+        return self
+
     def predict(self, x):
         if self.model_ is None:
             raise RuntimeError(

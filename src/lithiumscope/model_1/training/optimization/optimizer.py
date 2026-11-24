@@ -39,6 +39,7 @@ def optimize_with_optuna(
     pruning_enabled: bool = True,
     startup_trials: int = 4,
     warmup_folds: int = 2,
+    groups=None,
 ) -> dict:
     try:
         import optuna
@@ -80,10 +81,9 @@ def optimize_with_optuna(
             split_iterator
         ):
             estimator = estimator_factory(params)
-            estimator.fit(
-                _take_rows(x, train_idx),
-                _take_rows(y, train_idx),
-            )
+            from lithiumscope.model_1.training.preprocessing.spatial_tabnet import fit_regression_estimator
+            fit_regression_estimator(estimator, _take_rows(x, train_idx), _take_rows(y, train_idx),
+                                     _take_rows(groups,train_idx) if groups is not None else None)
             predictions = estimator.predict(
                 _take_rows(x, valid_idx)
             )

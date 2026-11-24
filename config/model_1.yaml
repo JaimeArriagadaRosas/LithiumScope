@@ -79,3 +79,7 @@ baseline:
   enabled: true
   strategies: [mean, median]
   minimum_rmse_gain_ppm: 0.0
+
+robustness:
+  # Synthetic stress scenarios, not measurement uncertainty or release gate.
+  physical_scenarios_enabled: true

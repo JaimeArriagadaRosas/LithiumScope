@@ -80,7 +80,9 @@ def build_pipeline(
     target_transform: str = "identity",
 ):
     preprocessor = build_preprocessor(schema, model_family=name)
-    pipeline = Pipeline(
+    from lithiumscope.model_1.training.preprocessing.spatial_tabnet import SpatialTabNetPipeline
+    pipeline_type = SpatialTabNetPipeline if name == "tabnet" else Pipeline
+    pipeline = pipeline_type(
         steps=[
             ("preprocess", clone(preprocessor)),
             (
