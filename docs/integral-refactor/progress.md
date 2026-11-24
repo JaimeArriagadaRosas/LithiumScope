@@ -75,3 +75,9 @@
 ## Inferencia espectral unificada
 - M2 individual e integrado comparten un unico evaluador. No se rellenan features faltantes con ceros; abstencion y diagnostico por caso. Perfil incompleto no se declara OK. V4 requiere metadatos de escena, coordenadas, bandas originales y red-edge de la misma escena con QA; adquisicion real no ejecutada.
 - Regresion: 66 passed, 4 skipped (20261124T204500Z_e3d2fcca25e9402ebf65f1079e236b6f). Pendiente comprobar caso real v4, versionado de calidad y aplicabilidad M1.
+
+## Regresion integral tras importacion y EDA real
+- 485 passed, 7 skipped, 8 warnings, 130.99 s, cobertura 52%, sin fallos ni errores; 492 tests totales. Run 20261124T204551Z_e0de075182b943658f3f18853edc6236; summary.json, junit.xml y coverage.xml locales.
+- Ruff sin incidencias; 563 archivos de codigo, ninguno por encima de 300 lineas.
+- Pendientes: reorganizacion de algoritmos y validacion, adquisicion independiente completa, auditoria de fuentes brutas y protocolos, EDA de desarrollo y holdout, lectura integral de documentos complementarios. No se declara cierre cientifico.
+- Restriccion vigente: commits locales exclusivamente, sin push ni ejecucion remota de workflows.
