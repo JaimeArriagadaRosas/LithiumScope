@@ -39,3 +39,6 @@ models/.release_*/
 results/release_candidates/*
 
 results/predictions/*
+
+results/tests/*
+!results/tests/.gitkeep
