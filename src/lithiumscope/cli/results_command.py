@@ -1,125 +1,104 @@
+"""Read-only consultation; candidate administration is not part of this menu."""
+from __future__ import annotations
+
+import json
+import os
+import webbrowser
+
 from lithiumscope.cli.prompts import choose
-from lithiumscope.results.browser import (
-    list_runs,
-    open_latest_excel,
-    open_results_folder,
-    preview_latest,
-)
+from lithiumscope.core.paths import RESULTS_DIR
 from lithiumscope.results.catalog import run_catalog
-from lithiumscope.results.release import prepare_release_candidate_bundle
+from lithiumscope.results.evidence import active_summary, document_identity, latest_document, latest_record
 
 
-def _preview(group: str) -> None:
-    dashboard = preview_latest(group)
-    print(
-        f"Dashboard abierto: {dashboard}"
-        if dashboard
-        else f"No hay ejecuciones para {group}."
-    )
-
-
-def _excel(group: str) -> None:
-    path = open_latest_excel(group)
-    print(
-        f"Excel abierto: {path}"
-        if path
-        else f"No hay Excel de resultados para {group}."
-    )
-
-
-def _compare(group: str) -> None:
-    catalog = run_catalog(group)
-    if catalog.empty:
-        print(f"No hay ejecuciones para {group}.")
+def _open_document(suffix: str) -> None:
+    path = latest_document(RESULTS_DIR, suffix)
+    if path is None:
+        print(f"[INFORMACIÓN] No hay archivos {suffix} compatibles disponibles.")
+        print("No se ha iniciado ninguna operación de generación.")
         return
-    columns = [
-        "run_id",
-        "state",
-        "winner",
-        "primary_metric_value",
-        "failed_algorithms",
-        "release_gate_pass",
-        "release_candidate",
-    ]
-    print(catalog[columns].head(20).to_string(index=False))
+    identity = document_identity(path, RESULTS_DIR)
+    print(f"Ejecución: {identity.get('run_id', 'N/D')}")
+    print(f"Tipo: {identity.get('mode', identity.get('model_group', 'N/D'))}")
+    print(f"Archivo: {path}")
+    try:
+        if os.name == "nt":
+            os.startfile(path)
+            opened = True
+        else:
+            opened = webbrowser.open(path.resolve().as_uri())
+        print("[OK] Solicitud de apertura enviada." if opened else "[ADVERTENCIA] No se pudo abrir el visor.")
+    except OSError as exc:
+        print(f"[ERROR] No se pudo abrir el visor: {exc}")
+    print("No se ha generado un nuevo archivo.")
 
 
-def run() -> None:
-    print("\nCENTRO DE MÉTRICAS Y RESULTADOS")
-    print("1. Previsualizar dashboard — Modelo 1")
-    print("2. Previsualizar dashboard — Modelo 2")
-    print("3. Abrir Excel — Modelo 1")
-    print("4. Abrir Excel — Modelo 2")
-    print("5. Listar ejecuciones")
-    print("6. Abrir carpeta completa de resultados")
-    print("7. Comparar ejecuciones — Modelo 1")
-    print("8. Comparar ejecuciones — Modelo 2")
-    print("9. Preparar bundle local de modelo para publicación")
-    print("10. Evaluar/promover candidatos con demo versionada")
+def _pdf() -> None:
+    _open_document(".pdf")
+
+
+def _excel() -> None:
+    _open_document(".xlsx")
+
+
+def _models() -> None:
+    for group in ("model_1", "model_2"):
+        print(f"\n{group.upper()} | Modelo activo")
+        print(json.dumps(active_summary(group), ensure_ascii=False, indent=2))
+        try:
+            catalog = run_catalog(group)
+            if not catalog.empty:
+                fields = ["run_id", "winner", "state", "primary_metric", "primary_metric_value", "release_gate_pass"]
+                print("Candidatos locales (métricas según su propio protocolo):")
+                print(catalog[fields].fillna("N/D").head(10).to_string(index=False))
+            else:
+                print("Candidatos locales: N/D")
+        except (ValueError, OSError, KeyError) as exc:
+            print(f"[ADVERTENCIA] Catálogo no legible: {exc}")
+    print("[ADVERTENCIA] Métricas de alcance distinto no demuestran superioridad directa.")
+
+
+def _eda() -> None:
+    for group in ("model_1", "model_2"):
+        item = latest_record(RESULTS_DIR / group / "eda", "manifest.json")
+        print(f"\n{group.upper()}")
+        if item is None:
+            print("N/D — no hay manifiesto EDA disponible.")
+            continue
+        path, record = item
+        print(json.dumps(record, ensure_ascii=False, indent=2))
+        print(f"Evidencia: {path}")
+        print("Vigencia respecto del próximo entrenamiento: requiere comprobar la firma efectiva.")
+    print("No se ejecutó un nuevo análisis exploratorio.")
+
+
+def _tests() -> None:
+    item = latest_record(RESULTS_DIR / "tests", "summary.json")
+    if item:
+        path, record = item
+        print("TESTS")
+        print(json.dumps(record, ensure_ascii=False, indent=2))
+        print(f"Evidencia: {path}")
+    else:
+        print("Tests: N/D — no hay resumen registrado.")
+    root = RESULTS_DIR / "scientific_simulations"
+    for name in ("manifest.json", "experiment_manifest.json", "closure_manifest.json"):
+        item = latest_record(root, name)
+        if item:
+            print(f"Simulación registrada: {item[0]}")
+    print("No se ejecutaron nuevos tests ni simulaciones.")
+
+
+def run() -> bool | None:
+    print("\nMÉTRICAS Y RESULTADOS")
+    print("1. Visualizar PDF")
+    print("2. Visualizar Excel")
+    print("3. Métricas y estado de los modelos")
+    print("4. Resultados del análisis exploratorio")
+    print("5. Resultados de tests y simulaciones")
     print("0. Volver")
-    choice = choose(
-        "> ",
-        {str(i) for i in range(11)},
-    )
-
+    choice = choose("Seleccione una opción [0-5]: ", set("012345"))
     if choice == "0":
         return False
-
-    if choice == "1":
-        _preview("model_1")
-    elif choice == "2":
-        _preview("model_2")
-    elif choice == "3":
-        _excel("model_1")
-    elif choice == "4":
-        _excel("model_2")
-    elif choice == "5":
-        for group in ("model_1", "model_2"):
-            print(f"\n{group.upper()}")
-            runs = list_runs(group)
-            if not runs:
-                print("  Sin ejecuciones.")
-            for run_dir in runs[:10]:
-                print(f"  - {run_dir.name} -> {run_dir}")
-    elif choice == "6":
-        open_results_folder()
-    elif choice == "7":
-        _compare("model_1")
-    elif choice == "8":
-        _compare("model_2")
-    elif choice == "9":
-        try:
-            manifest_path, bundle_path = prepare_release_candidate_bundle()
-            print(f"Manifest generado: {manifest_path}")
-            print(f"Bundle generado:   {bundle_path}")
-            print("No se creó ningún tag ni GitHub Release automáticamente.")
-        except RuntimeError as exc:
-            print(f"No hay candidato válido todavía: {exc}")
-    elif choice == "10":
-        _evaluate_candidates()
-
-
-def _evaluate_candidates() -> None:
-    from lithiumscope.prediction.candidate_evaluation import (
-        evaluate_pending_candidates,
-    )
-
-    result = evaluate_pending_candidates(
-        promote_if_better=True,
-    )
-    print(
-        f"Evaluación: {result.evaluation_id}"
-    )
-    print(
-        f"Manifest:   {result.manifest_path}"
-    )
-    for model_group, decision in (
-        result.decisions.items()
-    ):
-        status = decision.get(
-            "status",
-            "unknown",
-        )
-        print(
-            f"  {model_group}: {status}"
-        )
+    actions = {"1": _pdf, "2": _excel, "3": _models, "4": _eda, "5": _tests}
+    actions[choice]()
