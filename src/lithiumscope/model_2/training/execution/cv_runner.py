@@ -41,6 +41,7 @@ class ClassificationCVResult:
     overall_metrics: dict[str, float]
     elapsed_seconds: float
     final_params: dict
+    inner_operating_predictions: pd.DataFrame | None = None
 
 
 
@@ -81,6 +82,7 @@ def run_classification_cv(
         )
     probabilities = np.full(len(y), np.nan, dtype=float)
     records: list[dict] = []
+    operating_records: list[dict] = []
     started = time.perf_counter()
     label = get_label(algorithm)
     spec = get_algorithm(algorithm)
@@ -93,6 +95,9 @@ def run_classification_cv(
     optimization = optimization or {}
     from lithiumscope.model_2.training.calibration.policy import calibration_policy
     calibration_mode = calibration_policy(optimization)
+    operating_objective = optimization.get('operating_threshold_objective')
+    if operating_objective and scientific_folds is None:
+        raise ValueError('Train-only operating policy requires scientific spatial folds')
     parameter_space = parameter_space_for(algorithm, spec, optimization)
     optimize = bool(optimization.get("enabled", False))
     trials = int(
@@ -117,7 +122,7 @@ def run_classification_cv(
         from lithiumscope.model_2.validation.spatial import scientific_labels
         if not np.array_equal(scientific_labels(scientific_folds, len(y)), np.asarray(y)):
             raise ValueError('OOF labels differ from fold protocol')
-    _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_threshold_ppm, folds, groups, inner_folds, label, label_quantile, lithium_values, optimize, probabilities, pruning, quality_training_mask, records, scientific_folds, seed, spec, split_groups, split_iter, trials, x, y, parameter_space, calibration_mode)
+    _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_threshold_ppm, folds, groups, inner_folds, label, label_quantile, lithium_values, optimize, probabilities, pruning, quality_training_mask, records, scientific_folds, seed, spec, split_groups, split_iter, trials, x, y, parameter_space, calibration_mode, operating_objective, operating_records)
 
     assert_oof_complete(probabilities, len(y))
     final_indices = (
@@ -243,6 +248,7 @@ def run_classification_cv(
         overall_metrics=overall,
         elapsed_seconds=elapsed,
         final_params=final_params,
+        inner_operating_predictions=pd.DataFrame(operating_records) if operating_records else None,
     )
 
 from lithiumscope.model_2.training.execution.cv_runner_fold_utilities import _splitter, _materialize_splits, _fit_estimator

@@ -334,9 +334,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 511.
 - Diagnóstico de origen: **Estado: Metodológicamente limitado. Prioridad: Alta. Decisión: Definir etiquetas sin dependencia del conjunto de evaluación.**
 - Criterio de aceptación (extracto): El criterio de aceptación será que la definición de etiquetas sea reproducible y no dependa de información de evaluación no disponible durante el desarrollo.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: training/optimization/optimizer.py; training/calibration/operating.py
+- Implementación / evidencia: Cuantil Optuna calculado solo en cada TRAIN interno; corte geoquimico fijo de la particion exterior para seleccionar politica operativa sobre sus predicciones internas. Rechaza folds monoclase antes de ajustar. Falta holdout prospectivo y comparacion controlada.
+- Estado: parcialmente verificado.
 
 ## M2-16 — Step 16 Release — Diagnóstico de la validación cruzada espacial estratificada
 - Origen: 04. Diagnostico M2 Release.md, línea 517.
@@ -350,9 +350,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 523.
 - Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Media. Decisión: Consolidar baselines y comparaciones reproducibles.**
 - Criterio de aceptación (extracto): El criterio de aceptación será disponer de referencias reproducibles que permitan interpretar tanto discriminación como decisiones operativas sin favorecer artificialmente a un candidato.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: validation/spatial.py; competition_prepare_scientific_manifests.py; test_train_only_operating_policy.py
+- Implementación / evidencia: Baseline prior utiliza las mismas filas TRAIN elegibles por QA que candidatos; TEST intacto, OOF identificado, soporte y metricas globales. Pendiente baseline espacial complementario.
+- Estado: parcialmente verificado.
 
 ## M2-18 — Step 18 Release — Diagnóstico de la competencia de algoritmos
 - Origen: 04. Diagnostico M2 Release.md, línea 529.
@@ -366,17 +366,17 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 535.
 - Diagnóstico de origen: **Estado: Experimentalmente insuficiente. Prioridad: Alta. Decisión: Reforzar Optuna y comprobar suficiencia de la búsqueda.**
 - Criterio de aceptación (extracto): El criterio de aceptación será una optimización auditable, reproducible y con evidencia de suficiencia o limitación del presupuesto; los máximos de 312 trials y 936 ajustes internos no se comunicarán como ejecuciones efectivamente completadas.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: training/optimization/optimizer.py; core/run_resume.py
+- Implementación / evidencia: Preflight valida cobertura y ambas clases en todos los folds antes de Optuna; no omite folds monoclase. Cuenta fallidos/podados/completos. Falta estudio de convergencia y presupuesto con datos reales.
+- Estado: parcialmente verificado.
 
 ## M2-20 — Step 20 Release — Diagnóstico de la calibración de SVM
 - Origen: 04. Diagnostico M2 Release.md, línea 541.
 - Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Alta. Decisión: Evaluar calibración de todos los candidatos bajo aislamiento espacial.**
 - Criterio de aceptación (extracto): El criterio de aceptación será justificar con evidencia la política de calibración de cada candidato y conservar la distinción entre score exploratorio y probabilidad calibrada de la etiqueta binaria.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: training/calibration/operating.py; training/calibration/policy.py; test_train_only_operating_policy.py
+- Implementación / evidencia: Politica operativa cross-fit de estimadores calibrados o legacy dentro de desarrollo, misma construccion para final. Preflight real viable; 18 particiones internas, minimo en calibracion anidada 17 positivos y 62 negativos. Falta comparacion empirica de calibracion por algoritmo; se conserva legacy por defecto.
+- Estado: parcialmente verificado.
 
 ## M2-21 — Step 21 Release — Diagnóstico de la ejecución del entrenamiento
 - Origen: 04. Diagnostico M2 Release.md, línea 547.
@@ -414,9 +414,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 571.
 - Diagnóstico de origen: **Estado: Metodológicamente limitado. Prioridad: Alta. Decisión: Optimizar y evaluar el umbral en conjuntos separados.**
 - Criterio de aceptación (extracto): El criterio de aceptación será comparar BA y demás métricas a 0,5 y al corte optimizado sobre las mismas observaciones independientes, sin presentar el 0,5818 OOF retrospectivo como validación independiente del umbral.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: training/calibration/operating.py; training/execution/cv_runner*.py; competition_finalize_scientific_winner.py; tests/model_2/test_train_only_operating_policy.py
+- Implementación / evidencia: Umbral operativo por fold ajustado exclusivamente con cross-fits internos de TRAIN y evaluado sin reajuste sobre TEST, exporta scores internos, umbral y metricas de ambas politicas. Corte final procede de OOF de desarrollo al corte Li final; no certifica holdout. Pruebas de aislamiento, reanudacion y objetivo. Falta validacion real y externa.
+- Estado: parcialmente verificado.
 
 ## M2-26 — Step 26 Release — Diagnóstico de el Release Gate
 - Origen: 04. Diagnostico M2 Release.md, línea 577.

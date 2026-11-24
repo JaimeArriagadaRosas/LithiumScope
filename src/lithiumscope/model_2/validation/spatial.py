@@ -91,20 +91,29 @@ def scientific_labels(folds: list[ScientificFold], count: int) -> np.ndarray:
 
 
 def evaluate_scientific_baseline(
-    folds: list[ScientificFold], count: int,
+    folds: list[ScientificFold], count: int, *, quality_mask=None,
 ) -> tuple[dict, pd.DataFrame, np.ndarray]:
     from lithiumscope.model_2.evaluation.metrics import classification_metrics
 
+    labels = scientific_labels(folds, count)
+    keep = np.ones(count, dtype=bool) if quality_mask is None else np.asarray(quality_mask, dtype=bool)
+    if keep.shape != (count,):
+        raise ValueError('Baseline QA mask is not aligned')
     scores = np.full(count, np.nan, dtype=float)
     records = []
     for i, fold in enumerate(folds, start=1):
-        prior = float(np.mean(fold.y_train))
+        eligible = np.asarray(fold.y_train)[keep[fold.train_idx]]
+        if set(np.unique(eligible)) != {0,1}:
+            raise ValueError('Baseline QA TRAIN must have both classes')
+        prior = float(np.mean(eligible))
         scores[fold.test_idx] = prior
         metrics = classification_metrics(fold.y_test, np.full(len(fold.test_idx), prior))
         records.append({
             "fold": i,
             **metrics,
-            "n_train": len(fold.train_idx),
+            "n_train": len(eligible),
+            "n_train_before_qa": len(fold.train_idx),
+            "train_prevalence": prior,
             "n_test": len(fold.test_idx),
             "label_threshold_ppm": fold.label_threshold_ppm,
             "group_overlap": 0,
@@ -121,6 +130,8 @@ def evaluate_scientific_baseline(
                    "precision", "recall", "brier_score"]:
         row[f"{metric}_mean"] = float(table[metric].mean())
     row["roc_auc_std"] = float(table["roc_auc"].std(ddof=0))
+    row.update({f"{k}_oof": v for k,v in classification_metrics(labels,scores).items()})
+    row["valid_folds"] = len(table)
     return row, table, scores
 
 

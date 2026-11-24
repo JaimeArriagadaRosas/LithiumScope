@@ -75,30 +75,33 @@ def optimize_classifier_with_optuna(
         else optuna.pruners.NopPruner()
     )
 
+    from lithiumscope.core.scientific_checks import assert_partition_coverage
+    assert_partition_coverage(splits, len(y))
+    prepared_splits = []
+    if lithium_values is not None:
+        inner_lithium = np.asarray(lithium_values, dtype=float)
+        if inner_lithium.shape != (len(y),) or not np.isfinite(inner_lithium).all() or (inner_lithium < 0).any():
+            raise ValueError("Invalid inner Li labels")
+    for train_idx, valid_idx in splits:
+        if lithium_values is not None:
+            label_limit = (float(fixed_threshold_ppm) if fixed_threshold_ppm is not None
+                           else float(np.quantile(inner_lithium[train_idx], label_quantile)))
+            training_y = (inner_lithium[train_idx] >= label_limit).astype(int)
+            validation_y = (inner_lithium[valid_idx] >= label_limit).astype(int)
+        else:
+            training_y = np.asarray(_take_rows(y, train_idx))
+            validation_y = np.asarray(_take_rows(y, valid_idx))
+        if set(np.unique(training_y)) != {0, 1} or set(np.unique(validation_y)) != {0, 1}:
+            raise ValueError("Un fold interno no contiene dos clases; no se omitira el fold.")
+        prepared_splits.append((train_idx, valid_idx, training_y, validation_y))
+
     def objective(trial):
         params = parameter_space(trial)
         scores: list[float] = []
 
-        for step, (train_idx, valid_idx) in enumerate(splits):
+        for step, (train_idx, valid_idx, training_y, validation_y) in enumerate(prepared_splits):
             estimator = estimator_factory(params)
-            if lithium_values is not None:
-                inner_lithium = np.asarray(lithium_values, dtype=float)
-                label_limit = (
-                    float(fixed_threshold_ppm)
-                    if fixed_threshold_ppm is not None
-                    else float(np.quantile(inner_lithium[train_idx], label_quantile))
-                )
-                training_y = (inner_lithium[train_idx] >= label_limit).astype(int)
-                validation_y = (inner_lithium[valid_idx] >= label_limit).astype(int)
-            else:
-                training_y = np.asarray(_take_rows(y, train_idx), dtype=int)
-                validation_y = np.asarray(_take_rows(y, valid_idx), dtype=int)
-            if np.unique(training_y).size != 2:
-                raise ValueError("Un fold interno no contiene dos clases de entrenamiento.")
             estimator.fit(_take_rows(x, train_idx), training_y)
-            if np.unique(validation_y).size < 2:
-                continue
-
             score = roc_auc_score(
                 validation_y,
                 _score_vector(
@@ -113,7 +116,7 @@ def optimize_classifier_with_optuna(
             if pruning_enabled and trial.should_prune():
                 raise optuna.TrialPruned()
 
-        if not scores:
+        if len(scores) != len(prepared_splits):
             raise RuntimeError(
                 "No inner validation split contained both target classes."
             )
@@ -181,7 +184,7 @@ def optimize_classifier_with_optuna(
 
     logger.info(
         "Model 2 Optuna best ROC-AUC=%.6f params=%s "
-        "complete=%d pruned=%d target_trials=%d storage=%s",
+        "complete=%d pruned=%d failed=%d target_trials=%d storage=%s",
         study.best_value,
         study.best_params,
         len(completed),
@@ -189,6 +192,7 @@ def optimize_classifier_with_optuna(
             trial.state == TrialState.PRUNED
             for trial in study.trials
         ),
+        sum(trial.state == TrialState.FAIL for trial in study.trials),
         n_trials,
         storage_path,
     )

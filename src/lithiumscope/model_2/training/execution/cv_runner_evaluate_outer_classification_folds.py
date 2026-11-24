@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 
-def _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_threshold_ppm, folds, groups, inner_folds, label, label_quantile, lithium_values, optimize, probabilities, pruning, quality_training_mask, records, scientific_folds, seed, spec, split_groups, split_iter, trials, x, y, parameter_space, calibration_mode='legacy'):
+def _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_threshold_ppm, folds, groups, inner_folds, label, label_quantile, lithium_values, optimize, probabilities, pruning, quality_training_mask, records, scientific_folds, seed, spec, split_groups, split_iter, trials, x, y, parameter_space, calibration_mode='legacy', operating_objective=None, operating_records=None):
     from lithiumscope.model_2.training.execution.cv_runner import GroupKFold, Spinner, _fit_estimator, _materialize_splits, assert_group_isolation, classification_metrics, create_model, np, optimize_classifier_with_optuna, pd
+    from lithiumscope.model_2.training.calibration.operating import learn_operating_policy, operating_evidence, fit_policy
+    from lithiumscope.model_2.methodology.decision import freeze_inner_oof_threshold
     for fold, (train_idx, test_idx) in enumerate(split_iter, start=1):
         train_idx = np.asarray(train_idx, dtype=int)
         test_idx = np.asarray(test_idx, dtype=int)
@@ -32,6 +34,9 @@ def _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_th
             if checkpoint
             else None
         )
+        if cached is not None and operating_objective:
+            if not cached.get("operating_inner_predictions"):
+                cached = None
         if cached is not None:
             fold_probabilities = np.asarray(
                 cached["predictions"],
@@ -39,10 +44,19 @@ def _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_th
             )
             probabilities[test_idx] = fold_probabilities
             metrics = classification_metrics(scientific_fold.y_test if scientific_fold is not None else y.iloc[test_idx], fold_probabilities)
+            if operating_objective:
+                inner_table = pd.DataFrame(cached["operating_inner_predictions"])
+                frozen = freeze_inner_oof_threshold(inner_table, permitted_outer_train_indices=train_idx,
+                                                     reserved_outer_test_indices=test_idx, objective=operating_objective)
+                evidence = operating_evidence(frozen, inner_table, scientific_fold.y_test, fold_probabilities)
+                metrics.update(_operating_metrics(evidence))
+                operating_records.extend(dict(row, outer_fold=fold) for row in evidence["operating_inner_predictions"])
             records.append(
                 {
                     "fold": fold,
                     **metrics,
+                    **{k:v for k,v in cached["metrics"].items() if k.startswith("train_")},
+                    "n_train_before_qa": original_train_count,
                     "n_train": len(train_idx),
                     "n_test": len(test_idx),
                     "resumed": True,
@@ -72,6 +86,8 @@ def _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_th
                 )
                 if scientific_fold is not None else y.iloc[train_idx]
             )
+            if np.unique(y_train).size != 2:
+                raise ValueError("QA eligible TRAIN has one binary class")
             x_test = x.iloc[test_idx]
             y_test = (
                 pd.Series(scientific_fold.y_test)
@@ -142,6 +158,13 @@ def _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_th
                     fixed_threshold_ppm=fixed_threshold_ppm,
                 )
 
+            operating = None
+            if operating_objective:
+                spinner.update(f"{label} - fold {fold}/{folds} - umbral interno")
+                frozen, inner_table = learn_operating_policy(
+                    x_train, y_train, groups_train, row_indices=train_idx, reserved_indices=test_idx,
+                    n_splits=inner_folds, objective=operating_objective,
+                    fit=lambda a,b,c: fit_policy(algorithm, device, seed, params, a,b,c,inner_folds,calibration_mode))
             spinner.update(
                 f"{label} · fold {fold}/{folds} · ajustando"
             )
@@ -167,12 +190,20 @@ def _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_th
                 y_test.to_numpy(),
                 fold_probabilities,
             )
+            train_scores = estimator.predict_proba(x_train)[:, 1]
+            train_metrics = classification_metrics(y_train, train_scores)
+            metrics.update({f"train_{key}": value for key,value in train_metrics.items()})
+            if operating_objective:
+                operating = operating_evidence(frozen, inner_table, y_test, fold_probabilities)
+                metrics.update(_operating_metrics(operating))
+                operating_records.extend(dict(row, outer_fold=fold) for row in operating["operating_inner_predictions"])
             records.append(
                 {
                     "fold": fold,
                     **metrics,
                     "n_train": len(train_idx),
                     "n_test": len(test_idx),
+                    "n_train_before_qa": original_train_count,
                     "resumed": False,
                     **({"label_threshold_ppm": scientific_fold.label_threshold_ppm,
                         "group_overlap": 0,
@@ -188,6 +219,7 @@ def _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_th
                     fold_probabilities,
                     metrics,
                     params=params,
+                    **({'operating_inner_predictions': operating['operating_inner_predictions']} if operating else {}),
                 )
             spinner.succeed(
                 f"{label} · fold {fold}/{folds} | "
@@ -200,3 +232,12 @@ def _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_th
                 f"{label} · fold {fold}/{folds} interrumpido"
             )
             raise
+
+def _operating_metrics(evidence):
+    return {
+        "operating_threshold": evidence["operating_threshold"],
+        "operating_inner_objective": evidence["operating_inner_objective"],
+        "operating_inner_count": evidence["operating_inner_count"],
+        "operating_inner_rows_sha256": evidence["operating_inner_rows_sha256"],
+        **{f"operating_test_{key}": value for key,value in evidence["operating_outer_metrics"].items()},
+    }

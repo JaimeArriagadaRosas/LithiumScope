@@ -137,7 +137,12 @@ def run_model_2_competition(
     requested_folds = int(cfg["validation"].get("folds", 5))
     q = float(cfg["model"]["high_lithium_quantile"])
     fixed_threshold = cfg["model"].get("fixed_threshold_ppm")
-    optimization_cfg = cfg.get("optimization", {})
+    optimization_cfg = dict(cfg.get("optimization", {}))
+    decision = cfg.get("decision_threshold", {})
+    if decision.get("policy") == "grouped_development_oof":
+        optimization_cfg["operating_threshold_objective"] = decision.get("objective", "balanced_accuracy")
+    else:
+        raise ValueError("Canonical M2 requires grouped development operating thresholds")
     inner_folds = int(cfg["validation"].get("inner_folds", 3))
 
     from lithiumscope.model_2.preparation.features.v4_inputs import (
@@ -181,7 +186,7 @@ def run_model_2_competition(
 
     fold_ids, frame, groups, quality_audit, quality_cfg, quality_mask, scientific_folds, threshold, x, y, y_full = _prepare_scientific_data(cfg, context, fixed_threshold, lithium_column, manifest_path, q, requested_folds, seed, spatial_group_column)
 
-    baseline, dataset_manifest, dataset_manifest_path, folds = _prepare_scientific_manifests(context, fixed_threshold, frame, groups, inner_folds, manifest_path, q, scientific_folds, threshold)
+    baseline, dataset_manifest, dataset_manifest_path, folds = _prepare_scientific_manifests(context, fixed_threshold, frame, groups, inner_folds, manifest_path, q, scientific_folds, threshold, quality_mask)
 
     rows: list[dict] = [baseline[0]]
     results: dict[str, object] = {}

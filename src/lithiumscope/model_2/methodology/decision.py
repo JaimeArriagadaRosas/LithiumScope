@@ -47,8 +47,15 @@ def freeze_inner_oof_threshold(
     if frame.empty or frame.isna().any().any():
         raise ValueError("Inner OOF must be nonempty without missing values")
     try:
-        row = frame.row_index.to_numpy(dtype=int)
-        fold = frame.inner_fold.to_numpy(dtype=int)
+        row_numeric = frame.row_index.to_numpy(dtype=float)
+        fold_numeric = frame.inner_fold.to_numpy(dtype=float)
+        if (not np.isfinite(row_numeric).all() or not np.isfinite(fold_numeric).all()
+                or (row_numeric < 0).any() or (fold_numeric < 0).any()
+                or not np.equal(row_numeric, np.floor(row_numeric)).all()
+                or not np.equal(fold_numeric, np.floor(fold_numeric)).all()):
+            raise ValueError("Invalid integer inner OOF identity")
+        row = row_numeric.astype(int)
+        fold = fold_numeric.astype(int)
         y = frame.y_true.to_numpy(dtype=float)
         scores = frame.score.to_numpy(dtype=float)
     except (ValueError, TypeError) as exc:

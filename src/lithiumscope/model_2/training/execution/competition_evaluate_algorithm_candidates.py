@@ -55,9 +55,16 @@ def _evaluate_algorithm_candidates(algorithms, context, device, failed, fixed_th
         results[algorithm] = result
 
         def write_predictions():
-            build_oof_table(pd.read_csv(manifest_path), frame[lithium_column], y, fold_ids,
-                            result.probabilities, scientific_folds, quality_mask).to_csv(
-                context.tables / f"oof_predictions_{algorithm}.csv", index=False)
+            table = build_oof_table(pd.read_csv(manifest_path), frame[lithium_column], y, fold_ids,
+                                    result.probabilities, scientific_folds, quality_mask)
+            if optimization_cfg.get("operating_threshold_objective"):
+                cuts = result.fold_table.set_index("fold")["operating_threshold"]
+                table["operating_threshold"] = table.outer_fold.map(cuts)
+                if table.operating_threshold.isna().any():
+                    raise ValueError("Missing fold operating thresholds")
+                table["predicted_class_operating"] = (table.prospectivity_score >= table.operating_threshold).astype(int)
+                result.inner_operating_predictions.to_csv(context.tables / f"inner_operating_{algorithm}.csv", index=False)
+            table.to_csv(context.tables / f"oof_predictions_{algorithm}.csv", index=False)
 
         record_evidence(
             row, context.tracker, logger, algorithm,

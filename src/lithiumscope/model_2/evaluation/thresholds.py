@@ -60,39 +60,31 @@ def select_operating_threshold(
         return ThresholdSelection(threshold=float(fallback),objective=objective,
             objective_value=float("nan"),metrics={},candidate_count=0,state="unavailable_single_class")
 
+    # Evaluate all cuts from cumulative confusion counts, not repeated AUC/ECE computations.
     candidates = _candidate_thresholds(scores)
-    best = None
-    for threshold in candidates:
-        metrics = classification_metrics(
-            y,
-            scores,
-            threshold=float(threshold),
-        )
-        if objective not in metrics:
-            raise ValueError(
-                f"Unsupported threshold objective: {objective}"
-            )
-        key = (
-            float(metrics[objective]),
-            float(metrics.get("f1", 0.0)),
-            float(metrics.get("recall", 0.0)),
-            -abs(float(threshold) - 0.5),
-        )
-        if best is None or key > best[0]:
-            best = (
-                key,
-                float(threshold),
-                metrics,
-            )
-
-    assert best is not None
-    return ThresholdSelection(
-        threshold=best[1],
-        objective=objective,
-        objective_value=float(best[2][objective]),
-        metrics={
-            key: float(value)
-            for key, value in best[2].items()
-        },
-        candidate_count=int(len(candidates)),
-    )
+    order = np.argsort(scores, kind="stable")
+    sorted_scores, sorted_y = scores[order], y[order]
+    below = np.searchsorted(sorted_scores, candidates, side="left")
+    prefix = np.r_[0, np.cumsum(sorted_y)]
+    fn = prefix[below]
+    tp = prefix[-1] - fn
+    tn = below - fn
+    fp = len(y) - below - tp
+    recall = tp / (tp + fn)
+    specificity = tn / (tn + fp)
+    precision = np.divide(tp, tp + fp, out=np.zeros_like(tp, dtype=float), where=tp + fp > 0)
+    f1 = np.divide(2*tp, 2*tp + fp + fn, out=np.zeros_like(tp, dtype=float), where=2*tp + fp + fn > 0)
+    objectives = {"balanced_accuracy": (recall + specificity)/2,
+                  "accuracy": (tp + tn)/len(y), "f1": f1,
+                  "precision": precision, "recall": recall, "sensitivity": recall,
+                  "specificity": specificity}
+    if objective not in objectives:
+        raise ValueError(f"Unsupported threshold-dependent objective: {objective}")
+    best = max(range(len(candidates)), key=lambda i: (
+        float(objectives[objective][i]), float(f1[i]), float(recall[i]),
+        -abs(float(candidates[i]) - .5)))
+    threshold = float(candidates[best])
+    metrics = classification_metrics(y, scores, threshold=threshold)
+    return ThresholdSelection(threshold=threshold, objective=objective,
+        objective_value=float(metrics[objective]), metrics=metrics,
+        candidate_count=int(len(candidates)))

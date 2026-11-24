@@ -34,7 +34,6 @@ def _finalize_scientific_winner(
         RunState,
         _excel_sheets,
         build_dashboard,
-        create_model,
         export_workbook,
         feature_range_profile,
         get_label,
@@ -42,7 +41,6 @@ def _finalize_scientific_winner(
         pd,
         save_model_bundle,
         save_oof_diagnostics,
-        select_operating_threshold,
     )
 
     winner = str(candidates.iloc[0]["algorithm"])
@@ -60,86 +58,36 @@ def _finalize_scientific_winner(
     context.tracker.attach_summary(scientific_diagnostics=diagnostic["metrics"])
     threshold_cfg = cfg.get("decision_threshold", {})
     threshold_objective = str(threshold_cfg.get("objective", "balanced_accuracy"))
-    threshold_fallback = float(threshold_cfg.get("fallback", 0.5))
-    # Threshold is a deployable candidate only. Its OOF objective is optimistic
-    # because model selection and threshold choice reuse the same OOF pool.
-    threshold_selection = select_operating_threshold(
-        y.to_numpy(),
-        winner_result.probabilities,
-        objective=threshold_objective,
-        fallback=threshold_fallback,
-    )
-    operating_threshold = float(threshold_selection.threshold)
-    print(
-        "Umbral operativo Modelo 2: "
-        f"{operating_threshold:.4f} "
-        f"| {threshold_objective} OOF="
-        f"{threshold_selection.objective_value:.4f}"
-    )
-    pd.DataFrame(
-        [
-            {
-                "threshold": operating_threshold,
-                "objective": threshold_selection.objective,
-                "objective_value": threshold_selection.objective_value,
-                "candidate_count": threshold_selection.candidate_count,
-                **{f"metric_{key}": value for key, value in threshold_selection.metrics.items()},
-            }
-        ]
-    ).to_csv(
-        context.tables / "winner_operating_threshold.csv",
-        index=False,
-    )
+    from lithiumscope.model_2.training.calibration.policy import calibration_policy
+    from lithiumscope.model_2.training.calibration.operating import learn_operating_policy, fit_policy
 
     final_fit_idx = np.flatnonzero(quality_mask) if quality_mask is not None else np.arange(len(x), dtype=int)
     x_final = x.iloc[final_fit_idx]
     y_final = y_full.iloc[final_fit_idx]
-    groups_final = groups.iloc[final_fit_idx] if groups is not None else None
-    if y_final.nunique() != 2:
-        raise ValueError("M2 quality TRAIN has only one class")
-    final_calibration_cv = None
-    if winner in {"svm_rbf", "random_forest_spatial_calibrated"}:
-        from sklearn.model_selection import GroupKFold
-
-        if groups_final is None or groups_final.nunique() < inner_folds:
-            raise ValueError("No spatial groups for final calibration.")
-        final_calibration_cv = list(
-            GroupKFold(n_splits=inner_folds).split(
-                x_final,
-                groups=groups_final,
-            )
-        )
-        for train_idx, valid_idx in final_calibration_cv:
-            if y_final.iloc[train_idx].nunique() < 2 or y_final.iloc[valid_idx].nunique() < 2:
-                raise ValueError("Final calibration requires both classes per spatial fold.")
-
-    from lithiumscope.model_2.training.calibration.policy import (
-        calibration_policy,
-        fit_spatially_calibrated,
-    )
-
+    groups_final = groups.iloc[final_fit_idx]
     selected_calibration = calibration_policy(cfg.get("optimization", {}))
-    if selected_calibration == "spatial_sigmoid":
-        final_estimator = fit_spatially_calibrated(
-            winner,
-            device,
-            seed,
-            winner_result.final_params,
-            x_final,
-            y_final,
-            groups_final,
-            inner_folds,
-        )
-    else:
-        final_estimator = create_model(
-            winner,
-            device,
-            seed,
-            winner_result.final_params,
-            calibrated=True,
-            calibration_cv=final_calibration_cv,
-        )
-        final_estimator.fit(x_final, y_final)
+    def fit_final_policy(a,b,c):
+        return fit_policy(winner, device, seed, winner_result.final_params, a,b,c,inner_folds,selected_calibration)
+    # Learn the final cut on development-only cross-fits of the selected family,
+    # at the actual final Li endpoint. No outer-test-selected scores are reused.
+    frozen, final_inner = learn_operating_policy(
+        x_final, y_final, groups_final, fit=fit_final_policy,
+        row_indices=final_fit_idx, reserved_indices=[], n_splits=inner_folds,
+        objective=threshold_objective)
+    threshold_selection = frozen.selection
+    operating_threshold = float(threshold_selection.threshold)
+    final_inner.to_csv(context.tables / "winner_operating_development_oof.csv", index=False)
+    pd.DataFrame([{
+        "threshold": operating_threshold, "objective": threshold_objective,
+        "objective_value": threshold_selection.objective_value,
+        "candidate_count": threshold_selection.candidate_count,
+        "scope": "development_selection_not_external_evaluation",
+        "label_threshold_ppm": threshold,
+        "inner_rows_sha256": frozen.inner_rows_sha256,
+        **{f"metric_{key}": value for key,value in threshold_selection.metrics.items()},
+    }]).to_csv(context.tables / "winner_operating_threshold.csv", index=False)
+    print(f"Umbral operativo de desarrollo: {operating_threshold:.4f}")
+    final_estimator = fit_final_policy(x_final,y_final,groups_final)
     profile = feature_range_profile(x_final)
 
     baseline_row = baseline[0]
@@ -153,7 +101,7 @@ def _finalize_scientific_winner(
             0.0,
         )
     )
-    # OOF selected both the winning candidate and an operating threshold.
+    # Outer OOF selects the family; final grouped development scores select the cut.
     # It cannot certify a release without a separate, unconsulted external holdout.
     exploratory_gate_pass = roc_gain >= min_roc_gain and ap_gain >= min_ap_gain
     release_gate_pass = False
@@ -195,6 +143,7 @@ def _finalize_scientific_winner(
         "operating_threshold_objective": threshold_selection.objective,
         "operating_threshold_objective_value": threshold_selection.objective_value,
         "operating_threshold_metrics": threshold_selection.metrics,
+        "operating_threshold_scope": "development_selection_not_external_evaluation",
         "competition_primary_metric": "roc_auc_mean",
         "winner_rule": ("highest mean ROC-AUC; tie-break Average Precision then Balanced Accuracy"),
         "ranking": candidates.to_dict(orient="records"),
@@ -211,7 +160,7 @@ def _finalize_scientific_winner(
             "min_average_precision_gain_over_baseline": min_ap_gain,
         },
         "cv_label_protocol": "group_kfold_fold_training_only",
-        "operating_threshold_validity": "OOF_selection_exploratory_not_holdout",
+        "operating_threshold_validity": "grouped_development_oof_not_external_holdout",
         "scope_note": ("Score de priorización exploratoria; no es probabilidad de yacimiento económicamente viable."),
     }
 
@@ -229,6 +178,7 @@ def _finalize_scientific_winner(
         "operating_threshold": operating_threshold,
         "operating_threshold_objective": threshold_selection.objective,
         "operating_threshold_metrics": threshold_selection.metrics,
+        "operating_threshold_scope": "development_selection_not_external_evaluation",
         "applicability_profile": profile,
         "experimental_only": True,
         "calibration_policy": selected_calibration,

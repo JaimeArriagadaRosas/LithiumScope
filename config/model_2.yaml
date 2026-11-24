@@ -121,6 +121,7 @@ optimization:
     warmup_folds: 2
 
 decision_threshold:
+  policy: grouped_development_oof
   objective: balanced_accuracy
   fallback: 0.50
 

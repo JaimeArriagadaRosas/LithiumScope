@@ -128,7 +128,7 @@ def _scientific_code_files(model_group: str) -> list[Path]:
         directory = model_root / "data"
         if directory.exists():
             files.extend(directory.rglob("*.py"))
-    for filename in ("evaluation/metrics.py", "evaluation/baseline.py"):
+    for filename in ("evaluation/metrics.py", "evaluation/baseline.py", "evaluation/thresholds.py", "evaluation/oof_evidence.py", "methodology/decision.py"):
         candidate = model_root / filename
         if candidate.exists():
             files.append(candidate)
@@ -138,6 +138,8 @@ def _scientific_code_files(model_group: str) -> list[Path]:
         source_root / "core" / "reproducibility.py",
         source_root / "core" / "scientific_checks.py",
         source_root / "core" / "training_diagnostics.py",
+        source_root / "core" / "candidate_evidence.py",
+        source_root / "core" / "checkpoints.py",
     ):
         if path.exists():
             files.append(path)
@@ -145,6 +147,8 @@ def _scientific_code_files(model_group: str) -> list[Path]:
         if directory.exists():
             files.extend(directory.rglob("*.py"))
     files.extend(source_root / "core" / "scientific" / name for name in ("spatial_audit.py", "applicability.py"))
+    if model_group == "model_2":
+        files.extend((source_root / "tools" / "acquisition" / "sentinel2").rglob("*.py"))
     return sorted(set(files), key=lambda path: path.relative_to(PROJECT_ROOT).as_posix())
 
 

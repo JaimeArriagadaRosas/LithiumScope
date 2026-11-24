@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 
-def _prepare_scientific_manifests(context, fixed_threshold, frame, groups, inner_folds, manifest_path, q, scientific_folds, threshold):
+def _prepare_scientific_manifests(context, fixed_threshold, frame, groups, inner_folds, manifest_path, q, scientific_folds, threshold, quality_mask=None):
     from lithiumscope.model_2.training.competition import build_tabular_manifest, evaluate_scientific_baseline, write_manifest
     dataset_manifest = build_tabular_manifest(
         manifest_path,
@@ -50,7 +50,18 @@ def _prepare_scientific_manifests(context, fixed_threshold, frame, groups, inner
             f"| inner folds: {inner_folds}"
         )
 
-    baseline = evaluate_scientific_baseline(scientific_folds, len(frame))
+    from lithiumscope.model_2.evaluation.oof_evidence import build_oof_table
+    from lithiumscope.model_2.validation.spatial import scientific_labels
+    import numpy as np
+    import pandas as pd
+    baseline = evaluate_scientific_baseline(scientific_folds, len(frame), quality_mask=quality_mask)
+    fold_ids = np.zeros(len(frame), dtype=int)
+    for number, split in enumerate(scientific_folds, 1):
+        fold_ids[split.test_idx] = number
+    manifest = pd.read_csv(manifest_path)
+    build_oof_table(manifest, manifest.Li_icpms, scientific_labels(scientific_folds, len(frame)),
+                    fold_ids, baseline[2], scientific_folds, quality_mask).to_csv(
+        context.tables / "baseline_oof_predictions.csv", index=False)
     baseline[1].to_csv(
         context.tables / "baseline_fold_metrics.csv",
         index=False,
