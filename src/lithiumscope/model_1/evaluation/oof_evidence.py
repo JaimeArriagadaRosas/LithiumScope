@@ -27,6 +27,10 @@ def regression_oof_table(prepared, predictions, splits):
                         "Li_icpms_predicted":scores,"residual":truth-scores,
                         "fold_train_q75_ppm":thresholds,"observed_high":(truth>=thresholds).astype(int),
                         "predicted_high":(scores>=thresholds).astype(int)})
+    audit=getattr(prepared,"audit",None)
+    if audit is not None and getattr(audit,"dataset_sha256",None):
+        from lithiumscope.core.pipeline_audit import stable_source_row_id
+        frame["source_row_id"]=[stable_source_row_id(audit.dataset_sha256,idx) for idx in prepared.y.index]
     source=getattr(prepared,"frame",None)
     if source is not None:
         if not source.index.equals(prepared.y.index):

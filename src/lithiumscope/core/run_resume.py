@@ -141,6 +141,8 @@ def _scientific_code_files(model_group: str) -> list[Path]:
         source_root / "core" / "candidate_evidence.py",
         source_root / "core" / "checkpoints.py",
         source_root / "core" / "checkpoint_identity.py",
+        source_root / "core" / "pipeline_audit.py",
+        source_root / "datasets" / "harmonization.py",
     ):
         if path.exists():
             files.append(path)

@@ -8,8 +8,10 @@ import pandas as pd
 
 from lithiumscope.core.config import load_config
 from lithiumscope.core.logging.session import get_logger
-from lithiumscope.core.pipeline_audit import PipelineAudit
+from lithiumscope.core.pipeline_audit import PipelineAudit, stable_source_row_id
 from lithiumscope.datasets.harmonization import canonicalize_coordinates
+from lithiumscope.datasets.validation.coordinates import assess_coordinate_aliases, coordinate_summary
+from lithiumscope.core.hashing import file_sha256
 from lithiumscope.model_1.schema import validate_training_schema
 from lithiumscope.datasets.readers.tabular import load_data
 from lithiumscope.model_1.preparation.detection_limits import clean_detection_limits
@@ -18,7 +20,7 @@ from lithiumscope.model_1.preparation.quality_control import apply_quality_contr
 from lithiumscope.model_1.preparation.target_filtering import filter_target
 from lithiumscope.model_1.preparation.category_cleaning import clean_categories
 from lithiumscope.model_1.preparation.feature_engineering import add_geochemical_features
-from lithiumscope.model_1.training.preprocessing.tabular import FeatureSchema, select_feature_schema
+from lithiumscope.model_1.training.preprocessing.tabular import FeatureSchema, select_feature_schema, DERIVED
 from lithiumscope.model_1.validation.spatial import (
     build_spatial_groups,
     spatial_coordinate_diagnostics,
@@ -40,12 +42,13 @@ class PreparedModel1Data:
     coordinate_report: dict = field(default_factory=dict)
     outer_splits: list[tuple[np.ndarray, np.ndarray]] | None = None
     validation_strategy: str | None = None
+    coordinate_evidence: pd.DataFrame | None = None
 
 
 def prepare_training_data(path: Path, model_family: str = "common") -> PreparedModel1Data:
     config = load_config("model_1")
     data_cfg = config["data"]
-    audit = PipelineAudit()
+    audit = PipelineAudit(dataset_sha256=file_sha256(path))
 
     frame = load_data(path)
     raw_frame = frame.copy()
@@ -60,10 +63,15 @@ def prepare_training_data(path: Path, model_family: str = "common") -> PreparedM
     frame = normalize_missing_values(frame)
     audit.capture("03_missing_values", frame)
 
-    frame = canonicalize_coordinates(frame)
-    coordinate_report = spatial_coordinate_diagnostics(
-        frame
-    )
+    coordinate_evidence=None
+    if version>=2:
+        frame,coordinate_evidence=assess_coordinate_aliases(frame,original=raw_frame)
+        coordinate_evidence["source_row_id"]=[stable_source_row_id(audit.dataset_sha256,idx) for idx in coordinate_evidence.index]
+    else:
+        frame=canonicalize_coordinates(frame)
+    coordinate_report=spatial_coordinate_diagnostics(frame)
+    if coordinate_evidence is not None:
+        coordinate_report.update(coordinate_summary(coordinate_evidence))
     audit.capture(
         "04_canonical_coordinates",
         frame,
@@ -72,6 +80,7 @@ def prepare_training_data(path: Path, model_family: str = "common") -> PreparedM
             f"missing={coordinate_report['missing_rows']} "
             f"out_of_range={coordinate_report['out_of_range_rows']}"
         ),
+        allowed_added_columns=("Longitude","Latitude"),
     )
 
     frame, target = filter_target(
@@ -85,6 +94,7 @@ def prepare_training_data(path: Path, model_family: str = "common") -> PreparedM
         "05_target_validity",
         frame,
         f"target={target}; no target-quantile trimming; {frame.attrs.get('target_validation', {})}",
+        exclusion_reasons=frame.attrs.get("target_exclusions",[]),
     )
 
     frame = apply_quality_control(
@@ -93,7 +103,7 @@ def prepare_training_data(path: Path, model_family: str = "common") -> PreparedM
         minimum=float(data_cfg["quality_min"]),
         maximum=float(data_cfg["quality_max"]),
     )
-    audit.capture("06_quality_control", frame)
+    audit.capture("06_quality_control", frame, exclusion_reasons=frame.attrs.get("qc_exclusions",[]))
     # Diagnostic coverage is not allowed to decide the predictor schema from TEST.
     include_age = bool(data_cfg.get("include_age", False))
     age_column = find_age_column(frame)
@@ -116,11 +126,12 @@ def prepare_training_data(path: Path, model_family: str = "common") -> PreparedM
     )
 
     frame = add_geochemical_features(frame, version=version)
-    audit.capture("08_feature_engineering", frame)
+    audit.capture("08_feature_engineering", frame, allowed_added_columns=DERIVED)
 
-    coordinate_report = spatial_coordinate_diagnostics(
-        frame
-    )
+    coordinate_report = spatial_coordinate_diagnostics(frame)
+    if coordinate_evidence is not None:
+        coordinate_evidence["retained_after_qc"]=coordinate_evidence.index.isin(frame.index)
+        coordinate_report.update(coordinate_summary(coordinate_evidence.loc[frame.index]))
     schema = select_feature_schema(frame, include_age=include_age, preparation_version=version)
     validate_training_schema(target, schema.numeric, schema.categorical)
 
@@ -150,6 +161,10 @@ def prepare_training_data(path: Path, model_family: str = "common") -> PreparedM
             ),
         )
 
+    if not x.index.equals(y.index) or (groups is not None and not x.index.equals(groups.index)):
+        raise ValueError("Prepared X/y/groups row identity differs")
+    if file_sha256(path)!=audit.dataset_sha256:
+        raise ValueError("Dataset changed during preparation")
     audit.capture(
         "09_validation_inputs",
         frame,
@@ -181,6 +196,7 @@ def prepare_training_data(path: Path, model_family: str = "common") -> PreparedM
         audit=audit,
         groups=groups,
         coordinate_report=coordinate_report,
+        coordinate_evidence=coordinate_evidence,
     )
 
 
@@ -206,7 +222,11 @@ def prepare_prediction_data(frame: pd.DataFrame, model_family: str, schema: Feat
     version = getattr(schema, "preparation_version", 1)
     result = clean_detection_limits(frame, version=version)
     result = normalize_missing_values(result)
-    result = canonicalize_coordinates(result)
+    coordinate_evidence=None
+    if version>=2:
+        result,coordinate_evidence=assess_coordinate_aliases(result,original=frame)
+    else:
+        result=canonicalize_coordinates(result)
     result = clean_categories(result, model_family="common", version=version)
     result = add_geochemical_features(result, version=version)
 
@@ -227,4 +247,7 @@ def prepare_prediction_data(frame: pd.DataFrame, model_family: str, schema: Feat
     output = result[schema.numeric + schema.categorical].copy()
     output.attrs["prediction_provenance"] = {"missing_expected_columns": missing,
         "generated_during_preparation": generated}
+    if coordinate_evidence is not None:
+        output.attrs["prediction_provenance"]["coordinate_status"]=coordinate_evidence.coordinate_status.tolist()
+        output.attrs["prediction_provenance"]["coordinate_report"]=coordinate_summary(coordinate_evidence)
     return output

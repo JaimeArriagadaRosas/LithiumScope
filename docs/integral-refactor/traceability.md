@@ -134,17 +134,17 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 893.
 - Diagnóstico de origen: **Estado: Correcto con mejoras de trazabilidad. Prioridad: Media. Decisión: Conservar la arquitectura y formalizar invariantes entre etapas.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: pipeline.py; core/pipeline_audit.py; evaluation/artifacts.py; eda/pipeline.py; evaluation/oof_evidence.py; test_coordinate_lineage.py
+- Implementación / evidencia: Hashes de esquema/filas por etapa con version pandas, identidad estable SHA(dataset+fila), prohibicion de reordenar/introducir filas o columnas no declaradas, motivos obligatorios por exclusion, ausencia por fuente/columna. EDA real 4765 -> 3692 -> 3420; 1345 exclusiones exactas; dos preparaciones reproducen 9 hashes y baseline historico y 3420 IDs. Sin fit, falta auditoria de nuevas fuentes.
+- Estado: parcialmente verificado.
 
 ## M1-18 — Step 06 Release — Diagnóstico de la normalización geoespacial
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 899.
 - Diagnóstico de origen: **Estado: Correcto estructuralmente, con riesgos de calidad espacial. Prioridad: Alta. Decisión: Conservar la canonicalización y validar conflictos de coordenadas.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: datasets/validation/coordinates.py; datasets/harmonization.py; validation/spatial.py; validation/coordinate_preflight.py; pipeline.py; prediction/predictor.py; test_coordinate_lineage.py
+- Implementación / evidencia: Conserva alias originales, compara todos los pares con tolerancia declarada 1e-5 grados (no precision instrumental), detecta invalidos/inversion obvia/CRS no resuelto; no corrige por proximidad. Preflight bloquea conflictos retenidos y prediction no declara aplicabilidad. EDA real 4764/4765 coords numericamente validas, una faltante descartada antes de CV; 3420/3420 retenidas sin conflictos, 244 grupos; CRS desconocido en las 3420, no certificado. Extensiones reportadas se conservan como proxy, falta confirmar datum/precision/identidad fisica de fuentes.
+- Estado: parcialmente verificado.
 
 ## M1-19 — Step 12 Release — Diagnóstico del preflight científico
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 905.

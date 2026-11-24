@@ -29,6 +29,8 @@ def _resolve_column(
         for column in frame.columns
     }
     for candidate in candidates:
+        if candidate in frame.columns:
+            return candidate
         match = normalized.get(
             candidate.strip().lower()
         )

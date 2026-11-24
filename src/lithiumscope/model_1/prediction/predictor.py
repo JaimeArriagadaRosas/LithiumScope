@@ -71,7 +71,13 @@ def predict_model_1_frame(
     output.loc[invalid_output, "applicability_warning"] = "INVALID_PHYSICAL_PREDICTION"
     if schema.numeric:
         output.loc[x[list(schema.numeric)].isna().all(axis=1) & ~invalid_output, "applicability_warning"] = "INSUFFICIENT_INPUT"
+    coordinate_status=provenance.get("coordinate_status")
+    if coordinate_status is not None and {"Latitude","Longitude"}.intersection(schema.numeric):
+        output["coordinate_status"]=coordinate_status
+        unresolved=output.coordinate_status.ne("valid_numeric_coordinates")
+        output.loc[unresolved & ~invalid_output,"applicability_warning"]="INSUFFICIENT_COORDINATE_EVIDENCE"
     diagnostics = {
+        "coordinate_report":provenance.get("coordinate_report"),
         "algorithm": bundle.get("algorithm", "unknown"),
         "rows": len(frame),
         "expected_columns": expected,
@@ -81,7 +87,7 @@ def predict_model_1_frame(
         "prepared_missing_counts": {name: int(x[name].isna().sum()) for name in expected},
         "profile_complete": profile_complete,
         "invalid_physical_predictions": int(invalid_output.sum()),
-        "insufficient_evidence_rows": int(output["applicability_warning"].isin(["INSUFFICIENT_INPUT", "INSUFFICIENT_PROFILE"]).sum()),
+        "insufficient_evidence_rows": int(output["applicability_warning"].isin(["INSUFFICIENT_INPUT", "INSUFFICIENT_PROFILE", "INSUFFICIENT_COORDINATE_EVIDENCE"]).sum()),
         "out_of_domain_rows": int((fractions > 0.25).sum()),
         "mean_out_of_training_range_fraction": float(fractions.mean()) if fractions.notna().any() else None,
         "oof_absolute_residual_q90": interval,

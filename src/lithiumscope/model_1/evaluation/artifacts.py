@@ -19,6 +19,11 @@ def save_dataset_artifacts(prepared, run_context) -> dict[str, Path | None]:
     audit = prepared.audit.to_frame()
     audit_path = run_context.tables / "pipeline_steps.csv"
     audit.to_csv(audit_path, index=False)
+    pd.DataFrame(prepared.audit.source_records).to_csv(run_context.tables/"stage_sources.csv",index=False)
+    pd.DataFrame(prepared.audit.column_records).to_csv(run_context.tables/"stage_column_missingness.csv",index=False)
+    prepared.audit.exclusions_frame().to_csv(run_context.tables/"stage_exclusions.csv",index=False)
+    if prepared.coordinate_evidence is not None:
+        prepared.coordinate_evidence.to_csv(run_context.tables/"coordinate_alias_audit.csv",index=False)
 
     describe_path = run_context.tables / "dataset_describe.csv"
     prepared.frame.describe(include="all").transpose().reset_index(names="variable").to_csv(describe_path, index=False)

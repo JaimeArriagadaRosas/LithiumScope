@@ -92,26 +92,11 @@ def run_model_1_preflight(
             + ", ".join(constant)
         )
 
-    coordinate = dict(prepared.coordinate_report)
-    spatial_groups = (
-        int(prepared.groups.nunique())
-        if prepared.groups is not None
-        else 0
-    )
-    if require_groups:
-        if prepared.groups is None:
-            errors.append(
-                "Spatial validation is mandatory but complete valid coordinates "
-                "are not available for every retained sample. "
-                f"valid={coordinate.get('valid_rows', 0)} "
-                f"missing={coordinate.get('missing_rows', 0)} "
-                f"out_of_range={coordinate.get('out_of_range_rows', 0)}."
-            )
-        elif spatial_groups < outer_folds:
-            errors.append(
-                "Spatial validation is mandatory but only "
-                f"{spatial_groups} groups are available for {outer_folds} folds."
-            )
+    from lithiumscope.model_1.validation.coordinate_preflight import coordinate_preflight
+    coordinate,spatial_groups,coordinate_errors,coordinate_warnings=coordinate_preflight(
+        prepared,run_context,require_groups=require_groups,outer_folds=outer_folds)
+    errors.extend(coordinate_errors)
+    warnings.extend(coordinate_warnings)
 
     exact_duplicates = int(
         prepared.frame[
