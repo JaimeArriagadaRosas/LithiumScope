@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 
 from lithiumscope.core.exceptions import InputValidationError
@@ -28,6 +29,12 @@ def apply_quality_control(
     numeric = pd.to_numeric(frame[column], errors="coerce")
     mask = numeric.between(minimum, maximum, inclusive="both")
     result = frame.loc[mask].copy()
+    exclusions = []
+    for idx in frame.index[~mask]:
+        val = numeric.loc[idx]
+        reason = "missing_or_unparseable" if pd.isna(val) else "nonfinite" if not np.isfinite(val) else "below_minimum" if val < minimum else "above_maximum"
+        exclusions.append({"row_index": str(idx), "column": column, "original": str(frame.loc[idx, column]), "reason": reason})
+    result.attrs["qc_exclusions"] = exclusions
     logger.info(
         "Geochemical QC (%s in %.2f..%.2f): %d -> %d rows",
         column,

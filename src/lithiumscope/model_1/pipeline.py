@@ -115,7 +115,7 @@ def prepare_training_data(path: Path, model_family: str = "common") -> PreparedM
         "common semantic rules for all algorithms",
     )
 
-    frame = add_geochemical_features(frame)
+    frame = add_geochemical_features(frame, version=version)
     audit.capture("08_feature_engineering", frame)
 
     coordinate_report = spatial_coordinate_diagnostics(
@@ -191,7 +191,7 @@ def prepare_prediction_data(frame: pd.DataFrame, model_family: str, schema: Feat
     result = normalize_missing_values(result)
     result = canonicalize_coordinates(result)
     result = clean_categories(result, model_family="common", version=version)
-    result = add_geochemical_features(result)
+    result = add_geochemical_features(result, version=version)
 
     missing = [
         column

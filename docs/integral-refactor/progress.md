@@ -86,3 +86,8 @@
 - 52 modulos redistribuidos por responsabilidad: lector tabular compartido, preparacion M1 y M2, validacion espacial, algoritmos separados, preprocesamiento, optimizacion, ejecucion y calibracion. Sentinel-2 y red-edge en tools/acquisition/sentinel2. Se actualizaron imports internos, pruebas y rutas de firma.
 - Compatibilidad joblib explicita en los dos modulos historicos de FeatureSchema y TabNetRegressorAdapter; pendiente comprobar bundles reales. Se conservan las entradas publicas de competition/trainer y comandos de diagnostico historico.
 - Regresion local 485 aprobadas, 7 omitidas, 8 warnings, cero fallos (20261124T205934Z_5ed962a6a6b74676be9dfc16f42bc7e9). Ruff y limite 300 lineas OK. No push.
+
+## Contrato tabular y geoquimico
+- Lector compartido valida encabezados, filas y delimitador; registra formato, codificacion y hoja. Excepcion de cuatro encabezados vacios restringida al SHA256 de Mamani09 (1788 x 101, CP1252).
+- EDA real M1: 1073 descartes por Li ausente/no interpretable; QC 160 bajo minimo, 3 sobre maximo, 109 faltantes. 3420 filas, 33 predictores y 244 grupos conservados. Derivados v2: 7 ausencias adicionales, sin divisiones invalidas ni negativos; v1 mantiene formulas anteriores. Evidencia results/model_1/eda/eda_20261124T210147_943982Z_60f8d415.
+- Pruebas focalizadas 79 aprobadas, 0 fallos (20261124T210128Z_5a61039109644304808379ed6bb9cb1c). Pendiente confirmar unidades, censura y equivalencia quimica de sumas por fuente. No se ha entrenado un candidato.

@@ -41,6 +41,10 @@ def run_eda(path: Path, *, output_root: Path | None = None) -> Path:
         pd.DataFrame(prepared.audit.source_records).to_csv(tables / "stage_sources.csv", index=False)
         pd.DataFrame(prepared.audit.exclusions, columns=["stage", "row_index", "source", "sample_id"]).to_csv(
             tables / "stage_exclusions.csv", index=False)
+        reasons = []
+        for stage, attr in (("05_target_validity", "target_exclusions"), ("06_quality_control", "qc_exclusions")):
+            reasons.extend({"stage": stage, **record} for record in prepared.frame.attrs.get(attr, []))
+        pd.DataFrame(reasons, columns=["stage", "row_index", "column", "original", "reason"]).to_csv(tables / "exclusion_reasons.csv", index=False)
         pd.DataFrame(prepared.audit.censoring, columns=["row_index", "source", "column", "original", "censor_type", "limit", "substituted"]).to_csv(tables / "censoring.csv", index=False)
         categories = pd.concat([category_frequencies(prepared.raw_frame, prepared.schema.categorical).assign(stage="raw"),
                                 category_frequencies(prepared.frame, prepared.schema.categorical).assign(stage="prepared")], ignore_index=True)
@@ -64,6 +68,7 @@ def run_eda(path: Path, *, output_root: Path | None = None) -> Path:
         print(summary.to_string(index=False))
         return complete_run(directory, signature_value=key, details={
             "model_group": "model_1", "source_path": str(path), "source_sha256": file_sha256(path),
+            "tabular_source": prepared.raw_frame.attrs.get("tabular_source", {}),
             "rows_raw": len(prepared.raw_frame), "rows_prepared": len(prepared.frame),
             "features": len(cols), "numeric_features": prepared.schema.numeric,
             "categorical_features": prepared.schema.categorical,

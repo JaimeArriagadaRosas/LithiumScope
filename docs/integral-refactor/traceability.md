@@ -6,9 +6,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 795.
 - Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Media. Decisión: Conservar y reforzar los contratos de entrada.**
 - Criterio de aceptación (extracto): El criterio de aceptación será que las entradas admitidas produzcan la estructura esperada y que las ambiguas se rechacen o adviertan con diagnóstico reproducible.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: datasets/readers/tabular.py; tests/datasets/test_tabular_contract.py
+- Implementación / evidencia: Validacion de encabezados, ancho de filas, delimitador declarado, hoja y codificacion. Excepcion Mamani09 con SHA256 exacto y 4 encabezados vacios documentados; 1788 x 101 leidos. XLSX original no recuperado.
+- Estado: parcialmente verificado.
 
 ## M1-02 — Step 02 Histórico ↔ Procedimiento transversal Release — Diagnóstico del análisis exploratorio (EDA)
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 801.
@@ -46,9 +46,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 825.
 - Diagnóstico de origen: **Estado: Correcto con limitación de comparabilidad química. Prioridad: Alta. Decisión: Conservar el QC y verificar la equivalencia de las sumas.**
 - Criterio de aceptación (extracto): El criterio de aceptación será que el ingreso o descarte de cada muestra tenga una razón química trazable; deberá estudiarse el subconjunto de los 272 descartes de la etapa QC del release y los casos extremos antes de cambiar criterios de selección o atribuirles errores de predicción.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: preparation/quality_control.py; EDA exclusion_reasons.csv; test_geochemical_contract.py
+- Implementación / evidencia: 272 descartes reales: 3 sobre maximo, 160 bajo minimo y 109 ausentes/no interpretables; limites conservados. Pendiente equivalencia quimica de sumas, Fe y unidades por fuente.
+- Estado: parcialmente verificado.
 
 ## M1-07 — Step 07 Histórico ↔ Step 09 Release — Diagnóstico de la normalización y agrupación de categorías
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 831.
@@ -70,9 +70,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 843.
 - Diagnóstico de origen: **Estado: Correcto funcionalmente, limitado en interpretación geoquímica. Prioridad: Alta. Decisión: Preservar la referencia histórica y validar variantes científicas.**
 - Criterio de aceptación (extracto): El criterio de aceptación será que las características no generen resultados engañosos y que su procedencia sea verificable; la adopción de variantes dependerá de ablaciones con splits fijos y no de mejoras obtenidas sobre TEST reutilizado.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: preparation/feature_engineering.py; pipeline.py; test_geochemical_contract.py
+- Implementación / evidencia: Contrato v2 rechaza operandos negativos/no finitos y denominadores <=1e-6; v1 conserva formulas. EDA real mantiene 3420 filas; 7 faltantes adicionales en derivados respecto a v1. Pendiente revision de convenciones Fe y ablaciones.
+- Estado: parcialmente verificado.
 
 ## M1-10 — Step 10 Histórico ↔ Step 13 Release — Diagnóstico de la validación cruzada anidada y espacial
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 849.
