@@ -198,8 +198,8 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 941.
 - Diagnóstico de origen: **Estado: Problema predictivo demostrado, causa experimentalmente insuficiente. Prioridad: Alta. Decisión: Investigar primero los registros de gran error y después evaluar soluciones de aprendizaje.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: scripts/scientific/audit_m1_historical_extremes.py; ejecucion sobre evidencia real.
-- Implementación / evidencia: 27240 OOF de seis regresores y dos cohortes; RMSE, MAE y sesgo reconciliados. Top10 por candidato, fraccion SSE, sesgo Li alto. Pendiente expediente analitico por muestra, causas y experimentos prospectivos.
+- Componentes / corrección detallada / tests: scripts/scientific/audit_m1_historical_extremes.py; audit_m1_extreme_provenance.py; ejecucion sobre evidencia real.
+- Implementación / evidencia: 27240 OOF reconciliados; cohorte 3420 alineada exactamente por Li, grupo, fuente y fold historico; 2740/2744 GEOROC con ID unico, 4 ambiguos. Los 16 casos distintos del top10 por algoritmo tienen ID unico; 9 Macusani [30009] en fold5 por encima del maximo TRAIN 696 ppm, 0 muestras confirmadas de esa publicacion en TRAIN; 5 San Rafael [25383]; 16 sin Rock_type historico. Falta verificar metodo/CRS y realizar ablaciones; no causalidad certificada.
 - Estado: parcialmente verificado.
 
 ## M1-26 — Step 27 Release — Diagnóstico de la incertidumbre y el dominio de aplicabilidad
