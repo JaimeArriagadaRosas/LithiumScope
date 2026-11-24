@@ -214,8 +214,8 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 953.
 - Diagnóstico de origen: **Estado: Correcto técnicamente, con garantía científica insuficiente para promoción. Prioridad: Alta. Decisión: Conservar el versionamiento y establecer una puerta científica explícita para M1.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: prediction/candidates/evaluator.py; cli/candidate_admin.py; test_demo_promotion_guard.py
-- Implementación / evidencia: Demostracion conocida no cambia modelo activo ni estado pendiente del candidato. Promocion bloqueada sin holdout independiente. 11 pruebas focalizadas aprobadas. Falta evaluacion independiente y aprobacion.
+- Componentes / corrección detallada / tests: prediction/candidates/holdout/; evaluation/release_gate.py; test_prospective_holdout.py.
+- Implementación / evidencia: Registro prospectivo y score/evaluacion de bundles congelados por hash; comparacion M1, bootstrap emparejado, sin activacion. Flujo sintetico probado. Falta holdout real, revision y aprobacion.
 - Estado: parcialmente verificado.
 
 ## M2-01 — Step 01 Release — Diagnóstico de la configuración central
@@ -422,8 +422,8 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 577.
 - Diagnóstico de origen: **Estado: Correcto con mejoras de control. Prioridad: Alta. Decisión: Separar entrenamiento, elegibilidad y promoción del release.**
 - Criterio de aceptación (extracto): El criterio de aceptación será que ningún candidato se active o presente como aprobado por el solo hecho de haberse entrenado o guardado; los criterios de publicación externos deberán verificarse por separado.
-- Componentes / corrección detallada / tests: model_2/evaluation/release_gate.py; prediction/candidates/gates.py; evaluator.py; test_demo_promotion_guard.py
-- Implementación / evidencia: Comparacion de demostracion exige identidad, etiquetas, cobertura y metricas validas. No autoriza promocion. Falta verificar holdout externo independiente y ejecutar gate completo.
+- Componentes / corrección detallada / tests: prediction/candidates/holdout/; evaluation/release_gate.py; test_prospective_holdout.py.
+- Implementación / evidencia: Registro prospectivo, endpoint comun, score local, revelacion comprometida y metricas/uncertainty emparejadas. Gate valida dominios y soporte; revision documental obligatoria; promocion bloqueada. Flujo sintetico M2 v3 aprobado. Sin holdout real.
 - Estado: parcialmente verificado.
 
 ## M2-27 — Step 27 Release — Diagnóstico de el entrenamiento definitivo

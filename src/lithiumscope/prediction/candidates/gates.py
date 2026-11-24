@@ -144,10 +144,12 @@ def comparable_cases(active, candidate, expected, *, prediction_column):
     import numpy as np
     import pandas as pd
 
-    ids = set(expected["case_id"])
     for frame in (active, candidate, expected):
         if "case_id" not in frame or frame["case_id"].isna().any() or frame["case_id"].duplicated().any():
             return False
+    ids = set(expected["case_id"])
+    if "Li_icpms" not in expected:
+        return False
     if set(active["case_id"]) != ids or set(candidate["case_id"]) != ids:
         return False
     truth = expected.set_index("case_id")["Li_icpms"]

@@ -18,13 +18,14 @@ def score_model_2_image(
     path: Path,
     *,
     bundle: dict | None = None,
+    allow_acquisition: bool = True,
 ) -> tuple[dict, dict]:
     if bundle is None:
         bundle, _ = load_latest_model("model_2")
 
     required_coverage = bundle.get("quality_min_joint_valid")
     try:
-        frame, spectral = prepare_spectral_input(path, bundle)
+        frame, spectral = prepare_spectral_input(path, bundle, **({} if allow_acquisition else {"allow_acquisition": False}))
     except SpectralAbstention as exc:
         warning = "INSUFFICIENT_SPECTRAL_COVERAGE" if exc.status == "ABSTAIN_LOW_SPECTRAL_COVERAGE" else "INSUFFICIENT_SPECTRAL_EVIDENCE"
         return ({

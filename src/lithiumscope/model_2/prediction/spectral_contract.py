@@ -42,7 +42,7 @@ def _source_metadata(path: Path) -> dict:
                              "V4 requires same-scene Sentinel-2 provenance and coordinates.")
 
 
-def prepare_spectral_input(path: Path, bundle: dict) -> tuple[pd.DataFrame, dict]:
+def prepare_spectral_input(path: Path, bundle: dict, *, allow_acquisition: bool = True) -> tuple[pd.DataFrame, dict]:
     version = int(bundle.get("feature_extractor_version", 3))
     if version not in {1, 2, 3, 4}:
         raise SpectralAbstention("ABSTAIN_UNSUPPORTED_EXTRACTOR", "Unsupported spectral extractor version.")
@@ -73,7 +73,8 @@ def prepare_spectral_input(path: Path, bundle: dict) -> tuple[pd.DataFrame, dict
                 SimpleNamespace(sample_id=f"inference_{file_sha256(path)[:24]}_{metadata['scene_id']}",
                                 sentinel_scene_id=metadata["scene_id"], latitude=metadata["latitude"],
                                 longitude=metadata["longitude"], image_path=str(path)),
-                output=RESULTS_DIR / "predictions" / "spectral_cache_v4", min_joint_valid=.05)
+                output=RESULTS_DIR / "predictions" / "spectral_cache_v4", min_joint_valid=.05,
+                **({} if allow_acquisition else {"allow_acquisition": False}))
         except Exception as exc:
             raise SpectralAbstention("ABSTAIN_REDEDGE_UNAVAILABLE", str(exc)) from exc
         diagnostics.update(evidence)

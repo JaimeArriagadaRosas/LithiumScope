@@ -25,7 +25,7 @@ class ExternalGatePolicy:
 
     def validate(self) -> None:
         if any(
-            number < 1 for number in (
+            type(number) is not int or number < 1 for number in (
                 self.min_samples,
                 self.min_positive,
                 self.min_negative,
@@ -33,12 +33,14 @@ class ExternalGatePolicy:
             )
         ):
             raise ValueError("External validation support must be positive")
-        if not (0 <= self.min_auc <= 1):
-            raise ValueError("Invalid minimum ROC-AUC")
+        if not (0 <= self.min_auc <= 1 and 0 <= self.max_brier_regression <= 1):
+            raise ValueError("Invalid absolute metric policy")
+        if not all(np.isfinite(v) and -1<=v<=1 for v in (self.min_ap_gain,self.min_auc_gain,self.min_auc_gain_ci_lower)):
+            raise ValueError("Invalid paired gain policy")
 
 
 def _finite_scalar(value, name: str) -> float:
-    if value is None or not np.isfinite(float(value)):
+    if value is None or isinstance(value,(bool,np.bool_)) or not np.isfinite(float(value)):
         raise ValueError(f"Missing/nonfinite release metric: {name}")
     return float(value)
 
@@ -62,18 +64,24 @@ def assess_release(
         violations.append("holdout_reused_for_model_or_threshold_selection")
     if not evidence.get("sample_identity_and_provenance_verified") is True:
         violations.append("sample_provenance_not_verified")
-    if evidence.get("possible_duplicate_count", 0):
+    duplicate_count=evidence.get("possible_duplicate_count")
+    if type(duplicate_count) is not int or duplicate_count!=0:
         violations.append("possible_training_or_holdout_duplicates")
     if evidence.get("labels_field_verified") is not True:
         violations.append("external_lithium_labels_not_certified")
-    if evidence.get("regions", 0) < policy.min_geographic_regions:
-        violations.append("insufficient_independent_geographic_regions")
-    if evidence.get("n", 0) < policy.min_samples:
-        violations.append("insufficient_external_samples")
-    if evidence.get("positives", 0) < policy.min_positive:
-        violations.append("insufficient_external_positives")
-    if evidence.get("negatives", 0) < policy.min_negative:
-        violations.append("insufficient_external_negatives")
+    counts={}
+    for name,minimum,reason in (
+        ("regions",policy.min_geographic_regions,"insufficient_independent_geographic_regions"),
+        ("n",policy.min_samples,"insufficient_external_samples"),
+        ("positives",policy.min_positive,"insufficient_external_positives"),
+        ("negatives",policy.min_negative,"insufficient_external_negatives")):
+        value=evidence.get(name)
+        if type(value) is not int or value<minimum:
+            violations.append(reason)
+        if type(value) is int and value>=0:
+            counts[name]=value
+    if len(counts)!=4 or counts["positives"]+counts["negatives"]!=counts["n"] or counts["regions"]>counts["n"]:
+        violations.append("inconsistent_external_support")
 
     # No numeric pass is possible from a missing or invalid metric.
     metrics = (
@@ -83,7 +91,11 @@ def assess_release(
     values = {}
     for key in metrics:
         try:
-            values[key] = _finite_scalar(evidence.get(key), key)
+            value = _finite_scalar(evidence.get(key), key)
+            lower=-1 if key=="paired_auc_gain_ci_lower" else 0
+            if not lower<=value<=1:
+                raise ValueError("metric outside domain")
+            values[key]=value
         except (TypeError, ValueError):
             violations.append(f"missing_valid_{key}")
     if len(values) == len(metrics):
