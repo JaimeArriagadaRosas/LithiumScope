@@ -390,9 +390,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 553.
 - Diagnóstico de origen: **Estado: Defecto confirmado. Prioridad: Alta. Decisión: Validar las métricas y completar la evaluación binaria.**
 - Criterio de aceptación (extracto): El criterio de aceptación será que cada métrica sea reproducible desde predicciones identificadas, que las agregaciones indiquen su denominador y que las evaluaciones incompletas no sean declaradas superiores.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: evaluation/metrics.py, evaluation/thresholds.py, test_binary_metrics_contract.py.
+- Implementación / evidencia: metricas binarias validadas, monoclase no comparable; confusion, accuracy, sensibilidad, MCC/Kappa, ECE y fiabilidad. 100 pruebas aprobadas, 3 omitidas. Falta reconstruccion de metricas historicas y agregaciones OOF etiquetadas.
+- Estado: parcialmente verificado.
 
 ## M2-23 — Step 23 Release — Diagnóstico de los resultados de la competencia histórica
 - Origen: 04. Diagnostico M2 Release.md, línea 559.

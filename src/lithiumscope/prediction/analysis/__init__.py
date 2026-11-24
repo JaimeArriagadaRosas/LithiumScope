@@ -63,7 +63,7 @@ def model_2_external_metrics(
         return {}
     y_true = (values["truth"].to_numpy(dtype=float) >= float(threshold_ppm)).astype(int)
     scores = values["score"].to_numpy(dtype=float)
-    return classification_metrics(y_true, scores, threshold=float(probability_threshold))
+    return classification_metrics(y_true, scores, threshold=float(probability_threshold), allow_single_class=True)
 
 
 def pair_model_outputs(model_1: pd.DataFrame, model_2: pd.DataFrame) -> pd.DataFrame:

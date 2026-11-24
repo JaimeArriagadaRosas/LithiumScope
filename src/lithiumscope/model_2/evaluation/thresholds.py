@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from lithiumscope.model_2.evaluation.metrics import classification_metrics
+from lithiumscope.model_2.evaluation.metrics import classification_metrics, validate_binary_inputs
 
 
 @dataclass(frozen=True)
@@ -14,6 +14,7 @@ class ThresholdSelection:
     objective_value: float
     metrics: dict[str, float]
     candidate_count: int
+    state: str = "selected"
 
 
 def _candidate_thresholds(probabilities: np.ndarray) -> np.ndarray:
@@ -52,21 +53,12 @@ def select_operating_threshold(
     objective: str = "balanced_accuracy",
     fallback: float = 0.5,
 ) -> ThresholdSelection:
-    y = np.asarray(y_true, dtype=int)
-    scores = np.asarray(probabilities, dtype=float)
-
-    valid = np.isfinite(scores)
-    y = y[valid]
-    scores = scores[valid]
-
-    if y.size < 2 or np.unique(y).size < 2:
-        return ThresholdSelection(
-            threshold=float(fallback),
-            objective=objective,
-            objective_value=0.0,
-            metrics={},
-            candidate_count=1,
-        )
+    y,scores=validate_binary_inputs(y_true,probabilities,require_both=False)
+    if not np.isfinite(fallback) or not 0<=fallback<=1:
+        raise ValueError("Fallback threshold outside [0,1]")
+    if np.unique(y).size < 2:
+        return ThresholdSelection(threshold=float(fallback),objective=objective,
+            objective_value=float("nan"),metrics={},candidate_count=0,state="unavailable_single_class")
 
     candidates = _candidate_thresholds(scores)
     best = None

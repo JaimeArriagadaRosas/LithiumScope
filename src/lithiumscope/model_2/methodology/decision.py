@@ -49,7 +49,7 @@ def freeze_inner_oof_threshold(
     try:
         row = frame.row_index.to_numpy(dtype=int)
         fold = frame.inner_fold.to_numpy(dtype=int)
-        y = frame.y_true.to_numpy(dtype=int)
+        y = frame.y_true.to_numpy(dtype=float)
         scores = frame.score.to_numpy(dtype=float)
     except (ValueError, TypeError) as exc:
         raise ValueError("Invalid inner OOF numeric columns") from exc
@@ -88,7 +88,7 @@ def freeze_inner_oof_threshold(
 
 def evaluate_frozen_threshold(y_outer, scores_outer, frozen: FrozenDecision) -> dict:
     """Evaluate an independently held-out outer test with no re-selection."""
-    y = np.asarray(y_outer, dtype=int)
+    y = np.asarray(y_outer, dtype=float)
     scores = np.asarray(scores_outer, dtype=float)
     if y.ndim != 1 or scores.ndim != 1 or len(y) != len(scores):
         raise ValueError("Outer labels and scores must have equal 1D shape")
