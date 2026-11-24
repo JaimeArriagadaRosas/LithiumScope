@@ -78,9 +78,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 849.
 - Diagnóstico de origen: **Estado: Correcto en aislamiento de grupos, metodológicamente limitado. Prioridad: Alta. Decisión: Conservar GroupKFold obligatorio y reforzar la independencia.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: core/scientific/spatial_audit.py; model_1/validation; EDA y preflight; tests/scientific
+- Implementación / evidencia: Auditoria real: distancia minima 153.57 m; 24 observaciones a <=1 km de TRAIN. Grupos sin cruce no certifican independencia fisica. Falta holdout y auditoria completa de inner folds.
+- Estado: parcialmente verificado.
 
 ## M1-11 — Step 11 Histórico ↔ Step 16 Release — Diagnóstico del preprocesamiento por algoritmo
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 855.
@@ -214,9 +214,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 953.
 - Diagnóstico de origen: **Estado: Correcto técnicamente, con garantía científica insuficiente para promoción. Prioridad: Alta. Decisión: Conservar el versionamiento y establecer una puerta científica explícita para M1.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: prediction/candidates/evaluator.py; cli/candidate_admin.py; test_demo_promotion_guard.py
+- Implementación / evidencia: Demostracion conocida no cambia modelo activo ni estado pendiente del candidato. Promocion bloqueada sin holdout independiente. 11 pruebas focalizadas aprobadas. Falta evaluacion independiente y aprobacion.
+- Estado: parcialmente verificado.
 
 ## M2-01 — Step 01 Release — Diagnóstico de la configuración central
 - Origen: 04. Diagnostico M2 Release.md, línea 427.
@@ -342,9 +342,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 517.
 - Diagnóstico de origen: **Estado: Defecto confirmado y limitación metodológica. Prioridad: Alta. Decisión: Exigir validación espacial en todos los niveles.**
 - Criterio de aceptación (extracto): El criterio de aceptación será que ningún estimador pueda comunicar resultados de validación espacial sin satisfacer las condiciones verificadas del protocolo; los experimentos aleatorios podrán mantenerse como controles diferenciados, no como equivalentes científicos.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: core/scientific/spatial_audit.py; model_2/validation; EDA y preparacion cientifica
+- Implementación / evidencia: Auditoria real: minimo 1023.33 m, 547/706 TEST con escena compartida, 0 hashes compartidos y 0 solapamientos potenciales de parches de 640 m segun distancia. Falta protocolo independiente por escena/sitio.
+- Estado: parcialmente verificado.
 
 ## M2-17 — Step 17 Release — Diagnóstico de el baseline de clasificación
 - Origen: 04. Diagnostico M2 Release.md, línea 523.
@@ -422,9 +422,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 577.
 - Diagnóstico de origen: **Estado: Correcto con mejoras de control. Prioridad: Alta. Decisión: Separar entrenamiento, elegibilidad y promoción del release.**
 - Criterio de aceptación (extracto): El criterio de aceptación será que ningún candidato se active o presente como aprobado por el solo hecho de haberse entrenado o guardado; los criterios de publicación externos deberán verificarse por separado.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: model_2/evaluation/release_gate.py; prediction/candidates/gates.py; evaluator.py; test_demo_promotion_guard.py
+- Implementación / evidencia: Comparacion de demostracion exige identidad, etiquetas, cobertura y metricas validas. No autoriza promocion. Falta verificar holdout externo independiente y ejecutar gate completo.
+- Estado: parcialmente verificado.
 
 ## M2-27 — Step 27 Release — Diagnóstico de el entrenamiento definitivo
 - Origen: 04. Diagnostico M2 Release.md, línea 583.

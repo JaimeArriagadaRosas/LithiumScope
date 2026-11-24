@@ -110,3 +110,7 @@
 
 ## Entradas del EDA local
 - Laboratorio resuelve instantanea local M1 segun configuracion y manifiesto M2 congelado o expandido. No reconstruye ni descarga datasets desde diagnostico; entrada ausente bloquea, sin fallback de cohorte. No acepta archivos de otro workspace.
+
+## Regresion integral tras contratos, arquitectura y EDA local
+- 515 passed, 7 skipped, 8 warnings, 0 fallos/errores; 53% cobertura; 522 casos totales. Evidencia results/tests/20261124T210954Z_8227556d2f024c6c9a439e49f7688abb (summary, JUnit, coverage XML); 102.922 s runner. Ruff sin incidencias; 590 archivos, ninguno >300 lineas.
+- Trazabilidad: 18 criterios parcialmente verificados, 1 parcialmente implementado, 38 pendientes. No se considera concluida la implementacion integral. Sin entrenamiento real, promocion, push ni workflows remotos. Manifiesto congelado M2 conserva SHA256 original.

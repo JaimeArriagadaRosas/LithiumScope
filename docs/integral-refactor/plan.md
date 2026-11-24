@@ -49,3 +49,11 @@ Reproducir defecto o fijar contrato con test; implementar un cambio aislado; eje
 | 12 | Parcial: regresion 469/11/0 y limite de 300 lineas; aceptacion cientifica, rendimiento y limite por directorio pendientes |
 
 Prioridad siguiente: lectura restante, importacion historica independiente con hashes, contratos de calidad y procedencia, cache M2, EDA por particion y reorganizacion por responsabilidades. No iniciar EDA definitivo hasta completar criterios de entrada y pruebas.
+
+## Estado actualizado tras reorganizacion y auditoria espacial
+
+- Fases 05-07: importacion local con hashes completada para las instantaneas disponibles; preparacion y validacion reorganizadas; EDA preliminar real disponible. Quedan adquisicion original, contratos por fuente, calidad multibanda, holdout y entrenamiento/ablaciones.
+- Fases 09-10: reporting en raiz y calculos centrales separados; inferencia M2 compartida, contratos de aplicabilidad. Falta verificar bundles y PDF con modelos reales.
+- Fase 11: arranque real verificado con core y sin extras ML opcionales; EDA local sin adquisicion automatica.
+- Fases 02-04,08,12: lectura completa de antecedentes y complementos, trazabilidad, rendimiento, reorganizacion de directorios restantes, simulaciones y validacion cientifica pendientes.
+- No push ni workflows remotos. No promocion a partir de demostracion. No se realizaron entrenamientos definitivos.
