@@ -132,3 +132,6 @@
 
 ## Concentraciones extremas M1: evidencia retrospectiva
 - scripts/scientific/audit_m1_historical_extremes.py reproduce desde los CSV historicos 27240 registros OOF (6 algoritmos x (1120+3420)), valida cobertura, identidad, finitud, errores absolutos y RMSE/MAE/sesgo contra tabla publicada. Hashes en results/diagnostics/m1_historical_extremes/audit.json. Top10 por algoritmo y cohorte, SSE y sesgo en Li alto (Q75 de TRAIN por fold). Candidato 3420: top10 explican 87.28%-97.35% de SSE; todos los algoritmos muestran sesgo negativo en Li alto. No se atribuye causalidad; falta unir muestra a expediente quimico/analitico y validar un protocolo prospectivo. No se entreno ni cambio modelo.
+
+## Regresion integral tras procedencia, espectro y contratos de entrenamiento
+- 537 passed, 7 skipped, 8 warnings, 0 fallos/errores; 53% cobertura, 544 casos. Runner 226.453 s; pytest 224.46 s. Evidencia results/tests/20261124T212342Z_4de3e84e7e9c46509b3219b8d359efd8. 601 archivos de codigo, ninguno >300 lineas. El script de extremos se verifico sobre evidencia real por separado. Sin push ni workflows remotos, sin entrenamiento definitivo o promocion.
