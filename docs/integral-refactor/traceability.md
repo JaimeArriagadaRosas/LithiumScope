@@ -46,16 +46,16 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 825.
 - Diagnóstico de origen: **Estado: Correcto con limitación de comparabilidad química. Prioridad: Alta. Decisión: Conservar el QC y verificar la equivalencia de las sumas.**
 - Criterio de aceptación (extracto): El criterio de aceptación será que el ingreso o descarte de cada muestra tenga una razón química trazable; deberá estudiarse el subconjunto de los 272 descartes de la etapa QC del release y los casos extremos antes de cambiar criterios de selección o atribuirles errores de predicción.
-- Componentes / corrección detallada / tests: preparation/quality_control.py; EDA exclusion_reasons.csv; test_geochemical_contract.py
-- Implementación / evidencia: 272 descartes reales: 3 sobre maximo, 160 bajo minimo y 109 ausentes/no interpretables; limites conservados. Pendiente equivalencia quimica de sumas, Fe y unidades por fuente.
+- Componentes / corrección detallada / tests: preparation/source_reconciliation.py; audit_m1_source_reconciliation.py; test_source_reconciliation.py
+- Implementación / evidencia: Balance real: GEOROC 2744/2744 coinciden con suma de 10 oxidos; Mamani09 602/676, y 676/676 con FeO incluido (tolerancia descriptiva 0.05). Convenciones cuantificadas; falta certificar metodos/unidades y revisar equivalencia de QC. No se cambia filtro.
 - Estado: parcialmente verificado.
 
 ## M1-07 — Step 07 Histórico ↔ Step 09 Release — Diagnóstico de la normalización y agrupación de categorías
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 831.
 - Diagnóstico de origen: **Estado: Defecto confirmado de correspondencia semántica. Prioridad: Alta. Decisión: Corregir el clasificador de categorías y conservar las reglas comunes.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: step_06_category_cleaning.py; test_censoring_contract.py
-- Implementación / evidencia: Abreviaturas exactas, limites de palabra, desconocidos separados de no mapeados, version de preparacion. 27 pruebas aprobadas. Falta validar vocabulario con experto y ablacion.
+- Componentes / corrección detallada / tests: preparation/category_cleaning.py; source_reconciliation.py; audit_m1_source_reconciliation.py
+- Implementación / evidencia: 2327/2744 GEOROC preparados con Rock_type recuperado de fuente verificable; 417 ausentes o ambiguos conservados. Se crea candidato que cambia solo Rock_type, mismos grupos, target, 33 predictores y 3420 casos. Falta ablacion y revision geologica de reglas de agrupacion.
 - Estado: parcialmente verificado.
 
 ## M1-08 — Step 08 Histórico ↔ Step 11 Release — Diagnóstico de la selección de variables predictoras
@@ -126,8 +126,8 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 887.
 - Diagnóstico de origen: **Estado: Metodológicamente limitado y con evidencia de duplicación residual. Prioridad: Alta. Decisión: Conservar la expansión y auditar la identidad química y física de cada observación.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: datasets/georoc_ingestion*, datasets/validation/georoc_source_audit.py, test_georoc_provenance_contract.py
-- Implementación / evidencia: Fuente original 25316 filas; filtrado WR 23910, todas con identidad reconciliada (sufijo .0 de exportacion historica), 109 columnas quimicas sin cambios numericos. 3221 Li informados, 8 ceros, metodo y CRS desconocidos. Armonizacion candidata 2999 filas (igual a historica); conserva ID, cita, valores crudos, unidad y convencion Fe. Falta revision fisica de duplicados, metodos y comparacion controlada.
+- Componentes / corrección detallada / tests: datasets/georoc_ingestion_schema.py; preparation/source_reconciliation.py; test_source_reconciliation.py; audit_m1_source_reconciliation.py
+- Implementación / evidencia: Reconciliacion quimica y de convencion Fe resuelve cuatro ambiguedades de identificador: 2744/2744 preparados con ID unico; 2913/2986 brutos unicos, 73 discrepancias quimicas excluidas por pipeline historico. Se conserva procedencia; pendiente verificacion metodos/CRS, Mamani original y duplicados fisicos.
 - Estado: parcialmente verificado.
 
 ## M1-17 — Step 02 Release — Diagnóstico del pipeline central de preparación
@@ -150,9 +150,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 905.
 - Diagnóstico de origen: **Estado: Correcto como control estructural, insuficiente como puerta científica. Prioridad: Alta. Decisión: Ampliar las guardas y establecer políticas explícitas de advertencia o bloqueo.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: preflight_run_model_1_preflight.py; regresión tests/model_1.
-- Implementación / evidencia: Negativos bloqueados de forma independiente en preflight; faltan controles de identidad, unidades y separación efectiva.
-- Estado: parcialmente implementado.
+- Componentes / corrección detallada / tests: preflight_run_model_1_preflight.py; core/scientific_checks.py; audit_m1_source_reconciliation.py
+- Implementación / evidencia: Auditoria real identifica cuatro filas de dos pares predictor+target identicos, retenidos pendientes de identidad documental; etiquetas y grupos preservados. Falta politica de replicas/duplicados y preflight que integre evidencia de fuente.
+- Estado: parcialmente verificado.
 
 ## M1-20 — Step 14 Release — Diagnóstico del baseline estadístico
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 911.
@@ -198,8 +198,8 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 941.
 - Diagnóstico de origen: **Estado: Problema predictivo demostrado, causa experimentalmente insuficiente. Prioridad: Alta. Decisión: Investigar primero los registros de gran error y después evaluar soluciones de aprendizaje.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: scripts/scientific/audit_m1_historical_extremes.py; audit_m1_extreme_provenance.py; ejecucion sobre evidencia real.
-- Implementación / evidencia: 27240 OOF reconciliados; cohorte 3420 alineada exactamente por Li, grupo, fuente y fold historico; 2740/2744 GEOROC con ID unico, 4 ambiguos. Los 16 casos distintos del top10 por algoritmo tienen ID unico; 9 Macusani [30009] en fold5 por encima del maximo TRAIN 696 ppm, 0 muestras confirmadas de esa publicacion en TRAIN; 5 San Rafael [25383]; 16 sin Rock_type historico. Falta verificar metodo/CRS y realizar ablaciones; no causalidad certificada.
+- Componentes / corrección detallada / tests: scripts/scientific/audit_m1_historical_extremes.py; audit_m1_extreme_provenance.py; audit_m1_source_reconciliation.py
+- Implementación / evidencia: 27240 OOF reconciliados; 2744 GEOROC con identidad unica tras comparar composicion; 16 mayores errores rastreados, nueve Macusani sin publicacion en TRAIN fold5 y max TRAIN 696 ppm. Candidato de litologia recuperada preserva cohorte; falta ablacion controlada de error alto y certificacion analitica/CRS.
 - Estado: parcialmente verificado.
 
 ## M1-26 — Step 27 Release — Diagnóstico de la incertidumbre y el dominio de aplicabilidad
