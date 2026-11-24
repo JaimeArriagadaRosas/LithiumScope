@@ -1,92 +1,124 @@
-"""Submenú de simulaciones científicas. No modifica modelos."""
-from pathlib import Path
+"""Interactive diagnostic laboratory; no fitting or promotion."""
+from __future__ import annotations
 
-import pandas as pd
+import json
+import subprocess
+import sys
 
 from lithiumscope.cli.display import clear_screen, pause
 from lithiumscope.cli.prompts import choose
-from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR
-from lithiumscope.persistence.load_model import load_latest_model
-from lithiumscope.experiments.scenarios.scenarios import evaluate_model_1
-from lithiumscope.experiments.scenarios.imagery import evaluate_model_2_image
+from lithiumscope.core.paths import PROJECT_ROOT
+
+
+def _run_eda_m1():
+    from lithiumscope.datasets.provisioner import require_model_1_dataset
+    from lithiumscope.model_1.eda.pipeline import run_eda
+
+    return run_eda(require_model_1_dataset(include_georoc=True))
+
+
+def _run_eda_m2():
+    from lithiumscope.datasets.provisioner import require_model_2_expanded_manifest
+    from lithiumscope.model_2.eda.pipeline import run_eda
+
+    return run_eda(require_model_2_expanded_manifest())
+
+
+def _eda_menu() -> bool | None:
+    print("\nANÁLISIS EXPLORATORIO")
+    print("1. Modelo 1")
+    print("2. Modelo 2")
+    print("3. Ambos modelos")
+    print("0. Volver")
+    choice = choose("Seleccione una opción [0-3]: ", set("0123"))
+    if choice == "0":
+        return False
+    jobs = [("M1", _run_eda_m1), ("M2", _run_eda_m2)]
+    selected = jobs if choice == "3" else [jobs[int(choice) - 1]]
+    states = []
+    for label, job in selected:
+        try:
+            path = job()
+            states.append("COMPLETADO")
+            print(f"[OK] {label}: {path}")
+        except FileNotFoundError as exc:
+            states.append("BLOQUEADO")
+            print(f"[BLOQUEADO] {label}: {exc}")
+        except Exception as exc:
+            states.append("ERROR")
+            print(f"[ERROR] {label}: {exc}")
+    state = "COMPLETADO" if all(s == "COMPLETADO" for s in states) else "PARCIAL" if "COMPLETADO" in states else "ERROR" if "ERROR" in states else "BLOQUEADO"
+    print(f"Estado: {state}. Alcance descriptivo; no se entrenaron modelos.")
+
+
+def _run_tests() -> bool:
+    runner = PROJECT_ROOT / "scripts" / "run_tests.py"
+    if not runner.is_file() or not (PROJECT_ROOT / "tests").is_dir():
+        print("[BLOQUEADO] Suite local no disponible.")
+        return False
+    print("[OK] Suite descubierta en tests/. Ejecutando; el resumen se obtiene de JUnit.")
+    completed = subprocess.run([sys.executable, str(runner), "--", "-q"], cwd=PROJECT_ROOT, check=False)
+    print(f"Estado: {'COMPLETADO' if completed.returncode == 0 else 'ERROR'}; código={completed.returncode}")
+    return completed.returncode == 0
+
+
+def _run_simulations() -> bool:
+    from lithiumscope.experiments.registry import run_registered_simulations
+
+    manifest = run_registered_simulations()
+    record = json.loads(manifest.read_text(encoding="utf-8"))
+    print(f"Estado: {record['state']}\nEvidencias: {manifest}")
+    return record["state"] == "COMPLETADO"
+
+
+def _validation_menu() -> bool | None:
+    print("\nEJECUCIÓN DE TESTS Y SIMULACIONES")
+    print("1. Ejecutar tests")
+    print("2. Ejecutar simulaciones científicas")
+    print("3. Ejecutar ambos")
+    print("0. Volver")
+    choice = choose("Seleccione una opción [0-3]: ", set("0123"))
+    if choice == "0":
+        return False
+    operations = [_run_tests, _run_simulations]
+    selected = operations if choice == "3" else [operations[int(choice) - 1]]
+    outcomes = []
+    for operation in selected:
+        try:
+            outcomes.append(operation())
+        except Exception as exc:
+            print(f"[ERROR] {exc}")
+            outcomes.append(False)
+    if len(outcomes) > 1:
+        print("Estado global: " + ("COMPLETADO" if all(outcomes) else "PARCIAL" if any(outcomes) else "ERROR/BLOQUEADO"))
+
+
+def _health() -> None:
+    from lithiumscope.tools.inspection.health import write_health_report
+
+    path = write_health_report()
+    report = json.loads(path.read_text(encoding="utf-8"))
+    print("\nSALUD Y DIAGNÓSTICO DEL ENTORNO\nModo: SOLO LECTURA")
+    for area, result in report["areas"].items():
+        print(f"{area:<35} {result['state']}")
+    for recommendation in report["recommendations"]:
+        print(f"- {recommendation}")
+    print(f"Estado: {report['state']}\nInforme: {path}")
+    print("[OK] No se aplicaron reparaciones.")
 
 
 def run() -> None:
     while True:
         clear_screen()
-        print("\nLABORATORIO DE SIMULACIONES")
-        print("1. Modelo 1: escenarios geoquímicos (10 casos demostrativos)")
-        print("2. Modelo 2: escenarios espectrales (archivo NPY/NPZ/TIF)")
-        print("3. Mostrar informes existentes")
-        print("4. Adquirir parches Sentinel-2 reales (piloto)")
-        print("5. Ejecutar simulaciones masivas (M1 y M2 disponibles)")
-        print("6. Generar comparativa geográfica y temporal (M2)")
+        print("\nLABORATORIO DE DIAGNÓSTICO")
+        print("1. Análisis exploratorio")
+        print("2. Ejecución de tests y simulaciones")
+        print("3. Salud y diagnóstico del entorno")
         print("0. Volver")
-        choice = choose("Seleccione una opción: ", {"0", "1", "2", "3", "4", "5", "6"})
+        choice = choose("Seleccione una opción [0-3]: ", set("0123"))
         if choice == "0":
             return
         clear_screen()
-        if choice == "1":
-            source = PROJECT_ROOT / "examples" / "integrated_demo" / "cases.csv"
-            if not source.is_file():
-                print(f"No existe el conjunto de casos: {source}")
-                continue
-            bundle, path = load_latest_model("model_1")
-            print(f"Modelo utilizado: {path}")
-            output = evaluate_model_1(
-                bundle, pd.read_csv(source),
-                RESULTS_DIR / "scientific_simulations" / "model_1",
-            )
-            print(f"Resultados: {output}")
-        elif choice == "2":
-            raw = input("Ruta a imagen local (Enter para cancelar): ").strip().strip('"')
-            if not raw:
-                continue
-            from lithiumscope.model_2.steps.step_01_load_imagery import load_imagery
-            path = Path(raw)
-            if not path.is_file():
-                print(f"No existe: {path}")
-                continue
-            bundle, model_path = load_latest_model("model_2")
-            print(f"Modelo utilizado: {model_path}")
-            output = evaluate_model_2_image(
-                bundle, load_imagery(path),
-                RESULTS_DIR / "scientific_simulations" / "model_2",
-            )
-            print(f"Resultados: {output}")
-        elif choice == "4":
-            from lithiumscope.experiments.acquisition.acquisition import acquire_pilot
-            destination = RESULTS_DIR / "scientific_simulations" / "sentinel2_real"
-            manifest, failures = acquire_pilot(destination)
-            print(f"Catálogo: {manifest} | Fallos: {failures}")
-        elif choice == "5":
-            from lithiumscope.experiments.scenarios.batch import run_m1_batch, run_m2_batch, summarize
-            folder = RESULTS_DIR / "scientific_simulations"
-            m1, _ = load_latest_model("model_1")
-            source = PROJECT_ROOT / "examples" / "integrated_demo" / "cases.csv"
-            result = run_m1_batch(m1, pd.read_csv(source), folder / "batch_m1")
-            print(f"M1: {result} | {summarize(result, result.parent)}")
-            manifest = folder / "sentinel2_real" / "manifest.csv"
-            if manifest.is_file():
-                m2, _ = load_latest_model("model_2")
-                result = run_m2_batch(m2, manifest, folder / "batch_m2")
-                print(f"M2: {result} | {summarize(result, result.parent)}")
-            else:
-                print("M2 pendiente: primero adquiera parches Sentinel-2 (opción 4).")
-        elif choice == "6":
-            from lithiumscope.experiments.reporting.reporting import compare_geographies
-            folder = RESULTS_DIR / "scientific_simulations" / "batch_m2"
-            batch = folder / "batch_m2.csv"
-            if not batch.exists():
-                print("Primero ejecute las simulaciones M2.")
-            else:
-                csv_file, report_file = compare_geographies(batch, folder)
-                print(f"Comparativa: {csv_file} | Resumen: {report_file}")
-        else:
-            folder = RESULTS_DIR / "scientific_simulations"
-            reports = sorted(folder.glob("**/*metrics.csv")) if folder.exists() else []
-            if not reports:
-                print("Todavía no hay informes generados.")
-            for path in reports:
-                print(path)
-        pause()
+        actions = {"1": _eda_menu, "2": _validation_menu, "3": _health}
+        if actions[choice]() is not False:
+            pause()

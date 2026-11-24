@@ -33,3 +33,9 @@
 - Pruebas sintéticas: 10 aprobadas (20261124T200728Z_38175446fb484585af1d10bf87446c7c).
 - Aún no es EDA de desarrollo independiente; no se utiliza automáticamente para selección o ajuste.
 - No se adquirieron datasets ni se ejecutó EDA real. M2 v4 está condicionado a los manifiestos y matrices congelados que no están versionados.
+
+## Laboratorio de diagnostico
+- Submenus EDA M1/M2/ambos, tests/simulaciones/ambos y salud solo lectura. Catalogo de simulaciones inferenciales con bloqueo por recursos faltantes.
+- Se conserva acceso manual historico via python -m lithiumscope.cli.legacy_simulations; acceso CLI separado, no opcion permanente.
+- Regresion: 17 passed, 0 failed (20261124T200849Z_90df3b61a5a6410a845789f1487868ff).
+- Pendiente: catalogo completo de protocolos, progreso real por test/operacion, auditoria mas profunda de calidad y adquisicion M2.

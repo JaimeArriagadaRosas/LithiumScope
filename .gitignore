@@ -42,3 +42,6 @@ results/predictions/*
 
 results/tests/*
 !results/tests/.gitkeep
+
+results/diagnostics/*
+results/scientific_simulations/sim_*
