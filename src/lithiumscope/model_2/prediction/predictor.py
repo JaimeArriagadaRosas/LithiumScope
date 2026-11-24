@@ -3,12 +3,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import RESULTS_DIR
-from lithiumscope.model_2.prediction.image_parser import image_to_feature_frame
-from lithiumscope.model_2.steps.step_05_spectral_features import DEFAULT_BAND_NAMES
+from lithiumscope.model_2.prediction.spectral_contract import prepare_spectral_input, SpectralAbstention
 from lithiumscope.model_2.schema import out_of_range_fraction
 from lithiumscope.persistence.load_model import load_latest_model
 
@@ -21,56 +21,37 @@ def score_model_2_image(
     if bundle is None:
         bundle, _ = load_latest_model("model_2")
 
-    # Only newly trained experimental candidates opt in. The published Model 2
-    # has no quality_min_joint_valid and retains its historical behavior.
     required_coverage = bundle.get("quality_min_joint_valid")
-    valid_coverage = None
-    if required_coverage is not None:
-        import numpy as np
-        from lithiumscope.model_2.steps.step_01_load_imagery import load_imagery
-        raw = np.asarray(load_imagery(path), dtype=float)
-        if raw.ndim != 3 or raw.shape[0] != 6:
-            raise ValueError("Expected a six-band spectral patch for candidate QA")
-        valid_coverage = float(np.isfinite(raw).all(axis=0).mean())
-        if valid_coverage < float(required_coverage):
-            return ({
-                "image": str(path),
-                "prospectivity_score": None,
-                "priority": "abstencion",
-                "operating_positive": None,
-                "operating_threshold": bundle.get("operating_threshold", 0.5),
-                "algorithm": bundle.get("algorithm", "unknown"),
-                "applicability_warning": "INSUFFICIENT_SPECTRAL_COVERAGE",
-                "quality_status": "ABSTAIN_LOW_SPECTRAL_COVERAGE",
-                "joint_valid_fraction": valid_coverage,
-                "warning": "No rank: insufficient valid Sentinel-2 pixel coverage.",
-            }, {
-                "quality_status": "ABSTAIN_LOW_SPECTRAL_COVERAGE",
-                "joint_valid_fraction": valid_coverage,
-                "required_joint_valid_fraction": float(required_coverage),
-                "experimental_model": True,
-            })
-
-    frame = image_to_feature_frame(
-        path,
-        band_names=bundle.get("band_names", DEFAULT_BAND_NAMES),
-        normalize_per_band=bool(bundle.get("normalize_per_band", False)),
-    )
+    try:
+        frame, spectral = prepare_spectral_input(path, bundle)
+    except SpectralAbstention as exc:
+        warning = "INSUFFICIENT_SPECTRAL_COVERAGE" if exc.status == "ABSTAIN_LOW_SPECTRAL_COVERAGE" else "INSUFFICIENT_SPECTRAL_EVIDENCE"
+        return ({
+            "image": str(path), "prospectivity_score": None, "priority": "abstencion",
+            "operating_positive": None, "operating_threshold": bundle.get("operating_threshold", .5),
+            "algorithm": bundle.get("algorithm", "unknown"), "applicability_warning": warning,
+            "quality_status": exc.status, "warning": str(exc), **exc.details,
+        }, {"quality_status": exc.status, "warning": str(exc), **exc.details})
     expected = list(bundle["features"])
-    missing = [column for column in expected if column not in frame.columns]
-    for column in missing:
-        frame[column] = 0.0
-
+    valid_coverage = spectral["joint_valid_fraction"]
+    missing = []
     score = float(bundle["estimator"].predict_proba(frame[expected])[0, 1])
+    if not np.isfinite(score) or not 0 <= score <= 1:
+        raise ValueError("Estimator emitted an invalid prospectivity score")
     operating_threshold = float(
         bundle.get("operating_threshold", 0.5)
     )
     operating_positive = score >= operating_threshold
     label = "alta" if score >= 0.70 else "media" if score >= 0.40 else "baja"
-    applicability = out_of_range_fraction(
-        frame[expected],
-        bundle.get("applicability_profile", {}),
-    )
+    profile = bundle.get("applicability_profile", {})
+    profile_complete = isinstance(profile, dict) and set(profile) == set(expected)
+    if profile_complete:
+        try:
+            profile_complete = all(np.isfinite([float(v["q01"]), float(v["q99"])]).all()
+                                   and float(v["q01"]) <= float(v["q99"]) for v in profile.values())
+        except (KeyError, TypeError, ValueError):
+            profile_complete = False
+    applicability = out_of_range_fraction(frame, profile) if profile_complete else float("nan")
 
     payload = {
         "image": str(path),
@@ -80,7 +61,7 @@ def score_model_2_image(
         "operating_threshold": operating_threshold,
         "algorithm": bundle.get("algorithm", "unknown"),
         "out_of_training_range_fraction": applicability,
-        "applicability_warning": "OUT_OF_DOMAIN" if applicability > 0.25 else "OK",
+        "applicability_warning": ("OUT_OF_DOMAIN" if applicability > .25 else "OK") if profile_complete else "INSUFFICIENT_PROFILE",
         "warning": "Prioritization score, not deposit probability.",
     }
     if required_coverage is not None:
@@ -89,6 +70,8 @@ def score_model_2_image(
     diagnostics = {
         "expected_features": expected,
         "missing_features": missing,
+        "profile_complete": profile_complete,
+        **spectral,
         "out_of_training_range_fraction": float(applicability),
         "threshold_ppm": bundle.get("threshold_ppm"),
         "target_quantile": bundle.get("target_quantile"),

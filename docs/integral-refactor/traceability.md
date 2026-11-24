@@ -438,9 +438,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 589.
 - Diagnóstico de origen: **Estado: Defecto confirmado. Prioridad: Alta. Decisión: Corregir el perfil de aplicabilidad y gestionar incertidumbre de inferencia.**
 - Criterio de aceptación (extracto): El criterio de aceptación será informar correctamente el grado de respaldo de una predicción y rechazar o advertir entradas incompatibles, sin presentar los percentiles marginales como intervalos de predicción.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: prediction/spectral_contract.py, predictor.py y evaluador integrado; test_spectral_inference_contract.py.
+- Implementación / evidencia: Abstención ante esquema o características faltantes; perfil ausente/incompleto marcado insuficiente; M2 v4 requiere metadatos y bandas del mismo scene. 66 aprobadas, 4 omitidas. Falta prueba real de adquisición/inferencia v4 y validación independiente de perfiles.
+- Estado: parcialmente verificado.
 
 ## M2-29 — Step 29 Release — Diagnóstico de la generación de resultados gráficos
 - Origen: 04. Diagnostico M2 Release.md, línea 595.

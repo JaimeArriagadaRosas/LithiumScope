@@ -71,3 +71,7 @@
 - M2: 706 filas, 170 predictores, 66 grupos, QA conjunto 690 elegibles, 16 excluidas solo de TRAIN. Umbrales geoquimicos por fold (21.45, 21.00, 22.40, 21.40, 21.90 ppm). No se certifica calidad de roca en campo ni se reextraen las cuatro bandas red-edge originales.
 - Evidencias: results/model_1/eda/eda_20261124T204130_035846Z_0444675e y results/model_2/eda/eda_20261124T204141_518008Z_5998c733; 15 y 13 artefactos respectivamente, integridad SHA256 verificada. Corresponden a la version del codigo en esa ejecucion, no a cambios posteriores.
 - Tests focalizados 6 aprobados, ninguno fallido (20261124T204115Z_457590a79706407993a3184beafd890c). Falta completar EDA de desarrollo/holdout, protocolos de ablation, auditoria fuente bruta, redundancia, distancias y diagnosticos.
+
+## Inferencia espectral unificada
+- M2 individual e integrado comparten un unico evaluador. No se rellenan features faltantes con ceros; abstencion y diagnostico por caso. Perfil incompleto no se declara OK. V4 requiere metadatos de escena, coordenadas, bandas originales y red-edge de la misma escena con QA; adquisicion real no ejecutada.
+- Regresion: 66 passed, 4 skipped (20261124T204500Z_e3d2fcca25e9402ebf65f1079e236b6f). Pendiente comprobar caso real v4, versionado de calidad y aplicabilidad M1.

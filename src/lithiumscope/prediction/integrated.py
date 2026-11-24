@@ -14,8 +14,6 @@ from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.core.reproducibility import runtime_fingerprint
 from lithiumscope.model_1.prediction.input_parser import load_prediction_input
 from lithiumscope.model_1.prediction.predictor import predict_model_1_frame
-from lithiumscope.model_2.prediction.image_parser import image_to_feature_frame
-from lithiumscope.model_2.schema import out_of_range_fraction
 from lithiumscope.prediction.analysis import (
     concordance_table,
     correlation_table,

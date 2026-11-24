@@ -83,7 +83,10 @@ def model_1_case_text(row: pd.Series, *, lithium_threshold_ppm: float | None = N
 
 
 def model_2_case_text(row: pd.Series) -> str:
-    score = float(row.get("prospectivity_score", 0.0) or 0.0)
+    raw_score = row.get("prospectivity_score")
+    if pd.isna(raw_score):
+        return "El Modelo 2 se abstuvo: no existe un score espectral válido. " + str(row.get("warning", ""))
+    score = float(raw_score)
     priority = str(row.get("priority", "desconocida")).upper()
     ood = float(row.get("out_of_training_range_fraction", 0.0) or 0.0)
     try:
@@ -133,7 +136,9 @@ def model_2_case_text(row: pd.Series) -> str:
             "El entorno presenta una semejanza relativamente baja con los patrones "
             "priorizados por el modelo dentro de su dominio de entrenamiento."
         )
-    if ood > 0.25:
+    if row.get("applicability_warning") == "INSUFFICIENT_PROFILE":
+        text += " El perfil de aplicabilidad es insuficiente; no se certifica el dominio."
+    elif ood > 0.25:
         text += (
             f" Además, {ood:.0%} de las características están fuera del rango empírico "
             "observado, por lo que la prioridad tiene menor respaldo de aplicabilidad."

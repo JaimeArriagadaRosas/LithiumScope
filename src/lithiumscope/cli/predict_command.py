@@ -54,7 +54,8 @@ def _run_model_2() -> None:
     with run_log("prediction", "model_2"):
         payload, destination, model_path = predict_model_2(path)
     print(f"\nModelo: {model_path}")
-    print(f"Prospectividad: {payload['prospectivity_score']:.3f}")
+    score = payload["prospectivity_score"]
+    print(f"Prospectividad: {score:.3f}" if score is not None else f"[BLOQUEADO] {payload.get('warning', 'Sin score')}")
     print(f"Prioridad: {payload['priority'].upper()}")
     print(f"Resultado: {destination}")
     print("\nInterpretación:")
