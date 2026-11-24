@@ -141,9 +141,10 @@ def _scientific_code_files(model_group: str) -> list[Path]:
     ):
         if path.exists():
             files.append(path)
-    for directory in (source_root / "datasets" / "validation", source_root / "resources"):
+    for directory in (source_root / "datasets" / "validation", source_root / "datasets" / "readers", source_root / "resources"):
         if directory.exists():
             files.extend(directory.rglob("*.py"))
+    files.extend(source_root / "core" / "scientific" / name for name in ("spatial_audit.py", "applicability.py"))
     return sorted(set(files), key=lambda path: path.relative_to(PROJECT_ROOT).as_posix())
 
 

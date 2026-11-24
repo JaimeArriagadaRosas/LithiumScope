@@ -130,6 +130,16 @@ def _prepare_scientific_data(
             quantile=q,
             fixed_threshold_ppm=fixed_threshold,
         )
+    from lithiumscope.core.scientific.spatial_audit import audit_spatial_folds
+    spatial_source = pd.read_csv(manifest_path)
+    distance, nearest = audit_spatial_folds(spatial_source, groups,
+        [(f.train_idx, f.test_idx) for f in scientific_folds], eligible=quality_mask,
+        patch_side_m=float(cfg["imagery"].get("patch_size_m", 640)),
+        minimum_distance_m=float(cfg["validation"].get("minimum_distance_m", 0)))
+    distance.to_csv(context.manifests / "outer_spatial_summary.csv", index=False)
+    nearest.to_csv(context.manifests / "outer_spatial_nearest.csv", index=False)
+    if not distance["distance_policy_pass"].all():
+        raise ValueError("Configured minimum TRAIN/TEST physical distance not met.")
     y = pd.Series(scientific_labels(scientific_folds, len(frame)), index=frame.index)
     y_full = (frame[lithium_column] >= threshold).astype(int)
     fold_ids = pd.Series(-1, index=frame.index, dtype=int)

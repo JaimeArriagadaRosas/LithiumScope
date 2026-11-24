@@ -13,6 +13,7 @@ from lithiumscope.core.scientific.eda_statistics import (
 from lithiumscope.model_1.pipeline import prepare_training_data
 from lithiumscope.model_1.validation.spatial import materialize_regression_splits
 from lithiumscope.core.scientific.fold_profiles import fold_profiles
+from lithiumscope.core.scientific.spatial_audit import audit_spatial_folds
 from lithiumscope.results.eda_artifacts import (
     complete_run, fail_run, find_compatible, new_run, signature,
 )
@@ -64,6 +65,10 @@ def run_eda(path: Path, *, output_root: Path | None = None) -> Path:
             fold_summary, fold_features = fold_profiles(prepared.x, prepared.y, prepared.groups, splits)
             fold_summary.to_csv(tables / "outer_train_summary.csv", index=False)
             fold_features.to_csv(tables / "outer_train_features.csv", index=False)
+            spatial_summary, spatial_rows = audit_spatial_folds(prepared.frame, prepared.groups, splits,
+                minimum_distance_m=float(validation.get("minimum_distance_m", 0)))
+            spatial_summary.to_csv(tables / "outer_spatial_summary.csv", index=False)
+            spatial_rows.to_csv(tables / "outer_spatial_nearest.csv", index=False)
             fold_state = strategy
         print(summary.to_string(index=False))
         return complete_run(directory, signature_value=key, details={

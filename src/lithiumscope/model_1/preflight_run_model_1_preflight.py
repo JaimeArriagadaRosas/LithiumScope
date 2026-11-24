@@ -162,6 +162,16 @@ def run_model_1_preflight(
                     prepared.groups,
                 )
 
+    if outer_splits is not None and strategy == "group_kfold_spatial":
+        from lithiumscope.core.scientific.spatial_audit import audit_spatial_folds
+        distance, nearest = audit_spatial_folds(prepared.frame, prepared.groups, outer_splits,
+            minimum_distance_m=float(validation.get("minimum_distance_m", 0)))
+        distance.to_csv(run_context.tables / "outer_spatial_summary.csv", index=False)
+        nearest.to_csv(run_context.tables / "outer_spatial_nearest.csv", index=False)
+        if not distance["distance_policy_pass"].all():
+            errors.append("Configured minimum TRAIN/TEST physical distance not met.")
+        if distance["within_100m"].sum():
+            warnings.append("Some outer TEST rows have TRAIN observations within 100 m; group isolation is not site independence.")
     status = "pass" if not errors else "fail"
     payload = {
         "schema_version": 1,

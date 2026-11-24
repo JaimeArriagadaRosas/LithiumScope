@@ -12,6 +12,7 @@ from lithiumscope.core.scientific.eda_statistics import cohort_summary, feature_
 from lithiumscope.model_2.pipeline import load_model_2_training_frame
 from lithiumscope.model_2.eda.quality import patch_quality
 from lithiumscope.core.scientific.fold_profiles import fold_profiles
+from lithiumscope.core.scientific.spatial_audit import audit_spatial_folds
 from lithiumscope.model_2.validation.spatial import make_scientific_folds
 from lithiumscope.model_2.preparation.features.v4_inputs import spectral_v4_enabled, load_spectral_v4_training_frame
 from lithiumscope.results.eda_artifacts import complete_run, fail_run, find_compatible, new_run, signature
@@ -78,6 +79,12 @@ def run_eda(path: Path, *, output_root: Path | None = None) -> Path:
                 fold_summary["train_positive_count"] = [int(f.y_train.sum()) for f in folds]
                 fold_summary.to_csv(tables / "outer_train_summary.csv", index=False)
                 fold_features.to_csv(tables / "outer_train_features.csv", index=False)
+                spatial_summary, spatial_rows = audit_spatial_folds(combined, combined[group],
+                    [(f.train_idx, f.test_idx) for f in folds], eligible=eligibility,
+                    patch_side_m=float(cfg["imagery"].get("patch_size_m", 640)),
+                    minimum_distance_m=float(validation.get("minimum_distance_m", 0)))
+                spatial_summary.to_csv(tables / "outer_spatial_summary.csv", index=False)
+                spatial_rows.to_csv(tables / "outer_spatial_nearest.csv", index=False)
                 fold_state = "group_kfold_train_profiles"
             except ValueError as exc:
                 fold_state = f"blocked: {exc}"

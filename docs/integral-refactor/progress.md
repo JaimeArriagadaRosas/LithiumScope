@@ -95,3 +95,8 @@
 ## Contrato de inferencia y aplicabilidad M1/M2
 - M1 distingue generacion real de columnas y padding de ausencias, verifica perfil completo, marca salidas fisicamente invalidas sin alterar estimaciones historicas. Normalizacion numerica v2 comun a inferencia y entrenamiento. M1/M2 comparten comprobacion de perfil marginal.
 - 91 aprobadas, 4 omitidas (20261124T210254Z_d10ad5522e724aac819c0c302c58aac0); tests GLOBAL de pickle resuelven ambos nombres historicos. No se probaron bundles reales ni se certifica incertidumbre independiente.
+
+## Auditoria de separacion espacial
+- Calculo de distancias geodesicas con BallTree por observacion y fold, usando TRAIN completo y elegible. Controles de cobertura, grupos, distancia minima configurable, escenas y procedencia compartidas; cribado conservador de solapamiento de parches por distancia entre centros, no certificacion de geometrias.
+- EDA real M1: minimo 153.57 m, 24 muestras TEST con TRAIN a <=1 km, ninguna <=100 m. M2: minimo 1023.33 m, 0 posibles solapamientos de parches de 640 m, 547 casos TEST con escena compartida; 0 hashes de imagen compartidos. No implica independencia externa. No se cambiaron folds ni se ajustaron modelos.
+- Evidencia M1 results/model_1/eda/eda_20261124T210434_548568Z_cedde0b5; M2 results/model_2/eda/eda_20261124T210444_094402Z_864e808b; hashes verificados. 35 aprobadas, 1 omitida (20261124T210403Z_801d49ab07ff4d1aa57c35e52bc89495). Pendiente protocolo prospectivo de holdout, auditoria de calibracion e inner folds, independencia documental.
