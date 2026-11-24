@@ -2,15 +2,13 @@
 from __future__ import annotations
 
 import re
-import numpy as np
 import pandas as pd
 
 from lithiumscope.core.logging.session import get_logger
+from lithiumscope.datasets.validation.analytical import parse_analytical_value
 
 logger = get_logger("model_1.detection_limits")
 _LEGACY = re.compile(r"^\s*([<>])\s*(-?\d+(?:\.\d+)?)\s*$")
-_PATTERN = re.compile(r"^\s*(<=|>=|<|>|≤|≥)\s*([+-]?(?:\d+(?:[.,]\d*)?|[.,]\d+)(?:[eE][+-]?\d+)?)\s*$")
-_MARKERS = {"bdl", "nd", "n.d.", "below detection limit", "not detected"}
 _CHEMICAL = {"sio2", "tio2", "al2o3", "fe2o3", "feo", "mno", "mgo", "cao", "na2o",
              "k2o", "p2o5", "h2o+", "loi", "sum (no water)", "sum(no water)", "sum (water)"}
 
@@ -31,25 +29,6 @@ def _legacy_convert(value):
     return value.strip()
 
 
-def _convert(value, *, lower_fraction: float = 0.5, decimal_comma: bool = True):
-    if not isinstance(value, str):
-        return value, None, None
-    stripped = value.strip()
-    if stripped.casefold() in _MARKERS:
-        return np.nan, "unquantified", None
-    match = _PATTERN.fullmatch(stripped)
-    if match:
-        symbol, raw = match.groups()
-        if "," in raw and not decimal_comma:
-            return np.nan, "ambiguous_decimal", None
-        limit = float(raw.replace(",", "."))
-        if not np.isfinite(limit) or limit < 0:
-            return np.nan, "invalid_limit", None
-        below = symbol in {"<", "<=", "≤"}
-        return limit * lower_fraction if below else limit, "below" if below else "above", limit
-    if stripped.startswith(("<", ">", "≤", "≥")):
-        return np.nan, "malformed_limit", None
-    return stripped, None, None
 
 
 def clean_detection_limits(frame: pd.DataFrame, *, columns: list[str] | None = None,
@@ -69,7 +48,7 @@ def clean_detection_limits(frame: pd.DataFrame, *, columns: list[str] | None = N
             continue
         values = []
         for idx, raw in cleaned[name].items():
-            value, kind, limit = _convert(raw, lower_fraction=lower_fraction, decimal_comma=decimal_comma)
+            value, kind, limit = parse_analytical_value(raw, lower_fraction=lower_fraction, decimal_comma=decimal_comma)
             values.append(value)
             if kind:
                 counts[kind] = counts.get(kind, 0) + 1

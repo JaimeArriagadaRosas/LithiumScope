@@ -114,3 +114,7 @@
 ## Regresion integral tras contratos, arquitectura y EDA local
 - 515 passed, 7 skipped, 8 warnings, 0 fallos/errores; 53% cobertura; 522 casos totales. Evidencia results/tests/20261124T210954Z_8227556d2f024c6c9a439e49f7688abb (summary, JUnit, coverage XML); 102.922 s runner. Ruff sin incidencias; 590 archivos, ninguno >300 lineas.
 - Trazabilidad: 18 criterios parcialmente verificados, 1 parcialmente implementado, 38 pendientes. No se considera concluida la implementacion integral. Sin entrenamiento real, promocion, push ni workflows remotos. Manifiesto congelado M2 conserva SHA256 original.
+
+## Auditoria de procedencia GEOROC
+- Original CP1252: 25316 filas (23910 WR, 491 GL, 915 desconocidas). Filtrado UTF8: 23910 WR, identidad reconciliada por ID integral con sufijo .0 historico, 0 IDs perdidos/extra, 109 columnas quimicas comparadas sin diferencia numerica. 3221 Li informados, 8 ceros de significado no certificado, 0 tokens censurados. Metodo de Li y CRS no declarados.
+- Armonizacion candidata aislada: 2999 de 23910 filas, mismo recuento historico; 2429 FeOT convertidos, 496 Fe2O3 originales, 74 sin hierro disponible. Conserva ID, cita, posicion de fila, Li original, unidad, metodo y CRS desconocidos, Fe original, auditoria de censura y hashes. Se corrigio orden de columnas de archivos heterogeneos, filtros fisicos y conteo de descartes. Evidencia results/diagnostics/georoc_source_contract. Instantanea historica sin cambios. Pruebas focalizadas 9 aprobadas (incluye reconciliacion .0) sin fallos; no entrenamiento ni push.

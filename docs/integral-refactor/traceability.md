@@ -22,8 +22,8 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 807.
 - Diagnóstico de origen: **Estado: Defecto confirmado de cobertura. Prioridad: Alta. Decisión: Corregir la interpretación de mediciones censuradas.**
 - Criterio de aceptación (extracto): El criterio de aceptación será interpretar correctamente cada formato admitido, no modificar categorías por error y cuantificar los registros reales afectados antes de decidir si corresponde reconstruir datos o repetir el entrenamiento.
-- Componentes / corrección detallada / tests: step_02_detection_limits.py; EDA censoring.csv; test_censoring_contract.py
-- Implementación / evidencia: Version 2 analiza solo columnas analiticas, notacion cientifica y decimal, censura sin limite y evidencia por fila; version 1 preservada para inferencia historica. 27 pruebas aprobadas. Falta auditoria por fuente sobre datos reales.
+- Componentes / corrección detallada / tests: datasets/validation/analytical.py; model_1/preparation/detection_limits.py; ingestion_transform.py
+- Implementación / evidencia: Parser compartido, evidencia de tokens antes de coercion numerica, no se detectaron tokens censurados GEOROC en original/filtrado; pendiente convención por fuente y Mamani completo.
 - Estado: parcialmente verificado.
 
 ## M1-04 — Step 04 Histórico ↔ Step 05 Release — Diagnóstico del tratamiento de datos faltantes
@@ -126,9 +126,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 887.
 - Diagnóstico de origen: **Estado: Metodológicamente limitado y con evidencia de duplicación residual. Prioridad: Alta. Decisión: Conservar la expansión y auditar la identidad química y física de cada observación.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: datasets/georoc_ingestion*, datasets/validation/georoc_source_audit.py, test_georoc_provenance_contract.py
+- Implementación / evidencia: Fuente original 25316 filas; filtrado WR 23910, todas con identidad reconciliada (sufijo .0 de exportacion historica), 109 columnas quimicas sin cambios numericos. 3221 Li informados, 8 ceros, metodo y CRS desconocidos. Armonizacion candidata 2999 filas (igual a historica); conserva ID, cita, valores crudos, unidad y convencion Fe. Falta revision fisica de duplicados, metodos y comparacion controlada.
+- Estado: parcialmente verificado.
 
 ## M1-17 — Step 02 Release — Diagnóstico del pipeline central de preparación
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 893.

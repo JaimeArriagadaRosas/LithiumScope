@@ -8,10 +8,11 @@ from typing import Iterable
 import pandas as pd
 
 from lithiumscope.core.logging.session import get_logger
+from lithiumscope.core.hashing import file_sha256
 from lithiumscope.datasets.georoc_ingestion_schema import (
     GEOROC_ALIASES,
     MAJOR_OXIDES,
-    infer_georoc_column_map,
+    infer_georoc_column_map, ingestion_layout,
 )
 from lithiumscope.datasets.georoc_ingestion_transform import (
     harmonize_chunk,
@@ -74,9 +75,13 @@ def _write_audit(
     chunksize: int,
     allowed_material_types: tuple[str, ...],
     minimum_predictors: int,
+    censoring: list[dict],
 ) -> None:
     audit = {
         "source": source_name,
+        "source_sha256": {str(item): file_sha256(item) for item in files},
+        "analytical_censoring": censoring,
+        "rows_skipped_material_core_or_density": rows_read - rows_kept,
         "files": [
             str(item)
             for item in files
@@ -158,17 +163,12 @@ def ingest_georoc_files(
     rejected = 0
     mapped_union: dict[str, str] = {}
     wrote_header = False
+    mappings, output_columns = ingestion_layout(paths, _read_header, iron_total_mode)
+    censoring = []
 
     try:
         for path in paths:
-            header = _read_header(path)
-            mapping = infer_georoc_column_map(header)
-            if iron_total_mode == "feot_equivalent":
-                for source_column in header:
-                    key = source_column.upper().replace(" ", "").replace("_", "")
-                    if key in {"FEOT(WT%)", "FEOT"}:
-                        mapping[source_column] = "FeOT_total_as_FeO"
-                        break
+            mapping = mappings[path]
             mapped_union.update(mapping)
 
             missing = _validate_core_mapping(
@@ -192,6 +192,7 @@ def ingest_georoc_files(
                     int(chunksize),
                 ),
                 low_memory=False,
+                dtype=str,
                 encoding="utf-8",
             ):
                 rows_read += len(chunk)
@@ -208,13 +209,14 @@ def ingest_georoc_files(
                             minimum_predictors
                         ),
                         iron_total_mode=iron_total_mode,
+                        censoring=censoring,
                     )
                 )
                 rejected += dropped
                 if harmonized.empty:
                     continue
 
-                harmonized.to_csv(
+                harmonized.reindex(columns=output_columns).to_csv(
                     temporary,
                     mode="a",
                     header=not wrote_header,
@@ -250,6 +252,7 @@ def ingest_georoc_files(
             allowed_material_types
         ),
         minimum_predictors=minimum_predictors,
+        censoring=censoring,
     )
 
     return GeorocIngestionResult(

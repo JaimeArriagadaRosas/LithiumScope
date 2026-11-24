@@ -3,7 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
+import numpy as np
 
+from lithiumscope.datasets.validation.analytical import parse_analytical_value
 from lithiumscope.datasets.georoc_ingestion_schema import (
     MAJOR_OXIDES,
 )
@@ -29,7 +31,7 @@ def quality_sum(
         pd.to_numeric,
         errors="coerce",
     )
-    complete = numeric.notna().all(axis=1)
+    complete = (np.isfinite(numeric) & numeric.ge(0)).all(axis=1)
     result = pd.Series(
         pd.NA,
         index=frame.index,
@@ -50,12 +52,37 @@ def harmonize_chunk(
     allowed_material_types: tuple[str, ...],
     minimum_predictors: int,
     iron_total_mode: str = "original",
+    censoring: list[dict] | None = None,
 ) -> tuple[pd.DataFrame, int]:
     if iron_total_mode not in {"original", "feot_equivalent"}:
         raise ValueError(f"Unsupported GEOROC iron_total_mode: {iron_total_mode}")
+    before = len(chunk)
     frame = chunk.rename(
         columns=column_map
     ).copy()
+    frame["source_row_position"] = chunk.index
+    frame["source_li_unit"] = "ppm" if any(
+        target == "Li_icpms" and "PPM" in raw.upper() for raw, target in column_map.items()
+    ) else "unknown"
+    frame["source_li_method"] = "unknown"
+    frame["source_coordinate_crs"] = "unknown"
+    if "Li_icpms" in frame:
+        frame["source_li_raw"] = frame["Li_icpms"].astype("string")
+    for name, source in (("source_feot_raw", "FeOT_total_as_FeO"), ("source_fe2o3_raw", "Fe2O3")):
+        if source in frame:
+            frame[name] = frame[source].astype("string")
+    for raw_column, target in column_map.items():
+        if target not in frame or not (target in MAJOR_OXIDES or target.endswith("_icpms") or target == "FeOT_total_as_FeO"):
+            continue
+        values = []
+        for index, raw in frame[target].items():
+            value, kind, limit = parse_analytical_value(raw, decimal_comma=False)
+            values.append(value)
+            if kind and censoring is not None:
+                censoring.append({"source_file": source_file, "source_row_position": int(index),
+                                  "column": raw_column, "canonical_column": target, "original": str(raw),
+                                  "kind": kind, "limit": limit, "substituted": value if pd.notna(value) else None})
+        frame[target] = values
     if iron_total_mode == "feot_equivalent":
         # GEOROC FeOT is total iron expressed as FeO. Never add it to Fe2O3.
         # Prefer the FeOT total equivalent where reported; otherwise keep
@@ -66,6 +93,8 @@ def harmonize_chunk(
         original_fe = pd.to_numeric(frame.get("Fe2O3"), errors="coerce")
         if not isinstance(original_fe, pd.Series):
             original_fe = pd.Series(float("nan"), index=frame.index)
+        feot = feot.where(np.isfinite(feot) & feot.ge(0))
+        original_fe = original_fe.where(np.isfinite(original_fe) & original_fe.ge(0))
         frame["Fe2O3"] = feot.mul(1.111348).where(feot.notna(), original_fe)
         frame["Fe_total_provenance"] = (
             "ORIGINAL_FE2O3"
@@ -73,8 +102,11 @@ def harmonize_chunk(
         frame.loc[feot.notna(), "Fe_total_provenance"] = (
             "FEOT_CONVERTED_TO_FE2O3T"
         )
+        frame.loc[frame["Fe2O3"].isna(), "Fe_total_provenance"] = "UNAVAILABLE"
         frame = frame.drop(columns=["FeOT_total_as_FeO"], errors="ignore")
 
+    if "Sample_type" not in frame.columns and allowed_material_types:
+        return frame.iloc[:0].copy(), before
     if "Sample_type" in frame.columns:
         frame["Sample_type_raw"] = (
             frame["Sample_type"]
@@ -171,16 +203,14 @@ def harmonize_chunk(
         "Longitude",
         "Latitude",
     )
-    before = len(frame)
     if not all(
         column in frame.columns
         for column in required
     ):
         return frame.iloc[0:0].copy(), before
 
-    frame = frame.dropna(
-        subset=list(required)
-    )
+    frame = frame.dropna(subset=list(required))
+    frame = frame[np.isfinite(frame["Li_icpms"]) & frame["Li_icpms"].ge(0)].copy()
     frame = frame[
         frame["Longitude"].between(-180, 180)
         & frame["Latitude"].between(-90, 90)
@@ -197,8 +227,8 @@ def harmonize_chunk(
         )
         if column in frame.columns
     ]
-    if predictor_columns and minimum_predictors > 0:
-        usable = frame[predictor_columns].notna().sum(
+    if minimum_predictors > 0:
+        usable = (np.isfinite(frame[predictor_columns]) & frame[predictor_columns].ge(0)).sum(
             axis=1
         )
         frame = frame[
