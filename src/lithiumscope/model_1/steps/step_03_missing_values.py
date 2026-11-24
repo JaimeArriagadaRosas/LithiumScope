@@ -38,6 +38,8 @@ def should_include_age(frame: pd.DataFrame, max_missing_fraction: float = 0.50) 
     candidate = find_age_column(frame)
     if candidate is None:
         return False
-    missing_fraction = float(frame[candidate].isna().mean())
+    numeric = pd.to_numeric(frame[candidate], errors="coerce")
+    valid = numeric.notna() & np.isfinite(numeric) & (numeric >= 0)
+    missing_fraction = float(1.0 - valid.mean())
     logger.info("Age column=%s missing_fraction=%.3f", candidate, missing_fraction)
     return missing_fraction <= max_missing_fraction

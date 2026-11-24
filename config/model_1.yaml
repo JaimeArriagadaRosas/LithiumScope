@@ -38,7 +38,11 @@ data:
   # Diagnostic quantiles only; target values are not trimmed before CV.
   target_lower_quantile: 0.025
   target_upper_quantile: 0.975
+  # Age coverage is descriptive; the feature contract is fixed before CV.
+  include_age: false
   age_max_missing_fraction: 0.50
+  # Preserve zero pending source-specific semantic audit.
+  target_zero_policy: retain
 
 validation:
   outer_folds: 5

@@ -67,6 +67,10 @@ def run_model_1_preflight(
             f"Target contains {non_finite_target} non-finite values."
         )
 
+    negative_target = int((np.isfinite(target_values) & (target_values < 0)).sum())
+    if negative_target:
+        errors.append(f"Target contains {negative_target} negative concentrations.")
+
     feature_manifest = _feature_manifest(prepared)
     all_missing = feature_manifest.loc[
         feature_manifest["missing_fraction"] >= 1.0,

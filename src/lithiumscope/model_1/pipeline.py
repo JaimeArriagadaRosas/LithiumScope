@@ -13,7 +13,7 @@ from lithiumscope.datasets.harmonization import canonicalize_coordinates
 from lithiumscope.model_1.schema import validate_training_schema
 from lithiumscope.model_1.steps.step_01_load_data import load_data
 from lithiumscope.model_1.steps.step_02_detection_limits import clean_detection_limits
-from lithiumscope.model_1.steps.step_03_missing_values import normalize_missing_values, should_include_age
+from lithiumscope.model_1.steps.step_03_missing_values import find_age_column, normalize_missing_values, should_include_age
 from lithiumscope.model_1.steps.step_04_quality_control import apply_quality_control
 from lithiumscope.model_1.steps.step_05_target_filtering import filter_target
 from lithiumscope.model_1.steps.step_06_category_cleaning import clean_categories
@@ -71,21 +71,17 @@ def prepare_training_data(path: Path, model_family: str = "common") -> PreparedM
         ),
     )
 
-    include_age = should_include_age(
-        frame,
-        max_missing_fraction=float(data_cfg["age_max_missing_fraction"]),
-    )
-
     frame, target = filter_target(
         frame,
         candidates=list(data_cfg["target_candidates"]),
         lower_quantile=float(data_cfg["target_lower_quantile"]),
         upper_quantile=float(data_cfg["target_upper_quantile"]),
+        zero_policy=str(data_cfg.get("target_zero_policy", "retain")),
     )
     audit.capture(
         "05_target_validity",
         frame,
-        f"target={target}; no target-quantile trimming",
+        f"target={target}; no target-quantile trimming; {frame.attrs.get('target_validation', {})}",
     )
 
     frame = apply_quality_control(
@@ -95,6 +91,16 @@ def prepare_training_data(path: Path, model_family: str = "common") -> PreparedM
         maximum=float(data_cfg["quality_max"]),
     )
     audit.capture("06_quality_control", frame)
+    # Diagnostic coverage is not allowed to decide the predictor schema from TEST.
+    include_age = bool(data_cfg.get("include_age", False))
+    age_column = find_age_column(frame)
+    if age_column is not None:
+        age = pd.to_numeric(frame[age_column], errors="coerce")
+        frame[age_column] = age.where(np.isfinite(age) & (age >= 0))
+    age_coverage = should_include_age(frame, float(data_cfg["age_max_missing_fraction"]))
+    if include_age and age_column is None:
+        raise ValueError("The fixed training schema requires an age column.")
+    logger.info("Age schema fixed include=%s; descriptive coverage>=minimum=%s", include_age, age_coverage)
 
     frame = clean_categories(
         frame,

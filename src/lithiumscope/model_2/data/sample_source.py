@@ -7,6 +7,7 @@ import pandas as pd
 
 from lithiumscope.core.config import load_config
 from lithiumscope.core.logger import get_logger
+from lithiumscope.datasets.validation.concentration import valid_concentration
 from lithiumscope.model_1.steps.step_01_load_data import load_data
 from lithiumscope.model_1.steps.step_02_detection_limits import clean_detection_limits
 from lithiumscope.model_1.steps.step_03_missing_values import normalize_missing_values
@@ -100,6 +101,12 @@ def load_georeferenced_li_samples(dataset_path: Path) -> pd.DataFrame:
             for index, value in enumerate(frame[sample_id_column].tolist())
         ]
 
+    numeric, target_mask, target_audit = valid_concentration(
+        output["Li_icpms"], zero_policy=str(model_2["training"].get("target_zero_policy", "retain")),
+    )
+    output["Li_icpms"] = numeric
+    output = output.loc[target_mask].copy()
+    logger.info("M2 physical target validation: %s", target_audit)
     output = output.replace([np.inf, -np.inf], np.nan).dropna(
         subset=["Li_icpms", "longitude", "latitude"]
     )
@@ -119,6 +126,7 @@ def load_georeferenced_li_samples(dataset_path: Path) -> pd.DataFrame:
         subset=["sample_id", "longitude", "latitude"]
     ).reset_index(drop=True)
 
+    output.attrs["target_validation"] = target_audit
     logger.info(
         "Prepared %d georeferenced Li samples for Model 2 from %s",
         len(output),

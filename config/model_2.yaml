@@ -43,6 +43,8 @@ imagery:
   nodata_fill: median
 
 training:
+  # Preserve zero pending source-specific semantic audit.
+  target_zero_policy: retain
   manifest_path: data/processed/model_2/training_manifest.csv
   partial_manifest_path: data/processed/model_2/training_manifest.partial.csv
   failures_path: data/processed/model_2/training_failures.csv

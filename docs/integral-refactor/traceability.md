@@ -30,17 +30,17 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 813.
 - Diagnóstico de origen: **Estado: Defecto confirmado y limitación metodológica. Prioridad: Alta. Decisión: Corregir la elegibilidad de edad y controlar la imputación.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: steps/step_03_missing_values.py, pipeline.py, model_1.yaml; test_integral_physical_inputs.py.
+- Implementación / evidencia: Disponibilidad de edad válida después de QC; esquema fijo antes de CV. 36 pruebas aprobadas; falta diagnóstico de imputación por fold y auditoría real.
+- Estado: parcialmente verificado.
 
 ## M1-05 — Step 05 Histórico ↔ Step 07 Release — Diagnóstico del filtrado de la variable objetivo
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 819.
 - Diagnóstico de origen: **Estado: Defecto confirmado de validación. Prioridad: Alta. Decisión: Corregir el contrato físico del target sin recortar extremos válidos.**
 - Criterio de aceptación (extracto): El criterio de aceptación será que ningún target inválido avance al entrenamiento y que los extremos admitidos se mantengan.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: datasets/validation/concentration.py, M1 filter_target, preflight y configuración; test_integral_physical_inputs.py.
+- Implementación / evidencia: Rechazo de negativos/no finitos, extremos conservados, política explícita de ceros. 36 pruebas aprobadas; falta auditoría semántica de ceros/censura por fuente.
+- Estado: parcialmente verificado.
 
 ## M1-06 — Step 06 Histórico ↔ Step 08 Release — Diagnóstico del control de calidad geoquímica
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 825.
@@ -150,9 +150,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 905.
 - Diagnóstico de origen: **Estado: Correcto como control estructural, insuficiente como puerta científica. Prioridad: Alta. Decisión: Ampliar las guardas y establecer políticas explícitas de advertencia o bloqueo.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: preflight_run_model_1_preflight.py; regresión tests/model_1.
+- Implementación / evidencia: Negativos bloqueados de forma independiente en preflight; faltan controles de identidad, unidades y separación efectiva.
+- Estado: parcialmente implementado.
 
 ## M1-20 — Step 14 Release — Diagnóstico del baseline estadístico
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 911.
@@ -230,9 +230,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 433.
 - Diagnóstico de origen: **Estado: Defecto confirmado. Prioridad: Alta. Decisión: Reforzar la preparación geoquímica y la identidad de las muestras.**
 - Criterio de aceptación (extracto): El criterio de aceptación será que los valores físicamente inválidos se rechacen, las réplicas legítimas no se eliminen sin justificación y cada inclusión o exclusión pueda explicarse mediante una auditoría de datos por fuente.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: datasets/validation/concentration.py, sample_source.py; test_integral_physical_inputs.py.
+- Implementación / evidencia: Validación física compartida; 36 pruebas aprobadas; IDs estables, réplicas, conflictos y censura pendientes.
+- Estado: parcialmente verificado.
 
 ## M2-03 — Step 03 Release — Diagnóstico de la construcción de grupos espaciales
 - Origen: 04. Diagnostico M2 Release.md, línea 439.
