@@ -238,9 +238,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 439.
 - Diagnóstico de origen: **Estado: Metodológicamente limitado. Prioridad: Alta. Decisión: Validar el aislamiento espacial efectivo.**
 - Criterio de aceptación (extracto): El criterio de aceptación será demostrar y registrar el aislamiento exigido por el protocolo, no solamente comprobar que los identificadores de grupos difieren.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: core/scientific/spatial_audit.py; model_2/eda/pipeline.py; tests/scientific/test_spatial_audit_contract.py (daa0921).
+- Implementación / evidencia: Auditoria real 706 muestras: distancia minima TRAIN elegible-TEST 1023.33 m, cero posibles solapamientos de parches de 640 m, 547 casos TEST con escena compartida, cero hashes compartidos. Falta sensibilidad a tamano y desplazamiento de celdas y dependencia geologica.
+- Estado: parcialmente verificado.
 
 ## M2-04 — Step 04 Release — Diagnóstico de la adquisición de imágenes Sentinel-2
 - Origen: 04. Diagnostico M2 Release.md, línea 445.
@@ -318,9 +318,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 499.
 - Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Alta. Decisión: Establecer un preflight científico para la matriz de entrenamiento.**
 - Criterio de aceptación (extracto): El criterio de aceptación será que el entrenamiento solo comience con un dataset trazable y científicamente elegible, acompañado de un informe de preflight y composición final.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: model_2/data/feature_cache.py; pipeline.py; core/scientific_checks.py; tests/model_2/test_verified_feature_cache.py; da55aa2, c8f653f, ab50a93.
+- Implementación / evidencia: Matriz congelada v4 de 706 x 170; identidad, hashes, esquema, orden y reconstruccion de 44 descriptores comprobados; QA 690 elegibles; preflight de clases y folds internos documentado. Falta preflight integrado exhaustivo para otras cohortes y nuevas adquisiciones.
+- Estado: parcialmente verificado.
 
 ## M2-14 — Step 14 Release — Diagnóstico de la caché de características espectrales
 - Origen: 04. Diagnostico M2 Release.md, línea 505.
@@ -358,9 +358,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 529.
 - Diagnóstico de origen: **Estado: Defecto confirmado de control de estados. Prioridad: Alta. Decisión: Separar la validez del entrenamiento de la exportación y ampliar la competencia controlada.**
 - Criterio de aceptación (extracto): El criterio de aceptación será distinguir candidatos válidos, descartados y errores auxiliares sin contradicciones, conservando la comparación completa.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: core/candidate_evidence.py; training/execution/competition_evaluate_algorithm_candidates.py; tests/runtime/test_candidate_evidence.py (ab50a93).
+- Implementación / evidencia: Una fila por candidato; evidencia esencial separada de figuras auxiliares; ranking excluye evidencias numericas incompletas. Pruebas focalizadas aprobadas. Falta comparar pesos de clases y presupuestos con experimentos controlados.
+- Estado: parcialmente verificado.
 
 ## M2-19 — Step 19 Release — Diagnóstico de la optimización mediante Optuna
 - Origen: 04. Diagnostico M2 Release.md, línea 535.
@@ -454,6 +454,6 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 601.
 - Diagnóstico de origen: **Estado: Correcto con mejoras de integridad. Prioridad: Alta. Decisión: Consolidar artefactos, evidencias y versionamiento reproducible.**
 - Criterio de aceptación (extracto): El criterio de aceptación será poder reconstruir cada decisión de entrenamiento y predicción sin depender del orden de filas, recuperar evidencias desde el menú de resultados y mantener inalterado el release histórico.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: core/checkpoints.py; core/run_resume.py; evaluation/oof_evidence.py; training/calibration/operating.py; tests/runtime/test_checkpoints.py (ab50a93, 4cedafa).
+- Implementación / evidencia: Checkpoints con hash y recalculo de metricas; OOF por ID, fold, grupo, etiqueta y corte; firma ampliada, predicciones internas y metricas operativas persistidas. Falta verificacion integral de artefactos de runs completados, compatibilidad de bundles y prueba de reanudacion real.
+- Estado: parcialmente verificado.

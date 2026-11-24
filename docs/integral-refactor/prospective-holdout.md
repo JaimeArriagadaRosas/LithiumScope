@@ -15,17 +15,17 @@ El custodio conserva las concentraciones de laboratorio por separado y entrega s
 
 Ejemplo de interfaz (rutas ilustrativas; no ejecutar con archivos inexistentes):
 
-\`\`\`powershell
+```powershell
 .venv\Scripts\python.exe -m lithiumscope.prediction.candidates.holdout register results/diagnostics/holdouts/externo01 --model-group model_1 --sites-path sitios.csv --exposure-paths exposiciones_m1.csv exposiciones_m2.csv exposiciones_demo.csv --reference referencia.joblib --candidate candidato.joblib --review-path revision.json --label-commitment-sha256 SHA256_DEL_CUSTODIO --minimum-distance-m 1000
-\`\`\`
+```
 
-Para M2 se añade \`--label-cutoff-ppm\` con el endpoint común predefinido. El ejemplo de buffer es ilustrativo; su elección debe justificarse y registrarse antes de evaluar. Política provisional por defecto: 100 muestras, 3 regiones, 5 grupos; M2 20 positivos y 20 negativos. Bootstrap agrupado emparejado de 500 iteraciones con semilla 42. Estos límites no son prueba de potencia estadística; requieren aprobación metodológica.
+Para M2 se añade `--label-cutoff-ppm` con el endpoint común predefinido. El ejemplo de buffer es ilustrativo; su elección debe justificarse y registrarse antes de evaluar. Política provisional por defecto: 100 muestras, 3 regiones, 5 grupos; M2 20 positivos y 20 negativos. Bootstrap agrupado emparejado de 500 iteraciones con semilla 42. Estos límites no son prueba de potencia estadística; requieren aprobación metodológica.
 
 ## 2. Inferencia sin etiquetas
 
-\`\`\`powershell
+```powershell
 .venv\Scripts\python.exe -m lithiumscope.prediction.candidates.holdout score results/diagnostics/holdouts/externo01 --trusted-local-bundles
-\`\`\`
+```
 
 La opción declara que los archivos joblib son artefactos locales confiables; nunca deserializar archivos de terceros desconocidos. Se verifica registro, modelos, fuentes e imágenes; se conservan las dos predicciones por ID y sus advertencias. No se lee el archivo de etiquetas ni se modifica el activo.
 
@@ -33,9 +33,9 @@ La opción declara que los archivos joblib son artefactos locales confiables; nu
 
 El custodio entrega etiquetas.csv con sample_id, source_id, li_ppm, unit=ppm, analytical_method. Debe corresponder exactamente a la huella comprometida. No se permiten etiquetas no finitas, negativas ni métodos desconocidos.
 
-\`\`\`powershell
+```powershell
 .venv\Scripts\python.exe -m lithiumscope.prediction.candidates.holdout evaluate results/diagnostics/holdouts/externo01 --labels-path etiquetas.csv
-\`\`\`
+```
 
 Se sella la revelación antes de interpretar el CSV, incluso si termina siendo inválido; no se permiten nuevas puntuaciones ni una segunda evaluación en ese registro. Se comparan pares completos, sin descartar abstenciones para obtener un resultado favorable. M1 calcula regresión y diferencias RMSE/MAE mediante bootstrap por grupos; M2 conserva métricas a 0.5 y a los umbrales congelados y estima incertidumbre emparejada. La salida solo queda lista para revisión independiente; la aprobación y activación automáticas son siempre falsas.
 
