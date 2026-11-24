@@ -87,6 +87,15 @@ def _finalize_scientific_winner(
         **{f"metric_{key}": value for key,value in threshold_selection.metrics.items()},
     }]).to_csv(context.tables / "winner_operating_threshold.csv", index=False)
     print(f"Umbral operativo de desarrollo: {operating_threshold:.4f}")
+    from lithiumscope.persistence.final_fit_contract import freeze_final_fit
+    from lithiumscope.core.pipeline_audit import stable_source_row_id
+    fit_contract=freeze_final_fit(x=x_final,y=y_final,groups=groups_final,
+        row_ids=[stable_source_row_id(dataset_manifest.source_sha256,int(idx)) for idx in final_fit_idx],
+        dataset_sha256=dataset_manifest.source_sha256,
+        training_signature=context.tracker.payload.get("summary",{}).get("training_signature"),
+        params=winner_result.final_params,
+        policy={"algorithm":winner,"li_cutoff_ppm":threshold,"operating_threshold":operating_threshold,
+                "calibration":selected_calibration,"quality_policy":quality_audit})
     final_estimator = fit_final_policy(x_final,y_final,groups_final)
     profile = feature_range_profile(x_final)
 
@@ -124,6 +133,7 @@ def _finalize_scientific_winner(
         "training_samples_after_quality": len(x_final),
         "train_only_quality": quality_audit,
         "experimental_only": True,
+        "final_fit_contract_sha256":fit_contract["identity_sha256"],
         "eligible_for_individual_release": False,
         "random_forest_search_profile": cfg.get("optimization", {}).get("random_forest_search_profile", "legacy"),
         "calibration_policy": selected_calibration,
@@ -171,6 +181,7 @@ def _finalize_scientific_winner(
     bundle = {
         "patch_input_contract": patch_contract,
         "estimator": final_estimator,
+        "final_fit_contract":fit_contract,
         "features": list(x.columns),
         "band_names": list(cfg["imagery"]["bands"]),
         "normalize_per_band": bool(cfg["imagery"].get("normalize_per_band", False)),
@@ -202,6 +213,8 @@ def _finalize_scientific_winner(
         feature_schema={"features": list(x.columns)},
         config_name="model_2",
         activate=False,
+        verification_probe=x_final.iloc[np.unique(np.linspace(0,len(x_final)-1,min(32,len(x_final)),dtype=int))],
+        config_snapshot_path=context.config_snapshot/"model_2.yaml",
     )
 
     export_workbook(
@@ -239,6 +252,6 @@ def _finalize_scientific_winner(
         context.root,
         ranking,
         winner,
-        list(results),
+        candidates.algorithm.astype(str).tolist(),
         failed,
     )

@@ -15,7 +15,8 @@ from lithiumscope.core.run_resume import find_compatible_run
 def _new_run_id() -> str:
     local = datetime.now().astimezone()
     offset = local.strftime("%z").replace("+", "p").replace("-", "m")
-    return local.strftime("training_%Y%m%d_%H%M%S_") + offset
+    from uuid import uuid4
+    return local.strftime("training_%Y%m%d_%H%M%S_") + offset + "_" + uuid4().hex[:8]
 
 
 @dataclass(frozen=True)
@@ -77,8 +78,8 @@ class RunContext:
         manifests = root / "manifests"
         config_snapshot = root / "config"
         checkpoints = root / "checkpoints"
+        root.mkdir(parents=True,exist_ok=False)
         for directory in (
-            root,
             figures,
             tables,
             exports,

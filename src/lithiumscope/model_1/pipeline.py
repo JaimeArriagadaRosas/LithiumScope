@@ -132,7 +132,7 @@ def prepare_training_data(path: Path, model_family: str = "common") -> PreparedM
     if coordinate_evidence is not None:
         coordinate_evidence["retained_after_qc"]=coordinate_evidence.index.isin(frame.index)
         coordinate_report.update(coordinate_summary(coordinate_evidence.loc[frame.index]))
-    schema = select_feature_schema(frame, include_age=include_age, preparation_version=version)
+    schema = select_feature_schema(frame, include_age=include_age, preparation_version=version, preprocessing_policy=str(data_cfg.get("preprocessing_policy","legacy")))
     validate_training_schema(target, schema.numeric, schema.categorical)
 
     frame = _normalize_numeric_predictors(frame, schema)

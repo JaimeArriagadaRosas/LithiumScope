@@ -150,7 +150,10 @@ def _excel_sheets(prepared, ranking: pd.DataFrame, results: dict[str, tuple], ba
         "baseline_folds": baseline[1],
         "baseline_oof": baseline[2],
     }
+    eligible=set(ranking.loc[eligible_rows(ranking),"algorithm"].astype(str))
     for algorithm, (result, algorithm_prepared) in results.items():
+        if algorithm not in eligible:
+            continue
         sheets[f"folds_{algorithm}"[:31]] = result.fold_table
         if result.robustness_table is not None and not result.robustness_table.empty:
             sheets[f"stress_{algorithm}"[:31]]=result.robustness_table

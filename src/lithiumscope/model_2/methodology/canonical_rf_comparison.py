@@ -109,7 +109,7 @@ def _execute_arm(
     best = optimize_classifier_with_optuna(
         lambda params: _factory(seed, params),
         search_space, x_train, y_train, splits,
-        n_trials=budget, random_seed=seed,
+        n_trials=budget, random_seed=seed, groups=local_groups,
         storage_path=folder / "optuna_spatial_v1.db",
         study_name=f"rf_{profile}_fold_{fold_number}_{protocol_sha[:12]}",
         pruning_enabled=False,

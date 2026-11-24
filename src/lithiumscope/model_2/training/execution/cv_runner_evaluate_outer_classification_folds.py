@@ -82,7 +82,7 @@ def _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_th
             y_train = (
                 pd.Series(
                     (np.asarray(lithium_values, dtype=float)[train_idx]
-                     >= scientific_fold.label_threshold_ppm).astype(int)
+                     >= scientific_fold.label_threshold_ppm).astype(int), index=x_train.index
                 )
                 if scientific_fold is not None else y.iloc[train_idx]
             )
@@ -134,6 +134,7 @@ def _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_th
                     y_train,
                     inner_splits,
                     n_trials=trials,
+                    groups=groups_train if split_groups is not None else None,
                     random_seed=seed + fold,
                     progress_callback=progress,
                     storage_path=(

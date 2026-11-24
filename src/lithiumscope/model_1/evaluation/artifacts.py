@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import json
 
 import numpy as np
 import pandas as pd
@@ -67,10 +68,19 @@ def save_algorithm_tables(prepared, cv_result, run_context) -> dict[str, Path]:
     predictions.to_csv(prediction_path, index=False)
 
     artifacts={"folds": fold_path, "predictions": prediction_path}
+    from lithiumscope.model_1.evaluation.high_lithium import save_high_lithium_diagnostics
+    confusion_path=run_context.tables/f"high_lithium_confusion_{artifact_key}.csv"
+    strata_path=run_context.tables/f"high_lithium_residuals_{artifact_key}.csv"
+    save_high_lithium_diagnostics(predictions,confusion_path,strata_path)
+    artifacts.update(high_lithium_confusion=confusion_path,high_lithium_residuals=strata_path)
     if cv_result.robustness_table is not None and not cv_result.robustness_table.empty:
         stress_path=run_context.tables / f"robustness_{artifact_key}.csv"
         cv_result.robustness_table.to_csv(stress_path,index=False)
         artifacts["robustness"]=stress_path
+    if cv_result.preprocessing_records:
+        preprocess_path=run_context.tables / f"preprocessing_{artifact_key}.json"
+        preprocess_path.write_text(json.dumps(cv_result.preprocessing_records,indent=2,allow_nan=False),encoding='utf-8')
+        artifacts['preprocessing']=preprocess_path
     return artifacts
 
 

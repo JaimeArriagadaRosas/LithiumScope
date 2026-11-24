@@ -27,7 +27,7 @@ def build_oof_table(manifest, lithium, labels, fold_ids, probabilities, scientif
     threshold = pd.Series(ids).map(thresholds)
     if threshold.isna().any():
         raise ValueError("OOF fold identifier is absent from protocol")
-    columns = [c for c in ("sample_id", "longitude", "latitude", "spatial_group", "scene_id") if c in manifest]
+    columns = [c for c in ("sample_id", "longitude", "latitude", "spatial_group", "scene_id", "sentinel_scene_id") if c in manifest]
     table = manifest[columns].reset_index(drop=True).copy()
     table.insert(0, "row_position", np.arange(n))
     table["li_ppm"] = li
@@ -36,5 +36,8 @@ def build_oof_table(manifest, lithium, labels, fold_ids, probabilities, scientif
     table["label_threshold_ppm"] = threshold
     table["prospectivity_score"] = scores
     table["predicted_class_0_5"] = (scores >= 0.5).astype(int)
-    table["eligible_for_training"] = np.ones(n, dtype=bool) if quality_mask is None else np.asarray(quality_mask, dtype=bool)
+    mask = np.ones(n, dtype=bool) if quality_mask is None else np.asarray(quality_mask)
+    if mask.shape != (n,) or mask.dtype.kind != 'b':
+        raise ValueError('Quality mask must be a boolean vector aligned to OOF')
+    table["eligible_for_training"] = mask
     return table

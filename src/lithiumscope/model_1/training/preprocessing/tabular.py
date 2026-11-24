@@ -34,9 +34,10 @@ class FeatureSchema:
     numeric: list[str]
     categorical: list[str]
     preparation_version: int = 1
+    preprocessing_policy: str = "legacy"
 
 
-def select_feature_schema(frame: pd.DataFrame, include_age: bool = True, *, preparation_version: int = 2) -> FeatureSchema:
+def select_feature_schema(frame: pd.DataFrame, include_age: bool = True, *, preparation_version: int = 2, preprocessing_policy: str = "legacy") -> FeatureSchema:
     numeric: list[str] = []
     for candidate in OXIDES + TRACE_ELEMENTS + SPATIAL_CANDIDATES + DERIVED:
         if candidate in frame.columns and candidate not in numeric:
@@ -48,20 +49,26 @@ def select_feature_schema(frame: pd.DataFrame, include_age: bool = True, *, prep
                 break
     categorical = [column for column in CATEGORICAL if column in frame.columns]
     logger.info("Feature schema: %d numeric + %d categorical", len(numeric), len(categorical))
-    return FeatureSchema(numeric=numeric, categorical=categorical, preparation_version=preparation_version)
+    return FeatureSchema(numeric=numeric, categorical=categorical, preparation_version=preparation_version, preprocessing_policy=preprocessing_policy)
 
 
 def build_preprocessor(schema: FeatureSchema, model_family: str) -> ColumnTransformer:
     family = model_family.lower()
+    policy=getattr(schema,"preprocessing_policy","legacy")
+    if policy not in {"legacy","stable_v1","tabnet_mask_v1"}:
+        raise ValueError("Unknown preprocessing policy")
+    if policy=="tabnet_mask_v1" and family!="tabnet":
+        raise ValueError("TabNet mask variant is only valid for TabNet")
+    stable=policy!="legacy"
 
     if family == "xgboost":
         numeric_transformer = "passthrough"
     elif family == "tabnet":
         numeric_transformer = Pipeline(
-            steps=[("imputer", SimpleImputer(strategy="constant", fill_value=0.0))]
+            steps=[("imputer", SimpleImputer(strategy="constant", fill_value=0.0, keep_empty_features=stable))]
         )
     else:
-        numeric_steps = [("imputer", SimpleImputer(strategy="median"))]
+        numeric_steps = [("imputer", SimpleImputer(strategy="median", keep_empty_features=stable))]
         if family == "svm":
             numeric_steps.append(("scaler", StandardScaler()))
         numeric_transformer = Pipeline(steps=numeric_steps)
@@ -73,11 +80,18 @@ def build_preprocessor(schema: FeatureSchema, model_family: str) -> ColumnTransf
         ]
     )
 
+    if stable:
+        from lithiumscope.model_1.training.preprocessing.encoding import ExplicitCategoryEncoder
+        categorical_transformer=ExplicitCategoryEncoder()
+    transformers=[
+        ("numeric",numeric_transformer,schema.numeric),
+        ("categorical",categorical_transformer,schema.categorical),
+    ]
+    if policy=="tabnet_mask_v1":
+        from sklearn.impute import MissingIndicator
+        transformers.append(("missing_mask",MissingIndicator(features="all"),schema.numeric))
     return ColumnTransformer(
-        transformers=[
-            ("numeric", numeric_transformer, schema.numeric),
-            ("categorical", categorical_transformer, schema.categorical),
-        ],
+        transformers=transformers,
         remainder="drop",
         sparse_threshold=0.0,
     )

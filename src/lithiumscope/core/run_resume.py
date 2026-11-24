@@ -128,7 +128,7 @@ def _scientific_code_files(model_group: str) -> list[Path]:
         directory = model_root / "data"
         if directory.exists():
             files.extend(directory.rglob("*.py"))
-    for filename in ("evaluation/metrics.py", "evaluation/baseline.py", "evaluation/thresholds.py", "evaluation/oof_evidence.py", "evaluation/selection.py", "evaluation/robustness.py", "evaluation/artifacts.py", "methodology/decision.py"):
+    for filename in ("evaluation/metrics.py", "evaluation/baseline.py", "evaluation/thresholds.py", "evaluation/oof_evidence.py", "evaluation/selection.py", "evaluation/robustness.py", "evaluation/high_lithium.py", "evaluation/artifacts.py", "methodology/decision.py"):
         candidate = model_root / filename
         if candidate.exists():
             files.append(candidate)
@@ -143,13 +143,15 @@ def _scientific_code_files(model_group: str) -> list[Path]:
         source_root / "core" / "checkpoint_identity.py",
         source_root / "core" / "pipeline_audit.py",
         source_root / "datasets" / "harmonization.py",
+        source_root / "persistence" / "save_model.py",
+        source_root / "persistence" / "final_fit_contract.py",
     ):
         if path.exists():
             files.append(path)
     for directory in (source_root / "datasets" / "validation", source_root / "datasets" / "readers", source_root / "resources"):
         if directory.exists():
             files.extend(directory.rglob("*.py"))
-    files.extend(source_root / "core" / "scientific" / name for name in ("spatial_audit.py", "applicability.py"))
+    files.extend(source_root / "core" / "scientific" / name for name in ("spatial_audit.py", "applicability.py", "optuna_contract.py"))
     if model_group == "model_2":
         files.extend((source_root / "tools" / "acquisition" / "sentinel2").rglob("*.py"))
     return sorted(set(files), key=lambda path: path.relative_to(PROJECT_ROOT).as_posix())
@@ -188,5 +190,7 @@ def find_compatible_run(model_group: str, signature: str) -> Path | None:
         except (OSError, json.JSONDecodeError):
             continue
         if payload.get("summary", {}).get("training_signature") == signature and str(payload.get("state", "")) in _RESUMABLE_STATES:
+            if payload.get("state")=="running":
+                raise RuntimeError(f"Compatible training already running: {run_dir.name}")
             return run_dir
     return None

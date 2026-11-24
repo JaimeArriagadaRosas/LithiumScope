@@ -55,6 +55,8 @@ def pending_candidate_paths(
     for model_path in directory.glob(
         "*/model.joblib"
     ):
+        if model_path.parent.name.startswith(".staging_"):
+            continue
         if (
             active is not None
             and model_path.resolve()

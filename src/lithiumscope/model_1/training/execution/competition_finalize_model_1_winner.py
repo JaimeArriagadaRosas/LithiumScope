@@ -62,6 +62,15 @@ def _finalize_model_1_winner(baseline, config, context, dataset_manifest, device
     )
     print("Entrenando ganador con todas las muestras disponibles...")
     from lithiumscope.model_1.training.preprocessing.spatial_tabnet import fit_regression_estimator, early_stopping_evidence
+    from lithiumscope.persistence.final_fit_contract import freeze_final_fit
+    from lithiumscope.core.pipeline_audit import stable_source_row_id
+    fit_contract=freeze_final_fit(x=winner_prepared.x,y=winner_prepared.y,groups=winner_prepared.groups,
+        row_ids=[stable_source_row_id(dataset_manifest.source_sha256,idx) for idx in winner_prepared.x.index],
+        dataset_sha256=dataset_manifest.source_sha256,
+        training_signature=context.tracker.payload.get("summary",{}).get("training_signature"),
+        params=winner_result.final_params,
+        policy={"algorithm":winner_algorithm,"target_transform":winner_transform,
+                "schema":vars(winner_prepared.schema),"scope":"development_only"})
     fit_regression_estimator(final_estimator,winner_prepared.x,winner_prepared.y,winner_prepared.groups)
     tabnet_evidence=early_stopping_evidence(final_estimator)
 
@@ -100,6 +109,7 @@ def _finalize_model_1_winner(baseline, config, context, dataset_manifest, device
         "baseline_policy": str(eligible.iloc[0]["baseline_policy"]),
         "rmse_gain_over_best_baseline":float(eligible.iloc[0]["rmse_gain_over_best_baseline"]),
         "experimental_only":True,
+        "final_fit_contract_sha256":fit_contract["identity_sha256"],
         "release_gate":{"pass":False,"reason":"no_independent_external_holdout"},
         "winner_rule": (
             "lowest mean outer-CV RMSE across algorithm/target variants; "
@@ -140,6 +150,7 @@ def _finalize_model_1_winner(baseline, config, context, dataset_manifest, device
     }
     bundle = {
         "estimator": final_estimator,
+        "final_fit_contract":fit_contract,
         "experimental_only":True,
         "algorithm": winner_algorithm,
         "variant_id": winner_variant,
@@ -159,6 +170,8 @@ def _finalize_model_1_winner(baseline, config, context, dataset_manifest, device
         feature_schema=winner_prepared.schema,
         config_name="model_1",
         activate=False,
+        verification_probe=winner_prepared.x.iloc[np.unique(np.linspace(0,len(winner_prepared.x)-1,min(32,len(winner_prepared.x)),dtype=int))],
+        config_snapshot_path=context.config_snapshot/"model_1.yaml",
     )
 
     export_workbook(

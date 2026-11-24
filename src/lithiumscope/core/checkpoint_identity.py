@@ -23,9 +23,11 @@ def _data_identity(values):
 
 
 def evaluation_identity(root, *, x, y, groups, splits, policy, extra=None, model_group=None):
-    parent=Path(root).parent/"run.json"
+    root=Path(root)
+    parents=[root/"run.json",root.parent/"run.json",root.parent.parent/"run.json"]
+    parent=next((p for p in parents if p.is_file()),None)
     run_signature=None
-    if parent.is_file():
+    if parent is not None:
         manifest=json.loads(parent.read_text(encoding="utf-8"))
         run_signature=manifest.get("summary",{}).get("training_signature")
         if not run_signature:

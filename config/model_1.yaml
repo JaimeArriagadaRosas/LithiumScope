@@ -28,6 +28,8 @@ data_sources:
 
 data:
   preparation_version: 2
+  # Versioned candidate contract; serialized releases retain their fitted transforms.
+  preprocessing_policy: stable_v1
   target_candidates:
     - Li_icpms
   quality_column_candidates:

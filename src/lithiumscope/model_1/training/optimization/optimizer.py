@@ -44,7 +44,6 @@ def optimize_with_optuna(
     try:
         import optuna
         from optuna.samplers import TPESampler
-        from optuna.trial import TrialState
     except ImportError as exc:
         raise RuntimeError(
             "Optuna es requerido para la competencia completa. "
@@ -69,17 +68,19 @@ def optimize_with_optuna(
         else optuna.pruners.NopPruner()
     )
 
+    from lithiumscope.core.scientific.optuna_contract import (
+        study_contract, run_bounded_study, record_fold, validate_splits,
+    )
+    splits = validate_splits(cv.split(x, y, groups) if hasattr(cv, "split") else cv, x, y, groups)
+    contract = study_contract(storage_path, x=x, y=y, groups=groups, splits=splits,
+        seed=random_seed, budget=n_trials, pruning=[pruning_enabled,startup_trials,warmup_folds],
+        direction="minimize", parameter_space=parameter_space, estimator_factory=estimator_factory,
+        model_group="model_1")
+
     def objective(trial):
         params = parameter_space(trial)
         rmses: list[float] = []
-        split_iterator = (
-            cv.split(x, y)
-            if hasattr(cv, "split")
-            else iter(cv)
-        )
-        for step, (train_idx, valid_idx) in enumerate(
-            split_iterator
-        ):
+        for step, (train_idx, valid_idx) in enumerate(splits):
             estimator = estimator_factory(params)
             from lithiumscope.model_1.training.preprocessing.spatial_tabnet import fit_regression_estimator
             fit_regression_estimator(estimator, _take_rows(x, train_idx), _take_rows(y, train_idx),
@@ -95,6 +96,7 @@ def optimize_with_optuna(
                     )
                 )
             )
+            record_fold(trial, rmse, step)
             rmses.append(rmse)
             running = float(np.mean(rmses))
             trial.report(running, step=step)
@@ -114,70 +116,7 @@ def optimize_with_optuna(
         sampler=TPESampler(seed=random_seed),
         pruner=pruner,
     )
-    terminal = {
-        TrialState.COMPLETE,
-        TrialState.PRUNED,
-        TrialState.FAIL,
-    }
-    finished_before = sum(
-        trial.state in terminal
-        for trial in study.trials
-    )
-    remaining = max(
-        0,
-        n_trials - finished_before,
-    )
-
-    if progress_callback is not None:
-        progress_callback(
-            min(finished_before, n_trials),
-            n_trials,
-        )
-
-    callbacks = []
-    if progress_callback is not None:
-        def on_trial_complete(study, trial):
-            finished = sum(
-                item.state in terminal
-                for item in study.trials
-            )
-            progress_callback(
-                min(finished, n_trials),
-                n_trials,
-            )
-
-        callbacks.append(on_trial_complete)
-
-    if remaining:
-        study.optimize(
-            objective,
-            n_trials=remaining,
-            callbacks=callbacks,
-            show_progress_bar=False,
-        )
-
-    completed = [
-        trial
-        for trial in study.trials
-        if trial.state == TrialState.COMPLETE
-    ]
-    if not completed:
-        raise RuntimeError(
-            f"Optuna study {study_name or '<anonymous>'} "
-            "has no completed trial."
-        )
-
-    logger.info(
-        "Optuna best RMSE=%.6f params=%s complete=%d "
-        "pruned=%d target_trials=%d storage=%s",
-        study.best_value,
-        study.best_params,
-        len(completed),
-        sum(
-            trial.state == TrialState.PRUNED
-            for trial in study.trials
-        ),
-        n_trials,
-        storage_path,
-    )
-    return dict(study.best_params)
+    report = run_bounded_study(study, objective, contract, storage_path=storage_path,
+                               progress_callback=progress_callback)
+    logger.info("Optuna audit: %s", report)
+    return dict(report["best_params"])

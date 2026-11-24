@@ -54,11 +54,11 @@ def optimize_classifier_with_optuna(
     lithium_values=None,
     label_quantile: float = 0.75,
     fixed_threshold_ppm: float | None = None,
+    groups=None,
 ) -> dict:
     try:
         import optuna
         from optuna.samplers import TPESampler
-        from optuna.trial import TrialState
     except ImportError as exc:
         raise RuntimeError(
             'Optuna es requerido para Modelo 2. Instale: '
@@ -75,8 +75,15 @@ def optimize_classifier_with_optuna(
         else optuna.pruners.NopPruner()
     )
 
-    from lithiumscope.core.scientific_checks import assert_partition_coverage
-    assert_partition_coverage(splits, len(y))
+    from lithiumscope.core.scientific.optuna_contract import (
+        study_contract, run_bounded_study, record_fold, validate_splits,
+    )
+    splits = validate_splits(splits, x, y, groups)
+    contract = study_contract(storage_path, x=x, y=y, groups=groups, splits=splits,
+        seed=random_seed, budget=n_trials, pruning=[pruning_enabled,startup_trials,warmup_folds],
+        direction="maximize", parameter_space=parameter_space, estimator_factory=estimator_factory,
+        model_group="model_2", extra={"lithium_values": None if lithium_values is None else np.asarray(lithium_values).tolist(),
+                                     "label_quantile":label_quantile,"fixed_threshold_ppm":fixed_threshold_ppm})
     prepared_splits = []
     if lithium_values is not None:
         inner_lithium = np.asarray(lithium_values, dtype=float)
@@ -109,6 +116,7 @@ def optimize_classifier_with_optuna(
                     _take_rows(x, valid_idx),
                 ),
             )
+            record_fold(trial, score, step)
             scores.append(float(score))
             running = float(np.mean(scores))
             trial.report(running, step=step)
@@ -132,68 +140,7 @@ def optimize_classifier_with_optuna(
         pruner=pruner,
     )
 
-    terminal_states = {
-        TrialState.COMPLETE,
-        TrialState.PRUNED,
-        TrialState.FAIL,
-    }
-    finished_before = sum(
-        trial.state in terminal_states
-        for trial in study.trials
-    )
-    remaining = max(0, n_trials - finished_before)
-
-    if progress_callback is not None:
-        progress_callback(
-            min(finished_before, n_trials),
-            n_trials,
-        )
-
-    callbacks = []
-    if progress_callback is not None:
-        def on_trial_complete(study, trial):
-            finished = sum(
-                item.state in terminal_states
-                for item in study.trials
-            )
-            progress_callback(
-                min(finished, n_trials),
-                n_trials,
-            )
-
-        callbacks.append(on_trial_complete)
-
-    if remaining:
-        study.optimize(
-            objective,
-            n_trials=remaining,
-            callbacks=callbacks,
-            show_progress_bar=False,
-        )
-
-    completed = [
-        trial
-        for trial in study.trials
-        if trial.state == TrialState.COMPLETE
-    ]
-    if not completed:
-        raise RuntimeError(
-            f"Optuna study {study_name or '<anonymous>'} "
-            "has no completed trial."
-        )
-
-    logger.info(
-        "Model 2 Optuna best ROC-AUC=%.6f params=%s "
-        "complete=%d pruned=%d failed=%d target_trials=%d storage=%s",
-        study.best_value,
-        study.best_params,
-        len(completed),
-        sum(
-            trial.state == TrialState.PRUNED
-            for trial in study.trials
-        ),
-        sum(trial.state == TrialState.FAIL for trial in study.trials),
-        n_trials,
-        storage_path,
-    )
-    return dict(study.best_params)
+    report = run_bounded_study(study, objective, contract, storage_path=storage_path,
+                               progress_callback=progress_callback)
+    logger.info("Optuna audit: %s", report)
+    return dict(report["best_params"])

@@ -62,9 +62,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 837.
 - Diagnóstico de origen: **Estado: Correcto con evidencia experimental insuficiente. Prioridad: Alta. Decisión: Conservar el esquema explícito y evaluar el aporte de las variables.**
 - Criterio de aceptación (extracto): El criterio de aceptación científico será demostrar, con resultados por grupo e incertidumbre, qué predictores aportan valor sin perjudicar la transferencia; no se eliminarán variables únicamente por una correlación o importancia aislada.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: training/preprocessing/variants.py; test_preprocessing_contract.py; auditoría de preprocesamiento real.
+- Implementación / evidencia: Cinco variantes explícitas (33/31/29/21/29 predictores), mismas observaciones y grupos. results/diagnostics/m1_preprocessing_contract: 85 ajustes de preprocesadores en cinco folds; falta competición predictiva controlada e incertidumbre por grupo.
+- Estado: parcialmente verificado.
 
 ## M1-09 — Step 09 Histórico ↔ Step 10 Release — Diagnóstico de la ingeniería de características
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 843.
@@ -86,17 +86,17 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 855.
 - Diagnóstico de origen: **Estado: Correcto con mejoras de cobertura. Prioridad: Alta. Decisión: Conservar pipelines ajustados dentro de cada fold y reforzar sus contratos.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: training/preprocessing/{tabular,encoding,evidence}.py; configuración versionada; test_preprocessing_contract.py.
+- Implementación / evidencia: stable_v1 conserva columnas vacías, codifica faltantes y desconocidos explícitamente; opción tabnet_mask_v1; legacy conservado. 85 ajustes reales sin mutar transformaciones de TRAIN al transformar TEST. Evidencias por fold persistidas. Falta medir impacto predictivo y ajuste TabNet real.
+- Estado: parcialmente verificado.
 
 ## M1-12 — Step 12 Histórico ↔ Steps 17 y 18 Release — Diagnóstico de la optimización mediante Optuna y espacios de hiperparámetros
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 861.
 - Diagnóstico de origen: **Estado: Correcto operativamente, experimentalmente insuficiente. Prioridad: Alta. Decisión: Conservar el optimizador y auditar la suficiencia y reanudación de la búsqueda.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: core/scientific/optuna_contract.py; optimizadores M1/M2; checkpoint_identity.py; test_optuna_contract.py; audit_historical_optuna.py.
+- Implementación / evidencia: 330 bases SQLite históricas verificadas en solo lectura; 3876 intentos, 2632 completos, 1244 podados, 0 fallidos, 75 estudios con algún óptimo en límite. Contrato de identidad, presupuesto acotado, estados y métricas por fold; reanudación probada en SQLite sintético. Falta comparar presupuestos, pruning y semillas en competencia real.
+- Estado: parcialmente verificado.
 
 ## M1-13 — Step 13 Histórico ↔ Steps 19 y 20 Release — Diagnóstico del reentrenamiento por fold externo y early stopping de TabNet
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 867.
@@ -118,9 +118,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 879.
 - Diagnóstico de origen: **Estado: Correcto técnicamente, experimentalmente insuficiente para certificar el modelo final. Prioridad: Alta. Decisión: Conservar el entrenamiento definitivo y separar selección, prueba y publicación.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: persistence/final_fit_contract.py; save_model.py; load_model.py; finalizador M1; test_final_fit_contract.py.
+- Implementación / evidencia: Identidad del ajuste, serialización con prueba de paridad, persistencia atómica sin reemplazo y sin activación implícita. Pruebas sintéticas y paridad histórica 10/10. Falta entrenamiento definitivo autorizado y evaluación externa independiente.
+- Estado: parcialmente verificado.
 
 ## M1-16 — Step 01 Release — Diagnóstico de la adquisición e integración de fuentes
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 887.
@@ -190,9 +190,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 935.
 - Diagnóstico de origen: **Estado: Correcto retrospectivamente, con cobertura experimental insuficiente. Prioridad: Alta. Decisión: Conservar los diagnósticos y extenderlos a todos los candidatos.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: model_1/evaluation/high_lithium.py; artifacts.py; audit_m1_high_lithium.py; test_high_lithium_diagnostics.py.
+- Implementación / evidencia: 27240 predicciones históricas verificadas; Q75 de TRAIN reconstruido, 60 matrices por fold y 12 agregadas, sesgo y error por fuente/estrato. TabNet sensibilidad histórica 29,4% en 3420 muestras. Falta curvas de aprendizaje y diagnósticos TRAIN/TEST comparables para todos los nuevos candidatos.
+- Estado: parcialmente verificado.
 
 ## M1-25 — Step 25 Release — Diagnóstico de las concentraciones extremas
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 941.
@@ -222,9 +222,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 427.
 - Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Media. Decisión: Validar y hacer efectiva la configuración.**
 - Criterio de aceptación (extracto): El criterio de aceptación será que el manifiesto registre la configuración realmente utilizada y que ninguna opción científica válida sea ignorada silenciosamente.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: model_2/validation/configuration.py; training/competition.py; test_configuration_contract.py.
+- Implementación / evidencia: Validación explícita de protocolo, variables, familias, presupuesto, QA, métricas, política de umbral y registro effective_configuration.json. 21 pruebas focalizadas. Falta ejecución completa de nueva competencia real.
+- Estado: parcialmente verificado.
 
 ## M2-02 — Step 02 Release — Diagnóstico de la preparación de muestras geoquímicas
 - Origen: 04. Diagnostico M2 Release.md, línea 433.
@@ -398,9 +398,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 559.
 - Diagnóstico de origen: **Estado: Información insuficiente y evidencia experimental limitada. Prioridad: Alta. Decisión: Recuperar evidencias y establecer una comparación científica controlada.**
 - Criterio de aceptación (extracto): El criterio de aceptación será poder fundamentar mejoras con evidencia comparable y cuantificar su incertidumbre.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: Auditorías históricas de checkpoints, Optuna y OOF M2; scripts/scientific/audit_historical_m2_competitions.py; results/diagnostics/historical_m2_competition_audit.
+- Implementación / evidencia: 8 ejecuciones inventariadas, 7 competencias completas; 4 con mismo hash de dataset 706 y particiones/etiquetas verificadas (25 archivos OOF). Tres de 783 separadas. RF v4 vs RF previo: delta AUC global 0,004635, IC bootstrap espacial 95% [-0,017789;0,022681], 2000 remuestreos de 66 grupos. No demuestra superioridad ni causalidad. Release septiembre sin competencia completa; falta contraste prospectivo.
+- Estado: parcialmente verificado.
 
 ## M2-24 — Step 24 Release — Diagnóstico de la selección del ganador
 - Origen: 04. Diagnostico M2 Release.md, línea 565.
@@ -430,9 +430,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 583.
 - Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Alta. Decisión: Validar el ajuste definitivo y su contrato operativo.**
 - Criterio de aceptación (extracto): El criterio de aceptación será disponer de un modelo reproducible, con contrato completo e indicadores de rendimiento independiente del ajuste definitivo; el release anterior permanecerá disponible hasta que un candidato corregido supere la evaluación y la promoción autorizada.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: persistence/final_fit_contract.py; save_model.py; load_model.py; finalizador M2; test_final_fit_contract.py.
+- Implementación / evidencia: Congelación de identidad antes del ajuste, prueba de probabilidades y clases tras serialización, manifiesto de integridad, no sobrescritura ni activación implícita. Pruebas sintéticas y paridad histórica 10/10. Falta ajuste definitivo autorizado y evaluación externa independiente.
+- Estado: parcialmente verificado.
 
 ## M2-28 — Step 28 Release — Diagnóstico de el perfil de aplicabilidad
 - Origen: 04. Diagnostico M2 Release.md, línea 589.

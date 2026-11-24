@@ -120,6 +120,8 @@ def run_model_2_competition(
             raise ValueError(
                 "M2 historical-only mode requires the frozen 706-row manifest"
             )
+    from lithiumscope.model_2.validation.configuration import validate_canonical_config
+    effective_config=validate_canonical_config(cfg)
     app_cfg = load_config("app")
     algorithms = list(cfg["model"]["algorithms"])
     seed = int(cfg["model"]["random_seed"])
@@ -182,6 +184,7 @@ def run_model_2_competition(
             previous_state=context.tracker.state.value,
         )
     context.tracker.set_state(RunState.RUNNING)
+    (context.manifests/"effective_configuration.json").write_text(json.dumps(effective_config,indent=2),encoding="utf-8")
     get_shutdown_manager().register_cleanup(context.tracker.cancel_if_active)
 
     fold_ids, frame, groups, quality_audit, quality_cfg, quality_mask, scientific_folds, threshold, x, y, y_full = _prepare_scientific_data(cfg, context, fixed_threshold, lithium_column, manifest_path, q, requested_folds, seed, spatial_group_column)
@@ -208,8 +211,9 @@ def run_model_2_competition(
                 "roc_auc_mean",
                 "average_precision_mean",
                 "balanced_accuracy_mean",
+                "algorithm",
             ],
-            ascending=[False, False, False],
+            ascending=[False, False, False, True],
         ).reset_index(drop=True)
         candidates.insert(0, "rank", range(1, len(candidates) + 1))
     if not baseline_rows.empty:

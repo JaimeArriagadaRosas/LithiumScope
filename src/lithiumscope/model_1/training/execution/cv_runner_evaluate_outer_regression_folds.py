@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 
-def _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, groups, label, optimize, outer_splits, outer_strategy, predictions, prepared, pruning, require_groups, seed, spec, target_transform, trials, validation, robustness_records, physical_scenarios_enabled):
+def _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, groups, label, optimize, outer_splits, outer_strategy, predictions, prepared, pruning, require_groups, seed, spec, target_transform, trials, validation, robustness_records, preprocessing_records, physical_scenarios_enabled):
     from lithiumscope.model_1.training.execution.cv_runner import Spinner, assert_group_isolation, build_pipeline, logger, materialize_regression_splits, np, optimize_with_optuna, regression_metrics
     from lithiumscope.model_1.training.preprocessing.spatial_tabnet import fit_regression_estimator, early_stopping_evidence
     for fold, (train_idx, test_idx) in enumerate(
@@ -21,6 +21,8 @@ def _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, group
         cached = checkpoint.load_fold(fold, test_idx) if checkpoint else None
         if cached is not None:
             robustness_records.extend(cached.get('robustness',[]))
+            if cached.get('preprocessing') is not None:
+                preprocessing_records.append({'fold':fold,**cached['preprocessing']})
             fold_predictions = np.asarray(
                 cached["predictions"],
                 dtype=float,
@@ -124,12 +126,19 @@ def _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, group
             )
             fit_regression_estimator(estimator,x_train,y_train,groups_train)
             epoch_evidence=early_stopping_evidence(estimator)
+            from lithiumscope.model_1.training.preprocessing.evidence import preprocessing_evidence
+            prep_evidence=preprocessing_evidence(estimator,x_train,x_test)
+            if prep_evidence is not None:
+                preprocessing_records.append({'fold':fold,**prep_evidence})
             fold_predictions = estimator.predict(x_test)
             predictions[test_idx] = fold_predictions
             metrics = regression_metrics(
                 y_test,
                 fold_predictions,
             ).to_dict()
+            if prep_evidence is not None:
+                metrics['transformed_feature_count']=prep_evidence['feature_count']
+                metrics['train_all_missing_feature_count']=len(prep_evidence['train_all_missing_columns'])
             train_predictions = estimator.predict(x_train)
             metrics.update({f"train_{k}":v for k,v in regression_metrics(y_train,train_predictions).to_dict().items()})
             if epoch_evidence is not None:
@@ -197,6 +206,7 @@ def _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, group
                     metrics,
                     params=params,
                     early_stopping=epoch_evidence,
+                    preprocessing=prep_evidence,
                     robustness=scenario_records,
                 )
 

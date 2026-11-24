@@ -44,6 +44,7 @@ class CVRunResult:
     variant_id: str | None = None
     outer_splits: list | None = None
     robustness_table: pd.DataFrame | None = None
+    preprocessing_records: list[dict] | None = None
 
 
 def run_nested_cv(
@@ -107,6 +108,7 @@ def run_nested_cv(
     predictions = np.full(len(prepared.y), np.nan, dtype=float)
     folds: list[dict] = []
     robustness_records: list[dict] = []
+    preprocessing_records: list[dict] = []
     started = time.perf_counter()
     trials = int(
         optimization.get("per_algorithm_trials", {}).get(
@@ -141,7 +143,7 @@ def run_nested_cv(
         f"{outer_strategy}"
     )
 
-    _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, groups, label, optimize, outer_splits, outer_strategy, predictions, prepared, pruning, require_groups, seed, spec, target_transform, trials, validation, robustness_records, bool(config.get('robustness',{}).get('physical_scenarios_enabled',True)))
+    _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, groups, label, optimize, outer_splits, outer_strategy, predictions, prepared, pruning, require_groups, seed, spec, target_transform, trials, validation, robustness_records, preprocessing_records, bool(config.get('robustness',{}).get('physical_scenarios_enabled',True)))
 
     assert_oof_complete(predictions, len(prepared.y))
     overall = regression_metrics(
@@ -246,6 +248,7 @@ def run_nested_cv(
         variant_id=variant_id,
         outer_splits=outer_splits,
         robustness_table=pd.DataFrame(robustness_records),
+        preprocessing_records=preprocessing_records,
     )
 
 from lithiumscope.model_1.training.execution.cv_runner_evaluate_outer_regression_folds import _evaluate_outer_regression_folds
