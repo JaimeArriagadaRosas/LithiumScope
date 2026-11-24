@@ -6,14 +6,14 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
 
-from lithiumscope.model_2.methodology.contracts import (
+from lithiumscope.model_2.methodology.validation.contracts import (
     sample_contract, site_summary, policy_counts,
     STATUS_HISTORICAL, STATUS_PROVISIONAL, STATUS_VERIFIED,
 )
-from lithiumscope.model_2.methodology.spatial import (
+from lithiumscope.model_2.methodology.validation.spatial import (
     assess_folds, buffered_train_preview,
 )
-from lithiumscope.model_2.methodology.domain import (
+from lithiumscope.model_2.methodology.validation.domain import (
     training_domain_profile, score_domain,
 )
 from lithiumscope.model_2.methodology.audit import run_audit
@@ -220,7 +220,7 @@ def test_cli_refuses_reordered_feature_cache(tmp_path,sample_manifest,two_folds)
         run_audit(man,feat,f,tmp_path/"output")
 
 
-from lithiumscope.model_2.methodology.decision import (
+from lithiumscope.model_2.methodology.evaluation.decision import (
     freeze_inner_oof_threshold, evaluate_frozen_threshold,
 )
 

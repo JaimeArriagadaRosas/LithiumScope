@@ -18,7 +18,7 @@ from lithiumscope.model_2.preparation.features.spectral import (
     extract_spectral_features,
 )
 from lithiumscope.model_2.preparation.image_preprocessing import preprocess_image
-from lithiumscope.model_2.methodology.satellite_quality import SPECTRAL_BANDS
+from lithiumscope.model_2.methodology.spectral.satellite_quality import SPECTRAL_BANDS
 
 
 def apply_radiometry(cube:np.ndarray,metadata:dict, *,

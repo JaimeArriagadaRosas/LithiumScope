@@ -23,7 +23,7 @@ from lithiumscope.datasets.georoc_ingestion_transform import harmonize_chunk
 from lithiumscope.datasets.harmonization import (
     canonicalize_coordinates, merge_harmonized_sources,
 )
-from lithiumscope.experiments.analysis.georoc_qc_protocols import protocol_masks
+from lithiumscope.experiments.analysis.protocols.georoc_qc_protocols import protocol_masks
 from lithiumscope.model_1.pipeline import prepare_prediction_data
 from lithiumscope.model_1.preparation.detection_limits import clean_detection_limits
 from lithiumscope.model_1.preparation.missing_values import normalize_missing_values

@@ -170,7 +170,7 @@ def test_grouped_paired_bootstrap_has_three_intervals():
 
 
 def test_v4_quality_uses_old_and_new_spectral_coverage(tmp_path):
-    from lithiumscope.model_2.methodology.rededge_training import (
+    from lithiumscope.model_2.methodology.spectral.rededge_training import (
         combine_quality_masks,
     )
 
@@ -210,7 +210,7 @@ def test_v4_quality_uses_old_and_new_spectral_coverage(tmp_path):
 )
 def test_all_six_families_can_fit_170_features(family):
     from lithiumscope.core.device import detect_device
-    from lithiumscope.model_2.methodology.rededge_training import fit_frozen_model
+    from lithiumscope.model_2.methodology.spectral.rededge_training import fit_frozen_model
 
     n = 90
     x = pd.DataFrame(

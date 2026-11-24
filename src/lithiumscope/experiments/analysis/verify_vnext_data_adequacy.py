@@ -17,7 +17,7 @@ from sklearn.base import clone
 from sklearn.metrics import average_precision_score, brier_score_loss, roc_auc_score
 
 from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR
-from lithiumscope.experiments.analysis.georoc_qc_protocols import protocol_masks
+from lithiumscope.experiments.analysis.protocols.georoc_qc_protocols import protocol_masks
 from lithiumscope.experiments.analysis.run_vnext_m1 import _frame
 from lithiumscope.model_1.preparation.target_filtering import filter_target
 from lithiumscope.core.config import load_config
@@ -253,7 +253,7 @@ def group_train_indices(
     return selected
 
 
-from lithiumscope.experiments.analysis.verify_vnext_data_adequacy_run_m2_learning_curve import run_m2_learning_curve
+from lithiumscope.experiments.analysis.protocols.verify_vnext_data_adequacy_run_m2_learning_curve import run_m2_learning_curve
 
 
 if __name__=="__main__":

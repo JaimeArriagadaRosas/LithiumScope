@@ -109,6 +109,7 @@ def _scientific_config_payload(model_group: str, config_names: tuple[str, ...]) 
             }
         else:
             payload[name] = config
+    payload["resources"]=load_config("resources")
     return payload
 
 
@@ -120,7 +121,7 @@ def _scientific_code_files(model_group: str) -> list[Path]:
         candidate = model_root / filename
         if candidate.exists():
             files.append(candidate)
-    for directory_name in ("steps", "training", "preparation", "validation", "features"):
+    for directory_name in ("steps", "training", "preparation", "validation", "features", "methodology"):
         directory = model_root / directory_name
         if directory.exists():
             files.extend(directory.rglob("*.py"))
@@ -128,7 +129,7 @@ def _scientific_code_files(model_group: str) -> list[Path]:
         directory = model_root / "data"
         if directory.exists():
             files.extend(directory.rglob("*.py"))
-    for filename in ("evaluation/metrics.py", "evaluation/baseline.py", "evaluation/thresholds.py", "evaluation/oof_evidence.py", "evaluation/selection.py", "evaluation/robustness.py", "evaluation/high_lithium.py", "evaluation/artifacts.py", "methodology/decision.py"):
+    for filename in ("evaluation/metrics.py", "evaluation/baseline.py", "evaluation/thresholds.py", "evaluation/oof_evidence.py", "evaluation/selection.py", "evaluation/robustness.py", "evaluation/high_lithium.py", "evaluation/artifacts.py", "methodology/evaluation/decision.py"):
         candidate = model_root / filename
         if candidate.exists():
             files.append(candidate)
@@ -137,10 +138,10 @@ def _scientific_code_files(model_group: str) -> list[Path]:
         source_root / "core" / "resources.py",
         source_root / "core" / "reproducibility.py",
         source_root / "core" / "scientific_checks.py",
-        source_root / "core" / "training_diagnostics.py",
-        source_root / "core" / "candidate_evidence.py",
+        source_root / "core" / "scientific" / "training_diagnostics.py",
+        source_root / "core" / "scientific" / "candidate_evidence.py",
         source_root / "core" / "checkpoints.py",
-        source_root / "core" / "checkpoint_identity.py",
+        source_root / "core" / "scientific" / "checkpoint_identity.py",
         source_root / "core" / "pipeline_audit.py",
         source_root / "datasets" / "harmonization.py",
         source_root / "persistence" / "save_model.py",

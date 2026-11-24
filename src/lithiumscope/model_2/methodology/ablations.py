@@ -25,9 +25,9 @@ from sklearn.metrics import (
 from sklearn.model_selection import StratifiedGroupKFold
 
 from lithiumscope.core.paths import PROJECT_ROOT
-from lithiumscope.model_2.methodology.contracts import sample_contract
-from lithiumscope.model_2.methodology.spatial import EARTH_RADIUS_M, _positions
-from lithiumscope.model_2.methodology.decision import (
+from lithiumscope.model_2.methodology.validation.contracts import sample_contract
+from lithiumscope.model_2.methodology.validation.spatial import EARTH_RADIUS_M, _positions
+from lithiumscope.model_2.methodology.evaluation.decision import (
     freeze_inner_oof_threshold, evaluate_frozen_threshold,
 )
 from sklearn.neighbors import BallTree
@@ -235,10 +235,10 @@ def bootstrap_group_delta(predictions:pd.DataFrame,reference:str,arm:str,
     return out
 
 
-from lithiumscope.model_2.methodology.ablations_nested_decision_probe import nested_decision_probe
+from lithiumscope.model_2.methodology.evaluation.ablations_nested_decision_probe import nested_decision_probe
 
 
-from lithiumscope.model_2.methodology.ablations_run import run
+from lithiumscope.model_2.methodology.evaluation.ablations_run import run
 
 
 def main(argv=None):

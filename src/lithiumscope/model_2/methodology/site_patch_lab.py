@@ -178,7 +178,7 @@ def half_patch_predictors(
     return pd.DataFrame(rows,columns=expected_columns)
 
 
-from lithiumscope.model_2.methodology.site_patch_lab_validate_inputs import validate_inputs
+from lithiumscope.model_2.methodology.site.site_patch_lab_validate_inputs import validate_inputs
 
 
 def site_level_evaluation(arms:pd.DataFrame) -> pd.DataFrame:
@@ -265,7 +265,7 @@ def irreducible_identical_input_minority(
     return pd.DataFrame(rows)
 
 
-from lithiumscope.model_2.methodology.site_patch_lab_run_pilot import run_pilot
+from lithiumscope.model_2.methodology.site.site_patch_lab_run_pilot import run_pilot
 
 
 def main():

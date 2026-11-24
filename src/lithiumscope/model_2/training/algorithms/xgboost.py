@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from lithiumscope.resources.detection.device import DeviceInfo
-from lithiumscope.resources.manager import cpu_worker_budget
+from lithiumscope.resources.manager import cpu_worker_budget, worker_limit
 from lithiumscope.resources.compatibility.backends import xgboost_device_parameters
 
 
@@ -30,6 +30,7 @@ def create_model(
         **xgboost_device_parameters(device),
     }
     defaults.update(params)
+    defaults["n_jobs"]=worker_limit(defaults["n_jobs"])
     return XGBClassifier(**defaults)
 
 

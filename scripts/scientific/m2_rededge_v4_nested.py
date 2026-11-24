@@ -83,7 +83,7 @@ def train_all(cohort: int, *, root: Path = PROJECT_ROOT):
         inventory_path=root / str(cfg["quality_training"]["inventory_path"]),
         minimum_joint_valid=float(cfg["quality_training"]["minimum_joint_valid_fraction"]),
     )
-    from lithiumscope.model_2.methodology.rededge_training import (
+    from lithiumscope.model_2.methodology.spectral.rededge_training import (
         combine_quality_masks,
     )
 

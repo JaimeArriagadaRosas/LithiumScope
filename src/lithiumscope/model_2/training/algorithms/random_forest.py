@@ -1,6 +1,6 @@
 from sklearn.ensemble import RandomForestClassifier
 
-from lithiumscope.resources.manager import cpu_worker_budget
+from lithiumscope.resources.manager import cpu_worker_budget, worker_limit
 
 
 def create_model(random_seed: int = 42, **params):
@@ -11,6 +11,7 @@ def create_model(random_seed: int = 42, **params):
         "n_jobs": cpu_worker_budget(),
     }
     defaults.update(params)
+    defaults["n_jobs"]=worker_limit(defaults["n_jobs"])
     return RandomForestClassifier(**defaults)
 
 

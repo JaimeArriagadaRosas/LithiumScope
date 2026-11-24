@@ -53,7 +53,7 @@ def detect_gpus() -> tuple[dict, ...]:
     return tuple(devices)
 
 
-def detect_host(root: Path | None = None) -> HostResources:
+def detect_host(root: Path | None = None, *, include_gpu: bool = True) -> HostResources:
     logical = max(1, os.cpu_count() or 1)
     available = logical
     physical = total_ram = free_ram = disk = None
@@ -76,4 +76,4 @@ def detect_host(root: Path | None = None) -> HostResources:
         disk = shutil.disk_usage(root or Path.cwd()).free
     except OSError:
         pass
-    return HostResources(logical, physical, max(1, available), total_ram, free_ram, disk, detect_gpus())
+    return HostResources(logical, physical, max(1, available), total_ram, free_ram, disk, detect_gpus() if include_gpu else ())

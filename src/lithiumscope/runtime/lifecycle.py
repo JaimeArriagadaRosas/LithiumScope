@@ -10,7 +10,7 @@ from lithiumscope.core.logging.session import (
     warning_summary,
 )
 from lithiumscope.core.run_resume import recover_abandoned_runs
-from lithiumscope.core.visualization import configure_headless_matplotlib
+from lithiumscope.core.presentation.visualization import configure_headless_matplotlib
 from lithiumscope.runtime.graceful_shutdown import GracefulExit, get_shutdown_manager
 from lithiumscope.runtime.preboot import run_preboot
 

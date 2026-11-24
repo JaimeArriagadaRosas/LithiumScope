@@ -1,6 +1,6 @@
 import json
 import numpy as np
-from lithiumscope.core.training_diagnostics import save_oof_diagnostics
+from lithiumscope.core.scientific.training_diagnostics import save_oof_diagnostics
 
 
 def test_regression_diagnostics_are_grouped_and_reproducible(tmp_path):

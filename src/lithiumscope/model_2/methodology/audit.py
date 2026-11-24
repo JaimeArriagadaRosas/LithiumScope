@@ -19,13 +19,13 @@ from pathlib import Path
 import pandas as pd
 
 from lithiumscope.core.paths import PROJECT_ROOT
-from lithiumscope.model_2.methodology.contracts import (
+from lithiumscope.model_2.methodology.validation.contracts import (
     sample_contract, policy_counts, site_summary,
 )
-from lithiumscope.model_2.methodology.spatial import (
+from lithiumscope.model_2.methodology.validation.spatial import (
     assess_folds, buffered_train_preview,
 )
-from lithiumscope.model_2.methodology.domain import (
+from lithiumscope.model_2.methodology.validation.domain import (
     training_domain_profile, score_domain,
 )
 

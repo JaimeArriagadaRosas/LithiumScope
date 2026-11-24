@@ -9,7 +9,7 @@ def nested_decision_probe(contract,predictors,folds, *,arm):
     the same 706 outer observations. No probability calibrator is fitted.
     """
     from lithiumscope.model_2.methodology.ablations import HISTORICAL_N, StratifiedGroupKFold, define_outer_fold, fit_classifier, freeze_inner_oof_threshold, np, pd, select_train_indices, site_weights
-    from lithiumscope.model_2.methodology.decision import freeze_inner_oof_threshold
+    from lithiumscope.model_2.methodology.evaluation.decision import freeze_inner_oof_threshold
     records=[]
     all_outer=[]
     for k,fold in enumerate(folds,1):

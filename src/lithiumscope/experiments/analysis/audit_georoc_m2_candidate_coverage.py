@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 
 from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR
-from lithiumscope.experiments.analysis.georoc_qc_protocols import protocol_masks
+from lithiumscope.experiments.analysis.protocols.georoc_qc_protocols import protocol_masks
 from lithiumscope.model_1.validation.spatial import build_spatial_groups
 from lithiumscope.model_2.data.sample_source import load_georeferenced_li_samples
 

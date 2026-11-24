@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from lithiumscope.resources.detection.device import DeviceInfo
-from lithiumscope.resources.manager import cpu_worker_budget
+from lithiumscope.resources.manager import cpu_worker_budget, worker_limit
 
 
 def create_model(device: DeviceInfo, random_seed: int = 42, **params):
@@ -22,6 +22,7 @@ def create_model(device: DeviceInfo, random_seed: int = 42, **params):
         "task_type": "GPU" if device.catboost_gpu_available else "CPU",
     }
     defaults.update(params)
+    defaults["thread_count"]=worker_limit(defaults["thread_count"])
     return CatBoostRegressor(**defaults)
 
 

@@ -14,7 +14,9 @@ def _base_model(random_seed: int = 42, **params):
         "class_weight": "balanced",
         "random_state": random_seed,
     }
+    from lithiumscope.resources.manager import svm_cache_limit
     defaults.update(params)
+    defaults['cache_size']=svm_cache_limit(defaults.get('cache_size',200.))
     return Pipeline([
         ("scaler", StandardScaler()),
         ("model", SVC(**defaults)),

@@ -129,3 +129,12 @@ def test_lab_modules_remain_focused():
         len(path.read_text(encoding="utf-8").splitlines()) <= 300
         for path in paths
     )
+
+
+def test_python_directories_are_focused():
+    root=Path(__file__).resolve().parents[2]
+    directories=[p for base in (root/"src/lithiumscope",root/"tests")
+                 for p in (base,*base.rglob("*")) if p.is_dir() and "__pycache__" not in p.parts]
+    oversized={str(p.relative_to(root)):len(list(p.glob("*.py"))) for p in directories
+               if len(list(p.glob("*.py")))>20}
+    assert not oversized,oversized

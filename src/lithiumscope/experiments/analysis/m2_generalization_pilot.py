@@ -22,10 +22,10 @@ from sklearn.model_selection import GroupKFold
 
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.model_2.evaluation.thresholds import select_operating_threshold
-from lithiumscope.model_2.methodology.independence_gate import (
+from lithiumscope.model_2.methodology.validation.independence_gate import (
     audit_external_overlap, pairwise_distances_km, release_gate,
 )
-from lithiumscope.model_2.methodology.spectral_feature_policy import (
+from lithiumscope.model_2.methodology.spectral.spectral_feature_policy import (
     select_spectral_features,
 )
 

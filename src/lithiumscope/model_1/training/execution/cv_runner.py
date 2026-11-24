@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 from lithiumscope.core.checkpoints import FoldCheckpointStore
-from lithiumscope.core.checkpoint_identity import evaluation_identity
+from lithiumscope.core.scientific.checkpoint_identity import evaluation_identity
 from lithiumscope.resources.detection.device import DeviceInfo
 from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.scientific_checks import (

@@ -166,7 +166,7 @@ class Sentinel2Provider:
         policy=None,
     ) -> tuple[dict, dict, list[dict]]:
         """Opt-in full six-band and SCL local selection. No changes to caches."""
-        from lithiumscope.model_2.methodology.satellite_quality import (
+        from lithiumscope.model_2.methodology.spectral.satellite_quality import (
             ScientificScenePolicy, choose_scene, SPECTRAL_BANDS
         )
         if tuple(self.config.bands) != SPECTRAL_BANDS:

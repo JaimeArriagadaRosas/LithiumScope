@@ -55,5 +55,7 @@ def fit_spatially_calibrated(
     model = CalibratedClassifierCV(
         estimator=base, method="sigmoid", cv=splits, ensemble=False,
     )
-    model.fit(x_train, y)
+    from lithiumscope.resources.manager import estimator_thread_scope
+    with estimator_thread_scope():
+        model.fit(x_train, y)
     return model

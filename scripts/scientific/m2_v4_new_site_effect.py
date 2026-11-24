@@ -20,7 +20,7 @@ from lithiumscope.core.device import detect_device
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.tools.acquisition.sentinel2.rededge import cached_rededge_sample
-from lithiumscope.model_2.methodology.rededge_training import (
+from lithiumscope.model_2.methodology.spectral.rededge_training import (
     combine_quality_masks,
     fit_frozen_model,
 )

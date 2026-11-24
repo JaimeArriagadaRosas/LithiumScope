@@ -5,6 +5,9 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import asdict
 from pathlib import Path
+from threading import RLock
+
+from lithiumscope.resources.allocation.runtime import bounded_workers, bounded_cache_mb, native_thread_limits
 
 from lithiumscope.core.config import load_config
 from lithiumscope.resources.allocation.policy import ResourcePolicy, Workload, plan_workload
@@ -12,6 +15,8 @@ from lithiumscope.resources.detection.host import detect_host
 from lithiumscope.resources.monitoring.monitor import monitor_operation
 
 _active_threads: ContextVar[int | None] = ContextVar("resource_threads", default=None)
+_active_plan = ContextVar("resource_plan",default=None)
+_native_lock=RLock()
 
 
 def load_policy() -> ResourcePolicy:
@@ -22,7 +27,26 @@ def cpu_worker_budget() -> int:
     active = _active_threads.get()
     if active is not None:
         return active
-    return plan_workload(detect_host(), load_policy(), Workload()).threads_per_task
+    return plan_workload(detect_host(include_gpu=False), load_policy(), Workload()).threads_per_task
+
+
+def worker_limit(requested=None):
+    return bounded_workers(requested,cpu_worker_budget())
+
+
+def svm_cache_limit(requested=200.):
+    plan=_active_plan.get()
+    if plan is None:
+        plan=plan_workload(detect_host(include_gpu=False),load_policy(),Workload())
+    return bounded_cache_mb(requested,plan.ram_budget_bytes)
+
+
+@contextmanager
+def estimator_thread_scope():
+    # Process-global native thread settings must not overlap across threads.
+    with _native_lock:
+        with native_thread_limits(cpu_worker_budget()):
+            yield
 
 
 def resource_snapshot(policy: ResourcePolicy | None = None) -> dict:
@@ -38,14 +62,17 @@ def resource_snapshot(policy: ResourcePolicy | None = None) -> dict:
 
 @contextmanager
 def resource_operation(path: Path, workload: Workload | None = None):
-    from threadpoolctl import threadpool_limits
 
     policy = load_policy()
     plan = plan_workload(detect_host(), policy, workload or Workload())
     token = _active_threads.set(plan.threads_per_task)
+    plan_token=_active_plan.set(plan)
     try:
-        with monitor_operation(path, interval_seconds=policy.monitor_interval_seconds):
-            with threadpool_limits(limits=plan.threads_per_task):
+        with monitor_operation(path, interval_seconds=policy.monitor_interval_seconds,
+                               metadata={"plan":asdict(plan),"policy":asdict(policy),
+                                         "limits":"CPU supported native libraries; RAM/VRAM estimates, not OS hard caps"}):
+            with estimator_thread_scope():
                 yield plan
     finally:
+        _active_plan.reset(plan_token)
         _active_threads.reset(token)

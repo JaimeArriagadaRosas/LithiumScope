@@ -28,7 +28,7 @@ from lithiumscope.tools.acquisition.sentinel2.patch_io import download_patch
 from lithiumscope.tools.acquisition.sentinel2.rededge import (
     cached_rededge_sample,
 )
-from lithiumscope.model_2.methodology.satellite_quality import (
+from lithiumscope.model_2.methodology.spectral.satellite_quality import (
     ScientificScenePolicy,
 )
 

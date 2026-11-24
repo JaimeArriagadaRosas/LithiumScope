@@ -76,10 +76,12 @@ class SpatialTabNetPipeline(Pipeline):
 
 def fit_regression_estimator(estimator, x, y, groups=None):
     """Pass groups only to the new TabNet path, including transformed targets."""
+    from lithiumscope.resources.manager import estimator_thread_scope
     raw = getattr(estimator, "regressor", estimator)
-    if isinstance(raw, SpatialTabNetPipeline):
-        return estimator.fit(x, y, groups=groups)
-    return estimator.fit(x, y)
+    with estimator_thread_scope():
+        if isinstance(raw, SpatialTabNetPipeline):
+            return estimator.fit(x, y, groups=groups)
+        return estimator.fit(x, y)
 
 
 def early_stopping_evidence(estimator):

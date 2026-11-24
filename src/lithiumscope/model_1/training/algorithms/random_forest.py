@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from sklearn.ensemble import RandomForestRegressor
 
-from lithiumscope.resources.manager import cpu_worker_budget
+from lithiumscope.resources.manager import cpu_worker_budget, worker_limit
 
 
 def create_model(random_seed: int = 42, n_jobs: int | None = None, **params):
@@ -12,6 +12,7 @@ def create_model(random_seed: int = 42, n_jobs: int | None = None, **params):
         "n_jobs": cpu_worker_budget() if n_jobs is None else n_jobs,
     }
     defaults.update(params)
+    defaults["n_jobs"]=worker_limit(defaults["n_jobs"])
     return RandomForestRegressor(**defaults)
 
 

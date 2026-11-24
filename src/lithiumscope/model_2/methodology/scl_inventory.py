@@ -19,7 +19,7 @@ import pandas as pd
 
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.tools.acquisition.sentinel2.provider import _read_patch
-from lithiumscope.model_2.methodology.satellite_quality import (
+from lithiumscope.model_2.methodology.spectral.satellite_quality import (
     ScientificScenePolicy, analyze_arrays
 )
 from lithiumscope.model_2.methodology.radiometric_comparison import ROOT_CACHE

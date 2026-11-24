@@ -9,12 +9,12 @@ import numpy as np
 
 import pytest
 
-from lithiumscope.model_2.methodology.satellite_quality import (
+from lithiumscope.model_2.methodology.spectral.satellite_quality import (
     ScientificScenePolicy, scene_metadata, analyze_arrays, choose_scene,
     inspect_scene, scene_day, SPECTRAL_BANDS
 )
 
-from lithiumscope.model_2.methodology.radiometric_features import (
+from lithiumscope.model_2.methodology.spectral.radiometric_features import (
     apply_radiometry, extract_valid_spectral_features, build_feature_variants,
 )
 

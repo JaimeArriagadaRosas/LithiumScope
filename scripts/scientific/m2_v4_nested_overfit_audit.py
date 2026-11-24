@@ -17,7 +17,7 @@ from lithiumscope.core.device import detect_device
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.model_2.training.execution.cv_runner_fold_utilities import _fit_estimator
 from lithiumscope.model_2.validation.quality import training_quality_mask
-from lithiumscope.model_2.methodology.rededge_training import combine_quality_masks
+from lithiumscope.model_2.methodology.spectral.rededge_training import combine_quality_masks
 
 from scripts.scientific.m2_rededge_v4_competition import ARMS, _splits
 

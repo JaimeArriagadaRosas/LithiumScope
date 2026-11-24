@@ -19,6 +19,7 @@ from lithiumscope.core.logging.retention import cleanup_expired_logs
 
 _LOCK = threading.RLock()
 _WARNING_LOCK = threading.RLock()
+_ERROR_LOCK = threading.Lock()
 _CONFIGURED = False
 _SESSION_ID: str | None = None
 _SESSION_DIR: Path | None = None
@@ -35,7 +36,7 @@ _ERROR_COUNT = 0
 class _ErrorCountingFilter(logging.Filter):
     def filter(self, record):
         global _ERROR_COUNT
-        with _LOCK:
+        with _ERROR_LOCK:
             _ERROR_COUNT += 1
         return True
 
@@ -75,7 +76,8 @@ def configure_logging() -> logging.Logger:
             teardown_handlers(root)
             if _SESSION_DIR:
                 (_SESSION_DIR / ".active.json").unlink(missing_ok=True)
-        _ERROR_COUNT = 0
+        with _ERROR_LOCK:
+            _ERROR_COUNT = 0
         with _WARNING_LOCK:
             _WARNING_COUNTS.clear()
         # Diagnostics must never install missing configs merely to create a log.
@@ -185,7 +187,8 @@ def warning_summary() -> dict:
 
 
 def error_count() -> int:
-    return _ERROR_COUNT
+    with _ERROR_LOCK:
+        return _ERROR_COUNT
 
 
 def logging_summary() -> dict:

@@ -10,35 +10,20 @@ import threading
 import time
 
 from lithiumscope.resources.detection.host import detect_gpus
-
-
-def _sample() -> dict:
-    result = {"pid": os.getpid(), "cpu_percent": None, "process_cpu_percent": None,
-              "ram_available_bytes": None, "ram_percent": None, "process_rss_bytes": None,
-              "child_processes": None, "gpus": list(detect_gpus())}
-    try:
-        import psutil
-        process = psutil.Process()
-        ram = psutil.virtual_memory()
-        children = process.children(recursive=True)
-        result.update(cpu_percent=psutil.cpu_percent(interval=None),
-                      process_cpu_percent=process.cpu_percent(interval=None),
-                      ram_available_bytes=int(ram.available), ram_percent=ram.percent,
-                      process_rss_bytes=int(process.memory_info().rss), child_processes=len(children))
-    except (ImportError, OSError):
-        pass
-    return result
+from lithiumscope.resources.monitoring.sampler import ProcessTreeSampler
 
 
 @contextmanager
-def monitor_operation(path: Path, *, interval_seconds: float = 2.0):
+def monitor_operation(path: Path, *, interval_seconds: float = 2.0, metadata=None):
     if interval_seconds <= 0:
         raise ValueError("Monitoring interval must be positive.")
     path.parent.mkdir(parents=True, exist_ok=True)
     stop = threading.Event()
     lock = threading.Lock()
     start = time.monotonic()
-    samples = []
+    sample_count=0
+    sampler=ProcessTreeSampler()
+    peaks={}
     errors = []
     with path.open("x", encoding="utf-8", buffering=1) as stream:
         def emit(event, **values):
@@ -48,9 +33,18 @@ def monitor_operation(path: Path, *, interval_seconds: float = 2.0):
                 stream.write(json.dumps(record, ensure_ascii=False) + "\n")
 
         def capture():
+            nonlocal sample_count
             try:
-                sample = _sample()
-                samples.append(sample)
+                sample = {"pid":os.getpid(),**sampler.sample(),"gpus":list(detect_gpus())}
+                sample_count+=1
+                for key in ("process_rss_bytes","tree_rss_bytes","cpu_percent","process_cpu_percent","tree_cpu_percent","ram_percent"):
+                    value=sample.get(key)
+                    if value is not None:
+                        peaks[key]=max(peaks.get(key,value),value)
+                for g in sample["gpus"]:
+                    value=g.get("utilization_percent")
+                    if value is not None:
+                        peaks["gpu_percent"]=max(peaks.get("gpu_percent",value),value)
                 emit("sample", **sample)
             except Exception as exc:
                 errors.append(str(exc))
@@ -60,7 +54,8 @@ def monitor_operation(path: Path, *, interval_seconds: float = 2.0):
             while not stop.wait(interval_seconds):
                 capture()
 
-        emit("start", pid=os.getpid(), interval_seconds=interval_seconds)
+        emit("start", pid=os.getpid(), interval_seconds=interval_seconds, metadata=metadata or {},
+             measurement_note="Tree RSS is summed RSS (shared pages may be counted twice); CPU excludes children that exit between samples.")
         capture()
         thread = threading.Thread(target=worker, daemon=True, name="lithiumscope-resource-monitor")
         thread.start()
@@ -74,14 +69,12 @@ def monitor_operation(path: Path, *, interval_seconds: float = 2.0):
             stop.set()
             thread.join()
             capture()
-            rss = [s["process_rss_bytes"] for s in samples if s["process_rss_bytes"] is not None]
-            cpu = [s["cpu_percent"] for s in samples if s["cpu_percent"] is not None]
-            ram = [s["ram_percent"] for s in samples if s["ram_percent"] is not None]
-            gpu = [g["utilization_percent"] for s in samples for g in s["gpus"]
-                   if g.get("utilization_percent") is not None]
-            emit("finish", state=state, duration_seconds=time.monotonic() - start,
-                 samples=len(samples), peak_rss_bytes=max(rss, default=None),
-                 peak_cpu_percent=max(cpu, default=None), peak_ram_percent=max(ram, default=None),
-                 peak_gpu_percent=max(gpu, default=None), warnings=errors,
-                 saturation_signals=[name for name, values in (("cpu", cpu), ("ram", ram), ("gpu", gpu))
-                                     if values and max(values) >= 95])
+            emit("finish", state=state, duration_seconds=time.monotonic()-start,
+                 samples=sample_count, peak_rss_bytes=peaks.get("process_rss_bytes"),
+                 peak_tree_rss_bytes=peaks.get("tree_rss_bytes"),
+                 peak_cpu_percent=peaks.get("cpu_percent"),
+                 peak_process_cpu_percent=peaks.get("process_cpu_percent"),
+                 peak_tree_cpu_percent=peaks.get("tree_cpu_percent"),
+                 peak_ram_percent=peaks.get("ram_percent"),peak_gpu_percent=peaks.get("gpu_percent"),
+                 warnings=errors,
+                 saturation_signals=[name for name in ("cpu","ram","gpu") if peaks.get(name+"_percent",0)>=95])

@@ -4,7 +4,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from lithiumscope.core.checkpoint_identity import _data_identity
+from lithiumscope.core.scientific.checkpoint_identity import _data_identity
 from lithiumscope.core.reproducibility import canonical_json_hash, _package_versions
 
 

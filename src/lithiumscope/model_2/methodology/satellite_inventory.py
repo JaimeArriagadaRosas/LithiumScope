@@ -31,7 +31,7 @@ import pandas as pd
 
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.tools.acquisition.sentinel2.provider import _read_patch
-from lithiumscope.model_2.methodology.satellite_quality import (
+from lithiumscope.model_2.methodology.spectral.satellite_quality import (
     ScientificScenePolicy, choose_scene, scene_day, scene_metadata,
 )
 
@@ -258,7 +258,7 @@ def report_alternatives(
     return pd.DataFrame(choices),pd.DataFrame(audits)
 
 
-from lithiumscope.model_2.methodology.satellite_inventory_run import run
+from lithiumscope.model_2.methodology.spectral.satellite_inventory_run import run
 
 
 def main():

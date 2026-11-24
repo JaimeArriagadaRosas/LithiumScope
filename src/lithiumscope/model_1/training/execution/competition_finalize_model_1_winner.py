@@ -1,7 +1,7 @@
 """Extracted responsibility; original public entrypoint remains stable."""
 from __future__ import annotations
 
-from lithiumscope.core.candidate_evidence import eligible_rows
+from lithiumscope.core.scientific.candidate_evidence import eligible_rows
 
 
 def _finalize_model_1_winner(baseline, config, context, dataset_manifest, device, failed, manifest_path, preflight, prepared, results, rows, seed):

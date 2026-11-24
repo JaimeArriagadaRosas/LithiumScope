@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 
 from lithiumscope.model_2.methodology import ablations as a
-from lithiumscope.model_2.methodology.contracts import sample_contract
+from lithiumscope.model_2.methodology.validation.contracts import sample_contract
 
 
 @pytest.fixture

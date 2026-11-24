@@ -26,7 +26,7 @@ from lithiumscope.core.paths import (
 from lithiumscope.datasets.provisioner import inspect_required_datasets, provision_required_datasets
 from lithiumscope.datasets.status import DatasetStatus
 from lithiumscope.core.states import DatasetState
-from lithiumscope.core.visualization import configure_headless_matplotlib
+from lithiumscope.core.presentation.visualization import configure_headless_matplotlib
 from lithiumscope.runtime.console_status import LoadingBar
 from lithiumscope.runtime.dependencies import (
     CORE_DEPENDENCIES,

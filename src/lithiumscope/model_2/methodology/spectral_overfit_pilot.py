@@ -19,8 +19,8 @@ from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.model_2.evaluation.canonical_protocol import load_protocol, sha256
 from lithiumscope.model_2.evaluation.paired_uncertainty import bootstrap_paired_groups
 from lithiumscope.model_2.evaluation.spatial_distance_sensitivity import distances_km
-from lithiumscope.model_2.methodology.spectral_feature_policy import select_spectral_features
-from lithiumscope.model_2.methodology.spectral_overfit_inputs import build_augmentation_cache
+from lithiumscope.model_2.methodology.spectral.spectral_feature_policy import select_spectral_features
+from lithiumscope.model_2.methodology.spectral.spectral_overfit_inputs import build_augmentation_cache
 from lithiumscope.model_2.training.algorithms.random_forest import create_model
 
 ARMS = {

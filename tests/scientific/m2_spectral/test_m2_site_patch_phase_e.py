@@ -8,7 +8,7 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
 
-from lithiumscope.model_2.methodology.contracts import sample_contract
+from lithiumscope.model_2.methodology.validation.contracts import sample_contract
 from lithiumscope.model_2.methodology.site_patch_lab import (
     ARMS,
     aggregate_training_sites,

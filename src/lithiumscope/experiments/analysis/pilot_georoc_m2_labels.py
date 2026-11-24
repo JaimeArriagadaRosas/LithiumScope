@@ -16,7 +16,7 @@ import pandas as pd
 
 from lithiumscope.core.config import load_config
 from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR
-from lithiumscope.experiments.analysis.georoc_qc_protocols import protocol_masks
+from lithiumscope.experiments.analysis.protocols.georoc_qc_protocols import protocol_masks
 from lithiumscope.model_2.data.builder import _sentinel_config
 from lithiumscope.model_2.data.sample_source import _spatial_group
 from lithiumscope.tools.acquisition.sentinel2.provider import (

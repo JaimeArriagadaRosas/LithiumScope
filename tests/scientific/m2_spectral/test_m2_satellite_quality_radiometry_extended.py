@@ -9,12 +9,12 @@ import numpy as np
 
 import pytest
 
-from lithiumscope.model_2.methodology.satellite_quality import (
+from lithiumscope.model_2.methodology.spectral.satellite_quality import (
     ScientificScenePolicy, scene_metadata, analyze_arrays, choose_scene,
     inspect_scene, scene_day, SPECTRAL_BANDS
 )
 
-from lithiumscope.model_2.methodology.radiometric_features import (
+from lithiumscope.model_2.methodology.spectral.radiometric_features import (
     apply_radiometry, extract_valid_spectral_features, build_feature_variants,
 )
 
@@ -91,7 +91,7 @@ def test_local_manifest_inventory_is_exact_and_read_only(tmp_path):
 
 
 def test_site_decision_does_not_confuse_scl_class5_with_field_confirmation():
-    from lithiumscope.model_2.methodology.satellite_quality import analyze_arrays
+    from lithiumscope.model_2.methodology.spectral.satellite_quality import analyze_arrays
     arr=np.ones((6,32,32))
     scl=np.full((32,32),5.)
     result=analyze_arrays(arr,scl)

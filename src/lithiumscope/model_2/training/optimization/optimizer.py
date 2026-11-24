@@ -108,7 +108,9 @@ def optimize_classifier_with_optuna(
 
         for step, (train_idx, valid_idx, training_y, validation_y) in enumerate(prepared_splits):
             estimator = estimator_factory(params)
-            estimator.fit(_take_rows(x, train_idx), training_y)
+            from lithiumscope.resources.manager import estimator_thread_scope
+            with estimator_thread_scope():
+                estimator.fit(_take_rows(x, train_idx), training_y)
             score = roc_auc_score(
                 validation_y,
                 _score_vector(

@@ -29,8 +29,8 @@ from lithiumscope.model_2.methodology.ablations import (
     PARAMS, HISTORICAL_N, build_inputs, define_outer_fold, fit_classifier,
     score_metrics, bootstrap_group_delta
 )
-from lithiumscope.model_2.methodology.radiometric_features import build_feature_variants
-from lithiumscope.model_2.methodology.satellite_quality import scene_metadata
+from lithiumscope.model_2.methodology.spectral.radiometric_features import build_feature_variants
+from lithiumscope.model_2.methodology.spectral.satellite_quality import scene_metadata
 
 ROOT_CACHE="results/scientific_simulations/sentinel_methodology_20261112/inventory/stac_item_cache"
 BASELINE="results/scientific_simulations/m2_phase_c_20261112/pilot_8arms/oof_legacy_all.csv"

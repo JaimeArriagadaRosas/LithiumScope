@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from lithiumscope.core.candidate_evidence import eligible_rows
+from lithiumscope.core.scientific.candidate_evidence import eligible_rows
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -16,7 +16,7 @@ from lithiumscope.resources.detection.device import DeviceInfo
 from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.reproducibility import set_global_seed
 from lithiumscope.core.run_context import RunContext
-from lithiumscope.core.training_diagnostics import save_oof_diagnostics
+from lithiumscope.core.scientific.training_diagnostics import save_oof_diagnostics
 from lithiumscope.core.states import RunState
 from lithiumscope.datasets.manifest import build_tabular_manifest, write_manifest
 from lithiumscope.model_2.evaluation.baseline import evaluate_prior_baseline

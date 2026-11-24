@@ -13,7 +13,7 @@ import pandas as pd
 import pytest
 
 from lithiumscope.model_2.training import closure
-from lithiumscope.model_2.methodology.three_zone_ranking import ranking_evaluation
+from lithiumscope.model_2.methodology.evaluation.three_zone_ranking import ranking_evaluation
 
 
 def _pairwise_reference():
@@ -185,7 +185,7 @@ def test_candidate_inference_abstains_on_low_quality_image(tmp_path):
 def test_three_independent_valid_images_ranked_with_optional_model1_info(
     monkeypatch,tmp_path
 ):
-    from lithiumscope.model_2.methodology.three_zone_ranking import (
+    from lithiumscope.model_2.methodology.evaluation.three_zone_ranking import (
         rank_three_candidates
     )
     from lithiumscope.model_2.preparation.features.spectral import (
@@ -230,7 +230,7 @@ def test_three_independent_valid_images_ranked_with_optional_model1_info(
 
 
 def test_release_artifact_not_accepted_as_experimental_ranking(tmp_path):
-    from lithiumscope.model_2.methodology.three_zone_ranking import rank_three_candidates
+    from lithiumscope.model_2.methodology.evaluation.three_zone_ranking import rank_three_candidates
     with pytest.raises(ValueError,match="explicit experimental"):
         rank_three_candidates({"A":tmp_path/"a","B":tmp_path/"b","C":tmp_path/"c"},
                               bundle={})

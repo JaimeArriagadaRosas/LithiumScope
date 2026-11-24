@@ -4,7 +4,7 @@ from __future__ import annotations
 
 def _evaluate_algorithm_candidates(algorithms, context, device, failed, fixed_threshold, fold_ids, folds, frame, groups, inner_folds, lithium_column, manifest_path, optimization_cfg, q, quality_mask, results, rows, scientific_folds, seed, x, y):
     from lithiumscope.model_2.training.competition import _ranking_row, get_label, logger, pd, run_classification_cv, save_probability_histogram, save_roc_pr, save_spatial_score_map
-    from lithiumscope.core.candidate_evidence import record_evidence, verify_candidate
+    from lithiumscope.core.scientific.candidate_evidence import record_evidence, verify_candidate
     from lithiumscope.model_2.evaluation.metrics import validate_binary_inputs, reliability_table
     from lithiumscope.model_2.evaluation.oof_evidence import build_oof_table
     for index, algorithm in enumerate(algorithms, start=1):

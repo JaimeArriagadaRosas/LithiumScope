@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from lithiumscope.resources.detection.device import DeviceInfo
-from lithiumscope.resources.manager import cpu_worker_budget
+from lithiumscope.resources.manager import cpu_worker_budget, worker_limit
 
 
 def create_model(
@@ -33,6 +33,7 @@ def create_model(
         ),
     }
     defaults.update(params)
+    defaults["thread_count"]=worker_limit(defaults["thread_count"])
     return CatBoostClassifier(**defaults)
 
 

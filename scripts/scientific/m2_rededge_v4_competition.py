@@ -24,7 +24,7 @@ from sklearn.metrics import (
 from lithiumscope.core.device import detect_device
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import PROJECT_ROOT
-from lithiumscope.model_2.methodology.rededge_training import fit_frozen_model
+from lithiumscope.model_2.methodology.spectral.rededge_training import fit_frozen_model
 from lithiumscope.model_2.validation.quality import training_quality_mask
 from lithiumscope.model_2.validation.spatial import (
     make_scientific_folds,
@@ -135,7 +135,7 @@ def compare(cohort: int, *, root: Path = PROJECT_ROOT) -> pd.DataFrame:
         inventory_path=qpath,
         minimum_joint_valid=0.95,
     )
-    from lithiumscope.model_2.methodology.rededge_training import (
+    from lithiumscope.model_2.methodology.spectral.rededge_training import (
         combine_quality_masks,
     )
 

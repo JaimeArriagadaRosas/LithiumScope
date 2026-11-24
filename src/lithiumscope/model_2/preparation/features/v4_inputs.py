@@ -14,7 +14,7 @@ import pandas as pd
 
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import PROJECT_ROOT
-from lithiumscope.model_2.methodology.rededge_training import combine_quality_masks
+from lithiumscope.model_2.methodology.spectral.rededge_training import combine_quality_masks
 from lithiumscope.model_2.pipeline import load_model_2_training_frame
 
 

@@ -10,7 +10,7 @@ import json
 import numpy as np
 import pandas as pd
 
-from lithiumscope.model_2.methodology.three_zone_ranking import ranking_evaluation
+from lithiumscope.model_2.methodology.evaluation.three_zone_ranking import ranking_evaluation
 
 
 def save_three_zone_competition(

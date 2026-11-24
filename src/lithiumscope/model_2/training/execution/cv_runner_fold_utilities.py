@@ -125,5 +125,7 @@ def _fit_estimator(
         calibrated=True,
         calibration_cv=calibration_cv,
     )
-    estimator.fit(x_train, y_train)
+    from lithiumscope.resources.manager import estimator_thread_scope
+    with estimator_thread_scope():
+        estimator.fit(x_train, y_train)
     return estimator

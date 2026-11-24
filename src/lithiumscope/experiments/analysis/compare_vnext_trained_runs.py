@@ -214,7 +214,7 @@ def pair_shared_m1(
     return paired, meta
 
 
-from lithiumscope.experiments.analysis.compare_vnext_trained_runs_compare_m1 import compare_m1
+from lithiumscope.experiments.analysis.comparison.compare_vnext_trained_runs_compare_m1 import compare_m1
 
 
 def load_m2_oof(run: Path, algorithm: str) -> pd.DataFrame:
@@ -259,7 +259,7 @@ def check_m2_identical_protocol(
             raise ValueError("M2 OOF row-to-fold labels are inconsistent")
 
 
-from lithiumscope.experiments.analysis.compare_vnext_trained_runs_compare_m2 import compare_m2
+from lithiumscope.experiments.analysis.comparison.compare_vnext_trained_runs_compare_m2 import compare_m2
 
 
 def run(root: Path = PROJECT_ROOT, output: Path = OUTPUT) -> dict:

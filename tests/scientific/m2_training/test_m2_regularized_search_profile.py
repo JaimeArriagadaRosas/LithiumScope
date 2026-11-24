@@ -82,7 +82,7 @@ def test_unknown_profile_fails_without_tuning():
 
 
 def test_legacy_size_exceptions_have_been_retired():
-    root = Path(__file__).resolve().parents[2]
+    root = Path(__file__).resolve().parents[3]
     assert json.loads(
         (root / "config/code_size_legacy_exceptions.json").read_text(
             encoding="utf-8"

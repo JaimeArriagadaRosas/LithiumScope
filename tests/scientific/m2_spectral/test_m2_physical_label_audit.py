@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
 
-from lithiumscope.model_2.methodology.contracts import sample_contract
+from lithiumscope.model_2.methodology.validation.contracts import sample_contract
 from lithiumscope.model_2.methodology.physical_label_audit import (
     conflicting_site_dossier, georoc_links, historical_links, patch_quality,
     safe_sample_id,

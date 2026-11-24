@@ -5,7 +5,9 @@ from sklearn.svm import SVR
 
 def create_model(**params):
     defaults = {"kernel": "rbf", "C": 10.0, "epsilon": 0.1, "gamma": "scale"}
+    from lithiumscope.resources.manager import svm_cache_limit
     defaults.update(params)
+    defaults['cache_size']=svm_cache_limit(defaults.get('cache_size',200.))
     return SVR(**defaults)
 
 

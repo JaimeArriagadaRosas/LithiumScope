@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.core.candidate_evidence import eligible_rows, record_evidence, verify_candidate
+from lithiumscope.core.scientific.candidate_evidence import eligible_rows, record_evidence, verify_candidate
 from lithiumscope.core.scientific_checks import assert_partition_coverage
 from lithiumscope.model_2.evaluation.oof_evidence import build_oof_table
 

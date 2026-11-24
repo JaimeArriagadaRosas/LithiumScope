@@ -11,7 +11,7 @@ from sklearn.model_selection import GroupKFold
 
 from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR
 from lithiumscope.core.config import load_config
-from lithiumscope.experiments.analysis.georoc_qc_protocols import protocol_masks
+from lithiumscope.experiments.analysis.protocols.georoc_qc_protocols import protocol_masks
 from lithiumscope.experiments.analysis.run_vnext_m1 import (
     _frame, _metrics, quality_candidate_frames,
 )

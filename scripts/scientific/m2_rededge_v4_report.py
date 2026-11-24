@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import roc_auc_score, average_precision_score, brier_score_loss
 
-from lithiumscope.model_2.methodology.three_zone_ranking import ranking_evaluation
+from lithiumscope.model_2.methodology.evaluation.three_zone_ranking import ranking_evaluation
 
 
 def _m(y, p):

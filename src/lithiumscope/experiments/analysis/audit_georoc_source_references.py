@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR
-from lithiumscope.experiments.analysis.georoc_qc_protocols import protocol_masks
+from lithiumscope.experiments.analysis.protocols.georoc_qc_protocols import protocol_masks
 from lithiumscope.experiments.analysis.pilot_georoc_m2_labels import _stable_sample_id
 
 OUT = RESULTS_DIR/"scientific_simulations"/"vnext_20261106"/"georoc_source_validation"

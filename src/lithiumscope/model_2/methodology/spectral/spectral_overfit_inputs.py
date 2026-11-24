@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from lithiumscope.model_2.evaluation.canonical_protocol import sha256
-from lithiumscope.model_2.methodology.spectral_augmentation import (
+from lithiumscope.model_2.methodology.spectral.spectral_augmentation import (
     augmented_feature_record,
 )
 

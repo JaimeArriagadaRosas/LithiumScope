@@ -24,7 +24,7 @@ import numpy as np
 import pandas as pd
 
 from lithiumscope.core.paths import PROJECT_ROOT
-from lithiumscope.model_2.methodology.contracts import sample_contract
+from lithiumscope.model_2.methodology.validation.contracts import sample_contract
 
 EXPECTED_TRAINING_MANIFEST_SHA="764d9ab4d9f548e96f39b9a4bc843c7cb903fabdbbd0a982aa78027cc045e623"
 MANIFEST_REL="data/processed/model_2/vnext_expanded/training_manifest.csv"
@@ -106,7 +106,7 @@ def historical_links(m:pd.DataFrame, raw:pd.DataFrame)->pd.DataFrame:
         raise AssertionError("Historical linkage lost sample identity")
     return result
 
-from lithiumscope.model_2.methodology.physical_label_audit_georoc_links import georoc_links
+from lithiumscope.model_2.methodology.provenance.physical_label_audit_georoc_links import georoc_links
 
 def patch_quality(row:pd.Series)->dict:
     """Read saved bands and metadata; do not infer rock exposure from NDVI/SCL."""
@@ -211,7 +211,7 @@ def conflicting_site_dossier(contract:pd.DataFrame, samples:pd.DataFrame)->pd.Da
     ).reset_index(drop=True)
 
 
-from lithiumscope.model_2.methodology.physical_label_audit_run import run
+from lithiumscope.model_2.methodology.provenance.physical_label_audit_run import run
 
 def scientific_readiness_gate(summary:dict)->dict:
     """Reject only scientific certification; never rewrite or purge samples."""

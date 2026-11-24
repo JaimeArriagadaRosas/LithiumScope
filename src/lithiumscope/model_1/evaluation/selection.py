@@ -25,7 +25,7 @@ def baseline_eligibility(ranking, *, preflight_ok, minimum_gain=0.0):
     result["scientific_candidate_eligible"]=False
     result["release_eligible"]=False
     result["scientific_candidate_reason"]="reference_or_failed"
-    from lithiumscope.core.candidate_evidence import eligible_rows
+    from lithiumscope.core.scientific.candidate_evidence import eligible_rows
     valid=eligible_rows(result)&~result.is_baseline.eq(True)  # noqa: E712
     for idx in result.index[valid]:
         gain=result.at[idx,"rmse_gain_over_best_baseline"]

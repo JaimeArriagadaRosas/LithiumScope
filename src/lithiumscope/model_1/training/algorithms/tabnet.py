@@ -29,7 +29,8 @@ def _log_warnings(records) -> None:
 def _fit_quietly(model, *args, **kwargs) -> str:
     """Capture library chatter without hiding Python exceptions."""
     output = StringIO()
-    with redirect_stdout(output), redirect_stderr(output):
+    from lithiumscope.resources.manager import estimator_thread_scope
+    with estimator_thread_scope(), redirect_stdout(output), redirect_stderr(output):
         model.fit(*args, **kwargs)
     captured = output.getvalue().strip()
     if captured:

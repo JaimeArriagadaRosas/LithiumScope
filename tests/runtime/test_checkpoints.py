@@ -108,7 +108,7 @@ def test_historical_checkpoint_readonly_not_resumable(tmp_path):
 
 def test_evaluation_identity_changes_with_order_targets_policy_and_groups(tmp_path):
     import pandas as pd
-    from lithiumscope.core.checkpoint_identity import evaluation_identity
+    from lithiumscope.core.scientific.checkpoint_identity import evaluation_identity
     x=pd.DataFrame({"a":[1.,2.,3.,4.],"cat":["a","b","a","b"]})
     y=pd.Series([1.,2.,3.,4.])
     groups=pd.Series(["a","a","b","b"])

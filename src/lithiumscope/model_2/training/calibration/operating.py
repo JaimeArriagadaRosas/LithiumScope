@@ -12,7 +12,7 @@ from sklearn.model_selection import GroupKFold
 
 from lithiumscope.core.scientific_checks import assert_partition_coverage, assert_group_isolation
 from lithiumscope.model_2.evaluation.metrics import validate_binary_inputs, classification_metrics
-from lithiumscope.model_2.methodology.decision import freeze_inner_oof_threshold
+from lithiumscope.model_2.methodology.evaluation.decision import freeze_inner_oof_threshold
 
 
 def learn_operating_policy(x, y, groups, *, fit, row_indices, reserved_indices,

@@ -5,12 +5,12 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.model_2.methodology.independence_gate import (
+from lithiumscope.model_2.methodology.validation.independence_gate import (
     audit_external_overlap,
     pairwise_distances_km,
     release_gate,
 )
-from lithiumscope.model_2.methodology.spectral_feature_policy import (
+from lithiumscope.model_2.methodology.spectral.spectral_feature_policy import (
     BANDS, STATS, select_spectral_features,
 )
 from lithiumscope.experiments.analysis.m2_generalization_pilot import (

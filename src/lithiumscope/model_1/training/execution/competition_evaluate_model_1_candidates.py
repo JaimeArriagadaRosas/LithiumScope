@@ -4,7 +4,7 @@ from __future__ import annotations
 
 def _evaluate_model_1_candidates(config, context, device, experiments, failed, prepared, results, rows):
     from lithiumscope.model_1.training.competition import _ranking_row, get_algorithm, logger, run_nested_cv
-    from lithiumscope.core.candidate_evidence import record_evidence, verify_candidate
+    from lithiumscope.core.scientific.candidate_evidence import record_evidence, verify_candidate
     from lithiumscope.model_1.evaluation.artifacts import save_algorithm_tables, save_algorithm_figures
     for index, (
         variant_id,

@@ -5,11 +5,14 @@ def create_model(random_seed: int = 42, **params):
     defaults = {
         "learning_rate": 0.06,
         "max_iter": 350,
+        "early_stopping": False,
         "max_leaf_nodes": 31,
         "l2_regularization": 0.1,
         "random_state": random_seed,
     }
     defaults.update(params)
+    if defaults['early_stopping'] is not False:
+        raise ValueError('HGB canonical training forbids random internal early stopping')
     return HistGradientBoostingClassifier(**defaults)
 
 

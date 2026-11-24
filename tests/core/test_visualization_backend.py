@@ -1,7 +1,7 @@
 import gc
 import threading
 
-from lithiumscope.core.visualization import (
+from lithiumscope.core.presentation.visualization import (
     configure_headless_matplotlib,
     current_backend,
 )

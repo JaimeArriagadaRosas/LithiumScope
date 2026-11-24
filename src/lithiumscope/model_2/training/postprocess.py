@@ -20,7 +20,7 @@ from sklearn.metrics import (
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.model_2.methodology.ablations import bootstrap_group_delta
-from lithiumscope.model_2.methodology.three_zone_ranking import ranking_evaluation
+from lithiumscope.model_2.methodology.evaluation.three_zone_ranking import ranking_evaluation
 from lithiumscope.model_2.evaluation.ranking import save_three_zone_competition
 
 OLD_OOF=("results/model_2/runs/training_20261112_112450_m0300/"

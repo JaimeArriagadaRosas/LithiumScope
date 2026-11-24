@@ -8,7 +8,7 @@ import math
 import numpy as np
 
 from lithiumscope.core.checkpoints import _atomic_json_write
-from lithiumscope.core.checkpoint_identity import evaluation_identity
+from lithiumscope.core.scientific.checkpoint_identity import evaluation_identity
 
 POLICY = "bounded_attempts_v1"
 TERMINAL = {"COMPLETE", "PRUNED", "FAIL"}

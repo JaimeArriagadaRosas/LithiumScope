@@ -30,7 +30,7 @@ from lithiumscope.model_2.methodology.ablations import (
 from lithiumscope.model_2.methodology.site_patch_lab import (
     validate_inputs, finite_quality_filter
 )
-from lithiumscope.model_2.methodology.three_zone_ranking import ranking_evaluation
+from lithiumscope.model_2.methodology.evaluation.three_zone_ranking import ranking_evaluation
 from lithiumscope.model_2.training.closure_report import write_closure_report
 
 LIFECYCLE="experimental_not_for_individual_release"

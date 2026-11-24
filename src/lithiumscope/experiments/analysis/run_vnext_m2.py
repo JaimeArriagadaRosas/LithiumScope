@@ -132,7 +132,7 @@ def make_augmentation_table(
     return table
 
 
-from lithiumscope.experiments.analysis.run_vnext_m2_run_experiments import run_experiments
+from lithiumscope.experiments.analysis.protocols.run_vnext_m2_run_experiments import run_experiments
 
 
 if __name__=="__main__":

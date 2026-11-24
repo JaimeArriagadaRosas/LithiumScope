@@ -191,7 +191,7 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Diagnóstico de origen: **Estado: Correcto retrospectivamente, con cobertura experimental insuficiente. Prioridad: Alta. Decisión: Conservar los diagnósticos y extenderlos a todos los candidatos.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
 - Componentes / corrección detallada / tests: model_1/evaluation/high_lithium.py; artifacts.py; audit_m1_high_lithium.py; test_high_lithium_diagnostics.py.
-- Implementación / evidencia: 27240 predicciones históricas verificadas; Q75 de TRAIN reconstruido, 60 matrices por fold y 12 agregadas, sesgo y error por fuente/estrato. TabNet sensibilidad histórica 29,4% en 3420 muestras. Falta curvas de aprendizaje y diagnósticos TRAIN/TEST comparables para todos los nuevos candidatos.
+- Implementación / evidencia: 27240 predicciones históricas verificadas; Q75 de TRAIN reconstruido, 60 matrices por fold y 12 agregadas, sesgo y error por fuente/estrato. TabNet sensibilidad histórica 29,4% en 3420 muestras. Curvas históricas SVM/RF auditadas sin fit; protocolo común con TEST fijo y grupos anidados, preflight real de 50 particiones válidas por modelo (results/diagnostics/grouped_learning_curve_preflight); falta ejecutar curvas predictivas y diagnósticos TRAIN/TEST comparables para todos los nuevos candidatos.
 - Estado: parcialmente verificado.
 
 ## M1-25 — Step 25 Release — Diagnóstico de las concentraciones extremas

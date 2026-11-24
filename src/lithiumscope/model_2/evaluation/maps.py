@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from lithiumscope.core.visualization import configure_headless_matplotlib
+from lithiumscope.core.presentation.visualization import configure_headless_matplotlib
 
 configure_headless_matplotlib()
 
