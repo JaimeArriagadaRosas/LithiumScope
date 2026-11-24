@@ -14,9 +14,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 801.
 - Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Alta. Decisión: Conservar la infraestructura y ampliar el diagnóstico de datos.**
 - Criterio de aceptación (extracto): El criterio de aceptación será poder explicar con evidencia la composición del conjunto final y sus diferencias respecto de la memoria; si el original sigue indisponible, no se afirmará una réplica exacta.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: model_1/eda, core/pipeline_audit.py, core/scientific/eda_statistics.py, results/eda_artifacts.py; test_integral_eda.py.
+- Implementación / evidencia: EDA descriptivo comparte preparación, perfiles por fuente, etapas y exclusiones, firmas y verificación de artefactos. Falta EDA de desarrollo por folds, censura/unidades y auditoría real.
+- Estado: parcialmente verificado.
 
 ## M1-03 — Step 03 Histórico ↔ Step 04 Release — Diagnóstico de la limpieza de límites de detección
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 807.
@@ -294,9 +294,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 481.
 - Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Media. Decisión: Ampliar el análisis de reflectancia y calidad.**
 - Criterio de aceptación (extracto): El criterio de aceptación será reproducir los valores de referencia cuando los datos sean válidos y distinguir los resúmenes fiables de los que procedan de información incompleta.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: model_2/eda, core/scientific/eda_statistics.py, results/eda_artifacts.py; test_integral_eda.py.
+- Implementación / evidencia: Perfiles descriptivos de características, correlaciones, Li y escenas; falta QA por píxel, máscara, análisis de imputación y métricas de desarrollo.
+- Estado: parcialmente verificado.
 
 ## M2-11 — Step 11 Release — Diagnóstico de la extracción de textura
 - Origen: 04. Diagnostico M2 Release.md, línea 487.

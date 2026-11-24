@@ -1,0 +1,1 @@
+"""Descriptive spectral EDA."""
