@@ -15,11 +15,9 @@ from lithiumscope.model_1.prediction.predictor import (
 )
 from lithiumscope.persistence.active_models import (
     active_model_path,
-    set_active_model,
 )
 from lithiumscope.persistence.candidates import (
     latest_pending_candidate,
-    update_candidate_status,
 )
 from lithiumscope.prediction.analysis import (
     ensure_case_ids,
@@ -164,62 +162,22 @@ def _record_decision(
     evaluation_id: str,
     promote_if_better: bool,
 ) -> dict:
-    promoted = bool(
-        passed
-        and promote_if_better
-    )
-    if promoted:
-        set_active_model(
-            model_group,
-            candidate_path,
-            source={
-                "type": (
-                    "candidate_evaluation"
-                ),
-                "evaluation_id": (
-                    evaluation_id
-                ),
-            },
-        )
-
-    status = (
-        "promoted"
-        if promoted
-        else "accepted_not_promoted"
-        if passed
-        else "rejected"
-    )
-    decision = {
-        "status": status,
-        "passed_gate": passed,
-        "promoted": promoted,
-        "reasons": reasons,
-        "active": _identity(
-            active_path
-        ),
-        "candidate": _identity(
-            candidate_path
-        ),
-        "active_external_metrics": (
-            active_metrics
-        ),
-        "candidate_external_metrics": (
-            candidate_metrics
-        ),
+    # The known demonstration set is not independent validation.
+    # Preserve the pending candidate and the active model, regardless of metrics.
+    return {
+        "status": "comparison_only",
+        "passed_gate": False,
+        "demo_metrics_passed": bool(passed),
+        "promoted": False,
+        "promotion_requested": bool(promote_if_better),
+        "reasons": [*reasons, "independent_holdout_required"],
+        "evaluation_id": evaluation_id,
+        "model_group": model_group,
+        "active": _identity(active_path),
+        "candidate": _identity(candidate_path),
+        "active_external_metrics": active_metrics,
+        "candidate_external_metrics": candidate_metrics,
     }
-    update_candidate_status(
-        candidate_path,
-        status=(
-            "promoted"
-            if promoted
-            else "accepted"
-            if passed
-            else "rejected"
-        ),
-        evaluation_id=evaluation_id,
-        details=decision,
-    )
-    return decision
 
 
 from lithiumscope.prediction.candidates.evaluator_evaluate_pending_candidates import evaluate_pending_candidates

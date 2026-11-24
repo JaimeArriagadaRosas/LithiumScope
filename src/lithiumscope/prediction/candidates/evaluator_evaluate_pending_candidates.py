@@ -8,9 +8,12 @@ if TYPE_CHECKING:
 
 def evaluate_pending_candidates(
     *,
-    promote_if_better: bool = True,
+    promote_if_better: bool = False,
 ) -> CandidateEvaluationResult:
+    if promote_if_better:
+        raise ValueError("Promotion requires an independent holdout; demonstration is comparison only.")
     from lithiumscope.prediction.candidates.evaluator import CandidateEvaluationResult, RESULTS_DIR, _evaluation_targets, _record_decision, _timestamp_with_offset, audit_demo_overlap, demonstration_imagery_cache, ensure_case_ids, joblib, json, load_config, load_demonstration_cases, model_1_external_metrics, model_1_gate, model_2_external_metrics, model_2_gate, predict_model_1_frame, prepare_case_images, score_model_2_cases
+    from lithiumscope.prediction.candidates.gates import comparable_cases
     evaluation_id = (
         "candidate_evaluation_"
         + _timestamp_with_offset()
@@ -89,6 +92,9 @@ def evaluate_pending_candidates(
             active_metrics,
             candidate_metrics,
         )
+        if not comparable_cases(active_predictions, candidate_predictions, cases, prediction_column="Li_icpms_predicted"):
+            passed = False
+            reasons.append("non_comparable_case_coverage")
         group_dir = root / "model_1"
         group_dir.mkdir(
             parents=True,
@@ -206,6 +212,9 @@ def evaluate_pending_candidates(
                 <= 1e-12
             ),
         )
+        if not comparable_cases(active_predictions, candidate_predictions, cases, prediction_column="prospectivity_score"):
+            passed = False
+            reasons.append("non_comparable_case_coverage")
         group_dir = root / "model_2"
         group_dir.mkdir(
             parents=True,
@@ -241,9 +250,10 @@ def evaluate_pending_candidates(
         "schema_version": 1,
         "evaluation_id": evaluation_id,
         "role": (
-            "known_external_acceptance_set; "
-            "not a blind validation after model changes"
+            "known_demonstration; comparison_only; "
+            "not independent validation"
         ),
+        "promotion_allowed": False,
         "overlap_audit": overlap,
         "decisions": decisions,
     }

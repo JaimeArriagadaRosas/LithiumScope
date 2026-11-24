@@ -9,7 +9,7 @@ def main(argv: list[str] | None = None) -> int:
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("bundle", help="Prepare a local release bundle; does not publish")
     commands.add_parser("evaluate", help="Evaluate candidates without promotion")
-    promote = commands.add_parser("promote", help="Evaluate and promote only if scientific gates pass")
+    promote = commands.add_parser("promote", help="Blocked until independent holdout validation is available")
     promote.add_argument("--confirm", action="store_true", required=True)
     args = parser.parse_args(argv)
     if args.command == "bundle":
@@ -20,7 +20,10 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     from lithiumscope.prediction.candidate_evaluation import evaluate_pending_candidates
 
-    result = evaluate_pending_candidates(promote_if_better=args.command == "promote")
+    if args.command == "promote":
+        print("Promoción bloqueada: se requiere un holdout independiente.")
+        return 2
+    result = evaluate_pending_candidates(promote_if_better=False)
     print(f"Evaluación: {result.evaluation_id}\nManifest: {result.manifest_path}")
     for group, decision in result.decisions.items():
         print(f"{group}: {decision.get('status', 'N/D')}")

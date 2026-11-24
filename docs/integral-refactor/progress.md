@@ -104,3 +104,6 @@
 ## Preboot y dependencias por operacion
 - Arranque con dependencias core, sin exigir ni instalar extras opcionales; no se eliminan .gitkeep. M2 no requiere torch/TabNet. Arranque interactivo real main.py, ENTER y 0, exit 0, sin advertencias ni errores, con GTX1650 detectada y XGBoost CUDA comprobado. M1 aun requiere instalar torch/TabNet para competencia completa; adquisicion nueva requiere pystac-client. Log results/diagnostics/interactive_startup_smoke.log.
 - Regresion 66 aprobadas, 1 omitida (20261124T210530Z_6d2492b413044a1380ac0fc45ea30e95). No se realizaron instalaciones de extras ni push.
+
+## Separacion de demostracion y promocion
+- La evaluacion de los diez casos conocidos es exclusivamente comparativa; no cambia candidato pendiente ni modelo activo. API y CLI bloquean promocion sin holdout independiente. Comparacion requiere mismos casos, etiquetas y predicciones finitas; los gates rechazan metricas invalidas. No se activo ni entreno ningun modelo.
