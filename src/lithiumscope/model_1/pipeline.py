@@ -51,7 +51,10 @@ def prepare_training_data(path: Path, model_family: str = "common") -> PreparedM
     raw_frame = frame.copy()
     audit.capture("01_load_data", frame)
 
-    frame = clean_detection_limits(frame)
+    censoring = []
+    version = int(data_cfg.get("preparation_version", 2))
+    frame = clean_detection_limits(frame, version=version, evidence=censoring)
+    audit.censoring = censoring
     audit.capture("02_detection_limits", frame)
 
     frame = normalize_missing_values(frame)
@@ -104,7 +107,7 @@ def prepare_training_data(path: Path, model_family: str = "common") -> PreparedM
 
     frame = clean_categories(
         frame,
-        model_family="common",
+        model_family="common", version=version,
     )
     audit.capture(
         "07_category_cleaning",
@@ -118,7 +121,7 @@ def prepare_training_data(path: Path, model_family: str = "common") -> PreparedM
     coordinate_report = spatial_coordinate_diagnostics(
         frame
     )
-    schema = select_feature_schema(frame, include_age=include_age)
+    schema = select_feature_schema(frame, include_age=include_age, preparation_version=version)
     validate_training_schema(target, schema.numeric, schema.categorical)
 
     for column in schema.numeric:
@@ -183,10 +186,11 @@ def prepare_training_data(path: Path, model_family: str = "common") -> PreparedM
 
 
 def prepare_prediction_data(frame: pd.DataFrame, model_family: str, schema: FeatureSchema) -> pd.DataFrame:
-    result = clean_detection_limits(frame)
+    version = getattr(schema, "preparation_version", 1)
+    result = clean_detection_limits(frame, version=version)
     result = normalize_missing_values(result)
     result = canonicalize_coordinates(result)
-    result = clean_categories(result, model_family="common")
+    result = clean_categories(result, model_family="common", version=version)
     result = add_geochemical_features(result)
 
     missing = [

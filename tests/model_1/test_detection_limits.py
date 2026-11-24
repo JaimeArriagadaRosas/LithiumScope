@@ -5,7 +5,7 @@ from lithiumscope.model_1.steps.step_02_detection_limits import clean_detection_
 
 def test_detection_limits_follow_source_rules():
     frame = pd.DataFrame({"x": ["<10", ">100", "7.5", None]})
-    result = clean_detection_limits(frame)
+    result = clean_detection_limits(frame, version=1)
 
     assert result.loc[0, "x"] == 5.0
     assert result.loc[1, "x"] == 100.0
@@ -14,7 +14,7 @@ def test_detection_limits_follow_source_rules():
 
 def test_detection_limit_cleaner_only_trims_real_whitespace():
     frame = pd.DataFrame({"x": ["  text  ", "text", "< 2"]})
-    result = clean_detection_limits(frame)
+    result = clean_detection_limits(frame, version=1)
 
     assert result.loc[0, "x"] == "text"
     assert result.loc[1, "x"] == "text"

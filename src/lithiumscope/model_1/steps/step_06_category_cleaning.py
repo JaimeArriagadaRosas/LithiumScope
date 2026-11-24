@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import pandas as pd
 
 from lithiumscope.core.logging.session import get_logger
@@ -72,14 +73,33 @@ def _normalize(value) -> str:
     return value if value else "unknown"
 
 
-def _group_by_rules(value: str, rules) -> str:
+def _group_by_rules(value: str, rules, version: int = 2) -> str:
+    if version == 1:
+        for needles, label in rules:
+            if any(needle in value for needle in needles):
+                return label
+        return "other"
+    if value in {"unknown", "n/a", "na", "none", "not reported"}:
+        return "unknown"
+    value = value.replace("_", " ")
     for needles, label in rules:
-        if any(needle in value for needle in needles):
-            return label
+        for needle in needles:
+            if needle in {"gl", "wr", "fm"}:
+                match = value == needle
+            elif needle in {"ignim", "pyro", "intrus", "brecc", "amphib", "metam", "porphyr", "sediment", "granodior", "monzon", "tonalit", "tomalit"}:
+                match = re.search(r"\b" + re.escape(needle) + r"\w*\b", value)
+            else:
+                match = re.search(r"\b" + re.escape(needle) + r"\b", value)
+            if match:
+                return label
+    if value in {"trachyandesite", "trachybasalt", "rhyodacite", "shoshonite", "latite"} and rules == ROCK_RULES_GENERAL:
+        return "volcanic"
     return "other"
 
 
-def clean_categories(frame: pd.DataFrame, model_family: str) -> pd.DataFrame:
+def clean_categories(frame: pd.DataFrame, model_family: str, *, version: int = 2) -> pd.DataFrame:
+    if version not in {1, 2}:
+        raise ValueError("Unknown category rules version")
     result = frame.copy()
     for column in CATEGORY_CANDIDATES:
         if column in result.columns:
@@ -94,7 +114,7 @@ def clean_categories(frame: pd.DataFrame, model_family: str) -> pd.DataFrame:
         result["Rock_type"] = result["Rock_type"].map(
             lambda value: _group_by_rules(
                 value,
-                ROCK_RULES_GENERAL,
+                ROCK_RULES_GENERAL, version,
             )
         )
 
@@ -102,7 +122,7 @@ def clean_categories(frame: pd.DataFrame, model_family: str) -> pd.DataFrame:
         result["Sample_type"] = result["Sample_type"].map(
             lambda value: _group_by_rules(
                 value,
-                SAMPLE_RULES_GENERAL,
+                SAMPLE_RULES_GENERAL, version,
             )
         )
 

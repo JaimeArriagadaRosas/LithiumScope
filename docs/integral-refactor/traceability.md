@@ -22,9 +22,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 807.
 - Diagnóstico de origen: **Estado: Defecto confirmado de cobertura. Prioridad: Alta. Decisión: Corregir la interpretación de mediciones censuradas.**
 - Criterio de aceptación (extracto): El criterio de aceptación será interpretar correctamente cada formato admitido, no modificar categorías por error y cuantificar los registros reales afectados antes de decidir si corresponde reconstruir datos o repetir el entrenamiento.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: step_02_detection_limits.py; EDA censoring.csv; test_censoring_contract.py
+- Implementación / evidencia: Version 2 analiza solo columnas analiticas, notacion cientifica y decimal, censura sin limite y evidencia por fila; version 1 preservada para inferencia historica. 27 pruebas aprobadas. Falta auditoria por fuente sobre datos reales.
+- Estado: parcialmente verificado.
 
 ## M1-04 — Step 04 Histórico ↔ Step 05 Release — Diagnóstico del tratamiento de datos faltantes
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 813.
@@ -54,9 +54,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 831.
 - Diagnóstico de origen: **Estado: Defecto confirmado de correspondencia semántica. Prioridad: Alta. Decisión: Corregir el clasificador de categorías y conservar las reglas comunes.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: step_06_category_cleaning.py; test_censoring_contract.py
+- Implementación / evidencia: Abreviaturas exactas, limites de palabra, desconocidos separados de no mapeados, version de preparacion. 27 pruebas aprobadas. Falta validar vocabulario con experto y ablacion.
+- Estado: parcialmente verificado.
 
 ## M1-08 — Step 08 Histórico ↔ Step 11 Release — Diagnóstico de la selección de variables predictoras
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 837.
@@ -262,9 +262,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 457.
 - Diagnóstico de origen: **Estado: Defecto confirmado. Prioridad: Alta. Decisión: Reconstruir la validación y reconciliación del manifiesto.**
 - Criterio de aceptación (extracto): El criterio de aceptación será que el manifiesto represente exactamente el conjunto aprobado y pueda recuperarse sin mezclar entradas obsoletas.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: scripts/import_historical_data.py; datasets/validation/paths.py; test_historical_relocation.py
+- Implementación / evidencia: 706 filas congeladas, 1425 archivos verificados, registro de rutas local. Falta contrato completo de nuevos manifiestos y adquisicion.
+- Estado: parcialmente verificado.
 
 ## M2-07 — Step 07 Release — Diagnóstico de la carga de imágenes
 - Origen: 04. Diagnostico M2 Release.md, línea 463.
@@ -326,9 +326,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 505.
 - Diagnóstico de origen: **Estado: Defecto confirmado de integridad. Prioridad: Alta. Decisión: Fortalecer la firma y reutilización de características.**
 - Criterio de aceptación (extracto): El criterio de aceptación será recuperar resultados intactos cuando la firma coincida y regenerar o rechazar cualquier caché incompatible, documentando el motivo y evitando reejecuciones innecesarias.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: data/feature_cache.py; pipeline.py; test_verified_feature_cache.py
+- Implementación / evidencia: Firma de contenido, IDs, hashes, columnas, orden de etiqueta/grupo; escritura con manifiesto publicado al final. 29 aprobadas, 1 omitida. Verificacion real de 170 caracteristicas. Falta concurrencia e interrupcion.
+- Estado: parcialmente verificado.
 
 ## M2-15 — Step 15 Release — Diagnóstico de la generación de etiquetas de clasificación
 - Origen: 04. Diagnostico M2 Release.md, línea 511.

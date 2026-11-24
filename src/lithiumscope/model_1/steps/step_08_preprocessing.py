@@ -33,9 +33,10 @@ AGE_CANDIDATES = ["Age (Ma)", "Age (ma)", "Age", "age_ma"]
 class FeatureSchema:
     numeric: list[str]
     categorical: list[str]
+    preparation_version: int = 1
 
 
-def select_feature_schema(frame: pd.DataFrame, include_age: bool = True) -> FeatureSchema:
+def select_feature_schema(frame: pd.DataFrame, include_age: bool = True, *, preparation_version: int = 2) -> FeatureSchema:
     numeric: list[str] = []
     for candidate in OXIDES + TRACE_ELEMENTS + SPATIAL_CANDIDATES + DERIVED:
         if candidate in frame.columns and candidate not in numeric:
@@ -47,7 +48,7 @@ def select_feature_schema(frame: pd.DataFrame, include_age: bool = True) -> Feat
                 break
     categorical = [column for column in CATEGORICAL if column in frame.columns]
     logger.info("Feature schema: %d numeric + %d categorical", len(numeric), len(categorical))
-    return FeatureSchema(numeric=numeric, categorical=categorical)
+    return FeatureSchema(numeric=numeric, categorical=categorical, preparation_version=preparation_version)
 
 
 def build_preprocessor(schema: FeatureSchema, model_family: str) -> ColumnTransformer:

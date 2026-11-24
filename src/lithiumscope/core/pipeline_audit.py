@@ -15,6 +15,7 @@ class PipelineAudit:
     records: list[dict] = field(default_factory=list)
     source_records: list[dict] = field(default_factory=list)
     exclusions: list[dict] = field(default_factory=list)
+    censoring: list[dict] = field(default_factory=list)
     _previous: dict = field(default_factory=dict, repr=False)
 
     def capture(self, stage: str, frame: pd.DataFrame, note: str = "") -> None:

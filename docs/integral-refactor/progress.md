@@ -57,3 +57,7 @@
 - 1425 archivos copiados y verificados; 706 parches originales, manifiesto congelado intacto, matriz v4 y QA, fuentes M1. Evidencia: results/diagnostics/historical_import.json. No se copiaron modelos ni se escribio en el clon anterior.
 - Cache por contenido y matriz SHA256; IDs, orden de etiquetas y grupos, esquema, imagenes, configuracion y codigo. Regresion 29 passed, 1 skipped (20261124T203905Z_bb6c4422eea24df5be215a1a5955cc73). Verificacion real 706 x 172 (170 predictores), 690 elegibles QA seis bandas. Pendiente identidad red-edge original y pruebas de concurrencia/interrupcion.
 - Restriccion expresa: commits solo locales, no push ni workflows remotos.
+
+## Preparacion M1 versionada
+- Censura analitica v2 y categorias semanticas v2, conservando version 1 para esquemas historicos. EDA incluye censura por observacion y categorias antes/despues. 27 pruebas aprobadas (20261124T203956Z_cee575ed0ecf4797a2305d83d479379c).
+- Pendiente validar convenciones decimales y politica de ceros por fuente; no se afirma superioridad ni equivalencia metrica.

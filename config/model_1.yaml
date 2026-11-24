@@ -27,6 +27,7 @@ data_sources:
     iron_total_mode: feot_equivalent
 
 data:
+  preparation_version: 2
   target_candidates:
     - Li_icpms
   quality_column_candidates:

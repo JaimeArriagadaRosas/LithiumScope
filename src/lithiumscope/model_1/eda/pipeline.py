@@ -39,7 +39,10 @@ def run_eda(path: Path, *, output_root: Path | None = None) -> Path:
         pd.DataFrame(prepared.audit.source_records).to_csv(tables / "stage_sources.csv", index=False)
         pd.DataFrame(prepared.audit.exclusions, columns=["stage", "row_index", "source", "sample_id"]).to_csv(
             tables / "stage_exclusions.csv", index=False)
-        category_frequencies(prepared.frame, prepared.schema.categorical).to_csv(
+        pd.DataFrame(prepared.audit.censoring, columns=["row_index", "source", "column", "original", "censor_type", "limit", "substituted"]).to_csv(tables / "censoring.csv", index=False)
+        categories = pd.concat([category_frequencies(prepared.raw_frame, prepared.schema.categorical).assign(stage="raw"),
+                                category_frequencies(prepared.frame, prepared.schema.categorical).assign(stage="prepared")], ignore_index=True)
+        categories.to_csv(
             tables / "category_frequencies.csv", index=False)
         summary = cohort_summary(prepared.frame, prepared.target)
         summary.to_csv(tables / "cohort_summary.csv", index=False)
