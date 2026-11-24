@@ -206,16 +206,16 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 947.
 - Diagnóstico de origen: **Estado: Defecto confirmado de diagnóstico y limitación de calibración. Prioridad: Alta. Decisión: Corregir la procedencia de entradas y validar el significado de las advertencias.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: predictor.py, pipeline.py, core/scientific/applicability.py; test_m1_input_provenance.py.
-- Implementación / evidencia: distinguir derivadas, padding y faltantes; exigir perfil marginal completo; salida negativa/no finita marcada invalida; 91 pruebas aprobadas, 4 omitidas. Pendiente incertidumbre calibrada independiente y validacion multivariada.
+- Componentes / corrección detallada / tests: prediction/predictor.py; core/scientific/applicability.py; scripts/scientific/verify_historical_inference.py
+- Implementación / evidencia: Verificada inferencia real SVM historico en diez casos: delta 0, OOD y 10/10 advertencias identicas, esquema serialized compatible. Distingue ausencias/perfil insuficiente y prediccion invalida. Q90 empirico no calibrado; falta cobertura independiente, dominio multivariante y abstencion calibrada.
 - Estado: parcialmente verificado.
 
 ## M1-27 — Step 29 Release — Diagnóstico del versionamiento y publicación
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 953.
 - Diagnóstico de origen: **Estado: Correcto técnicamente, con garantía científica insuficiente para promoción. Prioridad: Alta. Decisión: Conservar el versionamiento y establecer una puerta científica explícita para M1.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: prediction/candidates/holdout/; evaluation/release_gate.py; test_prospective_holdout.py.
-- Implementación / evidencia: Registro prospectivo y score/evaluacion de bundles congelados por hash; comparacion M1, bootstrap emparejado, sin activacion. Flujo sintetico probado. Falta holdout real, revision y aprobacion.
+- Componentes / corrección detallada / tests: persistence/; prediction/candidates/holdout/; verify_historical_inference.py
+- Implementación / evidencia: Bundle SVM original SHA y metadatos cotejados con manifiesto de demostracion; copia aislada reproducida sin tocar release. Promocion separada y holdout exigido. Falta validacion de otros bundles, instalacion versionada y release autorizado.
 - Estado: parcialmente verificado.
 
 ## M2-01 — Step 01 Release — Diagnóstico de la configuración central
@@ -438,8 +438,8 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 589.
 - Diagnóstico de origen: **Estado: Defecto confirmado. Prioridad: Alta. Decisión: Corregir el perfil de aplicabilidad y gestionar incertidumbre de inferencia.**
 - Criterio de aceptación (extracto): El criterio de aceptación será informar correctamente el grado de respaldo de una predicción y rechazar o advertir entradas incompatibles, sin presentar los percentiles marginales como intervalos de predicción.
-- Componentes / corrección detallada / tests: prediction/spectral_contract.py, predictor.py y evaluador integrado; test_spectral_inference_contract.py.
-- Implementación / evidencia: Abstención ante esquema o características faltantes; perfil ausente/incompleto marcado insuficiente; M2 v4 requiere metadatos y bandas del mismo scene. 66 aprobadas, 4 omitidas. Falta prueba real de adquisición/inferencia v4 y validación independiente de perfiles.
+- Componentes / corrección detallada / tests: prediction/spectral_contract.py; predictor.py; preparation/patch_contract.py; verify_historical_inference.py
+- Implementación / evidencia: Abstencion ante esquema faltante, perfil incompleto marcado insuficiente, contrato estricto nuevo. Inferencia real CatBoost historico 10/10 identica en score/advertencias/OOD; no se descarga. Falta inferencia real v4 y perfiles independientes.
 - Estado: parcialmente verificado.
 
 ## M2-29 — Step 29 Release — Diagnóstico de la generación de resultados gráficos
