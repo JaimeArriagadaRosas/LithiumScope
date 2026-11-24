@@ -36,6 +36,18 @@ def junit_counts(path: Path) -> dict:
             for key in ("tests", "failures", "errors", "skipped")}
 
 
+def git_identity() -> dict:
+    try:
+        def git(*args):
+            return subprocess.run(["git", *args], cwd=ROOT, check=True,
+                                  capture_output=True, text=True, timeout=10).stdout.strip()
+        return {"git_commit": git("rev-parse", "HEAD"),
+                "git_branch": git("branch", "--show-current"),
+                "tracked_worktree_dirty": bool(git("status", "--porcelain", "--untracked-files=no"))}
+    except (OSError, subprocess.SubprocessError):
+        return {"git_commit": None, "git_branch": None, "tracked_worktree_dirty": None}
+
+
 def run(args: list[str]) -> int:
     coverage = "--coverage" in args
     args = [arg for arg in args if arg != "--coverage"]
@@ -59,6 +71,7 @@ def run(args: list[str]) -> int:
         env["COVERAGE_FILE"] = str(results / ".coverage")
         args += ["--cov=lithiumscope", f"--cov-report=xml:{results / 'coverage.xml'}", "--cov-report=term-missing"]
     identity = {"session_id": session_id, "run_id": run_id, "operation": "pytest"}
+    before = git_identity()
     start = time.monotonic()
 
     def event(state: str, **details: object) -> None:
@@ -82,7 +95,10 @@ def run(args: list[str]) -> int:
     except OSError as exc:
         error = str(exc)
     state = "passed" if code == 0 else "cancelled" if code == 130 else "failed"
-    summary = {**identity, "state": state, "exit_code": code,
+    after = git_identity()
+    summary = {**identity, **before, "git_identity_after": after,
+               "git_identity_unchanged": before == after and before["git_commit"] is not None,
+               "state": state, "exit_code": code,
                "duration_seconds": round(time.monotonic() - start, 3),
                "counts": junit_counts(report), "error": error,
                "log": (logs / "pytest.log").relative_to(ROOT).as_posix(),

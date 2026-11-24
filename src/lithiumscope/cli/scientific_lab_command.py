@@ -107,6 +107,12 @@ def _health() -> None:
     print("[OK] No se aplicaron reparaciones.")
 
 
+def _development_snapshot() -> None:
+    from lithiumscope.tools.inspection.development.snapshot import run_interactive
+
+    run_interactive()
+
+
 def run() -> None:
     while True:
         clear_screen()
@@ -114,11 +120,12 @@ def run() -> None:
         print("1. Análisis exploratorio")
         print("2. Ejecución de tests y simulaciones")
         print("3. Salud y diagnóstico del entorno")
+        print("4. Evidencias de desarrollo (temporal)")
         print("0. Volver")
-        choice = choose("Seleccione una opción [0-3]: ", set("0123"))
+        choice = choose("Seleccione una opción [0-4]: ", set("01234"))
         if choice == "0":
             return
         clear_screen()
-        actions = {"1": _eda_menu, "2": _validation_menu, "3": _health}
+        actions = {"1": _eda_menu, "2": _validation_menu, "3": _health, "4": _development_snapshot}
         if actions[choice]() is not False:
             pause()
