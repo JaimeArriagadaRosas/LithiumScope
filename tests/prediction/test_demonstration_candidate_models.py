@@ -73,7 +73,8 @@ def test_normal_load_keeps_active_release(monkeypatch, tmp_path):
 
 def test_original_demonstration_menu_has_no_extra_choices(monkeypatch, capsys):
     calls = []
-    monkeypatch.setattr(predict_command, "choose", lambda *a, **kw: "4")
+    monkeypatch.setattr(predict_command, "choose", lambda *a, **kw: "2")
+    monkeypatch.setattr(predict_command, "pick_file", lambda *a, **kw: pytest.fail("Demonstration must not request files"))
     monkeypatch.setattr(
         integrated, "run_automatic_demonstration",
         lambda: calls.append("demonstration") or object(),

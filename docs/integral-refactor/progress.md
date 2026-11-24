@@ -45,3 +45,10 @@
 - core/logging/: sesiones y operaciones identificadas, JSONL estructurado, errores separados, retencion protegida, logs de entrenamiento y pruebas integrados. Fachadas historicas conservadas por compatibilidad.
 - Pruebas focalizadas: 14 de recursos y 31 del bloque combinado, sin fallos. Pendiente medir rendimiento real, verificar multiproceso y completar trazabilidad.
 - Inventario historico en modo lectura: M1 training_combined.csv y M2 manifiesto de 706 filas con SHA256 igual a config, matriz v4 y auditorias existentes. El manifiesto M2 contiene rutas absolutas al clon anterior; falta importacion independiente con comprobacion de integridad y resolucion de rutas. No se copio ni modifico ningun archivo historico.
+
+## Regresion integral y CI
+- 469 passed, 11 skipped, 8 warnings, 82.68 s, cobertura 51%, sin fallos. Run 20261124T201739Z_f54230fee57c488eb931b0756c45a250; summary.json, junit.xml y coverage.xml locales.
+- +27 pruebas aprobadas frente al baseline de 442. Una regresion anterior se interrumpio por selector historico (opcion 4) incompatible con la numeracion aprobada (opcion 2); actualizado el test y comprobada ausencia de selector de archivos.
+- CI ahora ejecuta runner con cobertura y sube evidencia en matriz existente. No se ha ejecutado CI remoto.
+- Lectura: secciones de diagnostico de M1 y M2 (57 criterios) y especificacion del repositorio revisadas; antecedentes, tablas, codigo comparativo y documentos complementarios aun no revisados de principio a fin. Checklist y diagnostico general leidos; E1/E2 diagnostico vacio.
+- Cierre de bloque, no cierre de refactorizacion: EDA real y holdout independiente pendientes. No se han entrenado modelos reales ni promovido candidatos.

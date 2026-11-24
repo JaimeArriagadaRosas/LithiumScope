@@ -30,3 +30,22 @@ Reproducir defecto o fijar contrato con test; implementar un cambio aislado; eje
 - Los tres diagnósticos prioritarios están indexados; lectura completa y contraste aún pendientes. No iniciar reubicaciones de paquetes ni correcciones científicas hasta completar revisión y baseline.
 - El inventario de origen y la matriz son referencias iniciales, no evidencias de resolución.
 - Los logs y resultados de pruebas son locales. No añadir datasets ni artefactos masivos a Git.
+
+## Estado acumulado tras el bloque de implementacion
+
+| Fase | Estado verificado / trabajo restante |
+|---|---|
+| 01 | Completa: clon, identidad, entorno y baseline |
+| 02 | Parcial: criterios indexados y revisados; antecedentes y complementos, trazabilidad por criterio pendientes |
+| 03 | Parcial avanzada: logs por sesion, pruebas y CI configurado; cobertura 51%, CI remoto y reorganizacion de tests pendientes |
+| 04 | Parcial: resources y logging centralizados; benchmark y separacion restante del core pendientes |
+| 05 | Parcial: inventario historico y validacion fisica; importacion independiente, procedencia y acquisition pendientes |
+| 06 | Parcial: restricciones fisicas, edad fija y EDA descriptivo; faltan contratos, EDA desarrollo y metodologia completa |
+| 07 | Parcial: validacion fisica y EDA descriptivo; faltan identidad, integridad cache, calidad y metodologia completa |
+| 08 | Parcial: acceso a simulaciones y catalogo; arquitectura de experiments pendiente |
+| 09 | Parcial: consultas read-only; separacion de prediction/exportacion pendiente |
+| 10 | Pendiente: mover reporting a raiz y verificar PDF |
+| 11 | Parcial avanzada: menu y laboratorio, confirmaciones y pausa; preboot y detalle final pendientes |
+| 12 | Parcial: regresion 469/11/0 y limite de 300 lineas; aceptacion cientifica, rendimiento y limite por directorio pendientes |
+
+Prioridad siguiente: lectura restante, importacion historica independiente con hashes, contratos de calidad y procedencia, cache M2, EDA por particion y reorganizacion por responsabilidades. No iniciar EDA definitivo hasta completar criterios de entrada y pruebas.

@@ -37,6 +37,10 @@ def junit_counts(path: Path) -> dict:
 
 
 def run(args: list[str]) -> int:
+    coverage = "--coverage" in args
+    args = [arg for arg in args if arg != "--coverage"]
+    if args and args[0] == "--":
+        args = args[1:]
     session_id, run_id = new_id(), new_id()
     results = ROOT / "results" / "tests" / run_id
     logs = ROOT / "logs" / "sessions" / session_id / "tests"
@@ -51,6 +55,9 @@ def run(args: list[str]) -> int:
     env.pop("LITHIUMSCOPE_LOG_DIR", None)
     env["LITHIUMSCOPE_TEST_SESSION_ID"] = session_id
     env["LITHIUMSCOPE_SESSION_DIR"] = str(logs.parent)
+    if coverage:
+        env["COVERAGE_FILE"] = str(results / ".coverage")
+        args += ["--cov=lithiumscope", f"--cov-report=xml:{results / 'coverage.xml'}", "--cov-report=term-missing"]
     identity = {"session_id": session_id, "run_id": run_id, "operation": "pytest"}
     start = time.monotonic()
 
