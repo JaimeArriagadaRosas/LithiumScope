@@ -1,0 +1,459 @@
+# Matriz de trazabilidad inicial
+
+Identificadores según orden de aparición en la sección Diagnostico. Criterios de origen extraídos cuando identificables. Ninguna fila se considera verificada. La revisión íntegra y la asignación de componentes/tests siguen pendientes.
+
+## M1-01 — Step 01 Histórico ↔ Step 03 Release — Diagnóstico de la carga del dataset
+- Origen: 01. Comparación M1 Historico y M1 Release.md, línea 795.
+- Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Media. Decisión: Conservar y reforzar los contratos de entrada.**
+- Criterio de aceptación (extracto): El criterio de aceptación será que las entradas admitidas produzcan la estructura esperada y que las ambiguas se rechacen o adviertan con diagnóstico reproducible.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M1-02 — Step 02 Histórico ↔ Procedimiento transversal Release — Diagnóstico del análisis exploratorio (EDA)
+- Origen: 01. Comparación M1 Historico y M1 Release.md, línea 801.
+- Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Alta. Decisión: Conservar la infraestructura y ampliar el diagnóstico de datos.**
+- Criterio de aceptación (extracto): El criterio de aceptación será poder explicar con evidencia la composición del conjunto final y sus diferencias respecto de la memoria; si el original sigue indisponible, no se afirmará una réplica exacta.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M1-03 — Step 03 Histórico ↔ Step 04 Release — Diagnóstico de la limpieza de límites de detección
+- Origen: 01. Comparación M1 Historico y M1 Release.md, línea 807.
+- Diagnóstico de origen: **Estado: Defecto confirmado de cobertura. Prioridad: Alta. Decisión: Corregir la interpretación de mediciones censuradas.**
+- Criterio de aceptación (extracto): El criterio de aceptación será interpretar correctamente cada formato admitido, no modificar categorías por error y cuantificar los registros reales afectados antes de decidir si corresponde reconstruir datos o repetir el entrenamiento.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M1-04 — Step 04 Histórico ↔ Step 05 Release — Diagnóstico del tratamiento de datos faltantes
+- Origen: 01. Comparación M1 Historico y M1 Release.md, línea 813.
+- Diagnóstico de origen: **Estado: Defecto confirmado y limitación metodológica. Prioridad: Alta. Decisión: Corregir la elegibilidad de edad y controlar la imputación.**
+- Criterio de aceptación (extracto): Consultar el texto completo de origen.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M1-05 — Step 05 Histórico ↔ Step 07 Release — Diagnóstico del filtrado de la variable objetivo
+- Origen: 01. Comparación M1 Historico y M1 Release.md, línea 819.
+- Diagnóstico de origen: **Estado: Defecto confirmado de validación. Prioridad: Alta. Decisión: Corregir el contrato físico del target sin recortar extremos válidos.**
+- Criterio de aceptación (extracto): El criterio de aceptación será que ningún target inválido avance al entrenamiento y que los extremos admitidos se mantengan.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M1-06 — Step 06 Histórico ↔ Step 08 Release — Diagnóstico del control de calidad geoquímica
+- Origen: 01. Comparación M1 Historico y M1 Release.md, línea 825.
+- Diagnóstico de origen: **Estado: Correcto con limitación de comparabilidad química. Prioridad: Alta. Decisión: Conservar el QC y verificar la equivalencia de las sumas.**
+- Criterio de aceptación (extracto): El criterio de aceptación será que el ingreso o descarte de cada muestra tenga una razón química trazable; deberá estudiarse el subconjunto de los 272 descartes de la etapa QC del release y los casos extremos antes de cambiar criterios de selección o atribuirles errores de predicción.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M1-07 — Step 07 Histórico ↔ Step 09 Release — Diagnóstico de la normalización y agrupación de categorías
+- Origen: 01. Comparación M1 Historico y M1 Release.md, línea 831.
+- Diagnóstico de origen: **Estado: Defecto confirmado de correspondencia semántica. Prioridad: Alta. Decisión: Corregir el clasificador de categorías y conservar las reglas comunes.**
+- Criterio de aceptación (extracto): Consultar el texto completo de origen.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M1-08 — Step 08 Histórico ↔ Step 11 Release — Diagnóstico de la selección de variables predictoras
+- Origen: 01. Comparación M1 Historico y M1 Release.md, línea 837.
+- Diagnóstico de origen: **Estado: Correcto con evidencia experimental insuficiente. Prioridad: Alta. Decisión: Conservar el esquema explícito y evaluar el aporte de las variables.**
+- Criterio de aceptación (extracto): El criterio de aceptación científico será demostrar, con resultados por grupo e incertidumbre, qué predictores aportan valor sin perjudicar la transferencia; no se eliminarán variables únicamente por una correlación o importancia aislada.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M1-09 — Step 09 Histórico ↔ Step 10 Release — Diagnóstico de la ingeniería de características
+- Origen: 01. Comparación M1 Historico y M1 Release.md, línea 843.
+- Diagnóstico de origen: **Estado: Correcto funcionalmente, limitado en interpretación geoquímica. Prioridad: Alta. Decisión: Preservar la referencia histórica y validar variantes científicas.**
+- Criterio de aceptación (extracto): El criterio de aceptación será que las características no generen resultados engañosos y que su procedencia sea verificable; la adopción de variantes dependerá de ablaciones con splits fijos y no de mejoras obtenidas sobre TEST reutilizado.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M1-10 — Step 10 Histórico ↔ Step 13 Release — Diagnóstico de la validación cruzada anidada y espacial
+- Origen: 01. Comparación M1 Historico y M1 Release.md, línea 849.
+- Diagnóstico de origen: **Estado: Correcto en aislamiento de grupos, metodológicamente limitado. Prioridad: Alta. Decisión: Conservar GroupKFold obligatorio y reforzar la independencia.**
+- Criterio de aceptación (extracto): Consultar el texto completo de origen.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M1-11 — Step 11 Histórico ↔ Step 16 Release — Diagnóstico del preprocesamiento por algoritmo
+- Origen: 01. Comparación M1 Historico y M1 Release.md, línea 855.
+- Diagnóstico de origen: **Estado: Correcto con mejoras de cobertura. Prioridad: Alta. Decisión: Conservar pipelines ajustados dentro de cada fold y reforzar sus contratos.**
+- Criterio de aceptación (extracto): Consultar el texto completo de origen.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M1-12 — Step 12 Histórico ↔ Steps 17 y 18 Release — Diagnóstico de la optimización mediante Optuna y espacios de hiperparámetros
+- Origen: 01. Comparación M1 Historico y M1 Release.md, línea 861.
+- Diagnóstico de origen: **Estado: Correcto operativamente, experimentalmente insuficiente. Prioridad: Alta. Decisión: Conservar el optimizador y auditar la suficiencia y reanudación de la búsqueda.**
+- Criterio de aceptación (extracto): Consultar el texto completo de origen.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M1-13 — Step 13 Histórico ↔ Steps 19 y 20 Release — Diagnóstico del reentrenamiento por fold externo y early stopping de TabNet
+- Origen: 01. Comparación M1 Historico y M1 Release.md, línea 867.
+- Diagnóstico de origen: **Estado: Correcto para aislamiento del TEST, metodológicamente limitado en TabNet. Prioridad: Alta. Decisión: Conservar el runner y rediseñar la selección de épocas.**
+- Criterio de aceptación (extracto): Consultar el texto completo de origen.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M1-14 — Step 14 Histórico ↔ Step 21 Release — Diagnóstico de la evaluación y almacenamiento de predicciones
+- Origen: 01. Comparación M1 Historico y M1 Release.md, línea 873.
+- Diagnóstico de origen: **Estado: Correcto con limitación de evaluación final. Prioridad: Alta. Decisión: Conservar las métricas y fortalecer la integridad y comunicación de los resultados.**
+- Criterio de aceptación (extracto): Consultar el texto completo de origen.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M1-15 — Step 15 Histórico ↔ Steps 26 y 28 Release — Diagnóstico del entrenamiento definitivo y generación de resultados
+- Origen: 01. Comparación M1 Historico y M1 Release.md, línea 879.
+- Diagnóstico de origen: **Estado: Correcto técnicamente, experimentalmente insuficiente para certificar el modelo final. Prioridad: Alta. Decisión: Conservar el entrenamiento definitivo y separar selección, prueba y publicación.**
+- Criterio de aceptación (extracto): Consultar el texto completo de origen.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M1-16 — Step 01 Release — Diagnóstico de la adquisición e integración de fuentes
+- Origen: 01. Comparación M1 Historico y M1 Release.md, línea 887.
+- Diagnóstico de origen: **Estado: Metodológicamente limitado y con evidencia de duplicación residual. Prioridad: Alta. Decisión: Conservar la expansión y auditar la identidad química y física de cada observación.**
+- Criterio de aceptación (extracto): Consultar el texto completo de origen.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M1-17 — Step 02 Release — Diagnóstico del pipeline central de preparación
+- Origen: 01. Comparación M1 Historico y M1 Release.md, línea 893.
+- Diagnóstico de origen: **Estado: Correcto con mejoras de trazabilidad. Prioridad: Media. Decisión: Conservar la arquitectura y formalizar invariantes entre etapas.**
+- Criterio de aceptación (extracto): Consultar el texto completo de origen.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M1-18 — Step 06 Release — Diagnóstico de la normalización geoespacial
+- Origen: 01. Comparación M1 Historico y M1 Release.md, línea 899.
+- Diagnóstico de origen: **Estado: Correcto estructuralmente, con riesgos de calidad espacial. Prioridad: Alta. Decisión: Conservar la canonicalización y validar conflictos de coordenadas.**
+- Criterio de aceptación (extracto): Consultar el texto completo de origen.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M1-19 — Step 12 Release — Diagnóstico del preflight científico
+- Origen: 01. Comparación M1 Historico y M1 Release.md, línea 905.
+- Diagnóstico de origen: **Estado: Correcto como control estructural, insuficiente como puerta científica. Prioridad: Alta. Decisión: Ampliar las guardas y establecer políticas explícitas de advertencia o bloqueo.**
+- Criterio de aceptación (extracto): Consultar el texto completo de origen.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M1-20 — Step 14 Release — Diagnóstico del baseline estadístico
+- Origen: 01. Comparación M1 Historico y M1 Release.md, línea 911.
+- Diagnóstico de origen: **Estado: Correcto con cobertura experimental insuficiente. Prioridad: Media. Decisión: Conservar la media de TRAIN y añadir referencias complementarias.**
+- Criterio de aceptación (extracto): Consultar el texto completo de origen.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M1-21 — Step 15 Release — Diagnóstico de la competencia de algoritmos
+- Origen: 01. Comparación M1 Historico y M1 Release.md, línea 917.
+- Diagnóstico de origen: **Estado: Correcto operativamente, limitado como comparación de familias. Prioridad: Alta. Decisión: Conservar los seis candidatos y estandarizar las condiciones experimentales.**
+- Criterio de aceptación (extracto): El criterio de aceptación será que los rankings solo agrupen resultados comparables bajo condiciones declaradas; la decisión de agregar o eliminar algoritmos dependerá de estabilidad y valor predictivo, no de que el algoritmo haya ganado una única ejecución.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M1-22 — Step 22 Release — Diagnóstico de la selección del ganador
+- Origen: 01. Comparación M1 Historico y M1 Release.md, línea 923.
+- Diagnóstico de origen: **Estado: Limitación metodológica confirmada. Prioridad: Alta. Decisión: Conservar el ranking histórico y separar el ganador relativo del candidato científicamente elegible.**
+- Criterio de aceptación (extracto): Consultar el texto completo de origen.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M1-23 — Step 23 Release — Diagnóstico de las pruebas de robustez
+- Origen: 01. Comparación M1 Historico y M1 Release.md, línea 929.
+- Diagnóstico de origen: **Estado: Correcto como prueba de sensibilidad, metodológicamente limitado. Prioridad: Media. Decisión: Conservar el ensayo sintético y diseñar perturbaciones coherentes con el dominio.**
+- Criterio de aceptación (extracto): Consultar el texto completo de origen.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M1-24 — Step 24 Release — Diagnóstico de los diagnósticos científicos complementarios
+- Origen: 01. Comparación M1 Historico y M1 Release.md, línea 935.
+- Diagnóstico de origen: **Estado: Correcto retrospectivamente, con cobertura experimental insuficiente. Prioridad: Alta. Decisión: Conservar los diagnósticos y extenderlos a todos los candidatos.**
+- Criterio de aceptación (extracto): Consultar el texto completo de origen.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M1-25 — Step 25 Release — Diagnóstico de las concentraciones extremas
+- Origen: 01. Comparación M1 Historico y M1 Release.md, línea 941.
+- Diagnóstico de origen: **Estado: Problema predictivo demostrado, causa experimentalmente insuficiente. Prioridad: Alta. Decisión: Investigar primero los registros de gran error y después evaluar soluciones de aprendizaje.**
+- Criterio de aceptación (extracto): Consultar el texto completo de origen.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M1-26 — Step 27 Release — Diagnóstico de la incertidumbre y el dominio de aplicabilidad
+- Origen: 01. Comparación M1 Historico y M1 Release.md, línea 947.
+- Diagnóstico de origen: **Estado: Defecto confirmado de diagnóstico y limitación de calibración. Prioridad: Alta. Decisión: Corregir la procedencia de entradas y validar el significado de las advertencias.**
+- Criterio de aceptación (extracto): Consultar el texto completo de origen.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M1-27 — Step 29 Release — Diagnóstico del versionamiento y publicación
+- Origen: 01. Comparación M1 Historico y M1 Release.md, línea 953.
+- Diagnóstico de origen: **Estado: Correcto técnicamente, con garantía científica insuficiente para promoción. Prioridad: Alta. Decisión: Conservar el versionamiento y establecer una puerta científica explícita para M1.**
+- Criterio de aceptación (extracto): Consultar el texto completo de origen.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-01 — Step 01 Release — Diagnóstico de la configuración central
+- Origen: 04. Diagnostico M2 Release.md, línea 427.
+- Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Media. Decisión: Validar y hacer efectiva la configuración.**
+- Criterio de aceptación (extracto): El criterio de aceptación será que el manifiesto registre la configuración realmente utilizada y que ninguna opción científica válida sea ignorada silenciosamente.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-02 — Step 02 Release — Diagnóstico de la preparación de muestras geoquímicas
+- Origen: 04. Diagnostico M2 Release.md, línea 433.
+- Diagnóstico de origen: **Estado: Defecto confirmado. Prioridad: Alta. Decisión: Reforzar la preparación geoquímica y la identidad de las muestras.**
+- Criterio de aceptación (extracto): El criterio de aceptación será que los valores físicamente inválidos se rechacen, las réplicas legítimas no se eliminen sin justificación y cada inclusión o exclusión pueda explicarse mediante una auditoría de datos por fuente.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-03 — Step 03 Release — Diagnóstico de la construcción de grupos espaciales
+- Origen: 04. Diagnostico M2 Release.md, línea 439.
+- Diagnóstico de origen: **Estado: Metodológicamente limitado. Prioridad: Alta. Decisión: Validar el aislamiento espacial efectivo.**
+- Criterio de aceptación (extracto): El criterio de aceptación será demostrar y registrar el aislamiento exigido por el protocolo, no solamente comprobar que los identificadores de grupos difieren.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-04 — Step 04 Release — Diagnóstico de la adquisición de imágenes Sentinel-2
+- Origen: 04. Diagnostico M2 Release.md, línea 445.
+- Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Alta. Decisión: Controlar la calidad local y reproducibilidad de la adquisición.**
+- Criterio de aceptación (extracto): El criterio de aceptación será obtener imágenes trazables y que superen controles de calidad local verificables, conservando un registro de las muestras que no puedan recuperarse y evitando introducir un sesgo de selección no cuantificado.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-05 — Step 05 Release — Diagnóstico de la extracción de parches satelitales
+- Origen: 04. Diagnostico M2 Release.md, línea 451.
+- Diagnóstico de origen: **Estado: Defecto confirmado de cobertura. Prioridad: Alta. Decisión: Garantizar compatibilidad geométrica y radiométrica de los parches.**
+- Criterio de aceptación (extracto): El criterio de aceptación será reproducir una ventana físicamente consistente y comprobar las transformaciones con valores esperados.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-06 — Step 06 Release — Diagnóstico de la construcción del manifiesto de entrenamiento
+- Origen: 04. Diagnostico M2 Release.md, línea 457.
+- Diagnóstico de origen: **Estado: Defecto confirmado. Prioridad: Alta. Decisión: Reconstruir la validación y reconciliación del manifiesto.**
+- Criterio de aceptación (extracto): El criterio de aceptación será que el manifiesto represente exactamente el conjunto aprobado y pueda recuperarse sin mezclar entradas obsoletas.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-07 — Step 07 Release — Diagnóstico de la carga de imágenes
+- Origen: 04. Diagnostico M2 Release.md, línea 463.
+- Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Alta. Decisión: Unificar los contratos de carga e inferencia.**
+- Criterio de aceptación (extracto): El criterio de aceptación será que entradas equivalentes generen características equivalentes y que entradas incompatibles se rechacen con un diagnóstico comprensible, en lugar de producir silenciosamente un score sin respaldo.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-08 — Step 08 Release — Diagnóstico de el preprocesamiento de imágenes
+- Origen: 04. Diagnostico M2 Release.md, línea 469.
+- Diagnóstico de origen: **Estado: Defecto confirmado. Prioridad: Alta. Decisión: Preservar la validez de píxeles y corregir la imputación.**
+- Criterio de aceptación (extracto): El criterio de aceptación será que no se genere un vector aparentemente completo a partir de información insuficiente y que se pueda cuantificar la proporción de datos reales utilizados.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-09 — Step 09 Release — Diagnóstico de la extracción de características espectrales
+- Origen: 04. Diagnostico M2 Release.md, línea 475.
+- Diagnóstico de origen: **Estado: Defecto confirmado de contrato. Prioridad: Alta. Decisión: Validar el esquema completo y versionar el extractor.**
+- Criterio de aceptación (extracto): El criterio de aceptación será preservar la reproducción del v3 y garantizar que los candidatos nuevos y sus predicciones utilicen la misma representación validada; no se modificará un modelo serializado anterior para aparentar compatibilidad.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-10 — Step 10 Release — Diagnóstico de las estadísticas de reflectancia
+- Origen: 04. Diagnostico M2 Release.md, línea 481.
+- Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Media. Decisión: Ampliar el análisis de reflectancia y calidad.**
+- Criterio de aceptación (extracto): El criterio de aceptación será reproducir los valores de referencia cuando los datos sean válidos y distinguir los resúmenes fiables de los que procedan de información incompleta.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-11 — Step 11 Release — Diagnóstico de la extracción de textura
+- Origen: 04. Diagnostico M2 Release.md, línea 487.
+- Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Media. Decisión: Evaluar textura con máscaras y escala espacial consistente.**
+- Criterio de aceptación (extracto): El criterio de aceptación será calcular correctamente las diferencias válidas y reproducir el comportamiento histórico en parches completos; la contribución de la textura se medirá comparando reflectancia sola frente a reflectancia más textura con las mismas particiones, sin atribuir automáticamente los contrastes a fracturas o mineralización.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-12 — Step 12 Release — Diagnóstico de la ingeniería de índices espectrales
+- Origen: 04. Diagnostico M2 Release.md, línea 493.
+- Diagnóstico de origen: **Estado: Defecto confirmado. Prioridad: Alta. Decisión: Eliminar redundancias y tratar índices indefinidos.**
+- Criterio de aceptación (extracto): El criterio de aceptación será demostrar la validez de cada fórmula y la ausencia de redundancias no intencionales; no se afirmará que reducir seis columnas mejora necesariamente ROC-AUC o AP hasta medirlo.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-13 — Step 13 Release — Diagnóstico de la construcción del dataset de entrenamiento
+- Origen: 04. Diagnostico M2 Release.md, línea 499.
+- Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Alta. Decisión: Establecer un preflight científico para la matriz de entrenamiento.**
+- Criterio de aceptación (extracto): El criterio de aceptación será que el entrenamiento solo comience con un dataset trazable y científicamente elegible, acompañado de un informe de preflight y composición final.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-14 — Step 14 Release — Diagnóstico de la caché de características espectrales
+- Origen: 04. Diagnostico M2 Release.md, línea 505.
+- Diagnóstico de origen: **Estado: Defecto confirmado de integridad. Prioridad: Alta. Decisión: Fortalecer la firma y reutilización de características.**
+- Criterio de aceptación (extracto): El criterio de aceptación será recuperar resultados intactos cuando la firma coincida y regenerar o rechazar cualquier caché incompatible, documentando el motivo y evitando reejecuciones innecesarias.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-15 — Step 15 Release — Diagnóstico de la generación de etiquetas de clasificación
+- Origen: 04. Diagnostico M2 Release.md, línea 511.
+- Diagnóstico de origen: **Estado: Metodológicamente limitado. Prioridad: Alta. Decisión: Definir etiquetas sin dependencia del conjunto de evaluación.**
+- Criterio de aceptación (extracto): El criterio de aceptación será que la definición de etiquetas sea reproducible y no dependa de información de evaluación no disponible durante el desarrollo.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-16 — Step 16 Release — Diagnóstico de la validación cruzada espacial estratificada
+- Origen: 04. Diagnostico M2 Release.md, línea 517.
+- Diagnóstico de origen: **Estado: Defecto confirmado y limitación metodológica. Prioridad: Alta. Decisión: Exigir validación espacial en todos los niveles.**
+- Criterio de aceptación (extracto): El criterio de aceptación será que ningún estimador pueda comunicar resultados de validación espacial sin satisfacer las condiciones verificadas del protocolo; los experimentos aleatorios podrán mantenerse como controles diferenciados, no como equivalentes científicos.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-17 — Step 17 Release — Diagnóstico de el baseline de clasificación
+- Origen: 04. Diagnostico M2 Release.md, línea 523.
+- Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Media. Decisión: Consolidar baselines y comparaciones reproducibles.**
+- Criterio de aceptación (extracto): El criterio de aceptación será disponer de referencias reproducibles que permitan interpretar tanto discriminación como decisiones operativas sin favorecer artificialmente a un candidato.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-18 — Step 18 Release — Diagnóstico de la competencia de algoritmos
+- Origen: 04. Diagnostico M2 Release.md, línea 529.
+- Diagnóstico de origen: **Estado: Defecto confirmado de control de estados. Prioridad: Alta. Decisión: Separar la validez del entrenamiento de la exportación y ampliar la competencia controlada.**
+- Criterio de aceptación (extracto): El criterio de aceptación será distinguir candidatos válidos, descartados y errores auxiliares sin contradicciones, conservando la comparación completa.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-19 — Step 19 Release — Diagnóstico de la optimización mediante Optuna
+- Origen: 04. Diagnostico M2 Release.md, línea 535.
+- Diagnóstico de origen: **Estado: Experimentalmente insuficiente. Prioridad: Alta. Decisión: Reforzar Optuna y comprobar suficiencia de la búsqueda.**
+- Criterio de aceptación (extracto): El criterio de aceptación será una optimización auditable, reproducible y con evidencia de suficiencia o limitación del presupuesto; los máximos de 312 trials y 936 ajustes internos no se comunicarán como ejecuciones efectivamente completadas.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-20 — Step 20 Release — Diagnóstico de la calibración de SVM
+- Origen: 04. Diagnostico M2 Release.md, línea 541.
+- Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Alta. Decisión: Evaluar calibración de todos los candidatos bajo aislamiento espacial.**
+- Criterio de aceptación (extracto): El criterio de aceptación será justificar con evidencia la política de calibración de cada candidato y conservar la distinción entre score exploratorio y probabilidad calibrada de la etiqueta binaria.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-21 — Step 21 Release — Diagnóstico de la ejecución del entrenamiento
+- Origen: 04. Diagnostico M2 Release.md, línea 547.
+- Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Alta. Decisión: Fortalecer el runner, los checkpoints y los diagnósticos de aprendizaje.**
+- Criterio de aceptación (extracto): El criterio de aceptación será reproducir la ejecución sin mezclar estados incompatibles y disponer de evidencias suficientes para estudiar las causas de las diferencias de rendimiento.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-22 — Step 22 Release — Diagnóstico de el cálculo de métricas de clasificación
+- Origen: 04. Diagnostico M2 Release.md, línea 553.
+- Diagnóstico de origen: **Estado: Defecto confirmado. Prioridad: Alta. Decisión: Validar las métricas y completar la evaluación binaria.**
+- Criterio de aceptación (extracto): El criterio de aceptación será que cada métrica sea reproducible desde predicciones identificadas, que las agregaciones indiquen su denominador y que las evaluaciones incompletas no sean declaradas superiores.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-23 — Step 23 Release — Diagnóstico de los resultados de la competencia histórica
+- Origen: 04. Diagnostico M2 Release.md, línea 559.
+- Diagnóstico de origen: **Estado: Información insuficiente y evidencia experimental limitada. Prioridad: Alta. Decisión: Recuperar evidencias y establecer una comparación científica controlada.**
+- Criterio de aceptación (extracto): El criterio de aceptación será poder fundamentar mejoras con evidencia comparable y cuantificar su incertidumbre.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-24 — Step 24 Release — Diagnóstico de la selección del ganador
+- Origen: 04. Diagnostico M2 Release.md, línea 565.
+- Diagnóstico de origen: **Estado: Metodológicamente limitado. Prioridad: Alta. Decisión: Separar la elección del ganador de su evaluación independiente.**
+- Criterio de aceptación (extracto): El criterio de aceptación será distinguir un ganador interno de un modelo cuya superioridad y generalización han sido evaluadas independientemente; no se garantizará que el algoritmo final deba seguir siendo CatBoost.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-25 — Step 25 Release — Diagnóstico de la optimización del umbral operativo
+- Origen: 04. Diagnostico M2 Release.md, línea 571.
+- Diagnóstico de origen: **Estado: Metodológicamente limitado. Prioridad: Alta. Decisión: Optimizar y evaluar el umbral en conjuntos separados.**
+- Criterio de aceptación (extracto): El criterio de aceptación será comparar BA y demás métricas a 0,5 y al corte optimizado sobre las mismas observaciones independientes, sin presentar el 0,5818 OOF retrospectivo como validación independiente del umbral.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-26 — Step 26 Release — Diagnóstico de el Release Gate
+- Origen: 04. Diagnostico M2 Release.md, línea 577.
+- Diagnóstico de origen: **Estado: Correcto con mejoras de control. Prioridad: Alta. Decisión: Separar entrenamiento, elegibilidad y promoción del release.**
+- Criterio de aceptación (extracto): El criterio de aceptación será que ningún candidato se active o presente como aprobado por el solo hecho de haberse entrenado o guardado; los criterios de publicación externos deberán verificarse por separado.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-27 — Step 27 Release — Diagnóstico de el entrenamiento definitivo
+- Origen: 04. Diagnostico M2 Release.md, línea 583.
+- Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Alta. Decisión: Validar el ajuste definitivo y su contrato operativo.**
+- Criterio de aceptación (extracto): El criterio de aceptación será disponer de un modelo reproducible, con contrato completo e indicadores de rendimiento independiente del ajuste definitivo; el release anterior permanecerá disponible hasta que un candidato corregido supere la evaluación y la promoción autorizada.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-28 — Step 28 Release — Diagnóstico de el perfil de aplicabilidad
+- Origen: 04. Diagnostico M2 Release.md, línea 589.
+- Diagnóstico de origen: **Estado: Defecto confirmado. Prioridad: Alta. Decisión: Corregir el perfil de aplicabilidad y gestionar incertidumbre de inferencia.**
+- Criterio de aceptación (extracto): El criterio de aceptación será informar correctamente el grado de respaldo de una predicción y rechazar o advertir entradas incompatibles, sin presentar los percentiles marginales como intervalos de predicción.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-29 — Step 29 Release — Diagnóstico de la generación de resultados gráficos
+- Origen: 04. Diagnostico M2 Release.md, línea 595.
+- Diagnóstico de origen: **Estado: Correcto con mejoras de trazabilidad. Prioridad: Media. Decisión: Mejorar las representaciones diagnósticas y sus contratos.**
+- Criterio de aceptación (extracto): El criterio de aceptación será que cada figura pueda reproducirse a partir de sus tablas y que no confunda un mapa de puntos conocidos con una superficie de prospectividad continua ni una simulación ilustrativa con un resultado real.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
+
+## M2-30 — Step 30 Release — Diagnóstico de el almacenamiento y trazabilidad
+- Origen: 04. Diagnostico M2 Release.md, línea 601.
+- Diagnóstico de origen: **Estado: Correcto con mejoras de integridad. Prioridad: Alta. Decisión: Consolidar artefactos, evidencias y versionamiento reproducible.**
+- Criterio de aceptación (extracto): El criterio de aceptación será poder reconstruir cada decisión de entrenamiento y predicción sin depender del orden de filas, recuperar evidencias desde el menú de resultados y mantener inalterado el release histórico.
+- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
+- Implementación / evidencia: ninguna.
+- Estado: pendiente.
