@@ -37,8 +37,8 @@ def _read_patch(
             GDAL_HTTP_TIMEOUT="60",
         ):
             with rasterio.open(href) as dataset:
-                if dataset.crs is None:
-                    raise SentinelAssetError(f"Asset Sentinel-2 sin CRS: {href}")
+                from lithiumscope.model_2.preparation.patch_contract import validate_metric_raster
+                validate_metric_raster(dataset)
                 xs, ys = transform("EPSG:4326", dataset.crs, [longitude], [latitude])
                 x = float(xs[0])
                 y = float(ys[0])
@@ -78,11 +78,23 @@ def download_patch(
     scientific_quality: dict | None = None,
 ) -> tuple[Path, dict]:
     from lithiumscope.tools.acquisition.sentinel2.provider import Path, Sentinel2Provider, SentinelAssetError, _asset_href, _read_patch, json, np
+    from lithiumscope.core.hashing import file_sha256
     if destination.exists() and destination.stat().st_size > 0:
         metadata_path = destination.with_suffix(".json")
         metadata = {}
         if metadata_path.exists():
             metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        if metadata.get("image_sha256"):
+            if metadata["image_sha256"] != file_sha256(destination):
+                raise SentinelAssetError("Cached patch hash differs; no silent refresh")
+            if not (np.isclose(float(metadata["latitude"]),latitude,rtol=0,atol=1e-8)
+                    and np.isclose(float(metadata["longitude"]),longitude,rtol=0,atol=1e-8)
+                    and metadata.get("bands")==list(provider.config.bands)
+                    and metadata.get("patch_pixels")==provider.config.patch_pixels
+                    and metadata.get("patch_size_m")==provider.config.patch_size_m):
+                raise SentinelAssetError("Cached patch geometry or band schema differs")
+            if selected_scene is not None and metadata.get("scene_id")!=selected_scene.get("id"):
+                raise SentinelAssetError("Cached patch belongs to a different scene")
         return destination, metadata
 
     scene = (selected_scene if selected_scene is not None
@@ -104,7 +116,9 @@ def download_patch(
         for band in config.bands
     ]
     stack = np.stack(arrays, axis=0)
-    if not np.isfinite(stack).any():
+    if stack.shape != (len(config.bands),config.patch_pixels,config.patch_pixels):
+        raise SentinelAssetError("Acquired patch shape differs from configuration")
+    if not np.isfinite(stack).any(axis=(1,2)).all():
         raise SentinelAssetError(f"Sentinel-2 patch vacío para muestra {sample_id}.")
 
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -119,6 +133,13 @@ def download_patch(
         "cloud_cover": scene.get("properties", {}).get("eo:cloud_cover"),
         "bands": list(config.bands),
         "collection": scene.get("collection"),
+        "patch_pixels": config.patch_pixels,
+        "patch_size_m": config.patch_size_m,
+        "pixel_size_m": config.patch_size_m / config.patch_pixels,
+        "radiometric_representation": "raw_dn",
+        "image_sha256": file_sha256(destination),
+        "acquisition_geometry": "declared_metric_window",
+
     }
     if scientific_quality is not None:
         # Metadata is provenance of technical QA, not field verification.

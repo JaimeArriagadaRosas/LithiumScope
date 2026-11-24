@@ -254,8 +254,8 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 451.
 - Diagnóstico de origen: **Estado: Defecto confirmado de cobertura. Prioridad: Alta. Decisión: Garantizar compatibilidad geométrica y radiométrica de los parches.**
 - Criterio de aceptación (extracto): El criterio de aceptación será reproducir una ventana físicamente consistente y comprobar las transformaciones con valores esperados.
-- Componentes / corrección detallada / tests: v4_integrity.py; v4_inputs.py; acquisition/sentinel2/rededge.py; import_rededge_evidence.py; test_v4_local_integrity_contract.py.
-- Implementación / evidencia: 706 cubos red-edge originales comprobados por hash, escena, coordenadas, dimensiones y QA; 44 caracteristicas reproducidas exactamente. Pendiente geometria/SCL y reflectancia de las seis bandas originales.
+- Componentes / corrección detallada / tests: tools/acquisition/sentinel2/patch_io.py; preparation/patch_contract.py; test_verified_patch_contract.py; test_http_tiles_rasterio_parity.py
+- Implementación / evidencia: Lectura de adquisicion exige CRS metrico norte-arriba, mascara de nodata y forma; adquisicion nueva conserva hash/geometria, falla con banda totalmente invalida. Red-edge real auditado; falta comprobar coregistro fisico por banda y SCL nuevo, no modifica caches historicos.
 - Estado: parcialmente verificado.
 
 ## M2-06 — Step 06 Release — Diagnóstico de la construcción del manifiesto de entrenamiento
@@ -270,9 +270,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 463.
 - Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Alta. Decisión: Unificar los contratos de carga e inferencia.**
 - Criterio de aceptación (extracto): El criterio de aceptación será que entradas equivalentes generen características equivalentes y que entradas incompatibles se rechacen con un diagnóstico comprensible, en lugar de producir silenciosamente un score sin respaldo.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: preparation/patch_contract.py; prediction/spectral_contract.py; tools/acquisition/sentinel2/patch_io.py; test_verified_patch_contract.py
+- Implementación / evidencia: Contrato estricto nuevo: NPY/TIFF 6x32x32, SHA, bandas ordenadas, sidecar, TIFF CRS metrico, resolucion, centro, mascaras y equivalencia de descriptores verificada. Bundle nuevo incluye contrato, legado sin el conserva ruta historica. NPY no certifica geometria independiente. Falta adquisicion y scoring real.
+- Estado: parcialmente verificado.
 
 ## M2-08 — Step 08 Release — Diagnóstico de el preprocesamiento de imágenes
 - Origen: 04. Diagnostico M2 Release.md, línea 469.
@@ -286,8 +286,8 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 475.
 - Diagnóstico de origen: **Estado: Defecto confirmado de contrato. Prioridad: Alta. Decisión: Validar el esquema completo y versionar el extractor.**
 - Criterio de aceptación (extracto): El criterio de aceptación será preservar la reproducción del v3 y garantizar que los candidatos nuevos y sus predicciones utilicen la misma representación validada; no se modificará un modelo serializado anterior para aparentar compatibilidad.
-- Componentes / corrección detallada / tests: preparation/features/physical_v5.py; physical_inputs.py; scripts/scientific/audit_m2_physical_v5.py
-- Implementación / evidencia: Esquema experimental 10x32x32, orden y metadatos STAC, 164 descriptores; 706 identidades/hash verificadas, sin modificar v3/v4. Falta contrato general de carga e inferencia y validacion de geometria.
+- Componentes / corrección detallada / tests: preparation/features/physical_v5.py; preparation/patch_contract.py; physical_inputs.py; scripts/scientific/audit_m2_physical_v5.py
+- Implementación / evidencia: V5 experimental 164 descriptores, 706 fuentes verificadas; contrato estricto nuevo impide 6x2x2, orden/geometry incorrectos, valida hash y equivalente TIFF/NPY. Legado sin contrato preservado. Falta ablacion V5 e inferencia con modelo real compatible.
 - Estado: parcialmente verificado.
 
 ## M2-10 — Step 10 Release — Diagnóstico de las estadísticas de reflectancia

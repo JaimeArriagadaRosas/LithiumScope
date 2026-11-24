@@ -12,7 +12,8 @@ from lithiumscope.core.paths import RESULTS_DIR
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.model_2.preparation.imagery import load_imagery
 from lithiumscope.model_2.preparation.features.spectral import DEFAULT_BAND_NAMES
-from lithiumscope.model_2.prediction.image_parser import image_to_feature_frame
+from lithiumscope.model_2.preparation.image_preprocessing import preprocess_image
+from lithiumscope.model_2.preparation.features.spectral import extract_spectral_features
 
 
 class SpectralAbstention(ValueError):
@@ -46,9 +47,19 @@ def prepare_spectral_input(path: Path, bundle: dict, *, allow_acquisition: bool 
     version = int(bundle.get("feature_extractor_version", 3))
     if version not in {1, 2, 3, 4}:
         raise SpectralAbstention("ABSTAIN_UNSUPPORTED_EXTRACTOR", "Unsupported spectral extractor version.")
-    raw = load_imagery(path)
+    contract = bundle.get("patch_input_contract")
+    verified_meta = None
+    verified_quality = {}
+    try:
+        if contract is not None:
+            from lithiumscope.model_2.preparation.patch_contract import load_verified_patch
+            raw, verified_meta, verified_quality = load_verified_patch(path, contract)
+        else:
+            raw = load_imagery(path)
+    except (OSError, ValueError, KeyError, TypeError, RuntimeError) as exc:
+        raise SpectralAbstention("ABSTAIN_INVALID_IMAGE_SCHEMA", f"Invalid patch input: {exc}") from exc
     bands = tuple(bundle.get("band_names", bundle.get("base_band_names", DEFAULT_BAND_NAMES)))
-    if raw.shape[0] != len(bands) or raw.shape[1] < 2 or raw.shape[2] < 2:
+    if len(set(bands)) != len(bands) or (contract is not None and tuple(contract["bands"]) != bands) or raw.shape[0] != len(bands) or raw.shape[1] < 2 or raw.shape[2] < 2:
         raise SpectralAbstention("ABSTAIN_INVALID_IMAGE_SCHEMA", "Input patch does not match the trained band schema.")
     coverage = float(np.isfinite(raw).all(axis=0).mean())
     cutoff = bundle.get("quality_min_joint_valid")
@@ -58,16 +69,18 @@ def prepare_spectral_input(path: Path, bundle: dict, *, allow_acquisition: bool 
     expected = list(bundle["features"])
     if not expected or len(expected) != len(set(expected)):
         raise SpectralAbstention("ABSTAIN_INVALID_FEATURE_SCHEMA", "Invalid or duplicate model feature contract.")
-    frame = image_to_feature_frame(path, band_names=bands,
-                                   normalize_per_band=bool(bundle.get("normalize_per_band", False)))
-    diagnostics = {"joint_valid_fraction": coverage, "feature_extractor_version": version}
+    image=preprocess_image(raw, normalize_per_band=bool(bundle.get("normalize_per_band", False)))
+    frame=pd.DataFrame([extract_spectral_features(image, band_names=bands)])
+    diagnostics = {"joint_valid_fraction": coverage, "feature_extractor_version": version,
+                   "input_contract_status": "verified" if contract is not None else "legacy_unverified_geometry",
+                   **verified_quality}
     if version == 4:
         from lithiumscope.tools.acquisition.sentinel2.rededge import cached_rededge_sample
         from lithiumscope.model_2.preparation.features.rededge import append_rededge_features
 
         if bands != DEFAULT_BAND_NAMES or len(expected) != 170:
             raise SpectralAbstention("ABSTAIN_INVALID_FEATURE_SCHEMA", "V4 requires the 126 + 44 feature contract.")
-        metadata = _source_metadata(path)
+        metadata = verified_meta if verified_meta is not None else _source_metadata(path)
         try:
             red, evidence = cached_rededge_sample(
                 SimpleNamespace(sample_id=f"inference_{file_sha256(path)[:24]}_{metadata['scene_id']}",

@@ -164,7 +164,12 @@ def _finalize_scientific_winner(
         "scope_note": ("Score de priorización exploratoria; no es probabilidad de yacimiento económicamente viable."),
     }
 
+    from lithiumscope.model_2.preparation.patch_contract import make_patch_contract
+    patch_contract = make_patch_contract(bands=cfg["imagery"]["bands"],
+        pixels=cfg["imagery"].get("patch_pixels",32), size_m=cfg["imagery"].get("patch_size_m",640))
+    metadata["patch_input_contract"] = patch_contract
     bundle = {
+        "patch_input_contract": patch_contract,
         "estimator": final_estimator,
         "features": list(x.columns),
         "band_names": list(cfg["imagery"]["bands"]),
