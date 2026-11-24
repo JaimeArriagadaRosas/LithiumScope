@@ -1,91 +1,71 @@
+"""Fold-local mean and median statistical references for regression."""
 from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-from sklearn.dummy import DummyRegressor
 
-from lithiumscope.core.scientific_checks import (
-    assert_group_isolation,
-    assert_oof_complete,
-)
+from lithiumscope.core.scientific_checks import assert_group_isolation, assert_partition_coverage
 from lithiumscope.model_1.evaluation.metrics import regression_metrics
-from lithiumscope.model_1.validation.spatial import (
-    materialize_regression_splits,
-)
+from lithiumscope.model_1.validation.spatial import materialize_regression_splits
 
 
-def evaluate_mean_baseline(prepared, config: dict) -> tuple[dict, pd.DataFrame, np.ndarray]:
-    validation = config["validation"]
-    groups = (
-        prepared.groups
-        if bool(
-            validation.get(
-                "prefer_spatial_groups",
-                False,
-            )
-        )
-        else None
-    )
-    require_groups = bool(
-        validation.get("prefer_spatial_groups", False)
-        and not validation.get("allow_random_fallback", False)
-    )
-    if getattr(prepared, "outer_splits", None) is not None:
-        outer_splits = getattr(prepared, "outer_splits")
-        strategy = getattr(prepared, "validation_strategy", None) or "unknown"
+def baseline_splits(prepared, config):
+    validation=config["validation"]
+    groups=getattr(prepared,"groups",None) if validation.get("prefer_spatial_groups",False) else None
+    require=bool(validation.get("prefer_spatial_groups",False) and not validation.get("allow_random_fallback",False))
+    splits=getattr(prepared,"outer_splits",None)
+    if splits is None:
+        splits,strategy=materialize_regression_splits(prepared.x,prepared.y,groups,
+            int(validation["outer_folds"]),int(validation["random_seed"]),require_groups=require)
     else:
-        outer_splits, strategy = materialize_regression_splits(
-            prepared.x,
-            prepared.y,
-            groups,
-            int(validation["outer_folds"]),
-            int(validation["random_seed"]),
-            require_groups=require_groups,
-        )
-    predictions = np.full(len(prepared.y), np.nan, dtype=float)
-    rows: list[dict] = []
+        strategy=getattr(prepared,"validation_strategy",None) or "unknown"
+    splits=list(splits)
+    assert_partition_coverage(splits,len(prepared.y))
+    if require and (groups is None or strategy!="group_kfold_spatial"):
+        raise ValueError("Baseline requires spatial validation")
+    if groups is not None and strategy=="group_kfold_spatial":
+        for train,test in splits:
+            assert_group_isolation(train,test,groups)
+    return splits,strategy
 
-    for fold, (train_idx, test_idx) in enumerate(
-        outer_splits,
-        start=1,
-    ):
-        if (
-            groups is not None
-            and strategy == "group_kfold_spatial"
-        ):
-            assert_group_isolation(
-                train_idx,
-                test_idx,
-                groups,
-            )
-        estimator = DummyRegressor(strategy="mean")
-        estimator.fit(prepared.x.iloc[train_idx], prepared.y.iloc[train_idx])
-        fold_predictions = estimator.predict(prepared.x.iloc[test_idx])
-        predictions[test_idx] = fold_predictions
-        metrics = regression_metrics(prepared.y.iloc[test_idx], fold_predictions).to_dict()
-        rows.append(
-            {
-                "fold": fold,
-                **metrics,
-                "validation_strategy": strategy,
-            }
-        )
 
-    assert_oof_complete(predictions, len(prepared.y))
-    fold_table = pd.DataFrame(rows)
-    ranking_row = {
-        "algorithm": "baseline_mean",
-        "label": "Baseline — media de entrenamiento",
-        "rmse_mean": float(fold_table["rmse"].mean()),
-        "rmse_std": float(fold_table["rmse"].std(ddof=0)),
-        "mae_mean": float(fold_table["mae"].mean()),
-        "mae_std": float(fold_table["mae"].std(ddof=0)),
-        "r2_mean": float(fold_table["r2"].mean()),
-        "r2_std": float(fold_table["r2"].std(ddof=0)),
-        "median_ae_mean": float(fold_table["median_ae"].mean()),
-        "explained_variance_mean": float(fold_table["explained_variance"].mean()),
-        "elapsed_seconds": 0.0,
-        "status": "ok",
-        "is_baseline": True,
-    }
-    return ranking_row, fold_table, predictions
+def evaluate_baseline(prepared, config, *, strategy="mean"):
+    if strategy not in {"mean","median"}:
+        raise ValueError("Unsupported baseline")
+    splits,validation_strategy=baseline_splits(prepared,config)
+    predictions=np.full(len(prepared.y),np.nan)
+    rows=[]
+    y=np.asarray(prepared.y,dtype=float)
+    if not np.isfinite(y).all():
+        raise ValueError("Baseline target must be finite")
+    for fold,(train,test) in enumerate(splits,1):
+        center=float(np.mean(y[train]) if strategy=="mean" else np.median(y[train]))
+        predictions[test]=center
+        metrics=regression_metrics(y[test],predictions[test]).to_dict()
+        rows.append({"fold":fold,"algorithm":"baseline_"+strategy,
+                     "n_train":len(train),"n_test":len(test),"train_reference_ppm":center,
+                     **metrics,"validation_strategy":validation_strategy})
+    table=pd.DataFrame(rows)
+    overall=regression_metrics(y,predictions).to_dict()
+    row={"algorithm":"baseline_"+strategy,"label":"Baseline — "+("media" if strategy=="mean" else "mediana")+" de TRAIN",
+         "elapsed_seconds":0.0,"status":"ok","is_baseline":True,
+         **{f"{m}_mean":float(table[m].mean(skipna=False)) for m in
+            ("rmse","mae","r2","median_ae","explained_variance")},
+         **{f"{m}_std":float(table[m].std(ddof=0,skipna=False)) for m in ("rmse","mae","r2")},
+         **{f"oof_{m}":v for m,v in overall.items()}}
+    return row,table,predictions
+
+
+def evaluate_mean_baseline(prepared,config):
+    """Stable historical entry point."""
+    return evaluate_baseline(prepared,config,strategy="mean")
+
+
+def evaluate_baselines(prepared,config):
+    from lithiumscope.model_1.evaluation.oof_evidence import regression_oof_table
+    splits,_=baseline_splits(prepared,config)
+    results=[evaluate_baseline(prepared,config,strategy=name) for name in ("mean","median")]
+    tables=pd.concat([r[1] for r in results],ignore_index=True)
+    predictions=pd.concat([regression_oof_table(prepared,r[2],splits).assign(algorithm=r[0]["algorithm"])
+                           for r in results],ignore_index=True)
+    return [r[0] for r in results],tables,predictions

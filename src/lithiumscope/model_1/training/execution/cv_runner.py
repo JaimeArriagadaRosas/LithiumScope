@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 
 from lithiumscope.core.checkpoints import FoldCheckpointStore
+from lithiumscope.core.checkpoint_identity import evaluation_identity
 from lithiumscope.resources.detection.device import DeviceInfo
 from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.scientific_checks import (
@@ -41,6 +42,7 @@ class CVRunResult:
     final_params: dict
     target_transform: str = "identity"
     variant_id: str | None = None
+    outer_splits: list | None = None
 
 
 def run_nested_cv(
@@ -113,7 +115,10 @@ def run_nested_cv(
     optimize = bool(optimization.get("enabled", True))
     pruning = optimization.get("pruning", {})
     checkpoint = (
-        FoldCheckpointStore(checkpoint_root, variant_id)
+        FoldCheckpointStore(checkpoint_root, variant_id, identity=evaluation_identity(checkpoint_root,model_group="model_1",
+            x=prepared.x,y=prepared.y,groups=groups,splits=outer_splits,
+            policy={"config":config,"variant":variant_id,"target_transform":target_transform,
+                    "schema":prepared.schema,"device":device,"strategy":outer_strategy}))
         if checkpoint_root is not None
         else None
     )
@@ -190,7 +195,7 @@ def run_nested_cv(
                         if checkpoint
                         else None
                     ),
-                    study_name=f"{algorithm}_final",
+                    study_name=checkpoint.study_name(f"{algorithm}_final") if checkpoint else f"{algorithm}_final",
                     random_seed=seed + 5000,
                     pruning_enabled=bool(
                         pruning.get("enabled", True)
@@ -236,6 +241,7 @@ def run_nested_cv(
         final_params=final_params,
         target_transform=target_transform,
         variant_id=variant_id,
+        outer_splits=outer_splits,
     )
 
 from lithiumscope.model_1.training.execution.cv_runner_evaluate_outer_regression_folds import _evaluate_outer_regression_folds

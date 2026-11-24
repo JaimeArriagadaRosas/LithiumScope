@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from lithiumscope.core.checkpoints import read_checkpoint_evidence
 import json
 import hashlib
 
@@ -74,7 +75,7 @@ def splits(name, data):
     out = []
     seen = np.zeros(len(data.y), int)
     for j in range(1, 6):
-        d = json.loads((folder / f"fold_{j:02d}.json").read_text("utf8"))
+        d = read_checkpoint_evidence(folder / f"fold_{j:02d}.json", allow_legacy=True)
         te = np.asarray(d["test_indices"], int)
         tr = np.setdiff1d(np.arange(len(data.y)), te)
         if set(data.groups.iloc[tr]) & set(data.groups.iloc[te]):

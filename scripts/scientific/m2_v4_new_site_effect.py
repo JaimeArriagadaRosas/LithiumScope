@@ -7,6 +7,7 @@ provisional GEOROC patches. No release promotion and no copied test data.
 from __future__ import annotations
 
 import argparse
+from lithiumscope.core.checkpoints import read_checkpoint_evidence
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -188,7 +189,7 @@ def run(*, minimum_new: int = 10, buffer_km: float = 5.0, root: Path = ROOT):
                 raise ValueError("Spatial group leakage")
             if len(np.unique(labels)) != 2:
                 raise ValueError("Extra-site dataset missing train class")
-            saved = json.loads((previous / "checkpoints" / alg / f"fold_{k:02d}.json").read_text("utf8"))
+            saved = read_checkpoint_evidence(previous / "checkpoints" / alg / f"fold_{k:02d}.json", allow_legacy=True)
             if not np.array_equal(saved["test_indices"], fold.test_idx):
                 raise ValueError("Frozen fold index mismatch")
             model = fit_frozen_model(

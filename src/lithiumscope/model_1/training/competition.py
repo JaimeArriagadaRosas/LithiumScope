@@ -18,7 +18,7 @@ from lithiumscope.core.run_resume import build_training_signature
 from lithiumscope.core.states import RunState
 from lithiumscope.datasets.manifest import build_tabular_manifest, write_manifest
 from lithiumscope.model_1.evaluation.artifacts import save_algorithm_artifacts, save_dataset_artifacts
-from lithiumscope.model_1.evaluation.baseline import evaluate_mean_baseline
+from lithiumscope.model_1.evaluation.baseline import evaluate_baselines
 from lithiumscope.model_1.evaluation.importance import save_feature_importance
 from lithiumscope.model_1.evaluation.plots import save_competition_chart
 from lithiumscope.model_1.pipeline import prepare_training_data
@@ -53,7 +53,8 @@ def _ranking_row(result) -> dict:
         "base_algorithm": result.algorithm,
         "target_transform": result.target_transform,
         "label": result.label,
-        "rmse_mean": float(folds["rmse"].mean()),
+        "rmse_mean": float(folds["rmse"].mean(skipna=False)),
+        **{f"oof_{name}": value for name,value in result.overall_metrics.items()},
         "rmse_std": float(folds["rmse"].std(ddof=0)),
         "mae_mean": float(folds["mae"].mean()),
         "mae_std": float(folds["mae"].std(ddof=0)),
@@ -129,8 +130,8 @@ def _rank(rows: list[dict]) -> pd.DataFrame:
 
     if not candidates.empty:
         candidates = candidates.sort_values(
-            ["rmse_mean", "mae_mean", "r2_mean"],
-            ascending=[True, True, False],
+            ["rmse_mean", "mae_mean", "r2_mean", "algorithm"],
+            ascending=[True, True, False, True],
         ).reset_index(drop=True)
         candidates.insert(0, "rank", range(1, len(candidates) + 1))
 
@@ -147,17 +148,13 @@ def _excel_sheets(prepared, ranking: pd.DataFrame, results: dict[str, tuple], ba
         "dataset_summary": prepared.frame.describe(include="all").transpose().reset_index(names="variable"),
         "correlations": prepared.frame.select_dtypes(include=[np.number]).corr(numeric_only=True).reset_index(),
         "baseline_folds": baseline[1],
+        "baseline_oof": baseline[2],
     }
     for algorithm, (result, algorithm_prepared) in results.items():
         sheets[f"folds_{algorithm}"[:31]] = result.fold_table
-        sheets[f"pred_{algorithm}"[:31]] = pd.DataFrame(
-            {
-                "row_index": algorithm_prepared.y.index,
-                "Li_real": algorithm_prepared.y.to_numpy(),
-                "Li_pred": result.predictions,
-                "residual": algorithm_prepared.y.to_numpy() - result.predictions,
-            }
-        )
+        from lithiumscope.model_1.evaluation.oof_evidence import regression_oof_table
+        sheets[f"pred_{algorithm}"[:31]] = regression_oof_table(algorithm_prepared,result.predictions,result.outer_splits).rename(
+            columns={"Li_icpms_real":"Li_real","Li_icpms_predicted":"Li_pred"})
     return sheets
 
 
@@ -244,9 +241,10 @@ def run_model_1_competition(dataset_path: Path, device: DeviceInfo) -> Competiti
     )
     context.tracker.attach_summary(dataset_sha256=dataset_manifest.source_sha256)
 
-    baseline = evaluate_mean_baseline(prepared, config)
+    baseline = evaluate_baselines(prepared, config)
     baseline[1].to_csv(context.tables / "baseline_fold_metrics.csv", index=False)
-    rows: list[dict] = [baseline[0]]
+    baseline[2].to_csv(context.tables / "baseline_oof_predictions.csv", index=False)
+    rows: list[dict] = list(baseline[0])
     results: dict[str, tuple] = {}
     failed: list[str] = []
 

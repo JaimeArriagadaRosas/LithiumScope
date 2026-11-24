@@ -48,7 +48,12 @@ def _evaluate_model_1_candidates(config, context, device, experiments, failed, p
                 target_transform=target_transform,
                 variant_id=variant_id,
             )
-            verify_candidate(result, result.predictions, len(prepared.y), ("rmse", "mae", "r2"))
+            verify_candidate(result, result.predictions, len(prepared.y), ("rmse", "mae", "r2"),
+                expected_folds=len(prepared.outer_splits))
+            from numpy import array_equal
+            if result.outer_splits is None or len(result.outer_splits)!=len(prepared.outer_splits) or any(
+                not (array_equal(a,c) and array_equal(b,d)) for (a,b),(c,d) in zip(result.outer_splits,prepared.outer_splits,strict=True)):
+                raise ValueError("Candidate folds differ from frozen common partition")
             row = _ranking_row(result)
         except Exception as exc:
             logger.exception("Algorithm failed: %s", algorithm)

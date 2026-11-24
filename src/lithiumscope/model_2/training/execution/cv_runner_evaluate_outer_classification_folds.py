@@ -142,7 +142,7 @@ def _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_th
                         if checkpoint
                         else None
                     ),
-                    study_name=f"{algorithm}_fold_{fold:02d}",
+                    study_name=checkpoint.study_name(f"{algorithm}_fold_{fold:02d}") if checkpoint else f"{algorithm}_fold_{fold:02d}",
                     pruning_enabled=bool(
                         pruning.get("enabled", True)
                     ),

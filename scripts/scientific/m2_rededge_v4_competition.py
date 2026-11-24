@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+from lithiumscope.core.checkpoints import read_checkpoint_evidence
 import json
 from pathlib import Path
 
@@ -205,7 +206,7 @@ def compare(cohort: int, *, root: Path = PROJECT_ROOT) -> pd.DataFrame:
             ytrain = (manifest.Li_icpms.iloc[fit].to_numpy(float) >= fold.label_threshold_ppm).astype(int)
             if len(np.unique(ytrain)) != 2:
                 raise ValueError("M2 v4 fit lacks a class")
-            stored = json.loads((checkpoint / f"fold_{k:02d}.json").read_text(encoding="utf-8"))
+            stored = read_checkpoint_evidence(checkpoint / f"fold_{k:02d}.json", allow_legacy=True)
             if not np.array_equal(stored["test_indices"], fold.test_idx):
                 raise ValueError("Prior fold provenance changed")
             model = fit_frozen_model(

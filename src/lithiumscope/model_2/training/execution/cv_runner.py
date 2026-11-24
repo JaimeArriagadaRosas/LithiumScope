@@ -9,6 +9,7 @@ import pandas as pd
 from sklearn.model_selection import StratifiedGroupKFold, StratifiedKFold, GroupKFold
 
 from lithiumscope.core.checkpoints import FoldCheckpointStore
+from lithiumscope.core.checkpoint_identity import evaluation_identity
 from lithiumscope.resources.detection.device import DeviceInfo
 from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.scientific_checks import (
@@ -86,11 +87,6 @@ def run_classification_cv(
     started = time.perf_counter()
     label = get_label(algorithm)
     spec = get_algorithm(algorithm)
-    checkpoint = (
-        FoldCheckpointStore(checkpoint_root, algorithm)
-        if checkpoint_root is not None
-        else None
-    )
 
     optimization = optimization or {}
     from lithiumscope.model_2.training.calibration.policy import calibration_policy
@@ -122,6 +118,16 @@ def run_classification_cv(
         from lithiumscope.model_2.validation.spatial import scientific_labels
         if not np.array_equal(scientific_labels(scientific_folds, len(y)), np.asarray(y)):
             raise ValueError('OOF labels differ from fold protocol')
+    checkpoint = None
+    if checkpoint_root is not None:
+        identity=evaluation_identity(checkpoint_root,model_group="model_2",x=x,y=y,groups=groups,splits=split_iter,
+            policy={"algorithm":algorithm,"device":device,"seed":seed,"folds":folds,
+                    "inner_folds":inner_folds,"optimization":optimization,"label_quantile":label_quantile,
+                    "fixed_threshold_ppm":fixed_threshold_ppm},
+            extra={"lithium":None if lithium_values is None else np.asarray(lithium_values).tolist(),
+                   "quality_mask":None if quality_training_mask is None else quality_training_mask.tolist(),
+                   "scientific_thresholds":None if scientific_folds is None else [f.label_threshold_ppm for f in scientific_folds]})
+        checkpoint=FoldCheckpointStore(checkpoint_root,algorithm,identity=identity)
     _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_threshold_ppm, folds, groups, inner_folds, label, label_quantile, lithium_values, optimize, probabilities, pruning, quality_training_mask, records, scientific_folds, seed, spec, split_groups, split_iter, trials, x, y, parameter_space, calibration_mode, operating_objective, operating_records)
 
     assert_oof_complete(probabilities, len(y))
@@ -200,7 +206,7 @@ def run_classification_cv(
                         if checkpoint
                         else None
                     ),
-                    study_name=f"{algorithm}_final",
+                    study_name=checkpoint.study_name(f"{algorithm}_final") if checkpoint else f"{algorithm}_final",
                     pruning_enabled=bool(
                         pruning.get("enabled", True)
                     ),

@@ -6,31 +6,36 @@ from lithiumscope.core.candidate_evidence import eligible_rows
 
 def _finalize_model_1_winner(baseline, config, context, dataset_manifest, device, failed, manifest_path, preflight, prepared, results, rows, seed):
     from lithiumscope.model_1.training.competition import CompetitionOutcome, RunState, _excel_sheets, _rank, applicability_profile, build_dashboard, build_pipeline, export_workbook, np, save_competition_chart, save_feature_importance, save_model_bundle, save_oof_diagnostics
-    ranking = _rank(rows)
+    from lithiumscope.model_1.evaluation.selection import baseline_eligibility
+    ranking = baseline_eligibility(_rank(rows), preflight_ok=preflight.get("status") == "pass",
+        minimum_gain=float(config.get("baseline",{}).get("minimum_rmse_gain_ppm",0.0)))
     ranking.to_csv(context.tables / "competition_ranking.csv", index=False)
     successful = ranking[
         eligible_rows(ranking)
         & (ranking["is_baseline"] != True)  # noqa: E712
     ].copy()
 
-    if successful.empty:
+    relative_winner = str(successful.iloc[0]["algorithm"]) if not successful.empty else None
+    eligible = successful.loc[successful.scientific_candidate_eligible]
+    if eligible.empty:
         export_workbook(
             context.exports / "model_1_results.xlsx",
             _excel_sheets(prepared, ranking, results, baseline),
         )
         build_dashboard(context.root, "LithiumScope — Modelo 1")
         context.tracker.set_state(
-            RunState.FAILED,
-            failure="No trainable algorithm completed successfully.",
+            RunState.PARTIAL if relative_winner else RunState.FAILED,
+            relative_winner=relative_winner,
+            failure="No candidate satisfies predeclared baseline and preflight criteria.",
         )
-        return CompetitionOutcome(context.root, ranking, None, [], failed)
+        return CompetitionOutcome(context.root, ranking, None, successful.algorithm.astype(str).tolist(), failed)
 
     save_competition_chart(
         successful,
         context.figures / "competition_rmse.png",
     )
     winner_variant = str(
-        successful.iloc[0]["algorithm"]
+        eligible.iloc[0]["algorithm"]
     )
     winner_result, winner_prepared = (
         results[winner_variant]
@@ -88,6 +93,11 @@ def _finalize_model_1_winner(baseline, config, context, dataset_manifest, device
         "samples": len(winner_prepared.y),
         "metrics": winner_result.overall_metrics,
         "competition_primary_metric": "rmse_mean",
+        "relative_winner": relative_winner,
+        "baseline_policy": str(eligible.iloc[0]["baseline_policy"]),
+        "rmse_gain_over_best_baseline":float(eligible.iloc[0]["rmse_gain_over_best_baseline"]),
+        "experimental_only":True,
+        "release_gate":{"pass":False,"reason":"no_independent_external_holdout"},
         "winner_rule": (
             "lowest mean outer-CV RMSE across algorithm/target variants; "
             "tie-break MAE then R2"
@@ -127,6 +137,7 @@ def _finalize_model_1_winner(baseline, config, context, dataset_manifest, device
     }
     bundle = {
         "estimator": final_estimator,
+        "experimental_only":True,
         "algorithm": winner_algorithm,
         "variant_id": winner_variant,
         "target_transform": winner_transform,
@@ -166,14 +177,16 @@ def _finalize_model_1_winner(baseline, config, context, dataset_manifest, device
         "LithiumScope — Modelo 1 · Competencia",
     )
 
-    final_state = RunState.PARTIAL if failed else RunState.COMPLETED
+    final_state = RunState.PARTIAL if failed or len(successful)!=len(results) else RunState.COMPLETED
     context.tracker.set_state(
         final_state,
+        relative_winner=relative_winner,
+        release_gate_pass=False,
         winner=winner_variant,
         winner_algorithm=winner_algorithm,
         target_transform=winner_transform,
         primary_metric="rmse_mean",
-        primary_metric_value=float(successful.iloc[0]["rmse_mean"]),
+        primary_metric_value=float(eligible.iloc[0]["rmse_mean"]),
         model_path=str(model_path),
         failed_algorithms=failed,
     )
@@ -181,6 +194,6 @@ def _finalize_model_1_winner(baseline, config, context, dataset_manifest, device
         context.root,
         ranking,
         winner_variant,
-        list(results),
+        successful.algorithm.astype(str).tolist(),
         failed,
     )

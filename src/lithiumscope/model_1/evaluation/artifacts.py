@@ -55,14 +55,9 @@ def save_algorithm_tables(prepared, cv_result, run_context) -> dict[str, Path]:
     fold_path = run_context.tables / f"fold_metrics_{artifact_key}.csv"
     cv_result.fold_table.to_csv(fold_path, index=False)
 
-    predictions = pd.DataFrame(
-        {
-            "row_index": prepared.y.index,
-            "Li_icpms_real": prepared.y.to_numpy(),
-            "Li_icpms_predicted": cv_result.predictions,
-            "residual": prepared.y.to_numpy() - cv_result.predictions,
-        }
-    )
+    from lithiumscope.model_1.evaluation.oof_evidence import regression_oof_table
+    splits = cv_result.outer_splits if cv_result.outer_splits is not None else prepared.outer_splits
+    predictions = regression_oof_table(prepared, cv_result.predictions, splits)
     prediction_path = run_context.tables / f"oof_predictions_{artifact_key}.csv"
     predictions.to_csv(prediction_path, index=False)
 

@@ -5,6 +5,7 @@ Retrospective only. No fitting, no source edits, no exclusion of high lithium.
 from __future__ import annotations
 
 import argparse
+from lithiumscope.core.checkpoints import read_checkpoint_evidence
 import json
 from pathlib import Path
 
@@ -63,7 +64,7 @@ def verify_historical_oof(prepared, oof, checkpoint_folder):
     folds = []
     fold_ids = np.zeros(n, dtype=int)
     for fold in range(1,6):
-        record = json.loads((checkpoint_folder/f"fold_{fold:02d}.json").read_text(encoding="utf-8"))
+        record = read_checkpoint_evidence(checkpoint_folder/f"fold_{fold:02d}.json", allow_legacy=True)
         test = np.asarray(record["test_indices"],dtype=int)
         train = np.setdiff1d(np.arange(n),test)
         assert_group_isolation(train,test,prepared.groups)

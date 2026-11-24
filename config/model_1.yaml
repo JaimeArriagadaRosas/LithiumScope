@@ -77,4 +77,5 @@ competition:
 
 baseline:
   enabled: true
-  strategy: mean
+  strategies: [mean, median]
+  minimum_rmse_gain_ppm: 0.0

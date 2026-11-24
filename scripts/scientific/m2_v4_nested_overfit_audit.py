@@ -5,6 +5,7 @@ All six algorithms; no Optuna, no changes to folds, labels or releases.
 
 from __future__ import annotations
 
+from lithiumscope.core.checkpoints import read_checkpoint_evidence
 import json
 from pathlib import Path
 
@@ -55,7 +56,7 @@ def audit(*, root: Path = PROJECT_ROOT) -> pd.DataFrame:
             raise ValueError("Missing nested OOF model " + algorithm)
         for k, fold in enumerate(folds, 1):
             checkpoint = trained / "checkpoints" / algorithm / f"fold_{k:02d}.json"
-            state = json.loads(checkpoint.read_text(encoding="utf-8"))
+            state = read_checkpoint_evidence(checkpoint, allow_legacy=True)
             if not np.array_equal(state["test_indices"], fold.test_idx):
                 raise ValueError("Refit fold TEST drifted")
             fit = fold.train_idx[eligible[fold.train_idx]]

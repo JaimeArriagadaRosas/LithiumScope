@@ -110,9 +110,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 873.
 - Diagnóstico de origen: **Estado: Correcto con limitación de evaluación final. Prioridad: Alta. Decisión: Conservar las métricas y fortalecer la integridad y comunicación de los resultados.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: evaluation/metrics.py; evaluation/oof_evidence.py; artifacts.py; test_statistical_baselines.py
+- Implementación / evidencia: Regresion valida forma/finitud, R2/EV indefinidos para verdad constante; TRAIN y TEST por fold, OOF identificado por fila/grupo/fold y Q75 TRAIN; CSV y Excel. Pruebas sinteticas y 3420 OOF archivados verificados; falta competencia real y diagnostico de confusion/robustez completos.
+- Estado: parcialmente verificado.
 
 ## M1-15 — Step 15 Histórico ↔ Steps 26 y 28 Release — Diagnóstico del entrenamiento definitivo y generación de resultados
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 879.
@@ -158,24 +158,24 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 911.
 - Diagnóstico de origen: **Estado: Correcto con cobertura experimental insuficiente. Prioridad: Media. Decisión: Conservar la media de TRAIN y añadir referencias complementarias.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: evaluation/baseline.py; evaluation/oof_evidence.py; audit_m1_statistical_baselines.py; test_statistical_baselines.py
+- Implementación / evidencia: Media y mediana solo TRAIN; cobertura y grupos verificados, metricas fold/globales. Auditoria real 3420: RMSE medio 97.266438 vs 94.308920, MAE 27.295125 vs 19.963105; cinco algoritmos historicos superan ambos en RMSE medio. Falta evaluar candidato nuevo.
+- Estado: parcialmente verificado.
 
 ## M1-21 — Step 15 Release — Diagnóstico de la competencia de algoritmos
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 917.
 - Diagnóstico de origen: **Estado: Correcto operativamente, limitado como comparación de familias. Prioridad: Alta. Decisión: Conservar los seis candidatos y estandarizar las condiciones experimentales.**
 - Criterio de aceptación (extracto): El criterio de aceptación será que los rankings solo agrupen resultados comparables bajo condiciones declaradas; la decisión de agregar o eliminar algoritmos dependerá de estabilidad y valor predictivo, no de que el algoritmo haya ganado una única ejecución.
-- Componentes / corrección detallada / tests: core/candidate_evidence.py; competition_evaluate_model_1_candidates.py; test_candidate_evidence.py
-- Implementación / evidencia: Separacion evaluacion y artefactos. Se conserva una fila por variante; figuras fallidas no anulan metricas, tablas esenciales fallidas excluyen del ranking. Cobertura OOF exacta y metricas finitas. Pendiente estandarizar presupuestos y comparar seis candidatos reales.
+- Componentes / corrección detallada / tests: training/competition.py; training/execution/cv_runner.py; core/checkpoint_identity.py; test_statistical_baselines.py
+- Implementación / evidencia: Folds exactos comunes y conteo verificados para ranking, TRAIN/TEST y OOF, identidad de reanudacion incluye esquema/config/particiones/datos y versiones. Falta ejecutar competencia real de seis familias y evaluar equidad de presupuestos.
 - Estado: parcialmente verificado.
 
 ## M1-22 — Step 22 Release — Diagnóstico de la selección del ganador
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 923.
 - Diagnóstico de origen: **Estado: Limitación metodológica confirmada. Prioridad: Alta. Decisión: Conservar el ranking histórico y separar el ganador relativo del candidato científicamente elegible.**
 - Criterio de aceptación (extracto): Consultar el texto completo de origen.
-- Componentes / corrección detallada / tests: core/candidate_evidence.py; competition.py; competition_finalize_model_1_winner.py
-- Implementación / evidencia: Ranking excluye candidatos con evidencia esencial fallida. No equivale a puerta cientifica; falta beneficio frente a baseline, estabilidad y holdout.
+- Componentes / corrección detallada / tests: evaluation/selection.py; competition_finalize_model_1_winner.py; config/model_1.yaml; test_statistical_baselines.py
+- Implementación / evidencia: Regla provisional versionada exige superar ambos baselines en RMSE medio y preflight pass, con evidencia esencial; ranking relativo separado de elegibilidad de desarrollo. Test impide ajuste final si no elegible; release_gate falso sin holdout. Auditoria retrospectiva cinco de seis superan ambos. Falta limites de estabilidad/alto Li por proposito y holdout.
 - Estado: parcialmente verificado.
 
 ## M1-23 — Step 23 Release — Diagnóstico de las pruebas de robustez
@@ -454,6 +454,6 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 601.
 - Diagnóstico de origen: **Estado: Correcto con mejoras de integridad. Prioridad: Alta. Decisión: Consolidar artefactos, evidencias y versionamiento reproducible.**
 - Criterio de aceptación (extracto): El criterio de aceptación será poder reconstruir cada decisión de entrenamiento y predicción sin depender del orden de filas, recuperar evidencias desde el menú de resultados y mantener inalterado el release histórico.
-- Componentes / corrección detallada / tests: core/checkpoints.py; core/run_resume.py; evaluation/oof_evidence.py; training/calibration/operating.py; tests/runtime/test_checkpoints.py (ab50a93, 4cedafa).
-- Implementación / evidencia: Checkpoints con hash y recalculo de metricas; OOF por ID, fold, grupo, etiqueta y corte; firma ampliada, predicciones internas y metricas operativas persistidas. Falta verificacion integral de artefactos de runs completados, compatibilidad de bundles y prueba de reanudacion real.
+- Componentes / corrección detallada / tests: core/checkpoints.py; core/checkpoint_identity.py; core/run_resume.py; evaluation/oof_evidence.py; test_checkpoints.py
+- Implementación / evidencia: Checkpoints con sello y vinculacion a X/y/grupos/folds/config/versiones/QA/endpoint, nombres de Optuna por identidad; lectores historicos solo lectura. Pruebas M1/M2 sinteticas de reanudacion e incompatibilidad. Falta reanudacion real, integridad completa de runs y bundles.
 - Estado: parcialmente verificado.

@@ -95,7 +95,7 @@ def _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, group
                         if checkpoint
                         else None
                     ),
-                    study_name=f"{algorithm}_fold_{fold:02d}",
+                    study_name=checkpoint.study_name(f"{algorithm}_fold_{fold:02d}") if checkpoint else f"{algorithm}_fold_{fold:02d}",
                     random_seed=seed + fold,
                     pruning_enabled=bool(
                         pruning.get("enabled", True)
@@ -126,6 +126,8 @@ def _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, group
                 y_test,
                 fold_predictions,
             ).to_dict()
+            train_predictions = estimator.predict(x_train)
+            metrics.update({f"train_{k}":v for k,v in regression_metrics(y_train,train_predictions).to_dict().items()})
             # Paired holdout stress test, never fitted on the outer test set.
             # Noise is scaled from outer-training features only.
             numeric = [
