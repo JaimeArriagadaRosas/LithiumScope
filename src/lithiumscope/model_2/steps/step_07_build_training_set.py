@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
+from lithiumscope.datasets.validation.paths import resolve_image_path
 
 from lithiumscope.core.logging.session import get_logger
 from lithiumscope.model_2.steps.step_01_load_imagery import load_imagery
@@ -38,7 +39,7 @@ def build_training_set(
             manifest.iterrows(),
             start=1,
         ):
-            path = Path(sample[image_path_column])
+            path = resolve_image_path(sample[image_path_column])
             image = preprocess_image(
                 load_imagery(path),
                 normalize_per_band=normalize_per_band,

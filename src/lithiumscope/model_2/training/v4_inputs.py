@@ -165,7 +165,9 @@ def build_scientific_training_signature(manifest_path: Path, cfg: dict) -> str:
     from lithiumscope.core.run_resume import build_training_signature
 
     if not spectral_v4_enabled(cfg):
-        return build_training_signature("model_2", manifest_path, ("app", "model_2"))
+        from lithiumscope.model_2.data.feature_cache import source_identity
+        _, identity = source_identity(manifest_path, cfg)
+        return canonical_json_hash({"base": build_training_signature("model_2", manifest_path, ("app", "model_2")), "spectral_sources": identity})
     matrix, evidence = verify_spectral_v4_source(manifest_path, cfg)
     base = build_training_signature("model_2", matrix, ("app", "model_2"))
     return canonical_json_hash(

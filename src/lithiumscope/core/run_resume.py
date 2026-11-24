@@ -120,7 +120,7 @@ def _scientific_code_files(model_group: str) -> list[Path]:
         candidate = model_root / filename
         if candidate.exists():
             files.append(candidate)
-    for directory_name in ("steps", "training"):
+    for directory_name in ("steps", "training", "preparation", "validation", "features"):
         directory = model_root / directory_name
         if directory.exists():
             files.extend(directory.rglob("*.py"))
@@ -141,6 +141,9 @@ def _scientific_code_files(model_group: str) -> list[Path]:
     ):
         if path.exists():
             files.append(path)
+    for directory in (source_root / "datasets" / "validation", source_root / "resources"):
+        if directory.exists():
+            files.extend(directory.rglob("*.py"))
     return sorted(set(files), key=lambda path: path.relative_to(PROJECT_ROOT).as_posix())
 
 

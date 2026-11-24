@@ -52,3 +52,8 @@
 - CI ahora ejecuta runner con cobertura y sube evidencia en matriz existente. No se ha ejecutado CI remoto.
 - Lectura: secciones de diagnostico de M1 y M2 (57 criterios) y especificacion del repositorio revisadas; antecedentes, tablas, codigo comparativo y documentos complementarios aun no revisados de principio a fin. Checklist y diagnostico general leidos; E1/E2 diagnostico vacio.
 - Cierre de bloque, no cierre de refactorizacion: EDA real y holdout independiente pendientes. No se han entrenado modelos reales ni promovido candidatos.
+
+## Importacion independiente y cache espectral
+- 1425 archivos copiados y verificados; 706 parches originales, manifiesto congelado intacto, matriz v4 y QA, fuentes M1. Evidencia: results/diagnostics/historical_import.json. No se copiaron modelos ni se escribio en el clon anterior.
+- Cache por contenido y matriz SHA256; IDs, orden de etiquetas y grupos, esquema, imagenes, configuracion y codigo. Regresion 29 passed, 1 skipped (20261124T203905Z_bb6c4422eea24df5be215a1a5955cc73). Verificacion real 706 x 172 (170 predictores), 690 elegibles QA seis bandas. Pendiente identidad red-edge original y pruebas de concurrencia/interrupcion.
+- Restriccion expresa: commits solo locales, no push ni workflows remotos.

@@ -45,3 +45,6 @@ results/tests/*
 
 results/diagnostics/*
 results/scientific_simulations/sim_*
+
+results/scientific_simulations/m2_rededge_v4_20261113/
+results/scientific_simulations/sentinel_methodology_20261112/

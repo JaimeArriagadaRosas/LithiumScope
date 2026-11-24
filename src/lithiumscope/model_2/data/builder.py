@@ -5,6 +5,7 @@ from hashlib import sha1
 from pathlib import Path
 
 import pandas as pd
+from lithiumscope.datasets.validation.paths import resolve_image_path
 
 from lithiumscope.core.config import load_config
 from lithiumscope.core.hashing import file_sha256
@@ -122,7 +123,7 @@ def _load_valid_manifest(path: Path) -> pd.DataFrame:
 
     valid = frame[
         frame["image_path"].map(
-            lambda value: Path(str(value)).exists()
+            lambda value: resolve_image_path(str(value)).is_file()
         )
     ].copy()
     for column in _MANIFEST_COLUMNS:

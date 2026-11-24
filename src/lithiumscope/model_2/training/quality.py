@@ -10,6 +10,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from lithiumscope.datasets.validation.paths import resolve_image_path
 
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import PROJECT_ROOT
@@ -50,7 +51,7 @@ def training_quality_mask(
     # Replay immutable source hashes. Multiple labels can reference one NPY.
     checked={}
     for path,digest in zip(manifest.image_path,inventory.image_sha256):
-        p=Path(path)
+        p=resolve_image_path(path, root=PROJECT_ROOT)
         if p not in checked:
             if not p.is_file():raise FileNotFoundError(p)
             checked[p]=file_sha256(p)
