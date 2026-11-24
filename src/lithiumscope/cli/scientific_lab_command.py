@@ -11,17 +11,17 @@ from lithiumscope.core.paths import PROJECT_ROOT
 
 
 def _run_eda_m1():
-    from lithiumscope.datasets.provisioner import require_model_1_dataset
+    from lithiumscope.datasets.local_sources import local_training_source
     from lithiumscope.model_1.eda.pipeline import run_eda
 
-    return run_eda(require_model_1_dataset(include_georoc=True))
+    return run_eda(local_training_source("model_1"))
 
 
 def _run_eda_m2():
-    from lithiumscope.datasets.provisioner import require_model_2_expanded_manifest
+    from lithiumscope.datasets.local_sources import local_training_source
     from lithiumscope.model_2.eda.pipeline import run_eda
 
-    return run_eda(require_model_2_expanded_manifest())
+    return run_eda(local_training_source("model_2"))
 
 
 def _eda_menu() -> bool | None:

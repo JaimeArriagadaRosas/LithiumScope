@@ -107,3 +107,6 @@
 
 ## Separacion de demostracion y promocion
 - La evaluacion de los diez casos conocidos es exclusivamente comparativa; no cambia candidato pendiente ni modelo activo. API y CLI bloquean promocion sin holdout independiente. Comparacion requiere mismos casos, etiquetas y predicciones finitas; los gates rechazan metricas invalidas. No se activo ni entreno ningun modelo.
+
+## Entradas del EDA local
+- Laboratorio resuelve instantanea local M1 segun configuracion y manifiesto M2 congelado o expandido. No reconstruye ni descarga datasets desde diagnostico; entrada ausente bloquea, sin fallback de cohorte. No acepta archivos de otro workspace.
