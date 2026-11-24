@@ -17,7 +17,7 @@ from lithiumscope.runtime.dependencies import ensure_runtime_dependencies
 
 # Repair declared runtime dependencies before importing the rest of the app.
 # This lets a normal "python main.py" recover after a git pull adds a package.
-dependency_repair = ensure_runtime_dependencies(verbose=True)
+dependency_repair = ensure_runtime_dependencies(verbose=True, include_optional=False)
 if not dependency_repair.success:
     missing = ", ".join(dependency_repair.missing_after) or "desconocidas"
     print(

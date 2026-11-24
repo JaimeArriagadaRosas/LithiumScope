@@ -133,6 +133,7 @@ def ensure_runtime_dependencies(
     *,
     verbose: bool = True,
     auto_install: bool = True,
+    include_optional: bool = True,
 ) -> DependencyRepairResult:
     """Repair missing runtime dependencies before the full application imports.
 
@@ -143,11 +144,11 @@ def ensure_runtime_dependencies(
     global _LAST_REPAIR_RESULT
 
     core_missing, ml_missing, imagery_missing = _runtime_gaps()
+    if not include_optional:
+        ml_missing, imagery_missing = [], []
     missing_before = tuple(core_missing + ml_missing + imagery_missing)
 
     if not missing_before:
-        if _LAST_REPAIR_RESULT is not None:
-            return _LAST_REPAIR_RESULT
         result = DependencyRepairResult(
             attempted=False,
             success=True,
@@ -240,9 +241,7 @@ def ensure_runtime_dependencies(
 
     importlib.invalidate_caches()
     core_after, ml_after, imagery_after = _runtime_gaps()
-    missing_after = tuple(
-        core_after + ml_after + imagery_after
-    )
+    missing_after = tuple(core_after + ml_after + imagery_after if include_optional else core_after)
     success = returncode == 0 and not missing_after
 
     output_lines = tuple(

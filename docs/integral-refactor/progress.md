@@ -100,3 +100,7 @@
 - Calculo de distancias geodesicas con BallTree por observacion y fold, usando TRAIN completo y elegible. Controles de cobertura, grupos, distancia minima configurable, escenas y procedencia compartidas; cribado conservador de solapamiento de parches por distancia entre centros, no certificacion de geometrias.
 - EDA real M1: minimo 153.57 m, 24 muestras TEST con TRAIN a <=1 km, ninguna <=100 m. M2: minimo 1023.33 m, 0 posibles solapamientos de parches de 640 m, 547 casos TEST con escena compartida; 0 hashes de imagen compartidos. No implica independencia externa. No se cambiaron folds ni se ajustaron modelos.
 - Evidencia M1 results/model_1/eda/eda_20261124T210434_548568Z_cedde0b5; M2 results/model_2/eda/eda_20261124T210444_094402Z_864e808b; hashes verificados. 35 aprobadas, 1 omitida (20261124T210403Z_801d49ab07ff4d1aa57c35e52bc89495). Pendiente protocolo prospectivo de holdout, auditoria de calibracion e inner folds, independencia documental.
+
+## Preboot y dependencias por operacion
+- Arranque con dependencias core, sin exigir ni instalar extras opcionales; no se eliminan .gitkeep. M2 no requiere torch/TabNet. Arranque interactivo real main.py, ENTER y 0, exit 0, sin advertencias ni errores, con GTX1650 detectada y XGBoost CUDA comprobado. M1 aun requiere instalar torch/TabNet para competencia completa; adquisicion nueva requiere pystac-client. Log results/diagnostics/interactive_startup_smoke.log.
+- Regresion 66 aprobadas, 1 omitida (20261124T210530Z_6d2492b413044a1380ac0fc45ea30e95). No se realizaron instalaciones de extras ni push.

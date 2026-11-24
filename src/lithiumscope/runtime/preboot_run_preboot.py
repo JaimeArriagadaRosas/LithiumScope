@@ -16,7 +16,7 @@ def run_preboot(
     configure_logging()
 
     repair = ensure_runtime_dependencies(
-        verbose=verbose,
+        verbose=verbose, include_optional=False,
     )
 
     loading = (
@@ -28,7 +28,7 @@ def run_preboot(
     )
     try:
         if loading is not None:
-            loading.update("Limpiando workspace local")
+            loading.update("Verificando estructura local")
         removed = cleanup_gitkeep_placeholders()
 
         if loading is not None:
@@ -197,17 +197,17 @@ def run_preboot(
             f"  Plataforma         {report.platform}"
         )
         print(
-            f"  .gitkeep limpiados "
+            f"  .gitkeep eliminados "
             f"{report.placeholders_removed}"
         )
         _print_datasets(report.datasets)
         print(
             f"  Entrenamiento M1   "
-            f"[{'LISTO' if report.model_1_ready else 'DATOS PENDIENTES'}]"
+            f"[{'LISTO' if report.model_1_ready else 'REQUISITOS PENDIENTES'}]"
         )
         print(
             f"  Entrenamiento M2   "
-            f"[{'LISTO' if report.model_2_ready else 'DATOS PENDIENTES'}]"
+            f"[{'LISTO' if report.model_2_ready else 'REQUISITOS PENDIENTES'}]"
         )
         print(
             f"  Reporte            {report.report_path}"

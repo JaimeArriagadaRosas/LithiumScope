@@ -40,7 +40,7 @@ def _load_reporting_callable(
         )
 
         result = ensure_runtime_dependencies(
-            verbose=True,
+            verbose=True, include_optional=False,
         )
         if not result.success:
             raise

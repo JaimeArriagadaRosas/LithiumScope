@@ -87,7 +87,7 @@ def test_model2_menu_option_2_restores_six_algorithm_competition(monkeypatch):
     called=[]
     monkeypatch.setattr(menu,"choose",lambda *a,**k:"2")
     monkeypatch.setattr(menu,"require_full_training_environment",
-                        lambda:called.append("environment"))
+                        lambda model:called.append("environment"))
     monkeypatch.setattr(menu,"detect_device",lambda **kw:types.SimpleNamespace(
         accelerator="cpu",name="CPU"))
     monkeypatch.setattr(menu,"device_summary",lambda device:None)

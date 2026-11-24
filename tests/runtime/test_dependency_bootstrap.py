@@ -198,3 +198,27 @@ def test_dependency_repair_captures_installer_output(
         result.installer_output_tail[-1]
         == "pip detail hidden from normal output"
     )
+
+def test_core_bootstrap_does_not_install_optional_packages(monkeypatch):
+    monkeypatch.setattr(dependencies.importlib.util, "find_spec",
+                        _fake_find_spec_factory({"torch", "pytorch_tabnet", "pystac_client"}))
+    monkeypatch.setattr(dependencies.subprocess, "run", lambda *a, **k: (_ for _ in ()).throw(AssertionError("No installation expected")))
+    result = dependencies.ensure_runtime_dependencies(verbose=False, include_optional=False)
+    assert result.success and not result.attempted
+
+
+def test_training_environment_is_model_specific(monkeypatch):
+    from lithiumscope.runtime import preboot
+    monkeypatch.setattr(dependencies.importlib.util, "find_spec",
+                        _fake_find_spec_factory({"torch", "pytorch_tabnet"}))
+    assert preboot.missing_training_dependencies("model_2") == []
+    assert set(preboot.missing_training_dependencies("model_1")) == {"PyTorch", "PyTorch TabNet"}
+
+
+def test_preboot_preserves_placeholders(tmp_path, monkeypatch):
+    from lithiumscope.runtime import preboot
+    p = tmp_path / ".gitkeep"
+    p.touch()
+    monkeypatch.setattr(preboot, "DATA_DIR", tmp_path)
+    assert preboot.cleanup_gitkeep_placeholders() == 0
+    assert p.exists()

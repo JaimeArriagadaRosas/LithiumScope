@@ -175,7 +175,7 @@ def test_menu_option_two_routes_normal_competition_without_fit(monkeypatch, caps
 
     calls = []
     monkeypatch.setattr(train_command, "choose", lambda *_a, **_kw: "2")
-    monkeypatch.setattr(train_command, "require_full_training_environment", lambda: None)
+    monkeypatch.setattr(train_command, "require_full_training_environment", lambda model: None)
     monkeypatch.setattr(
         train_command,
         "detect_device",

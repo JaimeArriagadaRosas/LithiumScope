@@ -66,12 +66,15 @@ def _run_impl() -> None:
     if choice == "0":
         return False
 
-    require_full_training_environment()
+    if choice in {"1", "3"}:
+        require_full_training_environment("model_1")
+    if choice in {"2", "3"}:
+        require_full_training_environment("model_2")
     device = detect_device(prefer_gpu=True)
     device_summary(device)
 
     if choice in {"1", "3"}:
-        print("\nModelo 1: candidato B conservado; sin cambios de datos.")
+        print("\nModelo 1: competencia geoquímica; preparación y validación según configuración vigente.")
     if choice in {"2", "3"}:
         from lithiumscope.core.config import load_config
 

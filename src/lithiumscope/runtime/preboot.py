@@ -116,8 +116,7 @@ class PrebootReport:
     def model_2_ready(self) -> bool:
         return (
             self.core_ready
-            and self.ml_ready
-            and self.imagery_ready
+            and all(item.available for item in self.ml if item.import_name not in {"torch", "pytorch_tabnet"})
             and self.dataset_ready("model_2_sentinel2")
         )
 
@@ -154,31 +153,8 @@ def _virtualenv_active() -> bool:
 
 
 def cleanup_gitkeep_placeholders() -> int:
-    """Remove cloned .gitkeep files from the local runtime workspace."""
-    removed = 0
-    for root in (
-        DATA_DIR,
-        MODELS_DIR,
-        RESULTS_DIR,
-        LOGS_DIR,
-    ):
-        if not root.exists():
-            continue
-        for path in root.rglob(".gitkeep"):
-            try:
-                path.unlink()
-                removed += 1
-                logger.info(
-                    "Removed local runtime placeholder: %s",
-                    path,
-                )
-            except OSError:
-                logger.warning(
-                    "Could not remove local placeholder: %s",
-                    path,
-                    exc_info=True,
-                )
-    return removed
+    """Compatibility hook: keep versioned directory placeholders intact."""
+    return 0
 
 
 def _configs_available() -> bool:
@@ -259,19 +235,20 @@ def _print_datasets(
 from lithiumscope.runtime.preboot_run_preboot import run_preboot
 
 
-def missing_training_dependencies() -> list[str]:
-    return _missing(
-        _dependency_status(ML_DEPENDENCIES)
-    )
+def missing_training_dependencies(model_group: str = "model_1") -> list[str]:
+    if model_group not in {"model_1", "model_2"}:
+        raise ValueError("Unknown training group")
+    required = dict(ML_DEPENDENCIES)
+    if model_group == "model_2":
+        required = {name: module for name, module in required.items() if module not in {"torch", "pytorch_tabnet"}}
+    return _missing(_dependency_status(required))
 
 
-def require_full_training_environment() -> None:
-    missing = missing_training_dependencies()
+def require_full_training_environment(model_group: str = "model_1") -> None:
+    missing = missing_training_dependencies(model_group)
     if missing:
         raise RuntimeError(
-            "El entorno no está listo para ejecutar "
-            "la competencia completa. "
+            f"El entorno de {model_group} no está listo para la competencia completa. "
             f"Faltan: {', '.join(missing)}. "
-            'Ejecute: pip install -e ".[ml,imagery,dev]" '
-            "y reinicie LithiumScope."
+            'Instale las dependencias correspondientes en el entorno virtual y reinicie.'
         )
