@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import GroupKFold
 
-from lithiumscope.core.scientific_checks import assert_group_isolation
+from lithiumscope.core.scientific_checks import assert_group_isolation, assert_partition_coverage
 
 
 @dataclass(frozen=True)
@@ -76,10 +76,13 @@ def make_scientific_folds(
 
 
 def scientific_labels(folds: list[ScientificFold], count: int) -> np.ndarray:
+    assert_partition_coverage([(f.train_idx, f.test_idx) for f in folds], count)
     labels = np.full(count, -1, dtype=int)
     for fold in folds:
         if np.any(labels[fold.test_idx] != -1):
             raise ValueError("Una observación aparece en más de un fold.")
+        if np.asarray(fold.y_test).shape != (len(fold.test_idx),) or not np.isin(fold.y_test, [0, 1]).all():
+            raise ValueError('Invalid scientific fold labels')
         labels[fold.test_idx] = fold.y_test
     if np.any(labels < 0):
         raise ValueError("Faltan etiquetas de evaluación exterior.")

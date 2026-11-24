@@ -8,6 +8,7 @@ configure_headless_matplotlib()
 
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 from sklearn.metrics import PrecisionRecallDisplay, RocCurveDisplay
 
 
@@ -15,8 +16,8 @@ def save_probability_histogram(y_true, probabilities, destination: Path, title: 
     destination.parent.mkdir(parents=True, exist_ok=True)
     frame = pd.DataFrame({"y": y_true, "p": probabilities})
     fig, ax = plt.subplots(figsize=(8, 5))
-    ax.hist(frame.loc[frame.y == 0, "p"], bins=20, alpha=0.6, label="Referencia baja/media")
-    ax.hist(frame.loc[frame.y == 1, "p"], bins=20, alpha=0.6, label="Referencia alta")
+    ax.hist(frame.loc[frame.y == 0, "p"], bins=np.linspace(0, 1, 21), alpha=0.6, label="Referencia baja/media")
+    ax.hist(frame.loc[frame.y == 1, "p"], bins=np.linspace(0, 1, 21), alpha=0.6, label="Referencia alta")
     ax.set_xlabel("Score de prospectividad")
     ax.set_ylabel("Frecuencia")
     ax.set_title(title)

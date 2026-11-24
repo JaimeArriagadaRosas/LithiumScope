@@ -13,6 +13,7 @@ from lithiumscope.resources.detection.device import DeviceInfo
 from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.scientific_checks import (
     assert_group_isolation,
+    assert_partition_coverage,
     assert_oof_complete,
 )
 from lithiumscope.model_2.evaluation.metrics import classification_metrics
@@ -110,6 +111,12 @@ def run_classification_cv(
             if split_groups is not None else splitter.split(x, y)
         )
     )
+    split_iter = list(split_iter)
+    assert_partition_coverage(split_iter, len(y))
+    if scientific_folds is not None:
+        from lithiumscope.model_2.validation.spatial import scientific_labels
+        if not np.array_equal(scientific_labels(scientific_folds, len(y)), np.asarray(y)):
+            raise ValueError('OOF labels differ from fold protocol')
     _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_threshold_ppm, folds, groups, inner_folds, label, label_quantile, lithium_values, optimize, probabilities, pruning, quality_training_mask, records, scientific_folds, seed, spec, split_groups, split_iter, trials, x, y, parameter_space, calibration_mode)
 
     assert_oof_complete(probabilities, len(y))

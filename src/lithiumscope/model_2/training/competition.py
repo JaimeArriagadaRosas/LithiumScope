@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from lithiumscope.core.candidate_evidence import eligible_rows
+
 from dataclasses import dataclass
 from pathlib import Path
 import json
@@ -158,7 +160,7 @@ def run_model_2_competition(
         winner = summary.get("winner")
         successful = (
             ranking[
-                (ranking.get("status") == "ok")
+                eligible_rows(ranking)
                 & (ranking.get("is_baseline") != True)  # noqa: E712
             ]["algorithm"].astype(str).tolist()
             if not ranking.empty
@@ -189,11 +191,11 @@ def run_model_2_competition(
 
     ranking = pd.DataFrame(rows)
     candidates = ranking[
-        (ranking["status"] == "ok")
+        eligible_rows(ranking)
         & (ranking["is_baseline"] != True)  # noqa: E712
     ].copy()
     baseline_rows = ranking[ranking["is_baseline"] == True].copy()  # noqa: E712
-    failed_rows = ranking[ranking["status"] != "ok"].copy()
+    failed_rows = ranking[(~eligible_rows(ranking)) & (ranking["is_baseline"] != True)].copy()
 
     if not candidates.empty:
         candidates = candidates.sort_values(

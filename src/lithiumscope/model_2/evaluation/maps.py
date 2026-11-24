@@ -22,7 +22,14 @@ def save_spatial_score_map(
     if not required.issubset(manifest.columns):
         return None
 
-    scores = np.asarray(probabilities, dtype=float)
+    if isinstance(probabilities, pd.DataFrame):
+        manifest = manifest.merge(probabilities[["sample_id", "prospectivity_score"]],
+                                  on="sample_id", validate="one_to_one", how="left")
+        scores = manifest["prospectivity_score"].to_numpy(dtype=float)
+        if len(probabilities) != len(manifest) or not np.isfinite(scores).all():
+            raise ValueError("OOF map identities do not match manifest")
+    else:
+        scores = np.asarray(probabilities, dtype=float)
     if len(manifest) != len(scores):
         return None
 
@@ -32,7 +39,7 @@ def save_spatial_score_map(
         manifest["longitude"],
         manifest["latitude"],
         c=scores,
-        alpha=0.75,
+        alpha=0.75, vmin=0, vmax=1,
     )
     ax.set_xlabel("Longitud")
     ax.set_ylabel("Latitud")

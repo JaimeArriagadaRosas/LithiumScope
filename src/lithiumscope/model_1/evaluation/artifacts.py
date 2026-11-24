@@ -47,14 +47,11 @@ def save_dataset_artifacts(prepared, run_context) -> dict[str, Path | None]:
     }
 
 
-def save_algorithm_artifacts(prepared, cv_result, run_context) -> dict[str, Path]:
+def save_algorithm_tables(prepared, cv_result, run_context) -> dict[str, Path]:
     artifact_key = (
         cv_result.variant_id
         or cv_result.algorithm
     )
-    directory = run_context.figures / artifact_key
-    directory.mkdir(parents=True, exist_ok=True)
-
     fold_path = run_context.tables / f"fold_metrics_{artifact_key}.csv"
     cv_result.fold_table.to_csv(fold_path, index=False)
 
@@ -69,6 +66,12 @@ def save_algorithm_artifacts(prepared, cv_result, run_context) -> dict[str, Path
     prediction_path = run_context.tables / f"oof_predictions_{artifact_key}.csv"
     predictions.to_csv(prediction_path, index=False)
 
+    return {"folds": fold_path, "predictions": prediction_path}
+
+
+def save_algorithm_figures(prepared, cv_result, run_context) -> dict[str, Path]:
+    directory = run_context.figures / (cv_result.variant_id or cv_result.algorithm)
+    directory.mkdir(parents=True, exist_ok=True)
     real_vs_pred = save_real_vs_predicted(
         prepared.y,
         cv_result.predictions,
@@ -82,8 +85,10 @@ def save_algorithm_artifacts(prepared, cv_result, run_context) -> dict[str, Path
         title=f"{cv_result.label} — Residuos",
     )
     return {
-        "folds": fold_path,
-        "predictions": prediction_path,
         "real_vs_predicted": real_vs_pred,
         "residuals": residuals,
     }
+
+def save_algorithm_artifacts(prepared, cv_result, run_context) -> dict[str, Path]:
+    return {**save_algorithm_tables(prepared, cv_result, run_context),
+            **save_algorithm_figures(prepared, cv_result, run_context)}

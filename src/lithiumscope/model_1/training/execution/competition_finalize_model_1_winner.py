@@ -1,13 +1,15 @@
 """Extracted responsibility; original public entrypoint remains stable."""
 from __future__ import annotations
 
+from lithiumscope.core.candidate_evidence import eligible_rows
+
 
 def _finalize_model_1_winner(baseline, config, context, dataset_manifest, device, failed, manifest_path, preflight, prepared, results, rows, seed):
     from lithiumscope.model_1.training.competition import CompetitionOutcome, RunState, _excel_sheets, _rank, applicability_profile, build_dashboard, build_pipeline, export_workbook, np, save_competition_chart, save_feature_importance, save_model_bundle, save_oof_diagnostics
     ranking = _rank(rows)
     ranking.to_csv(context.tables / "competition_ranking.csv", index=False)
     successful = ranking[
-        (ranking["status"] == "ok")
+        eligible_rows(ranking)
         & (ranking["is_baseline"] != True)  # noqa: E712
     ].copy()
 

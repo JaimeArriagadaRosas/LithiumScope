@@ -38,7 +38,7 @@ def _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_th
                 dtype=float,
             )
             probabilities[test_idx] = fold_probabilities
-            metrics = dict(cached["metrics"])
+            metrics = classification_metrics(scientific_fold.y_test if scientific_fold is not None else y.iloc[test_idx], fold_probabilities)
             records.append(
                 {
                     "fold": fold,

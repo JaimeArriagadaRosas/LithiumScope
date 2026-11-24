@@ -4,6 +4,9 @@ from __future__ import annotations
 
 def _evaluate_algorithm_candidates(algorithms, context, device, failed, fixed_threshold, fold_ids, folds, frame, groups, inner_folds, lithium_column, manifest_path, optimization_cfg, q, quality_mask, results, rows, scientific_folds, seed, x, y):
     from lithiumscope.model_2.training.competition import _ranking_row, get_label, logger, pd, run_classification_cv, save_probability_histogram, save_roc_pr, save_spatial_score_map
+    from lithiumscope.core.candidate_evidence import record_evidence, verify_candidate
+    from lithiumscope.model_2.evaluation.metrics import validate_binary_inputs, reliability_table
+    from lithiumscope.model_2.evaluation.oof_evidence import build_oof_table
     for index, algorithm in enumerate(algorithms, start=1):
         print(f"\n[{index}/{len(algorithms)}] Entrenando {get_label(algorithm)}")
         context.tracker.event("algorithm_started", algorithm=algorithm)
@@ -26,51 +29,9 @@ def _evaluate_algorithm_candidates(algorithms, context, device, failed, fixed_th
                 fixed_threshold_ppm=fixed_threshold,
                 quality_training_mask=quality_mask,
             )
-            results[algorithm] = result
-            rows.append(_ranking_row(result))
-
-            result.fold_table.to_csv(
-                context.tables / f"fold_metrics_{algorithm}.csv",
-                index=False,
-            )
-            pd.DataFrame(
-                {
-                    "y_true": y,
-                    "li_ppm": frame[lithium_column].to_numpy(dtype=float),
-                    "outer_fold": fold_ids.to_numpy(),
-                    "prospectivity_score": result.probabilities,
-                    "predicted_class_0_5": (
-                        result.probabilities >= 0.5
-                    ).astype(int),
-                }
-            ).to_csv(
-                context.tables / f"oof_predictions_{algorithm}.csv",
-                index=False,
-            )
-
-            save_probability_histogram(
-                y,
-                result.probabilities,
-                context.figures / algorithm / "score_distribution.png",
-                f"{result.label} — Distribución de scores",
-            )
-            save_roc_pr(
-                y,
-                result.probabilities,
-                context.figures / algorithm / "roc_pr.png",
-                result.label,
-            )
-            save_spatial_score_map(
-                manifest_path,
-                result.probabilities,
-                context.figures / algorithm / "spatial_scores.png",
-                f"{result.label} — scores espaciales OOF",
-            )
-            context.tracker.event(
-                "algorithm_completed",
-                algorithm=algorithm,
-                metrics=result.overall_metrics,
-            )
+            validate_binary_inputs(y, result.probabilities)
+            verify_candidate(result, result.probabilities, len(y), ("roc_auc", "average_precision", "balanced_accuracy"), folds)
+            row = _ranking_row(result)
         except Exception as exc:
             logger.exception("Model 2 algorithm failed: %s", algorithm)
             failed.append(algorithm)
@@ -89,3 +50,32 @@ def _evaluate_algorithm_candidates(algorithms, context, device, failed, fixed_th
                 error=str(exc),
             )
             print(f"  ✗ {get_label(algorithm)} falló: {exc}")
+            continue
+
+        results[algorithm] = result
+
+        def write_predictions():
+            build_oof_table(pd.read_csv(manifest_path), frame[lithium_column], y, fold_ids,
+                            result.probabilities, scientific_folds, quality_mask).to_csv(
+                context.tables / f"oof_predictions_{algorithm}.csv", index=False)
+
+        record_evidence(
+            row, context.tracker, logger, algorithm,
+            {
+                "fold_metrics": lambda: result.fold_table.to_csv(context.tables / f"fold_metrics_{algorithm}.csv", index=False),
+                "oof": write_predictions,
+                "reliability": lambda: reliability_table(y, result.probabilities).to_csv(
+                    context.tables / f"reliability_{algorithm}.csv", index=False),
+            },
+            {
+                "histogram": lambda: save_probability_histogram(y, result.probabilities,
+                    context.figures / algorithm / "score_distribution.png", f"{result.label} - Distribucion"),
+                "roc_pr": lambda: save_roc_pr(y, result.probabilities,
+                    context.figures / algorithm / "roc_pr.png", result.label),
+                "map": lambda: save_spatial_score_map(manifest_path,
+                    pd.read_csv(context.tables / f"oof_predictions_{algorithm}.csv"),
+                    context.figures / algorithm / "spatial_scores.png", f"{result.label} - OOF"),
+            },
+        )
+        rows.append(row)
+        context.tracker.event("algorithm_completed", algorithm=algorithm, metrics=result.overall_metrics)

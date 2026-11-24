@@ -3,7 +3,9 @@ from __future__ import annotations
 
 
 def _evaluate_model_1_candidates(config, context, device, experiments, failed, prepared, results, rows):
-    from lithiumscope.model_1.training.competition import _ranking_row, get_algorithm, logger, run_nested_cv, save_algorithm_artifacts
+    from lithiumscope.model_1.training.competition import _ranking_row, get_algorithm, logger, run_nested_cv
+    from lithiumscope.core.candidate_evidence import record_evidence, verify_candidate
+    from lithiumscope.model_1.evaluation.artifacts import save_algorithm_tables, save_algorithm_figures
     for index, (
         variant_id,
         algorithm,
@@ -46,23 +48,8 @@ def _evaluate_model_1_candidates(config, context, device, experiments, failed, p
                 target_transform=target_transform,
                 variant_id=variant_id,
             )
-            results[variant_id] = (
-                result,
-                algorithm_prepared,
-            )
-            save_algorithm_artifacts(
-                algorithm_prepared,
-                result,
-                context,
-            )
-            rows.append(_ranking_row(result))
-            context.tracker.event(
-                "algorithm_completed",
-                algorithm=algorithm,
-                variant_id=variant_id,
-                target_transform=target_transform,
-                metrics=result.overall_metrics,
-            )
+            verify_candidate(result, result.predictions, len(prepared.y), ("rmse", "mae", "r2"))
+            row = _ranking_row(result)
         except Exception as exc:
             logger.exception("Algorithm failed: %s", algorithm)
             failed.append(variant_id)
@@ -88,3 +75,14 @@ def _evaluate_model_1_candidates(config, context, device, experiments, failed, p
                 f"  ✗ {display_label} "
                 f"falló: {exc}"
             )
+            continue
+
+        results[variant_id] = (result, algorithm_prepared)
+        record_evidence(
+            row, context.tracker, logger, variant_id,
+            {"tables": lambda: save_algorithm_tables(algorithm_prepared, result, context)},
+            {"figures": lambda: save_algorithm_figures(algorithm_prepared, result, context)},
+        )
+        rows.append(row)
+        context.tracker.event("algorithm_completed", algorithm=algorithm, variant_id=variant_id,
+                              target_transform=target_transform, metrics=result.overall_metrics)

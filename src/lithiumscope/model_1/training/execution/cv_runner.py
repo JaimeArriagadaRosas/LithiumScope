@@ -12,6 +12,7 @@ from lithiumscope.resources.detection.device import DeviceInfo
 from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.scientific_checks import (
     assert_group_isolation,
+    assert_partition_coverage,
     assert_oof_complete,
 )
 from lithiumscope.model_1.evaluation.metrics import regression_metrics
@@ -81,6 +82,8 @@ def run_nested_cv(
             seed,
             require_groups=require_groups,
         )
+    outer_splits = list(outer_splits)
+    assert_partition_coverage(outer_splits, len(prepared.y))
     spec = get_algorithm(algorithm)
     target_transform = validate_target_transform(
         target_transform,

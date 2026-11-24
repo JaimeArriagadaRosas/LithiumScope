@@ -24,7 +24,7 @@ def _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, group
                 dtype=float,
             )
             predictions[test_idx] = fold_predictions
-            metrics = dict(cached["metrics"])
+            metrics = {**cached["metrics"], **regression_metrics(prepared.y.iloc[test_idx], fold_predictions).to_dict()}
             folds.append(
                 {
                     "fold": fold,
