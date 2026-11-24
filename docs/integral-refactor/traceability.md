@@ -278,41 +278,41 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 469.
 - Diagnóstico de origen: **Estado: Defecto confirmado. Prioridad: Alta. Decisión: Preservar la validez de píxeles y corregir la imputación.**
 - Criterio de aceptación (extracto): El criterio de aceptación será que no se genere un vector aparentemente completo a partir de información insuficiente y que se pueda cuantificar la proporción de datos reales utilizados.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: preparation/features/physical_v5.py; test_physical_v5.py
+- Implementación / evidencia: Variante V5 sin imputacion y con mascara conjunta; registra soporte real por banda, indice y textura, NaN para ausencia total. Auditoria real 706/706, 690 elegibles con politica provisional 95%. Se preserva legado; falta integracion y ablacion controlada.
+- Estado: parcialmente verificado.
 
 ## M2-09 — Step 09 Release — Diagnóstico de la extracción de características espectrales
 - Origen: 04. Diagnostico M2 Release.md, línea 475.
 - Diagnóstico de origen: **Estado: Defecto confirmado de contrato. Prioridad: Alta. Decisión: Validar el esquema completo y versionar el extractor.**
 - Criterio de aceptación (extracto): El criterio de aceptación será preservar la reproducción del v3 y garantizar que los candidatos nuevos y sus predicciones utilicen la misma representación validada; no se modificará un modelo serializado anterior para aparentar compatibilidad.
-- Componentes / corrección detallada / tests: v4_integrity.py; v4_inputs.py; acquisition/sentinel2/rededge.py; import_rededge_evidence.py; test_v4_local_integrity_contract.py.
-- Implementación / evidencia: Verificacion local real de las 44 caracteristicas red-edge para 706 muestras; diferencia maxima absoluta 0.0. El bloque historico de 126 permanece intacto. Pendiente ablacion, metodologia de indices y sensibilidad.
+- Componentes / corrección detallada / tests: preparation/features/physical_v5.py; physical_inputs.py; scripts/scientific/audit_m2_physical_v5.py
+- Implementación / evidencia: Esquema experimental 10x32x32, orden y metadatos STAC, 164 descriptores; 706 identidades/hash verificadas, sin modificar v3/v4. Falta contrato general de carga e inferencia y validacion de geometria.
 - Estado: parcialmente verificado.
 
 ## M2-10 — Step 10 Release — Diagnóstico de las estadísticas de reflectancia
 - Origen: 04. Diagnostico M2 Release.md, línea 481.
 - Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Media. Decisión: Ampliar el análisis de reflectancia y calidad.**
 - Criterio de aceptación (extracto): El criterio de aceptación será reproducir los valores de referencia cuando los datos sean válidos y distinguir los resúmenes fiables de los que procedan de información incompleta.
-- Componentes / corrección detallada / tests: model_2/eda, core/scientific/eda_statistics.py, results/eda_artifacts.py; test_integral_eda.py.
-- Implementación / evidencia: Perfiles descriptivos de características, correlaciones, Li y escenas; falta QA por píxel, máscara, análisis de imputación y métricas de desarrollo.
+- Componentes / corrección detallada / tests: preparation/features/physical_v5.py; scripts/scientific/audit_m2_physical_v5.py
+- Implementación / evidencia: Reflectancia por escala y offset exactos, sin recorte de negativos; soporte explicito por banda e indice. Auditoria por escena y soporte, 706 muestras; falta ablacion y SCL real.
 - Estado: parcialmente verificado.
 
 ## M2-11 — Step 11 Release — Diagnóstico de la extracción de textura
 - Origen: 04. Diagnostico M2 Release.md, línea 487.
 - Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Media. Decisión: Evaluar textura con máscaras y escala espacial consistente.**
 - Criterio de aceptación (extracto): El criterio de aceptación será calcular correctamente las diferencias válidas y reproducir el comportamiento histórico en parches completos; la contribución de la textura se medirá comparando reflectancia sola frente a reflectancia más textura con las mismas particiones, sin atribuir automáticamente los contrastes a fracturas o mineralización.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: preparation/features/physical_v5.py; test_physical_v5.py
+- Implementación / evidencia: Textura media y P90 solo pares adyacentes validos, soporte explicito, sin pares NaN. Tests de gradientes y mascara. Falta ablacion reflectancia vs textura y certificacion de resolucion real.
+- Estado: parcialmente verificado.
 
 ## M2-12 — Step 12 Release — Diagnóstico de la ingeniería de índices espectrales
 - Origen: 04. Diagnostico M2 Release.md, línea 493.
 - Diagnóstico de origen: **Estado: Defecto confirmado. Prioridad: Alta. Decisión: Eliminar redundancias y tratar índices indefinidos.**
 - Criterio de aceptación (extracto): El criterio de aceptación será demostrar la validez de cada fórmula y la ausencia de redundancias no intencionales; no se afirmará que reducir seis columnas mejora necesariamente ROC-AUC o AP hasta medirlo.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: preparation/features/physical_v5.py; test_physical_v5.py; audit_m2_physical_v5.py
+- Implementación / evidencia: Verificadas seis columnas NBR equivalentes de las 706 filas; V5 elimina duplicado, divisiones indefinidas NaN, prueba de 14 indices y mascara. Matriz 164-D separada; falta medir ablacion con mismo protocolo y preservar inferencia versionada.
+- Estado: parcialmente verificado.
 
 ## M2-13 — Step 13 Release — Diagnóstico de la construcción del dataset de entrenamiento
 - Origen: 04. Diagnostico M2 Release.md, línea 499.
