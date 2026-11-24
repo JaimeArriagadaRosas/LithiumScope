@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from sklearn.ensemble import RandomForestRegressor
 
-from lithiumscope.core.resources import cpu_worker_budget
+from lithiumscope.resources.manager import cpu_worker_budget
 
 
 def create_model(random_seed: int = 42, n_jobs: int | None = None, **params):

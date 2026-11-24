@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from sklearn.calibration import CalibratedClassifierCV
 
-from lithiumscope.core.device import DeviceInfo
+from lithiumscope.resources.detection.device import DeviceInfo
 from lithiumscope.model_2.training import (
     catboost,
     extra_trees,

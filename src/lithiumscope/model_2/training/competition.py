@@ -10,8 +10,8 @@ import pandas as pd
 from lithiumscope.core.config import load_config
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import PROJECT_ROOT
-from lithiumscope.core.device import DeviceInfo
-from lithiumscope.core.logger import get_logger
+from lithiumscope.resources.detection.device import DeviceInfo
+from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.reproducibility import set_global_seed
 from lithiumscope.core.run_context import RunContext
 from lithiumscope.core.training_diagnostics import save_oof_diagnostics

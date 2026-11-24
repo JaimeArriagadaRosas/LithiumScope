@@ -8,7 +8,7 @@ import numpy as np
 from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.model_selection import train_test_split
 
-from lithiumscope.core.logger import get_logger
+from lithiumscope.core.logging.session import get_logger
 
 logger = get_logger("model_1.tabnet")
 _SEEN_WARNINGS: set[str] = set()

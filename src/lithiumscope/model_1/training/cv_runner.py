@@ -8,8 +8,8 @@ import numpy as np
 import pandas as pd
 
 from lithiumscope.core.checkpoints import FoldCheckpointStore
-from lithiumscope.core.device import DeviceInfo
-from lithiumscope.core.logger import get_logger
+from lithiumscope.resources.detection.device import DeviceInfo
+from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.scientific_checks import (
     assert_group_isolation,
     assert_oof_complete,

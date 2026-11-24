@@ -4,9 +4,9 @@ import shutil
 
 from lithiumscope.cli.display import device_summary
 from lithiumscope.cli.prompts import choose
-from lithiumscope.core.device import detect_device
-from lithiumscope.core.logger import run_log
-from lithiumscope.core.training_logs import training_session, register_training_run
+from lithiumscope.resources.detection.device import detect_device
+from lithiumscope.core.logging.session import run_log
+from lithiumscope.core.logging.training import training_session, register_training_run
 from lithiumscope.datasets.provisioner import (
     require_model_1_dataset,
     require_model_2_expanded_manifest,

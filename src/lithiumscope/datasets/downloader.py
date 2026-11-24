@@ -7,7 +7,7 @@ from typing import Iterable
 import requests
 
 from lithiumscope.core.exceptions import DatasetError
-from lithiumscope.core.logger import get_logger
+from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.paths import DATA_DIR
 from lithiumscope.datasets.registry import DatasetSpec, get_dataset_spec
 from lithiumscope.datasets.validator import validate_nonempty

@@ -48,7 +48,9 @@ def run(args: list[str]) -> int:
     # Checkout resolution must not inherit an old workspace override.
     env.pop("LITHIUMSCOPE_HOME", None)
     env.pop("PYTHONPATH", None)
+    env.pop("LITHIUMSCOPE_LOG_DIR", None)
     env["LITHIUMSCOPE_TEST_SESSION_ID"] = session_id
+    env["LITHIUMSCOPE_SESSION_DIR"] = str(logs.parent)
     identity = {"session_id": session_id, "run_id": run_id, "operation": "pytest"}
     start = time.monotonic()
 

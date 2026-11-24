@@ -5,7 +5,7 @@ import json
 import numpy as np
 import pandas as pd
 
-from lithiumscope.core.logger import get_logger
+from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.scientific_checks import (
     ScientificValidationError,
     assert_group_isolation,

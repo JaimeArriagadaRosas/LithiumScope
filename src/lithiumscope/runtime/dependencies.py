@@ -19,6 +19,7 @@ CORE_DEPENDENCIES = {
     "numpy": "numpy",
     "openpyxl": "openpyxl",
     "pandas": "pandas",
+    "psutil": "psutil",
     "PyYAML": "yaml",
     "requests": "requests",
     "ReportLab": "reportlab",

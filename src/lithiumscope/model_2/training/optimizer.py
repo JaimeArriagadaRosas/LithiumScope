@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 from sklearn.metrics import roc_auc_score
 
-from lithiumscope.core.logger import get_logger
+from lithiumscope.core.logging.session import get_logger
 
 logger = get_logger("model_2.optimizer")
 

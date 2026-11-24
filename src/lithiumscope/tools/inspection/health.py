@@ -14,7 +14,8 @@ import yaml
 from lithiumscope.core.code_size_audit import ALLOWED, SKIP, scan
 from lithiumscope.core.config_schema import validate_config
 from lithiumscope.core.paths import CONFIG_DIR, DATA_DIR, LOGS_DIR, MODELS_DIR, PROJECT_ROOT, RESULTS_DIR
-from lithiumscope.core.resources import resource_snapshot
+from lithiumscope.resources.manager import resource_snapshot
+from lithiumscope.resources.allocation.policy import ResourcePolicy
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.runtime.dependencies import CORE_DEPENDENCIES, ML_DEPENDENCIES, IMAGERY_DEPENDENCIES, dependency_status
 from lithiumscope.results.evidence import read_record
@@ -40,7 +41,7 @@ def _dependencies(mapping: dict) -> dict:
 
 def _configs() -> tuple[dict, dict]:
     loaded, failures = {}, {}
-    for name in ("app", "model_1", "model_2", "distribution", "logging", "prediction"):
+    for name in ("app", "resources", "model_1", "model_2", "distribution", "logging", "prediction"):
         path = CONFIG_DIR / f"{name}.yaml"
         try:
             payload = yaml.safe_load(path.read_text(encoding="utf-8"))
@@ -94,7 +95,7 @@ def inspect_health() -> dict:
         "Dependencias de inferencia": _dependencies(CORE_DEPENDENCIES),
         "Dependencias de entrenamiento": _dependencies(ML_DEPENDENCIES),
         "Configuración": config_status,
-        "Recursos computacionales": {"state": "OK", **resource_snapshot()},
+        "Recursos computacionales": {"state": "OK", **resource_snapshot(ResourcePolicy.from_config(configs.get("resources", {})))},
         "Datasets y manifiestos": _datasets(configs),
         "Modelos y persistencia": _models(),
         "Permisos y directorios": {"state": "OK" if all(permissions.values()) else "ADVERTENCIA", "paths": permissions},

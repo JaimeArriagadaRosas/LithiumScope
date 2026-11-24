@@ -40,7 +40,7 @@ class RunContext:
         training_signature: str | None = None,
         resume: bool = True,
     ) -> "RunContext":
-        from lithiumscope.core.training_logs import (
+        from lithiumscope.core.logging.training import (
             active_training_dir,
             register_training_run,
         )

@@ -3,7 +3,7 @@ from __future__ import annotations
 import pandas as pd
 
 from lithiumscope.core.exceptions import InputValidationError
-from lithiumscope.core.logger import get_logger
+from lithiumscope.core.logging.session import get_logger
 from lithiumscope.datasets.validation.concentration import valid_concentration
 
 logger = get_logger("model_1.target_filtering")

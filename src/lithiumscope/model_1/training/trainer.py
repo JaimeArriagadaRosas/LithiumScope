@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from lithiumscope.core.device import DeviceInfo
+from lithiumscope.resources.detection.device import DeviceInfo
 from lithiumscope.model_1.training.competition import run_model_1_competition
 
 

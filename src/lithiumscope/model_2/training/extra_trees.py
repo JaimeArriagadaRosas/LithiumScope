@@ -1,6 +1,6 @@
 from sklearn.ensemble import ExtraTreesClassifier
 
-from lithiumscope.core.resources import cpu_worker_budget
+from lithiumscope.resources.manager import cpu_worker_budget
 
 
 def create_model(random_seed: int = 42, **params):

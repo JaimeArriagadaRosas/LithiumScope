@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from lithiumscope.core.device import (
-    DeviceInfo,
-    xgboost_device_parameters,
-)
+from lithiumscope.resources.detection.device import DeviceInfo
+from lithiumscope.resources.manager import cpu_worker_budget
+from lithiumscope.resources.compatibility.backends import xgboost_device_parameters
 
 
 def create_model(
@@ -20,6 +19,7 @@ def create_model(
         ) from exc
 
     defaults = {
+        "n_jobs": cpu_worker_budget(),
         "n_estimators": 450,
         "learning_rate": 0.05,
         "max_depth": 6,

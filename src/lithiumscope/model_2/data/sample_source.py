@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 from lithiumscope.core.config import load_config
-from lithiumscope.core.logger import get_logger
+from lithiumscope.core.logging.session import get_logger
 from lithiumscope.datasets.validation.concentration import valid_concentration
 from lithiumscope.model_1.steps.step_01_load_data import load_data
 from lithiumscope.model_1.steps.step_02_detection_limits import clean_detection_limits

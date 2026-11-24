@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from lithiumscope.core.logger import get_logger
+from lithiumscope.core.logging.session import get_logger
 from lithiumscope.model_2.steps.step_01_load_imagery import load_imagery
 from lithiumscope.model_2.steps.step_04_image_preprocessing import preprocess_image
 from lithiumscope.model_2.steps.step_05_spectral_features import extract_spectral_features

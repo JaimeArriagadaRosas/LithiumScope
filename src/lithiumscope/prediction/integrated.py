@@ -9,7 +9,7 @@ import pandas as pd
 
 from lithiumscope.core.config import load_config
 from lithiumscope.core.hashing import file_sha256
-from lithiumscope.core.logger import get_logger, run_log
+from lithiumscope.core.logging.session import get_logger, run_log
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.core.reproducibility import runtime_fingerprint
 from lithiumscope.model_1.prediction.input_parser import load_prediction_input

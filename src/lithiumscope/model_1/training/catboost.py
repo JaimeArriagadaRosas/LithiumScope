@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from lithiumscope.core.device import DeviceInfo
+from lithiumscope.resources.detection.device import DeviceInfo
+from lithiumscope.resources.manager import cpu_worker_budget
 
 
 def create_model(device: DeviceInfo, random_seed: int = 42, **params):
@@ -10,6 +11,7 @@ def create_model(device: DeviceInfo, random_seed: int = 42, **params):
         raise RuntimeError("CatBoost es opcional. Instale con: pip install -e \".[ml]\"") from exc
 
     defaults = {
+        "thread_count": cpu_worker_budget(),
         "iterations": 500,
         "depth": 7,
         "learning_rate": 0.05,
@@ -17,7 +19,7 @@ def create_model(device: DeviceInfo, random_seed: int = 42, **params):
         "random_seed": random_seed,
         "verbose": False,
         "allow_writing_files": False,
-        "task_type": "GPU" if device.accelerator == "cuda" else "CPU",
+        "task_type": "GPU" if device.catboost_gpu_available else "CPU",
     }
     defaults.update(params)
     return CatBoostRegressor(**defaults)

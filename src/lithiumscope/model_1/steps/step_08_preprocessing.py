@@ -8,7 +8,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
-from lithiumscope.core.logger import get_logger
+from lithiumscope.core.logging.session import get_logger
 
 logger = get_logger("model_1.preprocessing")
 

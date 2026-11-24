@@ -3,7 +3,7 @@ from datetime import datetime
 from lithiumscope.cli import model_release_command, predict_command, results_command, train_command, scientific_lab_command
 from lithiumscope.cli.display import clear_screen, header, pause
 from lithiumscope.cli.prompts import choose
-from lithiumscope.core.logger import (
+from lithiumscope.core.logging.session import (
     configure_logging,
     current_error_log_path,
     flush_logging,

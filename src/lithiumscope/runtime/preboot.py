@@ -8,8 +8,8 @@ import platform
 import sys
 import tempfile
 
-from lithiumscope.core.device import detect_device
-from lithiumscope.core.logger import (
+from lithiumscope.resources.detection.device import detect_device
+from lithiumscope.core.logging.session import (
     configure_logging,
     current_error_log_path,
     current_session_log_path,
@@ -43,6 +43,7 @@ logger = get_logger("runtime.preboot")
 
 REQUIRED_CONFIGS = (
     "app.yaml",
+    "resources.yaml",
     "distribution.yaml",
     "logging.yaml",
     "model_1.yaml",

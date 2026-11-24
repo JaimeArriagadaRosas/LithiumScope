@@ -16,8 +16,8 @@ def test_session_log_is_nonempty_and_errors_are_lazy(tmp_path):
         "from lithiumscope.core.logger import configure_logging,get_logger,finalize_logging;"
         "configure_logging();get_logger('probe').info('hello');finalize_logging()",
     )
-    sessions = list((tmp_path / "sessions").glob("session_*.log"))
-    errors = list((tmp_path / "errors").glob("errors_*.log"))
+    sessions = list((tmp_path / "sessions").glob("session_*/session.log"))
+    errors = list((tmp_path / "sessions").glob("session_*/errors/errors.log"))
     assert len(sessions) == 1
     assert sessions[0].stat().st_size > 0
     text = sessions[0].read_text(encoding="utf-8")
@@ -32,7 +32,7 @@ def test_error_log_is_created_on_first_error(tmp_path):
         "from lithiumscope.core.logger import configure_logging,get_logger,finalize_logging;"
         "configure_logging();get_logger('probe').error('boom');finalize_logging()",
     )
-    errors = list((tmp_path / "errors").glob("errors_*.log"))
+    errors = list((tmp_path / "sessions").glob("session_*/errors/errors.log"))
     assert len(errors) == 1
     assert errors[0].stat().st_size > 0
     assert "boom" in errors[0].read_text(encoding="utf-8")

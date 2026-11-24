@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from lithiumscope.core.device import DeviceInfo, xgboost_device_parameters
+from lithiumscope.resources.detection.device import DeviceInfo
+from lithiumscope.resources.manager import cpu_worker_budget
+from lithiumscope.resources.compatibility.backends import xgboost_device_parameters
 
 
 def create_model(device: DeviceInfo, random_seed: int = 42, **params):
@@ -9,6 +11,7 @@ def create_model(device: DeviceInfo, random_seed: int = 42, **params):
     except ImportError as exc:
         raise RuntimeError("XGBoost is optional. Install with: pip install -e '.[ml]'") from exc
     defaults = {
+        "n_jobs": cpu_worker_budget(),
         "n_estimators": 400, "learning_rate": 0.05, "max_depth": 6,
         "subsample": 0.9, "colsample_bytree": 0.9, "random_state": random_seed,
         "objective": "reg:squarederror", **xgboost_device_parameters(device),

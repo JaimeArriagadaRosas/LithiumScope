@@ -9,7 +9,7 @@ from typing import Callable
 import requests
 
 from lithiumscope.core.config import load_config
-from lithiumscope.core.logger import get_logger
+from lithiumscope.core.logging.session import get_logger
 
 logger = get_logger("distribution.github_releases")
 

@@ -8,7 +8,7 @@ import pandas as pd
 
 from lithiumscope.core.config import load_config
 from lithiumscope.core.hashing import file_sha256
-from lithiumscope.core.logger import get_logger
+from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.model_2.data.sample_source import load_georeferenced_li_samples
 from lithiumscope.model_2.data.sentinel2 import (

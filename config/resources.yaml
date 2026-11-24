@@ -1,0 +1,9 @@
+schema_version: 1
+resources:
+  max_cpu_fraction: 0.75
+  minimum_workers: 1
+  # Sequential outer operations; estimator threads are budgeted centrally.
+  max_parallel_tasks: 1
+  max_ram_fraction: 0.60
+  max_vram_fraction: 0.75
+  monitor_interval_seconds: 2.0

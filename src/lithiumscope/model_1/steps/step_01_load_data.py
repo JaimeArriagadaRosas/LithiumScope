@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 
 from lithiumscope.core.exceptions import InputValidationError
-from lithiumscope.core.logger import get_logger
+from lithiumscope.core.logging.session import get_logger
 
 logger = get_logger("model_1.load_data")
 

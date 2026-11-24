@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from lithiumscope.core.logger import (
+from lithiumscope.core.logging.session import (
     error_count,
     get_logger,
     install_warning_capture,

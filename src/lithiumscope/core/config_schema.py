@@ -6,6 +6,7 @@ CURRENT_SCHEMA_VERSION = 1
 
 _REQUIRED_SECTIONS = {
     "app": {"app", "paths"},
+    "resources": {"resources"},
     "model_1": {"model", "data", "validation", "optimization", "competition"},
     "model_2": {"model", "imagery", "training", "validation", "competition"},
 }

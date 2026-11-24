@@ -7,7 +7,7 @@ import math
 
 import numpy as np
 
-from lithiumscope.core.logger import get_logger
+from lithiumscope.core.logging.session import get_logger
 
 logger = get_logger("model_2.sentinel2")
 

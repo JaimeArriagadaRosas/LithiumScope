@@ -9,7 +9,7 @@ import threading
 import time
 from typing import Callable
 
-from lithiumscope.core.logger import finalize_logging, get_logger
+from lithiumscope.core.logging.session import finalize_logging, get_logger
 
 logger = get_logger("runtime.shutdown")
 

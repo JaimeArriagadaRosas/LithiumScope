@@ -6,7 +6,7 @@ from pathlib import Path
 import pandas as pd
 
 from lithiumscope.core.config import load_config
-from lithiumscope.core.logger import get_logger
+from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.datasets.georoc_ingestion import (
     ingest_georoc_files,

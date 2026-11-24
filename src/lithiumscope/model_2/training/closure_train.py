@@ -40,7 +40,7 @@ def train(root:Path=PROJECT_ROOT, *,preflight_only=False,
         return report
     from lithiumscope.core.run_context import RunContext
     from lithiumscope.core.states import RunState
-    from lithiumscope.core.training_logs import register_training_run
+    from lithiumscope.core.logging.training import register_training_run
     from lithiumscope.model_2.schema import feature_range_profile
     from lithiumscope.persistence.save_model import save_model_bundle
     from catboost import CatBoostClassifier

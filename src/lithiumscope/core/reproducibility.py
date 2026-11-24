@@ -11,7 +11,7 @@ from typing import Any
 
 import numpy as np
 
-from lithiumscope.core.resources import resource_snapshot
+from lithiumscope.resources.manager import resource_snapshot
 
 _TRACKED_PACKAGES = (
     "numpy",

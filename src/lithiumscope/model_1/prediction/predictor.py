@@ -6,7 +6,7 @@ from pathlib import Path
 import pandas as pd
 
 from lithiumscope.core.hashing import file_sha256
-from lithiumscope.core.logger import get_logger
+from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.paths import RESULTS_DIR
 from lithiumscope.model_1.pipeline import prepare_prediction_data
 from lithiumscope.model_1.prediction.input_parser import load_prediction_input

@@ -16,7 +16,3 @@ reproducibility:
   capture_package_versions: true
   capture_git_commit: true
   deterministic_torch: true
-
-resources:
-  max_cpu_fraction: 0.75
-  minimum_workers: 1

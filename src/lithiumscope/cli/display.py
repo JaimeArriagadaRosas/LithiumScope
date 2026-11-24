@@ -13,7 +13,7 @@ def clear_screen() -> None:
     elif os.environ.get("TERM") not in (None, "", "dumb"):
         os.system("clear")
 
-from lithiumscope.core.device import DeviceInfo
+from lithiumscope.resources.detection.device import DeviceInfo
 
 
 def header() -> None:

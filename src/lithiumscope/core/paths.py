@@ -40,9 +40,7 @@ RUNTIME_DIRECTORIES = (
     RESULTS_DIR / "model_2" / "metrics",
     RESULTS_DIR / "model_2" / "predictions",
     RESULTS_DIR / "model_2" / "figures",
-    LOGS_DIR / "training",
-    LOGS_DIR / "prediction",
-    LOGS_DIR / "errors",
+    LOGS_DIR,
 )
 
 

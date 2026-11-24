@@ -7,7 +7,7 @@ from typing import Iterable
 
 import pandas as pd
 
-from lithiumscope.core.logger import get_logger
+from lithiumscope.core.logging.session import get_logger
 from lithiumscope.datasets.georoc_ingestion_schema import (
     GEOROC_ALIASES,
     MAJOR_OXIDES,

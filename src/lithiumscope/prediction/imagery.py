@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 
 from lithiumscope.core.config import load_config
-from lithiumscope.core.logger import get_logger
+from lithiumscope.core.logging.session import get_logger
 from lithiumscope.model_2.data.sentinel2 import (
     Sentinel2Provider,
     SentinelAssetError,

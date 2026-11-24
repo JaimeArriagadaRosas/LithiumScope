@@ -39,3 +39,9 @@
 - Se conserva acceso manual historico via python -m lithiumscope.cli.legacy_simulations; acceso CLI separado, no opcion permanente.
 - Regresion: 17 passed, 0 failed (20261124T200849Z_90df3b61a5a6410a845789f1487868ff).
 - Pendiente: catalogo completo de protocolos, progreso real por test/operacion, auditoria mas profunda de calidad y adquisicion M2.
+
+## Recursos y logging por sesion
+- resources/: deteccion de CPU/afinidad/RAM/disco/GPU, comprobacion de compatibilidad por backend, presupuesto y monitorizacion por operacion. Politica en config/resources.yaml; concurrencia exterior de 1 para evitar paralelismo anidado no medido.
+- core/logging/: sesiones y operaciones identificadas, JSONL estructurado, errores separados, retencion protegida, logs de entrenamiento y pruebas integrados. Fachadas historicas conservadas por compatibilidad.
+- Pruebas focalizadas: 14 de recursos y 31 del bloque combinado, sin fallos. Pendiente medir rendimiento real, verificar multiproceso y completar trazabilidad.
+- Inventario historico en modo lectura: M1 training_combined.csv y M2 manifiesto de 706 filas con SHA256 igual a config, matriz v4 y auditorias existentes. El manifiesto M2 contiene rutas absolutas al clon anterior; falta importacion independiente con comprobacion de integridad y resolucion de rutas. No se copio ni modifico ningun archivo historico.

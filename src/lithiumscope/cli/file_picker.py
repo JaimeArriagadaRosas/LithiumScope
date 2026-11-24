@@ -6,7 +6,7 @@ import shutil
 import subprocess
 from typing import Iterable
 
-from lithiumscope.core.logger import get_logger
+from lithiumscope.core.logging.session import get_logger
 from lithiumscope.runtime.graceful_shutdown import get_shutdown_manager
 
 logger = get_logger("file_picker")

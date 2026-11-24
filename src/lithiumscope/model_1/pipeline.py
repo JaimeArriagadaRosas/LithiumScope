@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from lithiumscope.core.config import load_config
-from lithiumscope.core.logger import get_logger
+from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.pipeline_audit import PipelineAudit
 from lithiumscope.datasets.harmonization import canonicalize_coordinates
 from lithiumscope.model_1.schema import validate_training_schema
