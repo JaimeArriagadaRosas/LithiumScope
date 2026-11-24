@@ -11,7 +11,7 @@ from lithiumscope.core.scientific_checks import (
     assert_group_isolation,
     assert_no_target_leakage,
 )
-from lithiumscope.model_1.steps.step_09_validation import (
+from lithiumscope.model_1.validation.spatial import (
     materialize_regression_splits,
 )
 

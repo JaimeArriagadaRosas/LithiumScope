@@ -113,7 +113,7 @@ def _finalize_scientific_winner(
             if y_final.iloc[train_idx].nunique() < 2 or y_final.iloc[valid_idx].nunique() < 2:
                 raise ValueError("Final calibration requires both classes per spatial fold.")
 
-    from lithiumscope.model_2.training.calibration_policy import (
+    from lithiumscope.model_2.training.calibration.policy import (
         calibration_policy,
         fit_spatially_calibrated,
     )
@@ -163,7 +163,7 @@ def _finalize_scientific_winner(
         + (f" | ΔROC-AUC={roc_gain:+.4f} (mín {min_roc_gain:+.4f}) | ΔAP={ap_gain:+.4f} (mín {min_ap_gain:+.4f})")
     )
 
-    from lithiumscope.model_2.training.v4_inputs import spectral_v4_enabled
+    from lithiumscope.model_2.preparation.features.v4_inputs import spectral_v4_enabled
 
     v4 = spectral_v4_enabled(cfg)
     extractor_version = 4 if v4 else FEATURE_EXTRACTOR_VERSION

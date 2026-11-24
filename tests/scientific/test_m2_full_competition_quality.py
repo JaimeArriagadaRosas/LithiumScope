@@ -11,9 +11,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.model_2.training.quality import training_quality_mask
-from lithiumscope.model_2.training import cv_runner
-from lithiumscope.model_2.training.scientific_validation import (
+from lithiumscope.model_2.validation.quality import training_quality_mask
+from lithiumscope.model_2.training.execution import cv_runner
+from lithiumscope.model_2.validation.spatial import (
     make_scientific_folds, scientific_labels
 )
 

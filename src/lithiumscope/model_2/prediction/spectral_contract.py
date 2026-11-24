@@ -10,8 +10,8 @@ import pandas as pd
 
 from lithiumscope.core.paths import RESULTS_DIR
 from lithiumscope.core.hashing import file_sha256
-from lithiumscope.model_2.steps.step_01_load_imagery import load_imagery
-from lithiumscope.model_2.steps.step_05_spectral_features import DEFAULT_BAND_NAMES
+from lithiumscope.model_2.preparation.imagery import load_imagery
+from lithiumscope.model_2.preparation.features.spectral import DEFAULT_BAND_NAMES
 from lithiumscope.model_2.prediction.image_parser import image_to_feature_frame
 
 
@@ -62,8 +62,8 @@ def prepare_spectral_input(path: Path, bundle: dict) -> tuple[pd.DataFrame, dict
                                    normalize_per_band=bool(bundle.get("normalize_per_band", False)))
     diagnostics = {"joint_valid_fraction": coverage, "feature_extractor_version": version}
     if version == 4:
-        from lithiumscope.model_2.methodology.rededge_acquisition import cached_rededge_sample
-        from lithiumscope.model_2.methodology.rededge_v4 import append_rededge_features
+        from lithiumscope.tools.acquisition.sentinel2.rededge import cached_rededge_sample
+        from lithiumscope.model_2.preparation.features.rededge import append_rededge_features
 
         if bands != DEFAULT_BAND_NAMES or len(expected) != 170:
             raise SpectralAbstention("ABSTAIN_INVALID_FEATURE_SCHEMA", "V4 requires the 126 + 44 feature contract.")

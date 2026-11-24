@@ -18,13 +18,13 @@ from sklearn.neighbors import BallTree
 from lithiumscope.core.device import detect_device
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import PROJECT_ROOT
-from lithiumscope.model_2.methodology.rededge_acquisition import cached_rededge_sample
+from lithiumscope.tools.acquisition.sentinel2.rededge import cached_rededge_sample
 from lithiumscope.model_2.methodology.rededge_training import (
     combine_quality_masks,
     fit_frozen_model,
 )
-from lithiumscope.model_2.steps.step_07_build_training_set import build_training_set
-from lithiumscope.model_2.training.quality import training_quality_mask
+from lithiumscope.model_2.preparation.training_matrix import build_training_set
+from lithiumscope.model_2.validation.quality import training_quality_mask
 from scripts.scientific.m2_rededge_v4_competition import ARMS, _metrics, _splits
 from scripts.scientific.m2_rededge_v4_report import write_release_comparison
 

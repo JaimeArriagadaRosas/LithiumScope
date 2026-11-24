@@ -4,7 +4,7 @@ import pytest
 
 from lithiumscope.model_2.prediction.predictor import score_model_2_image
 from lithiumscope.prediction.integrated_score_model_2_cases import _score_model_2_cases
-from lithiumscope.model_2.steps.step_05_spectral_features import extract_spectral_features
+from lithiumscope.model_2.preparation.features.spectral import extract_spectral_features
 
 
 class NeverFit:
@@ -38,7 +38,7 @@ def test_missing_profile_is_insufficient_not_ok(tmp_path):
 
 
 def test_v4_without_provenance_never_scores(tmp_path):
-    from lithiumscope.model_2.methodology.rededge_v4 import extract_rededge_v4
+    from lithiumscope.model_2.preparation.features.rededge import extract_rededge_v4
     p = tmp_path / "patch.npy"
     np.save(p, np.ones((6, 4, 4), dtype=np.float32))
     features = list(extract_spectral_features(np.ones((6, 4, 4)))) + list(extract_rededge_v4(np.ones((4, 4, 4)))[0])

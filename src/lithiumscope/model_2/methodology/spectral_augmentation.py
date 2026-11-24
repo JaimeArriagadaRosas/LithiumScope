@@ -10,8 +10,8 @@ import hashlib
 
 import numpy as np
 
-from lithiumscope.model_2.steps.step_04_image_preprocessing import preprocess_image
-from lithiumscope.model_2.steps.step_05_spectral_features import extract_spectral_features
+from lithiumscope.model_2.preparation.image_preprocessing import preprocess_image
+from lithiumscope.model_2.preparation.features.spectral import extract_spectral_features
 
 BANDS = ("red", "green", "blue", "nir", "swir16", "swir22")
 

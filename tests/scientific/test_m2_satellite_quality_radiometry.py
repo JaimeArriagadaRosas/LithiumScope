@@ -18,11 +18,11 @@ from lithiumscope.model_2.methodology.radiometric_features import (
     apply_radiometry, extract_valid_spectral_features, build_feature_variants,
 )
 
-from lithiumscope.model_2.data.sentinel2 import (
+from lithiumscope.tools.acquisition.sentinel2.provider import (
     SentinelConfig, Sentinel2Provider, download_patch, SentinelAssetError,
 )
 
-from lithiumscope.model_2.steps.step_05_spectral_features import extract_spectral_features
+from lithiumscope.model_2.preparation.features.spectral import extract_spectral_features
 
 
 @pytest.fixture
@@ -188,7 +188,7 @@ def test_existing_provider_best_scene_still_unchanged_and_local_search_bounded()
 def test_download_can_bind_validated_scene_without_changing_existing_cache(
     tmp_path,scene,monkeypatch
 ):
-    from lithiumscope.model_2.data import sentinel2 as src
+    from lithiumscope.tools.acquisition.sentinel2 import provider as src
     class Provider:
         config=SentinelConfig(
             stac_url="",collection="",datetime="",cloud_cover_max=35,

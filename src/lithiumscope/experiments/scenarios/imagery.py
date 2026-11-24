@@ -50,8 +50,8 @@ def perturb_image(image: np.ndarray, scenario: ImageScenario) -> np.ndarray:
 
 def evaluate_model_2_image(bundle: dict, image: np.ndarray, destination: Path, seed: int = 42) -> Path:
     """Reuse trained M2 estimator and feature schema, without fitting it."""
-    from lithiumscope.model_2.steps.step_04_image_preprocessing import preprocess_image
-    from lithiumscope.model_2.steps.step_05_spectral_features import extract_spectral_features,DEFAULT_BAND_NAMES
+    from lithiumscope.model_2.preparation.image_preprocessing import preprocess_image
+    from lithiumscope.model_2.preparation.features.spectral import extract_spectral_features,DEFAULT_BAND_NAMES
     from lithiumscope.model_2.schema import out_of_range_fraction
     destination.mkdir(parents=True,exist_ok=True)
     bands = bundle.get("band_names",DEFAULT_BAND_NAMES)

@@ -14,7 +14,7 @@ import pandas as pd
 
 from lithiumscope.core.config import load_config
 from lithiumscope.model_2.data.builder import _sentinel_config
-from lithiumscope.model_2.data.sentinel2 import Sentinel2Provider, _asset_href
+from lithiumscope.tools.acquisition.sentinel2.provider import Sentinel2Provider, _asset_href
 
 PILOT_LOCATIONS = {
     "atacama": (-23.10, -68.18),

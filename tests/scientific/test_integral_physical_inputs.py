@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.model_1.steps.step_05_target_filtering import filter_target
-from lithiumscope.model_1.steps.step_03_missing_values import should_include_age
+from lithiumscope.model_1.preparation.target_filtering import filter_target
+from lithiumscope.model_1.preparation.missing_values import should_include_age
 from lithiumscope.model_2.data.sample_source import load_georeferenced_li_samples
 
 

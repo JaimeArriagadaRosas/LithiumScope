@@ -6,9 +6,9 @@ from pathlib import Path
 import pytest
 
 from lithiumscope.core.config import load_config
-from lithiumscope.model_2.training import random_forest
+from lithiumscope.model_2.training.algorithms import random_forest
 from lithiumscope.model_2.training.factory import get_algorithm
-from lithiumscope.model_2.training.search_policy import parameter_space_for
+from lithiumscope.model_2.training.optimization.search_policy import parameter_space_for
 
 
 class ProbeTrial:
@@ -91,7 +91,7 @@ def test_legacy_size_exceptions_have_been_retired():
 
 
 def test_extra_trees_fairly_receives_class_weight_search():
-    from lithiumscope.model_2.training import extra_trees
+    from lithiumscope.model_2.training.algorithms import extra_trees
     cfg = load_config("model_2")["optimization"]
     assert cfg["extra_trees_search_profile"] == "regularized_v2"
     chosen = parameter_space_for("extra_trees", get_algorithm("extra_trees"), cfg)

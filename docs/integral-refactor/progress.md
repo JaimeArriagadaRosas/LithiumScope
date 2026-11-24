@@ -81,3 +81,8 @@
 - Ruff sin incidencias; 563 archivos de codigo, ninguno por encima de 300 lineas.
 - Pendientes: reorganizacion de algoritmos y validacion, adquisicion independiente completa, auditoria de fuentes brutas y protocolos, EDA de desarrollo y holdout, lectura integral de documentos complementarios. No se declara cierre cientifico.
 - Restriccion vigente: commits locales exclusivamente, sin push ni ejecucion remota de workflows.
+
+## Arquitectura de preparacion, validacion y algoritmos
+- 52 modulos redistribuidos por responsabilidad: lector tabular compartido, preparacion M1 y M2, validacion espacial, algoritmos separados, preprocesamiento, optimizacion, ejecucion y calibracion. Sentinel-2 y red-edge en tools/acquisition/sentinel2. Se actualizaron imports internos, pruebas y rutas de firma.
+- Compatibilidad joblib explicita en los dos modulos historicos de FeatureSchema y TabNetRegressorAdapter; pendiente comprobar bundles reales. Se conservan las entradas publicas de competition/trainer y comandos de diagnostico historico.
+- Regresion local 485 aprobadas, 7 omitidas, 8 warnings, cero fallos (20261124T205934Z_5ed962a6a6b74676be9dfc16f42bc7e9). Ruff y limite 300 lineas OK. No push.

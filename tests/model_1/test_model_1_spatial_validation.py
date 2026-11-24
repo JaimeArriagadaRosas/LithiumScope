@@ -1,6 +1,6 @@
 import pandas as pd
 
-from lithiumscope.model_1.steps.step_09_validation import (
+from lithiumscope.model_1.validation.spatial import (
     build_spatial_groups,
     materialize_regression_splits,
 )

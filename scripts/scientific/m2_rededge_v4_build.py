@@ -17,10 +17,10 @@ import pandas as pd
 
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import PROJECT_ROOT
-from lithiumscope.model_2.methodology.rededge_acquisition import (
+from lithiumscope.tools.acquisition.sentinel2.rededge import (
     cached_rededge_sample,
 )
-from lithiumscope.model_2.methodology.rededge_v4 import (
+from lithiumscope.model_2.preparation.features.rededge import (
     TOTAL_FEATURES,
     append_rededge_features,
 )

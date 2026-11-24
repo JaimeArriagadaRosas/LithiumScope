@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 
 from lithiumscope.model_2.data import expansion_vnext as ex
-from lithiumscope.model_2.data.sentinel2 import SentinelAssetError
+from lithiumscope.tools.acquisition.sentinel2.provider import SentinelAssetError
 
 
 def _legacy(n=12):
@@ -70,7 +70,7 @@ def test_m2_frozen_integrity_protects_old_manifest(monkeypatch,tmp_path):
 
 
 def test_scl_cloud_filter_uses_local_pixels_not_scene_summary(monkeypatch):
-    from lithiumscope.model_2.data.sentinel2 import SentinelConfig
+    from lithiumscope.tools.acquisition.sentinel2.provider import SentinelConfig
     cfg=SentinelConfig(
         stac_url="",collection="",datetime="",cloud_cover_max=30,
         search_limit=3,request_timeout_seconds=2,max_retries=1,
@@ -154,7 +154,7 @@ def test_expansion_plan_is_download_free_and_leaves_legacy_unchanged(monkeypatch
 
 
 def test_anchored_scientific_folds_preserve_all_legacy_test_rows():
-    from lithiumscope.model_2.training.scientific_validation import (
+    from lithiumscope.model_2.validation.spatial import (
         make_anchored_scientific_folds,
     )
     lithium=pd.Series(([10.,30.]*50)+([9.,32.]*5))
@@ -191,7 +191,7 @@ def test_isolated_end_to_end_manifest_preparation_with_mocked_download(
     monkeypatch,tmp_path,
 ):
     from copy import deepcopy
-    from lithiumscope.model_2.training import scientific_validation
+    from lithiumscope.model_2.validation import spatial as scientific_validation
     base=_legacy()
     images=tmp_path/"existing"
     images.mkdir()

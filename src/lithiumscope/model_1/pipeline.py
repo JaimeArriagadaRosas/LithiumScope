@@ -11,15 +11,15 @@ from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.pipeline_audit import PipelineAudit
 from lithiumscope.datasets.harmonization import canonicalize_coordinates
 from lithiumscope.model_1.schema import validate_training_schema
-from lithiumscope.model_1.steps.step_01_load_data import load_data
-from lithiumscope.model_1.steps.step_02_detection_limits import clean_detection_limits
-from lithiumscope.model_1.steps.step_03_missing_values import find_age_column, normalize_missing_values, should_include_age
-from lithiumscope.model_1.steps.step_04_quality_control import apply_quality_control
-from lithiumscope.model_1.steps.step_05_target_filtering import filter_target
-from lithiumscope.model_1.steps.step_06_category_cleaning import clean_categories
-from lithiumscope.model_1.steps.step_07_feature_engineering import add_geochemical_features
-from lithiumscope.model_1.steps.step_08_preprocessing import FeatureSchema, select_feature_schema
-from lithiumscope.model_1.steps.step_09_validation import (
+from lithiumscope.datasets.readers.tabular import load_data
+from lithiumscope.model_1.preparation.detection_limits import clean_detection_limits
+from lithiumscope.model_1.preparation.missing_values import find_age_column, normalize_missing_values, should_include_age
+from lithiumscope.model_1.preparation.quality_control import apply_quality_control
+from lithiumscope.model_1.preparation.target_filtering import filter_target
+from lithiumscope.model_1.preparation.category_cleaning import clean_categories
+from lithiumscope.model_1.preparation.feature_engineering import add_geochemical_features
+from lithiumscope.model_1.training.preprocessing.tabular import FeatureSchema, select_feature_schema
+from lithiumscope.model_1.validation.spatial import (
     build_spatial_groups,
     spatial_coordinate_diagnostics,
 )

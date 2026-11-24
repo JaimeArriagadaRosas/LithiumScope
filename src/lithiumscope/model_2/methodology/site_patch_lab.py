@@ -23,10 +23,10 @@ from sklearn.metrics import roc_auc_score, average_precision_score, brier_score_
 from sklearn.neighbors import BallTree
 
 from lithiumscope.core.paths import PROJECT_ROOT
-from lithiumscope.model_2.steps.step_05_spectral_features import (
+from lithiumscope.model_2.preparation.features.spectral import (
     DEFAULT_BAND_NAMES, extract_spectral_features,
 )
-from lithiumscope.model_2.steps.step_04_image_preprocessing import preprocess_image
+from lithiumscope.model_2.preparation.image_preprocessing import preprocess_image
 from lithiumscope.model_2.methodology.ablations import (
     HISTORICAL_N, PARAMS, build_inputs, define_outer_fold, fit_classifier,
     score_metrics, bootstrap_group_delta, sha

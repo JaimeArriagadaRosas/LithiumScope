@@ -24,12 +24,12 @@ from lithiumscope.core.device import detect_device
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.model_2.methodology.rededge_training import fit_frozen_model
-from lithiumscope.model_2.training.quality import training_quality_mask
-from lithiumscope.model_2.training.scientific_validation import (
+from lithiumscope.model_2.validation.quality import training_quality_mask
+from lithiumscope.model_2.validation.spatial import (
     make_scientific_folds,
     make_anchored_scientific_folds,
 )
-from lithiumscope.model_2.methodology.rededge_v4 import TOTAL_FEATURES
+from lithiumscope.model_2.preparation.features.rededge import TOTAL_FEATURES
 
 ARMS = (
     "random_forest",

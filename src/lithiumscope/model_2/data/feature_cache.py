@@ -12,7 +12,7 @@ import pandas as pd
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.reproducibility import canonical_json_hash
 from lithiumscope.datasets.validation.paths import resolve_image_path
-from lithiumscope.model_2.steps.step_05_spectral_features import (
+from lithiumscope.model_2.preparation.features.spectral import (
     FEATURE_EXTRACTOR_VERSION, extract_spectral_features,
 )
 
@@ -51,9 +51,8 @@ def source_identity(manifest_path: Path, config: dict) -> tuple[pd.DataFrame, di
     columns = list(extract_spectral_features(np.ones((len(bands), 2, 2), dtype=np.float32), bands))
     columns += [config["training"]["lithium_column"], config["training"].get("spatial_group_column", "spatial_group")]
     module = Path(__file__).resolve().parents[1]
-    code = [module / "steps" / name for name in (
-        "step_01_load_imagery.py", "step_04_image_preprocessing.py",
-        "step_05_spectral_features.py", "step_07_build_training_set.py")]
+    code = [module / "preparation" / name for name in (
+        "imagery.py", "image_preprocessing.py", "features/spectral.py", "training_matrix.py")]
     payload = {"manifest_sha256": file_sha256(manifest_path), "identities": identities,
                "imagery": deepcopy(config["imagery"]), "feature_extractor_version": FEATURE_EXTRACTOR_VERSION,
                "columns": columns, "code": {p.name: file_sha256(p) for p in [*code, Path(__file__)]},

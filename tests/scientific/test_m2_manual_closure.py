@@ -188,7 +188,7 @@ def test_three_independent_valid_images_ranked_with_optional_model1_info(
     from lithiumscope.model_2.methodology.three_zone_ranking import (
         rank_three_candidates
     )
-    from lithiumscope.model_2.steps.step_05_spectral_features import (
+    from lithiumscope.model_2.preparation.features.spectral import (
         extract_spectral_features
     )
     names={}

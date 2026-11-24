@@ -20,7 +20,7 @@ from lithiumscope.core.device import detect_device
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.datasets.georoc_ingestion import ingest_georoc_files
 from lithiumscope.datasets.harmonization import merge_harmonized_sources
-from lithiumscope.model_1.steps.step_01_load_data import load_data
+from lithiumscope.datasets.readers.tabular import load_data
 from lithiumscope.model_1.pipeline import prepare_training_data
 from lithiumscope.model_1.training.factory import build_pipeline
 from lithiumscope.model_1.methodology.dual_release_metrics import met, four

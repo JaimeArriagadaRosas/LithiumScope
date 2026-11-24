@@ -3,7 +3,7 @@ from __future__ import annotations
 
 
 def _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_threshold_ppm, folds, groups, inner_folds, label, label_quantile, lithium_values, optimize, probabilities, pruning, quality_training_mask, records, scientific_folds, seed, spec, split_groups, split_iter, trials, x, y, parameter_space, calibration_mode='legacy'):
-    from lithiumscope.model_2.training.cv_runner import GroupKFold, Spinner, _fit_estimator, _materialize_splits, assert_group_isolation, classification_metrics, create_model, np, optimize_classifier_with_optuna, pd
+    from lithiumscope.model_2.training.execution.cv_runner import GroupKFold, Spinner, _fit_estimator, _materialize_splits, assert_group_isolation, classification_metrics, create_model, np, optimize_classifier_with_optuna, pd
     for fold, (train_idx, test_idx) in enumerate(split_iter, start=1):
         train_idx = np.asarray(train_idx, dtype=int)
         test_idx = np.asarray(test_idx, dtype=int)
@@ -146,7 +146,7 @@ def _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_th
                 f"{label} · fold {fold}/{folds} · ajustando"
             )
             if calibration_mode == 'spatial_sigmoid':
-                from lithiumscope.model_2.training.calibration_policy import (
+                from lithiumscope.model_2.training.calibration.policy import (
                     fit_spatially_calibrated,
                 )
                 estimator = fit_spatially_calibrated(

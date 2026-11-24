@@ -216,7 +216,7 @@ def ensure_expanded_m2_manifest(
     )
     if combined.sample_id.duplicated().any():
         raise RuntimeError("Duplicate sample IDs in M2 expansion")
-    from lithiumscope.model_2.training.scientific_validation import (
+    from lithiumscope.model_2.validation.spatial import (
         make_scientific_folds,
     )
     splits = make_scientific_folds(

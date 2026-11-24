@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 from lithiumscope.experiments.acquisition.acquisition import read_asset_isolated, quality_from_scl
-from lithiumscope.model_2.data.sentinel2 import _asset_href
+from lithiumscope.tools.acquisition.sentinel2.provider import _asset_href
 from lithiumscope.experiments.scenarios.imagery import evaluate_model_2_image
 
 BASE = Path("results/scientific_simulations")

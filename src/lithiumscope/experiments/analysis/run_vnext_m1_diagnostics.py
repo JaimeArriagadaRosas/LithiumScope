@@ -15,7 +15,7 @@ from lithiumscope.experiments.analysis.run_vnext_m1 import (
     _frame, _metrics, quality_candidate_frames,
 )
 from lithiumscope.model_1.pipeline import prepare_prediction_data
-from lithiumscope.model_1.steps.step_09_validation import build_spatial_groups
+from lithiumscope.model_1.validation.spatial import build_spatial_groups
 
 
 def cluster_bootstrap_improvement(

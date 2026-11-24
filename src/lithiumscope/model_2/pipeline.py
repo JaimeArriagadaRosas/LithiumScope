@@ -9,7 +9,7 @@ from lithiumscope.core.config import load_config
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.core.reproducibility import canonical_json_hash
 from lithiumscope.model_2.data.feature_cache import source_identity, read_cache, write_cache
-from lithiumscope.model_2.steps.step_07_build_training_set import build_training_set
+from lithiumscope.model_2.preparation.training_matrix import build_training_set
 
 
 def _project_path(raw: str) -> Path:

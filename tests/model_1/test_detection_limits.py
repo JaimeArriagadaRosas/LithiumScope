@@ -1,6 +1,6 @@
 import pandas as pd
 
-from lithiumscope.model_1.steps.step_02_detection_limits import clean_detection_limits
+from lithiumscope.model_1.preparation.detection_limits import clean_detection_limits
 
 
 def test_detection_limits_follow_source_rules():

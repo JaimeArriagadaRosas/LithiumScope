@@ -21,7 +21,7 @@ def main() -> int:
         array = extract_http_patch(args.href, args.lat, args.lon, args.size, args.pixels,
                                    resampling="nearest" if args.mode == "scl" else "bilinear")
     elif args.mode == "reflectance":
-        from lithiumscope.model_2.data.sentinel2 import _read_patch
+        from lithiumscope.tools.acquisition.sentinel2.provider import _read_patch
         array = _read_patch(args.href, args.lat, args.lon, args.size, args.pixels)
     else:
         import rasterio

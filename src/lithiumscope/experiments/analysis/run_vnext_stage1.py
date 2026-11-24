@@ -13,9 +13,9 @@ from lithiumscope.experiments.analysis.georoc_qc_protocols import (
     protocol_masks,
     protocol_summary,
 )
-from lithiumscope.model_1.steps.step_02_detection_limits import clean_detection_limits
-from lithiumscope.model_1.steps.step_03_missing_values import normalize_missing_values
-from lithiumscope.model_1.steps.step_05_target_filtering import filter_target
+from lithiumscope.model_1.preparation.detection_limits import clean_detection_limits
+from lithiumscope.model_1.preparation.missing_values import normalize_missing_values
+from lithiumscope.model_1.preparation.target_filtering import filter_target
 
 
 def run_stage1(

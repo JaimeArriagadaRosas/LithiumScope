@@ -8,7 +8,7 @@ import pandas as pd
 
 from lithiumscope.core.config import load_config
 from lithiumscope.prediction.exports.chart_guides import bar_guides, scatter_guides
-from lithiumscope.model_2.steps.step_01_load_imagery import load_imagery
+from lithiumscope.model_2.preparation.imagery import load_imagery
 
 
 def _rgb_preview(path: Path) -> np.ndarray | None:

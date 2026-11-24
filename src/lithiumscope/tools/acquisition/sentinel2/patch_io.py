@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from lithiumscope.model_2.data.sentinel2 import Path, Sentinel2Provider, np
+    from lithiumscope.tools.acquisition.sentinel2.provider import Path, Sentinel2Provider, np
 
 
 def _read_patch(
@@ -15,7 +15,7 @@ def _read_patch(
     *,
     categorical: bool = False,
 ) -> np.ndarray:
-    from lithiumscope.model_2.data.sentinel2 import SentinelAssetError, SentinelProviderError, _masked_to_float, np
+    from lithiumscope.tools.acquisition.sentinel2.provider import SentinelAssetError, SentinelProviderError, _masked_to_float, np
     try:
         import rasterio
         from rasterio.enums import Resampling
@@ -77,7 +77,7 @@ def download_patch(
     selected_scene: dict | None = None,
     scientific_quality: dict | None = None,
 ) -> tuple[Path, dict]:
-    from lithiumscope.model_2.data.sentinel2 import Path, Sentinel2Provider, SentinelAssetError, _asset_href, _read_patch, json, np
+    from lithiumscope.tools.acquisition.sentinel2.provider import Path, Sentinel2Provider, SentinelAssetError, _asset_href, _read_patch, json, np
     if destination.exists() and destination.stat().st_size > 0:
         metadata_path = destination.with_suffix(".json")
         metadata = {}

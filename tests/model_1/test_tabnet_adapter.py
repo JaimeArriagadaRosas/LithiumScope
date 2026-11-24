@@ -1,4 +1,4 @@
-from lithiumscope.model_1.training.tabnet import TabNetRegressorAdapter
+from lithiumscope.model_1.training.algorithms.tabnet import TabNetRegressorAdapter
 
 
 def test_tabnet_adapter_exposes_internal_validation_and_final_refit_flags():

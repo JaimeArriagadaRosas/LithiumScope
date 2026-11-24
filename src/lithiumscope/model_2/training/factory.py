@@ -5,14 +5,7 @@ from dataclasses import dataclass
 from sklearn.calibration import CalibratedClassifierCV
 
 from lithiumscope.resources.detection.device import DeviceInfo
-from lithiumscope.model_2.training import (
-    catboost,
-    extra_trees,
-    hist_gradient_boosting,
-    random_forest,
-    svm_rbf,
-    xgboost,
-)
+from lithiumscope.model_2.training.algorithms import catboost, extra_trees, hist_gradient_boosting, random_forest, svm_rbf, xgboost
 
 
 @dataclass(frozen=True)

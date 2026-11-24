@@ -22,7 +22,7 @@ from lithiumscope.model_1.evaluation.plots import save_competition_chart
 from lithiumscope.model_1.pipeline import prepare_training_data
 from lithiumscope.model_1.preflight import run_model_1_preflight
 from lithiumscope.model_1.schema import applicability_profile
-from lithiumscope.model_1.training.cv_runner import run_nested_cv
+from lithiumscope.model_1.training.execution.cv_runner import run_nested_cv
 from lithiumscope.model_1.training.factory import build_pipeline, get_algorithm
 from lithiumscope.persistence.save_model import save_model_bundle
 from lithiumscope.results.dashboard import build_dashboard
@@ -252,5 +252,5 @@ def run_model_1_competition(dataset_path: Path, device: DeviceInfo) -> Competiti
 
     return _finalize_model_1_winner(baseline, config, context, dataset_manifest, device, failed, manifest_path, preflight, prepared, results, rows, seed)
 
-from lithiumscope.model_1.training.competition_evaluate_model_1_candidates import _evaluate_model_1_candidates
-from lithiumscope.model_1.training.competition_finalize_model_1_winner import _finalize_model_1_winner
+from lithiumscope.model_1.training.execution.competition_evaluate_model_1_candidates import _evaluate_model_1_candidates
+from lithiumscope.model_1.training.execution.competition_finalize_model_1_winner import _finalize_model_1_winner

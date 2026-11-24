@@ -18,9 +18,9 @@ from lithiumscope.core.config import load_config
 from lithiumscope.core.device import detect_device
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import PROJECT_ROOT
-from lithiumscope.model_2.training.cv_runner import run_classification_cv
-from lithiumscope.model_2.training.quality import training_quality_mask
-from lithiumscope.model_2.training.scientific_validation import scientific_labels
+from lithiumscope.model_2.training.execution.cv_runner import run_classification_cv
+from lithiumscope.model_2.validation.quality import training_quality_mask
+from lithiumscope.model_2.validation.spatial import scientific_labels
 
 from scripts.scientific.m2_rededge_v4_competition import (
     ARMS,

@@ -42,7 +42,7 @@ def run() -> None:
             raw = input("Ruta a imagen local (Enter para cancelar): ").strip().strip('"')
             if not raw:
                 continue
-            from lithiumscope.model_2.steps.step_01_load_imagery import load_imagery
+            from lithiumscope.model_2.preparation.imagery import load_imagery
             path = Path(raw)
             if not path.is_file():
                 print(f"No existe: {path}")

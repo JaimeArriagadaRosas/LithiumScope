@@ -7,7 +7,7 @@ import pandas as pd
 from pystac_client import Client
 from lithiumscope.experiments.validation.spatial_control import plan
 from lithiumscope.experiments.acquisition.acquisition import quality_from_scl
-from lithiumscope.model_2.data.sentinel2 import _asset_href
+from lithiumscope.tools.acquisition.sentinel2.provider import _asset_href
 from lithiumscope.core.config import load_config
 
 ROOT=Path("results/scientific_simulations")

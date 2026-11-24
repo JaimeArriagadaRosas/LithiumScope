@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from lithiumscope.model_1.training.target_transform import (
+from lithiumscope.model_1.training.preprocessing.target_transform import (
     unwrap_fitted_regressor,
 )
 

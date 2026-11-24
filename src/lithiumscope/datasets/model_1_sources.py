@@ -14,7 +14,7 @@ from lithiumscope.datasets.georoc_ingestion import (
 from lithiumscope.datasets.harmonization import (
     merge_harmonized_sources,
 )
-from lithiumscope.model_1.steps.step_01_load_data import (
+from lithiumscope.datasets.readers.tabular import (
     load_data,
 )
 

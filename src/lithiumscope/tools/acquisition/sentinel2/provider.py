@@ -249,4 +249,4 @@ def _asset_href(scene: dict, band: str) -> str:
 
 
 
-from lithiumscope.model_2.data.sentinel2_patch_io import _read_patch, download_patch
+from lithiumscope.tools.acquisition.sentinel2.patch_io import _read_patch, download_patch

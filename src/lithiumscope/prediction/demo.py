@@ -6,7 +6,7 @@ import pandas as pd
 
 from lithiumscope.core.config import load_config
 from lithiumscope.core.paths import DATA_DIR, PROJECT_ROOT
-from lithiumscope.model_1.steps.step_01_load_data import load_data
+from lithiumscope.datasets.readers.tabular import load_data
 
 
 def demonstration_cases_path() -> Path:

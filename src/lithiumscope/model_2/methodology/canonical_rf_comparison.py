@@ -24,10 +24,10 @@ from lithiumscope.model_2.evaluation.paired_uncertainty import bootstrap_paired_
 from lithiumscope.model_2.methodology.regularization_study import (
     _apply_calibrator, _calibrator,
 )
-from lithiumscope.model_2.training import random_forest
+from lithiumscope.model_2.training.algorithms import random_forest
 from lithiumscope.model_2.training.factory import get_algorithm
-from lithiumscope.model_2.training.optimizer import optimize_classifier_with_optuna
-from lithiumscope.model_2.training.search_policy import parameter_space_for
+from lithiumscope.model_2.training.optimization.optimizer import optimize_classifier_with_optuna
+from lithiumscope.model_2.training.optimization.search_policy import parameter_space_for
 from lithiumscope.model_2.evaluation.thresholds import select_operating_threshold
 
 PROFILES = ("legacy", "regularized_v2")

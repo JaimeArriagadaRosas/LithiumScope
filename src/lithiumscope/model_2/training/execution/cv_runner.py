@@ -16,16 +16,16 @@ from lithiumscope.core.scientific_checks import (
     assert_oof_complete,
 )
 from lithiumscope.model_2.evaluation.metrics import classification_metrics
-from lithiumscope.model_2.training.scientific_validation import ScientificFold
+from lithiumscope.model_2.validation.spatial import ScientificFold
 from lithiumscope.model_2.training.factory import (
     create_model,
     get_algorithm,
     get_label,
 )
-from lithiumscope.model_2.training.optimizer import (
+from lithiumscope.model_2.training.optimization.optimizer import (
     optimize_classifier_with_optuna,
 )
-from lithiumscope.model_2.training.search_policy import parameter_space_for
+from lithiumscope.model_2.training.optimization.search_policy import parameter_space_for
 from lithiumscope.runtime.console_status import Spinner
 
 logger = get_logger("model_2.cv_runner")
@@ -90,7 +90,7 @@ def run_classification_cv(
     )
 
     optimization = optimization or {}
-    from lithiumscope.model_2.training.calibration_policy import calibration_policy
+    from lithiumscope.model_2.training.calibration.policy import calibration_policy
     calibration_mode = calibration_policy(optimization)
     parameter_space = parameter_space_for(algorithm, spec, optimization)
     optimize = bool(optimization.get("enabled", False))
@@ -238,6 +238,6 @@ def run_classification_cv(
         final_params=final_params,
     )
 
-from lithiumscope.model_2.training.cv_runner_fold_utilities import _splitter, _materialize_splits, _fit_estimator
+from lithiumscope.model_2.training.execution.cv_runner_fold_utilities import _splitter, _materialize_splits, _fit_estimator
 
-from lithiumscope.model_2.training.cv_runner_evaluate_outer_classification_folds import _evaluate_outer_classification_folds
+from lithiumscope.model_2.training.execution.cv_runner_evaluate_outer_classification_folds import _evaluate_outer_classification_folds

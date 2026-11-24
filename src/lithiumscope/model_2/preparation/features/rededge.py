@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from lithiumscope.model_2.steps.step_05_spectral_features import (
+from lithiumscope.model_2.preparation.features.spectral import (
     _summary,
     _texture_summary,
 )

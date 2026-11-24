@@ -19,13 +19,13 @@ from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR
 from lithiumscope.experiments.analysis.georoc_qc_protocols import protocol_masks
 from lithiumscope.model_2.data.builder import _sentinel_config
 from lithiumscope.model_2.data.sample_source import _spatial_group
-from lithiumscope.model_2.data.sentinel2 import (
+from lithiumscope.tools.acquisition.sentinel2.provider import (
     Sentinel2Provider, SentinelAssetError, SentinelSceneUnavailable,
     SentinelProviderError, download_patch,
 )
-from lithiumscope.model_2.steps.step_01_load_imagery import load_imagery
-from lithiumscope.model_2.steps.step_04_image_preprocessing import preprocess_image
-from lithiumscope.model_2.steps.step_05_spectral_features import extract_spectral_features
+from lithiumscope.model_2.preparation.imagery import load_imagery
+from lithiumscope.model_2.preparation.image_preprocessing import preprocess_image
+from lithiumscope.model_2.preparation.features.spectral import extract_spectral_features
 
 
 PILOT_OUTPUT = (

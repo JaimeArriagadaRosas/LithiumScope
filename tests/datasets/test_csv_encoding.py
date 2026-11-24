@@ -1,4 +1,4 @@
-from lithiumscope.model_1.steps.step_01_load_data import load_data
+from lithiumscope.datasets.readers.tabular import load_data
 
 
 def test_csv_loader_falls_back_to_cp1252(tmp_path):

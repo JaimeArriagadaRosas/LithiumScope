@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.pipeline import Pipeline
 
-from lithiumscope.model_2.training.svm_rbf import create_model
+from lithiumscope.model_2.training.algorithms.svm_rbf import create_model
 
 
 def test_model_2_svm_uses_explicit_calibration():

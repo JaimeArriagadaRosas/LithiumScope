@@ -6,7 +6,7 @@ import pandas as pd
 
 from lithiumscope.core.config import load_config
 from lithiumscope.core.logging.session import get_logger
-from lithiumscope.model_2.data.sentinel2 import (
+from lithiumscope.tools.acquisition.sentinel2.provider import (
     Sentinel2Provider,
     SentinelAssetError,
     SentinelConfig,

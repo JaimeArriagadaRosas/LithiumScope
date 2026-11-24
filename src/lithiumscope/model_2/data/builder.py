@@ -12,7 +12,7 @@ from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.model_2.data.sample_source import load_georeferenced_li_samples
-from lithiumscope.model_2.data.sentinel2 import (
+from lithiumscope.tools.acquisition.sentinel2.provider import (
     Sentinel2Provider,
     SentinelAssetError,
     SentinelConfig,

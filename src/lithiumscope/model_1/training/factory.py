@@ -7,16 +7,9 @@ from sklearn.base import clone
 from sklearn.pipeline import Pipeline
 
 from lithiumscope.resources.detection.device import DeviceInfo
-from lithiumscope.model_1.steps.step_08_preprocessing import build_preprocessor
-from lithiumscope.model_1.training.target_transform import wrap_target_regressor
-from lithiumscope.model_1.training import (
-    catboost,
-    hist_gradient_boosting,
-    random_forest,
-    svm,
-    tabnet,
-    xgboost,
-)
+from lithiumscope.model_1.training.preprocessing.tabular import build_preprocessor
+from lithiumscope.model_1.training.preprocessing.target_transform import wrap_target_regressor
+from lithiumscope.model_1.training.algorithms import catboost, hist_gradient_boosting, random_forest, svm, tabnet, xgboost
 
 
 @dataclass(frozen=True)

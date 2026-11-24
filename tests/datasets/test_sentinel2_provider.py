@@ -1,6 +1,6 @@
 import numpy as np
 
-from lithiumscope.model_2.data.sentinel2 import (
+from lithiumscope.tools.acquisition.sentinel2.provider import (
     Sentinel2Provider,
     SentinelConfig,
     SentinelProviderError,

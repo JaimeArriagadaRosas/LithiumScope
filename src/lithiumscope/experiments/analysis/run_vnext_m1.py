@@ -25,10 +25,10 @@ from lithiumscope.datasets.harmonization import (
 )
 from lithiumscope.experiments.analysis.georoc_qc_protocols import protocol_masks
 from lithiumscope.model_1.pipeline import prepare_prediction_data
-from lithiumscope.model_1.steps.step_02_detection_limits import clean_detection_limits
-from lithiumscope.model_1.steps.step_03_missing_values import normalize_missing_values
-from lithiumscope.model_1.steps.step_09_validation import build_spatial_groups
-from lithiumscope.model_1.training.target_transform import wrap_target_regressor
+from lithiumscope.model_1.preparation.detection_limits import clean_detection_limits
+from lithiumscope.model_1.preparation.missing_values import normalize_missing_values
+from lithiumscope.model_1.validation.spatial import build_spatial_groups
+from lithiumscope.model_1.training.preprocessing.target_transform import wrap_target_regressor
 
 
 IRON_FEOT_TO_FE2O3T = 1.111348

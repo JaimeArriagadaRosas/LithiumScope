@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.model_1.steps.step_02_detection_limits import clean_detection_limits
-from lithiumscope.model_1.steps.step_06_category_cleaning import clean_categories
+from lithiumscope.model_1.preparation.detection_limits import clean_detection_limits
+from lithiumscope.model_1.preparation.category_cleaning import clean_categories
 
 
 def test_censoring_audit_does_not_rewrite_categorical_values():

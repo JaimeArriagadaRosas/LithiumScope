@@ -11,7 +11,7 @@ from lithiumscope.core.scientific.eda_statistics import (
     category_frequencies, cohort_summary, feature_profiles, numeric_correlations,
 )
 from lithiumscope.model_1.pipeline import prepare_training_data
-from lithiumscope.model_1.steps.step_09_validation import materialize_regression_splits
+from lithiumscope.model_1.validation.spatial import materialize_regression_splits
 from lithiumscope.core.scientific.fold_profiles import fold_profiles
 from lithiumscope.results.eda_artifacts import (
     complete_run, fail_run, find_compatible, new_run, signature,

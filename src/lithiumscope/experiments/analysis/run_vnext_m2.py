@@ -21,10 +21,10 @@ from sklearn.metrics import (
 from sklearn.model_selection import GroupKFold, GroupShuffleSplit
 
 from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR
-from lithiumscope.model_2.steps.step_01_load_imagery import load_imagery
-from lithiumscope.model_2.steps.step_04_image_preprocessing import preprocess_image
-from lithiumscope.model_2.steps.step_05_spectral_features import extract_spectral_features
-from lithiumscope.model_2.training.scientific_validation import make_scientific_folds
+from lithiumscope.model_2.preparation.imagery import load_imagery
+from lithiumscope.model_2.preparation.image_preprocessing import preprocess_image
+from lithiumscope.model_2.preparation.features.spectral import extract_spectral_features
+from lithiumscope.model_2.validation.spatial import make_scientific_folds
 
 
 def augment_image_training_only(

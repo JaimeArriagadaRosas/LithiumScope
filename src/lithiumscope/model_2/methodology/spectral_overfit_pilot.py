@@ -21,7 +21,7 @@ from lithiumscope.model_2.evaluation.paired_uncertainty import bootstrap_paired_
 from lithiumscope.model_2.evaluation.spatial_distance_sensitivity import distances_km
 from lithiumscope.model_2.methodology.spectral_feature_policy import select_spectral_features
 from lithiumscope.model_2.methodology.spectral_overfit_inputs import build_augmentation_cache
-from lithiumscope.model_2.training.random_forest import create_model
+from lithiumscope.model_2.training.algorithms.random_forest import create_model
 
 ARMS = {
     "control_regularized_126": (False, "all126", False),

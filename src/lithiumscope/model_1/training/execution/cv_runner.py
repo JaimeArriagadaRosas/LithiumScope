@@ -15,12 +15,12 @@ from lithiumscope.core.scientific_checks import (
     assert_oof_complete,
 )
 from lithiumscope.model_1.evaluation.metrics import regression_metrics
-from lithiumscope.model_1.steps.step_09_validation import (
+from lithiumscope.model_1.validation.spatial import (
     materialize_regression_splits,
 )
 from lithiumscope.model_1.training.factory import build_pipeline, get_algorithm
-from lithiumscope.model_1.training.optimizer import optimize_with_optuna
-from lithiumscope.model_1.training.target_transform import (
+from lithiumscope.model_1.training.optimization.optimizer import optimize_with_optuna
+from lithiumscope.model_1.training.preprocessing.target_transform import (
     transform_label,
     validate_target_transform,
 )
@@ -235,4 +235,4 @@ def run_nested_cv(
         variant_id=variant_id,
     )
 
-from lithiumscope.model_1.training.cv_runner_evaluate_outer_regression_folds import _evaluate_outer_regression_folds
+from lithiumscope.model_1.training.execution.cv_runner_evaluate_outer_regression_folds import _evaluate_outer_regression_folds

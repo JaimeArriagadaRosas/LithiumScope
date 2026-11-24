@@ -6,9 +6,9 @@ import pytest
 
 from lithiumscope.core.scientific_checks import ScientificValidationError
 from lithiumscope.datasets.harmonization import canonicalize_coordinates
-from lithiumscope.model_1.steps.step_05_target_filtering import filter_target
-from lithiumscope.model_1.steps.step_06_category_cleaning import clean_categories
-from lithiumscope.model_1.steps.step_09_validation import materialize_regression_splits
+from lithiumscope.model_1.preparation.target_filtering import filter_target
+from lithiumscope.model_1.preparation.category_cleaning import clean_categories
+from lithiumscope.model_1.validation.spatial import materialize_regression_splits
 
 
 def test_coordinates_are_coalesced_row_by_row():

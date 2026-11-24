@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 from lithiumscope.experiments.acquisition.acquisition import acquire_pilot
 from lithiumscope.experiments.scenarios.imagery import evaluate_model_2_image
-from lithiumscope.model_2.steps.step_01_load_imagery import load_imagery
+from lithiumscope.model_2.preparation.imagery import load_imagery
 from lithiumscope.persistence.load_model import load_latest_model
 
 ROOT=Path("results/scientific_simulations/external_geochemistry_audit")

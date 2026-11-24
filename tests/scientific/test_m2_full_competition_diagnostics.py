@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.model_2.training.calibration_policy import (
+from lithiumscope.model_2.training.calibration.policy import (
     calibration_policy, fit_spatially_calibrated,
 )
 from lithiumscope.model_2.training.diagnostic_metrics import (
@@ -88,7 +88,7 @@ def _spectral_synthetic():
 
 
 def test_calibration_never_mixes_spatial_groups_and_fits_rf(monkeypatch):
-    from lithiumscope.model_2.training import calibration_policy as mod
+    from lithiumscope.model_2.training.calibration import policy as mod
     x, y, groups = _spectral_synthetic()
     observed = {}
     original = mod.create_model

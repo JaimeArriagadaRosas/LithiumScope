@@ -19,8 +19,8 @@ from lithiumscope.experiments.analysis.run_vnext_m1_diagnostics import (
     cluster_bootstrap_improvement,
 )
 from lithiumscope.model_1.pipeline import prepare_prediction_data
-from lithiumscope.model_1.steps.step_05_target_filtering import filter_target
-from lithiumscope.model_1.steps.step_09_validation import build_spatial_groups
+from lithiumscope.model_1.preparation.target_filtering import filter_target
+from lithiumscope.model_1.validation.spatial import build_spatial_groups
 
 DESTINATION = (
     RESULTS_DIR / "scientific_simulations" / "vnext_20261106"

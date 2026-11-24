@@ -24,7 +24,7 @@ from sklearn.model_selection import GroupKFold
 
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.model_2.evaluation.thresholds import select_operating_threshold
-from lithiumscope.model_2.training.scientific_validation import (
+from lithiumscope.model_2.validation.spatial import (
     make_anchored_scientific_folds,
 )
 

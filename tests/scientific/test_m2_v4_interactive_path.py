@@ -17,10 +17,10 @@ from lithiumscope.core.config import load_config
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.model_2.training import competition
-from lithiumscope.model_2.training.competition_prepare_scientific_data import (
+from lithiumscope.model_2.training.execution.competition_prepare_scientific_data import (
     _prepare_scientific_data,
 )
-from lithiumscope.model_2.training.v4_inputs import (
+from lithiumscope.model_2.preparation.features.v4_inputs import (
     ALGORITHMS,
     combine_v4_quality_mask,
     load_spectral_v4_training_frame,
@@ -90,7 +90,7 @@ def test_real_v4_source_has_170_and_original_126(model2_v4):
 
 @requires_local_v4
 def test_quality_mask_excludes_only_train_not_test(model2_v4):
-    from lithiumscope.model_2.training.quality import training_quality_mask
+    from lithiumscope.model_2.validation.quality import training_quality_mask
 
     manifest = PROJECT_ROOT / model2_v4["training"]["manifest_path"]
     quality, _ = training_quality_mask(
@@ -148,7 +148,7 @@ def test_first_real_main_run_must_use_v4_matrix_signature(
     class PreventExecution(Exception):
         pass
 
-    from lithiumscope.model_2.training import v4_inputs
+    from lithiumscope.model_2.preparation.features import v4_inputs
 
     original_check = v4_inputs.verify_spectral_v4_source
 
@@ -224,7 +224,7 @@ def test_v4_extended_783_can_be_selected_by_config_without_menu_changes(model2_v
 
 
 def test_v4_quality_source_missing_must_fail_closed(model2_v4, tmp_path, monkeypatch):
-    from lithiumscope.model_2.training import v4_inputs
+    from lithiumscope.model_2.preparation.features import v4_inputs
 
     monkeypatch.setattr(v4_inputs, "PROJECT_ROOT", tmp_path)
     fake_manifest = tmp_path / model2_v4["training"]["manifest_path"]
@@ -236,7 +236,7 @@ def test_v4_quality_source_missing_must_fail_closed(model2_v4, tmp_path, monkeyp
 
 def test_v4_refuses_missing_algorithm_without_changing_main_menu(model2_v4):
     from copy import deepcopy
-    from lithiumscope.model_2.training.v4_inputs import spectral_v4_paths
+    from lithiumscope.model_2.preparation.features.v4_inputs import spectral_v4_paths
 
     damaged = deepcopy(model2_v4)
     damaged["model"]["algorithms"] = list(ALGORITHMS[:-1])

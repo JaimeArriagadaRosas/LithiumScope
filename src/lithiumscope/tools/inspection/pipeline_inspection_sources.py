@@ -12,7 +12,7 @@ from lithiumscope.datasets.harmonization import (
     concatenate_harmonized_sources,
     deduplicate_harmonized_sources,
 )
-from lithiumscope.model_1.steps.step_01_load_data import load_data
+from lithiumscope.datasets.readers.tabular import load_data
 from lithiumscope.tools.inspection.pipeline_inspection_reporting import (
     dataset_summary,
     print_table,

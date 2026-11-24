@@ -6,7 +6,7 @@ from types import SimpleNamespace
 import numpy as np
 import pandas as pd
 
-from lithiumscope.model_2.training.cv_runner import run_classification_cv
+from lithiumscope.model_2.training.execution.cv_runner import run_classification_cv
 
 
 def test_real_grouped_rf_cv_preserves_oof_and_does_not_use_gpu():

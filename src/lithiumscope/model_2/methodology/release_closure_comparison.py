@@ -21,7 +21,7 @@ from lithiumscope.model_2.methodology.regularization_study import (
     _apply_calibrator, _calibrator, _inner_scores,
 )
 from lithiumscope.model_2.methodology.spectral_overfit_pilot import FIXED_RF
-from lithiumscope.model_2.training.random_forest import create_model
+from lithiumscope.model_2.training.algorithms.random_forest import create_model
 
 LEGACY_OOF = ("results/scientific_simulations/sentinel_methodology_20261112/"
               "experiments/all_arms_paired_oof.csv")

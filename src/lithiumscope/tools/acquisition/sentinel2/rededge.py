@@ -14,8 +14,8 @@ from pathlib import Path
 import numpy as np
 
 from lithiumscope.core.paths import PROJECT_ROOT
-from lithiumscope.model_2.data.sentinel2_patch_io import _read_patch
-from lithiumscope.model_2.methodology.rededge_v4 import (
+from lithiumscope.tools.acquisition.sentinel2.patch_io import _read_patch
+from lithiumscope.model_2.preparation.features.rededge import (
     NEW_BANDS,
     extract_rededge_v4,
     reflectance_from_dn,

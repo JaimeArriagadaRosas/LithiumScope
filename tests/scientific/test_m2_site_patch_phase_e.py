@@ -134,10 +134,10 @@ def test_irreducible_mixed_site_errors_use_fold_train_q75(
 def test_center_patch_same_sha_avoids_rereading_and_fixed_schema(
     tmp_path,contract
 ):
-    from lithiumscope.model_2.steps.step_05_spectral_features import (
+    from lithiumscope.model_2.preparation.features.spectral import (
         extract_spectral_features
     )
-    from lithiumscope.model_2.steps.step_04_image_preprocessing import preprocess_image
+    from lithiumscope.model_2.preparation.image_preprocessing import preprocess_image
     arr=np.zeros((6,32,32),dtype=np.float32)
     arr[0,:,:]=1.
     arr[0,8:24,8:24]=2.

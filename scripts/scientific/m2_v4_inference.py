@@ -13,8 +13,8 @@ import joblib
 import numpy as np
 
 from lithiumscope.model_2.prediction.image_parser import image_to_feature_frame
-from lithiumscope.model_2.steps.step_01_load_imagery import load_imagery
-from lithiumscope.model_2.methodology.rededge_acquisition import cached_rededge_sample
+from lithiumscope.model_2.preparation.imagery import load_imagery
+from lithiumscope.tools.acquisition.sentinel2.rededge import cached_rededge_sample
 
 from scripts.scientific.m2_rededge_v4_competition import ARMS
 

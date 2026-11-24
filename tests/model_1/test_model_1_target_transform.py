@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.dummy import DummyRegressor
 
-from lithiumscope.model_1.training.target_transform import (
+from lithiumscope.model_1.training.preprocessing.target_transform import (
     unwrap_fitted_regressor,
     validate_target_transform,
     wrap_target_regressor,

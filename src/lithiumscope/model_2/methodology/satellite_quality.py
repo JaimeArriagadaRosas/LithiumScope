@@ -15,7 +15,7 @@ from typing import Callable
 
 import numpy as np
 
-from lithiumscope.model_2.data.sentinel2 import (
+from lithiumscope.tools.acquisition.sentinel2.provider import (
     _read_patch, _asset_href, SentinelAssetError,
 )
 

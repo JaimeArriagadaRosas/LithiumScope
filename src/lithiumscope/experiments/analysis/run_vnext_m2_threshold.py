@@ -15,7 +15,7 @@ from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR
 from lithiumscope.experiments.analysis.run_vnext_m2 import (
     _calibration_splits, score_metrics,
 )
-from lithiumscope.model_2.training.scientific_validation import make_scientific_folds
+from lithiumscope.model_2.validation.spatial import make_scientific_folds
 
 
 def threshold_by_training_prevalence(

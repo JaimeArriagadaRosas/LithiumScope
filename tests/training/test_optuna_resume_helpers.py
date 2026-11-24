@@ -1,4 +1,4 @@
-from lithiumscope.model_1.training.optimizer import _sqlite_storage
+from lithiumscope.model_1.training.optimization.optimizer import _sqlite_storage
 
 
 def test_optuna_storage_uses_sqlite_url(tmp_path):

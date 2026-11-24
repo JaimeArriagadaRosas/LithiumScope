@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.model_2.training.scientific_validation import (
+from lithiumscope.model_2.validation.spatial import (
     make_scientific_folds, scientific_labels, evaluate_scientific_baseline,
 )
 

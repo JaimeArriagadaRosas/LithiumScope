@@ -12,8 +12,8 @@ from lithiumscope.core.scientific.eda_statistics import cohort_summary, feature_
 from lithiumscope.model_2.pipeline import load_model_2_training_frame
 from lithiumscope.model_2.eda.quality import patch_quality
 from lithiumscope.core.scientific.fold_profiles import fold_profiles
-from lithiumscope.model_2.training.scientific_validation import make_scientific_folds
-from lithiumscope.model_2.training.v4_inputs import spectral_v4_enabled, load_spectral_v4_training_frame
+from lithiumscope.model_2.validation.spatial import make_scientific_folds
+from lithiumscope.model_2.preparation.features.v4_inputs import spectral_v4_enabled, load_spectral_v4_training_frame
 from lithiumscope.results.eda_artifacts import complete_run, fail_run, find_compatible, new_run, signature
 from lithiumscope.results.eda_figures import save_figures
 

@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 from lithiumscope.experiments.acquisition.http_tiles import extract_http_patch
-from lithiumscope.model_2.data.sentinel2 import _read_patch
+from lithiumscope.tools.acquisition.sentinel2.provider import _read_patch
 
 
 @pytest.mark.parametrize("resolution", [10, 20])

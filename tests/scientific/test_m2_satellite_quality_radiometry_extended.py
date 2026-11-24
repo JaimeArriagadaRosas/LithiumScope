@@ -18,11 +18,11 @@ from lithiumscope.model_2.methodology.radiometric_features import (
     apply_radiometry, extract_valid_spectral_features, build_feature_variants,
 )
 
-from lithiumscope.model_2.data.sentinel2 import (
+from lithiumscope.tools.acquisition.sentinel2.provider import (
     SentinelConfig, Sentinel2Provider, download_patch, SentinelAssetError,
 )
 
-from lithiumscope.model_2.steps.step_05_spectral_features import extract_spectral_features
+from lithiumscope.model_2.preparation.features.spectral import extract_spectral_features
 
 
 @pytest.fixture

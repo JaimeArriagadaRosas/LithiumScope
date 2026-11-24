@@ -19,13 +19,13 @@ from lithiumscope.core.config import load_config
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.model_2.data.builder import _sentinel_config
-from lithiumscope.model_2.data.sentinel2 import (
+from lithiumscope.tools.acquisition.sentinel2.provider import (
     Sentinel2Provider,
     SentinelAssetError,
     SentinelSceneUnavailable,
 )
-from lithiumscope.model_2.data.sentinel2_patch_io import download_patch
-from lithiumscope.model_2.methodology.rededge_acquisition import (
+from lithiumscope.tools.acquisition.sentinel2.patch_io import download_patch
+from lithiumscope.tools.acquisition.sentinel2.rededge import (
     cached_rededge_sample,
 )
 from lithiumscope.model_2.methodology.satellite_quality import (

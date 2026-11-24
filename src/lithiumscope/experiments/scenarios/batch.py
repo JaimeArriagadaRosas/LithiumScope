@@ -7,7 +7,7 @@ import pandas as pd
 from lithiumscope.experiments.scenarios.scenarios import catalog, perturb
 from lithiumscope.model_1.prediction.predictor import predict_model_1_frame
 from lithiumscope.experiments.scenarios.imagery import evaluate_model_2_image
-from lithiumscope.model_2.steps.step_01_load_imagery import load_imagery
+from lithiumscope.model_2.preparation.imagery import load_imagery
 
 
 def run_m1_batch(bundle: dict, frame: pd.DataFrame, destination: Path,

@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 
 from lithiumscope.core.paths import PROJECT_ROOT
-from lithiumscope.model_2.data.sentinel2 import _read_patch
+from lithiumscope.tools.acquisition.sentinel2.provider import _read_patch
 from lithiumscope.model_2.methodology.satellite_quality import (
     ScientificScenePolicy, analyze_arrays
 )

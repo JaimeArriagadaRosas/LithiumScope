@@ -6,8 +6,8 @@ import numpy as np
 import pandas as pd
 
 from lithiumscope.core.paths import PROJECT_ROOT
-from lithiumscope.model_2.training.quality import training_quality_mask
-from lithiumscope.model_2.training.v4_inputs import spectral_v4_enabled, spectral_v4_paths, combine_v4_quality_mask
+from lithiumscope.model_2.validation.quality import training_quality_mask
+from lithiumscope.model_2.preparation.features.v4_inputs import spectral_v4_enabled, spectral_v4_paths, combine_v4_quality_mask
 
 
 def patch_quality(path: Path, config: dict, manifest: pd.DataFrame) -> tuple[pd.DataFrame, dict]:

@@ -12,12 +12,12 @@ from __future__ import annotations
 
 import numpy as np
 
-from lithiumscope.model_2.data.sentinel2 import _masked_to_float
-from lithiumscope.model_2.steps.step_05_spectral_features import (
+from lithiumscope.tools.acquisition.sentinel2.provider import _masked_to_float
+from lithiumscope.model_2.preparation.features.spectral import (
     DEFAULT_BAND_NAMES,_summary,_texture_summary,
     extract_spectral_features,
 )
-from lithiumscope.model_2.steps.step_04_image_preprocessing import preprocess_image
+from lithiumscope.model_2.preparation.image_preprocessing import preprocess_image
 from lithiumscope.model_2.methodology.satellite_quality import SPECTRAL_BANDS
 
 

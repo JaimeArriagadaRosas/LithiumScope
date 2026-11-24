@@ -26,14 +26,14 @@ from lithiumscope.model_2.evaluation.plots import (
     save_roc_pr,
 )
 from lithiumscope.model_2.pipeline import load_model_2_training_frame
-from lithiumscope.model_2.steps.step_05_spectral_features import (
+from lithiumscope.model_2.preparation.features.spectral import (
     FEATURE_EXTRACTOR_VERSION,
 )
 from lithiumscope.model_2.schema import feature_range_profile
-from lithiumscope.model_2.training.cv_runner import run_classification_cv
-from lithiumscope.model_2.training.quality import training_quality_mask
+from lithiumscope.model_2.training.execution.cv_runner import run_classification_cv
+from lithiumscope.model_2.validation.quality import training_quality_mask
 from lithiumscope.model_2.training.postprocess import finalize_reports
-from lithiumscope.model_2.training.scientific_validation import (
+from lithiumscope.model_2.validation.spatial import (
     make_scientific_folds, make_anchored_scientific_folds,
     scientific_labels, evaluate_scientific_baseline,
 )
@@ -138,7 +138,7 @@ def run_model_2_competition(
     optimization_cfg = cfg.get("optimization", {})
     inner_folds = int(cfg["validation"].get("inner_folds", 3))
 
-    from lithiumscope.model_2.training.v4_inputs import (
+    from lithiumscope.model_2.preparation.features.v4_inputs import (
         build_scientific_training_signature,
     )
     signature = build_scientific_training_signature(manifest_path, cfg)
@@ -274,7 +274,7 @@ def run_model_2_competition(
 
     return _finalize_scientific_winner(baseline, candidates, cfg, context, dataset_manifest, dataset_manifest_path, device, failed, fixed_threshold, frame, groups, inner_folds, q, quality_audit, quality_cfg, quality_mask, ranking, results, seed, threshold, x, y, y_full)
 
-from lithiumscope.model_2.training.competition_prepare_scientific_data import _prepare_scientific_data
-from lithiumscope.model_2.training.competition_prepare_scientific_manifests import _prepare_scientific_manifests
-from lithiumscope.model_2.training.competition_evaluate_algorithm_candidates import _evaluate_algorithm_candidates
-from lithiumscope.model_2.training.competition_finalize_scientific_winner import _finalize_scientific_winner
+from lithiumscope.model_2.training.execution.competition_prepare_scientific_data import _prepare_scientific_data
+from lithiumscope.model_2.training.execution.competition_prepare_scientific_manifests import _prepare_scientific_manifests
+from lithiumscope.model_2.training.execution.competition_evaluate_algorithm_candidates import _evaluate_algorithm_candidates
+from lithiumscope.model_2.training.execution.competition_finalize_scientific_winner import _finalize_scientific_winner

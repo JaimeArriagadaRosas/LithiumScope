@@ -18,7 +18,7 @@ def _prepare_scientific_data(
         scientific_labels,
         training_quality_mask,
     )
-    from lithiumscope.model_2.training.v4_inputs import (
+    from lithiumscope.model_2.preparation.features.v4_inputs import (
         spectral_v4_enabled,
         load_spectral_v4_training_frame,
         combine_v4_quality_mask,

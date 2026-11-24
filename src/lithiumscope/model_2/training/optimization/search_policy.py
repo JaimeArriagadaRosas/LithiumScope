@@ -5,7 +5,7 @@ incompatible existing Optuna study distributions.
 """
 from __future__ import annotations
 
-from lithiumscope.model_2.training import extra_trees, random_forest
+from lithiumscope.model_2.training.algorithms import extra_trees, random_forest
 
 
 def parameter_space_for(algorithm: str, spec, optimization: dict):

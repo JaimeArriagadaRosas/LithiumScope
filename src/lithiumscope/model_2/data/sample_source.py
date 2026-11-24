@@ -8,10 +8,10 @@ import pandas as pd
 from lithiumscope.core.config import load_config
 from lithiumscope.core.logging.session import get_logger
 from lithiumscope.datasets.validation.concentration import valid_concentration
-from lithiumscope.model_1.steps.step_01_load_data import load_data
-from lithiumscope.model_1.steps.step_02_detection_limits import clean_detection_limits
-from lithiumscope.model_1.steps.step_03_missing_values import normalize_missing_values
-from lithiumscope.model_1.steps.step_05_target_filtering import resolve_target
+from lithiumscope.datasets.readers.tabular import load_data
+from lithiumscope.model_1.preparation.detection_limits import clean_detection_limits
+from lithiumscope.model_1.preparation.missing_values import normalize_missing_values
+from lithiumscope.model_1.preparation.target_filtering import resolve_target
 
 logger = get_logger("model_2.sample_source")
 

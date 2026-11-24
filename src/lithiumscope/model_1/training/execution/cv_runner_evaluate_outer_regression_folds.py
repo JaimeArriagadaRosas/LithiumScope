@@ -3,7 +3,7 @@ from __future__ import annotations
 
 
 def _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, groups, label, optimize, outer_splits, outer_strategy, predictions, prepared, pruning, require_groups, seed, spec, target_transform, trials, validation):
-    from lithiumscope.model_1.training.cv_runner import Spinner, assert_group_isolation, build_pipeline, logger, materialize_regression_splits, np, optimize_with_optuna, regression_metrics
+    from lithiumscope.model_1.training.execution.cv_runner import Spinner, assert_group_isolation, build_pipeline, logger, materialize_regression_splits, np, optimize_with_optuna, regression_metrics
     for fold, (train_idx, test_idx) in enumerate(
         outer_splits,
         start=1,

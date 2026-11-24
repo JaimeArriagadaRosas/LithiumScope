@@ -9,7 +9,7 @@ from lithiumscope.core.scientific_checks import (
     assert_oof_complete,
 )
 from lithiumscope.model_1.evaluation.metrics import regression_metrics
-from lithiumscope.model_1.steps.step_09_validation import (
+from lithiumscope.model_1.validation.spatial import (
     materialize_regression_splits,
 )
 

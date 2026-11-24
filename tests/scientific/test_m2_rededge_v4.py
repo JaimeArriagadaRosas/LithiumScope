@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.model_2.methodology.rededge_v4 import (
+from lithiumscope.model_2.preparation.features.rededge import (
     TOTAL_FEATURES,
     NEW_FEATURES,
     NEW_BANDS,
@@ -19,7 +19,7 @@ from lithiumscope.model_2.methodology.rededge_v4 import (
     extract_rededge_v4,
     append_rededge_features,
 )
-from lithiumscope.model_2.methodology import rededge_acquisition as ac
+from lithiumscope.tools.acquisition.sentinel2 import rededge as ac
 from scripts.scientific import m2_rededge_v4_build as builder
 from scripts.scientific import m2_rededge_v4_competition as competition
 from scripts.scientific.m2_rededge_v4_report import paired_group_ci

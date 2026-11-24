@@ -19,10 +19,10 @@ from sklearn.metrics import average_precision_score, brier_score_loss, roc_auc_s
 from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR
 from lithiumscope.experiments.analysis.georoc_qc_protocols import protocol_masks
 from lithiumscope.experiments.analysis.run_vnext_m1 import _frame
-from lithiumscope.model_1.steps.step_05_target_filtering import filter_target
+from lithiumscope.model_1.preparation.target_filtering import filter_target
 from lithiumscope.core.config import load_config
-from lithiumscope.model_1.steps.step_09_validation import build_spatial_groups
-from lithiumscope.model_2.training.scientific_validation import make_scientific_folds
+from lithiumscope.model_1.validation.spatial import build_spatial_groups
+from lithiumscope.model_2.validation.spatial import make_scientific_folds
 
 OUT = RESULTS_DIR / "scientific_simulations" / "vnext_20261106" / "stage4_evidence"
 

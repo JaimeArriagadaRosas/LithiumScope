@@ -11,7 +11,7 @@ from lithiumscope.datasets import provisioner
 from lithiumscope.model_2.training import competition
 from lithiumscope.model_2.training.diagnostic_inputs import loaded_competitions
 from lithiumscope.model_2.training.postprocess import load_predictions
-from lithiumscope.model_2.training.quality import training_quality_mask
+from lithiumscope.model_2.validation.quality import training_quality_mask
 
 
 def test_disabled_expansion_routes_only_to_frozen_manifest(monkeypatch, tmp_path):

@@ -1,6 +1,6 @@
 import pandas as pd
 
-from lithiumscope.model_1.steps.step_06_category_cleaning import (
+from lithiumscope.model_1.preparation.category_cleaning import (
     clean_categories,
 )
 

@@ -1,4 +1,4 @@
-from lithiumscope.model_1.training.tabnet import _fit_quietly
+from lithiumscope.model_1.training.algorithms.tabnet import _fit_quietly
 
 
 class _NoisyModel:
