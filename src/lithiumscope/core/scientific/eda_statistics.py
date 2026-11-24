@@ -8,6 +8,8 @@ import pandas as pd
 def source_series(frame: pd.DataFrame) -> pd.Series:
     if "source_dataset" in frame.columns:
         return frame["source_dataset"].astype("string").fillna("unknown")
+    if "source_cohort" in frame.columns:
+        return frame["source_cohort"].astype("string").fillna("unknown").map(lambda v: f"cohort:{v}")
     return pd.Series("unknown", index=frame.index, dtype="string")
 
 

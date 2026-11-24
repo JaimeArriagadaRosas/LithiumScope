@@ -246,17 +246,17 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 445.
 - Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Alta. Decisión: Controlar la calidad local y reproducibilidad de la adquisición.**
 - Criterio de aceptación (extracto): El criterio de aceptación será obtener imágenes trazables y que superen controles de calidad local verificables, conservando un registro de las muestras que no puedan recuperarse y evitando introducir un sesgo de selección no cuantificado.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: v4_integrity.py; v4_inputs.py; acquisition/sentinel2/rededge.py; import_rededge_evidence.py; test_v4_local_integrity_contract.py.
+- Implementación / evidencia: 64 descriptores de escena STAC originales copiados y comprobados; hash de bandas por muestra verificado. Pendiente evaluar nueva adquisicion y temporalidad.
+- Estado: parcialmente verificado.
 
 ## M2-05 — Step 05 Release — Diagnóstico de la extracción de parches satelitales
 - Origen: 04. Diagnostico M2 Release.md, línea 451.
 - Diagnóstico de origen: **Estado: Defecto confirmado de cobertura. Prioridad: Alta. Decisión: Garantizar compatibilidad geométrica y radiométrica de los parches.**
 - Criterio de aceptación (extracto): El criterio de aceptación será reproducir una ventana físicamente consistente y comprobar las transformaciones con valores esperados.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: v4_integrity.py; v4_inputs.py; acquisition/sentinel2/rededge.py; import_rededge_evidence.py; test_v4_local_integrity_contract.py.
+- Implementación / evidencia: 706 cubos red-edge originales comprobados por hash, escena, coordenadas, dimensiones y QA; 44 caracteristicas reproducidas exactamente. Pendiente geometria/SCL y reflectancia de las seis bandas originales.
+- Estado: parcialmente verificado.
 
 ## M2-06 — Step 06 Release — Diagnóstico de la construcción del manifiesto de entrenamiento
 - Origen: 04. Diagnostico M2 Release.md, línea 457.
@@ -286,9 +286,9 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 475.
 - Diagnóstico de origen: **Estado: Defecto confirmado de contrato. Prioridad: Alta. Decisión: Validar el esquema completo y versionar el extractor.**
 - Criterio de aceptación (extracto): El criterio de aceptación será preservar la reproducción del v3 y garantizar que los candidatos nuevos y sus predicciones utilicen la misma representación validada; no se modificará un modelo serializado anterior para aparentar compatibilidad.
-- Componentes / corrección detallada / tests: pendientes de revisión y contraste con código.
-- Implementación / evidencia: ninguna.
-- Estado: pendiente.
+- Componentes / corrección detallada / tests: v4_integrity.py; v4_inputs.py; acquisition/sentinel2/rededge.py; import_rededge_evidence.py; test_v4_local_integrity_contract.py.
+- Implementación / evidencia: Verificacion local real de las 44 caracteristicas red-edge para 706 muestras; diferencia maxima absoluta 0.0. El bloque historico de 126 permanece intacto. Pendiente ablacion, metodologia de indices y sensibilidad.
+- Estado: parcialmente verificado.
 
 ## M2-10 — Step 10 Release — Diagnóstico de las estadísticas de reflectancia
 - Origen: 04. Diagnostico M2 Release.md, línea 481.
@@ -326,8 +326,8 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 505.
 - Diagnóstico de origen: **Estado: Defecto confirmado de integridad. Prioridad: Alta. Decisión: Fortalecer la firma y reutilización de características.**
 - Criterio de aceptación (extracto): El criterio de aceptación será recuperar resultados intactos cuando la firma coincida y regenerar o rechazar cualquier caché incompatible, documentando el motivo y evitando reejecuciones innecesarias.
-- Componentes / corrección detallada / tests: data/feature_cache.py; pipeline.py; test_verified_feature_cache.py
-- Implementación / evidencia: Firma de contenido, IDs, hashes, columnas, orden de etiqueta/grupo; escritura con manifiesto publicado al final. 29 aprobadas, 1 omitida. Verificacion real de 170 caracteristicas. Falta concurrencia e interrupcion.
+- Componentes / corrección detallada / tests: v4_integrity.py; v4_inputs.py; acquisition/sentinel2/rededge.py; import_rededge_evidence.py; test_v4_local_integrity_contract.py.
+- Implementación / evidencia: Firma v4 vincula manifiesto, matriz, QA y evidencia de cubos/sidecars y hashes de escena; re-extraccion local antes de reutilizar. Pendiente concurrencia e interrupcion.
 - Estado: parcialmente verificado.
 
 ## M2-15 — Step 15 Release — Diagnóstico de la generación de etiquetas de clasificación

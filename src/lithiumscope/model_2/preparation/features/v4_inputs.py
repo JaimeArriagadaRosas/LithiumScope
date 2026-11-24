@@ -89,8 +89,11 @@ def verify_spectral_v4_source(manifest_path: Path, cfg: dict) -> tuple[Path, dic
         raise ValueError("M2 v4 manifest drifted since spectral acquisition")
     if file_sha256(matrix) != state.get("matrix_sha256"):
         raise ValueError("M2 v4 matrix hash mismatch; do not use stale data")
+    from lithiumscope.model_2.preparation.features.v4_integrity import verify_rededge_cohort
+    raw_evidence = verify_rededge_cohort(manifest_path, matrix, quality_path)
     # Return no labels from this source until the full contract is checked.
     return matrix, {
+        "raw_spectral_evidence": raw_evidence,
         "source_manifest_sha256": state["manifest_sha256"],
         "source_matrix_sha256": state["matrix_sha256"],
         "quality_report_path": str(quality_path),
@@ -153,7 +156,7 @@ def combine_v4_quality_mask(
         "manifest_rows": len(manifest),
         "training_eligible": int(combined.sum()),
         "training_excluded": int((~combined).sum()),
-        "policy": "all_12_sentinel_bands_train_only_QA95",
+        "policy": "all_10_sentinel_bands_train_only_QA95",
         "original_and_new_spectral_quality": evidence,
         "all_outer_test_retained": True,
     }
@@ -173,6 +176,8 @@ def build_scientific_training_signature(manifest_path: Path, cfg: dict) -> str:
     return canonical_json_hash(
         {
             "matrix_and_code_config_signature": base,
+            "manifest_sha256": evidence["source_manifest_sha256"],
+            "raw_spectral_source_identity": evidence["raw_spectral_evidence"]["source_identity_sha256"],
             "rededge_qa_sha256": file_sha256(Path(evidence["quality_report_path"])),
             "original_sixband_qa_sha256": file_sha256(PROJECT_ROOT / str(cfg["quality_training"]["inventory_path"])),
         }

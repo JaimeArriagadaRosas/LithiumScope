@@ -82,6 +82,8 @@ def test_real_v4_source_has_170_and_original_126(model2_v4):
     matrix, state = verify_spectral_v4_source(manifest, model2_v4)
     assert state["feature_extractor_version"] == 4
     assert state["source_count"] == 706
+    assert state["raw_spectral_evidence"]["sample_count"] == 706
+    assert state["raw_spectral_evidence"]["verified_local_only"]
     frame = load_spectral_v4_training_frame(manifest, model2_v4)
     assert frame.shape == (706, 172)
     assert matrix.is_file()

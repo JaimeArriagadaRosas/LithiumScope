@@ -42,6 +42,8 @@ def run_eda(path: Path, *, output_root: Path | None = None) -> Path:
     for name in qa:
         if name not in combined:
             combined[name] = qa[name].to_numpy()
+    if "source_cohort" in combined and "source_cohort" not in metadata:
+        metadata.append("source_cohort")
     root = output_root if output_root is not None else RESULTS_DIR / "model_2" / "eda"
     key = signature("model_2", path, cfg, combined)
     cached = find_compatible(root, key)
@@ -99,7 +101,7 @@ def run_eda(path: Path, *, output_root: Path | None = None) -> Path:
             "quality_audit": qa_audit, "fold_profile_state": fold_state,
             "feature_extractor": "configured_v4" if spectral_v4_enabled(cfg) else "configured_legacy",
             "limitations": ["Full-cohort descriptive analysis, not holdout evidence.",
-                            "Legacy cache bound to ordered sample and image identities; frozen red-edge original patch re-extraction not performed.",
+                            "V4 local re-extraction verifies all 44 red-edge descriptors; legacy block verified separately." if spectral_v4_enabled(cfg) else "Legacy cache bound to ordered sample and image identities.",
                             "Scene cloud cover is not patch-local valid-pixel quality."],
         })
     except Exception as exc:

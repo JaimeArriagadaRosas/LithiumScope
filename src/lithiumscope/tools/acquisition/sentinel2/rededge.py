@@ -14,6 +14,7 @@ from pathlib import Path
 import numpy as np
 
 from lithiumscope.core.paths import PROJECT_ROOT
+from lithiumscope.datasets.validation.paths import resolve_image_path
 from lithiumscope.tools.acquisition.sentinel2.patch_io import _read_patch
 from lithiumscope.model_2.preparation.features.rededge import (
     NEW_BANDS,
@@ -31,7 +32,7 @@ def sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def scene_item(scene_id: str, *, cache: Path = SCENE_CACHE) -> tuple[dict, str]:
+def scene_item(scene_id: str, *, cache: Path = SCENE_CACHE, allow_network: bool = True) -> tuple[dict, str]:
     if "/" in scene_id or "\\" in scene_id or not scene_id:
         raise ValueError("Invalid STAC scene identifier")
     path = cache / (scene_id + ".json")
@@ -42,6 +43,8 @@ def scene_item(scene_id: str, *, cache: Path = SCENE_CACHE) -> tuple[dict, str]:
     elif target.is_file():
         item = json.loads(target.read_text(encoding="utf-8"))
     else:
+        if not allow_network:
+            raise FileNotFoundError(f"Local STAC scene missing: {scene_id}")
         import requests
 
         response = requests.get(f"{STAC}/{scene_id}", timeout=35)
@@ -88,20 +91,24 @@ def cached_rededge_sample(
     *,
     output: Path,
     min_joint_valid: float = 0.05,
+    allow_acquisition: bool = True,
 ) -> tuple[dict[str, float], dict]:
     """Load or acquire exact-scene four-band reflectance for one sample."""
     sample_id = str(sample.sample_id)
     scene_id = str(sample.sentinel_scene_id)
-    original = Path(str(sample.image_path))
+    original = resolve_image_path(str(sample.image_path))
     if not original.is_file() or not original.stat().st_size:
         raise FileNotFoundError(f"Original six-band patch is missing: {sample_id}")
     if not (np.isfinite(float(sample.latitude)) and np.isfinite(float(sample.longitude))):
         raise ValueError("Invalid sample coordinates")
-    descriptor, descriptor_hash = scene_item(scene_id)
     identity = hashlib.sha256(sample_id.encode("utf-8")).hexdigest()[:22]
-    output.mkdir(parents=True, exist_ok=True)
     patch_file = output / (identity + ".npy")
     meta_file = output / (identity + ".json")
+    if not allow_acquisition and not (patch_file.is_file() and meta_file.is_file()):
+        raise FileNotFoundError(f"Local red-edge cube or metadata missing: {sample_id}")
+    descriptor, descriptor_hash = (scene_item(scene_id) if allow_acquisition else scene_item(scene_id, allow_network=False))
+    if allow_acquisition:
+        output.mkdir(parents=True, exist_ok=True)
     expected = {
         "sample_id": sample_id,
         "source_image_sha256": sha(original),
@@ -150,6 +157,8 @@ def cached_rededge_sample(
             ),
             encoding="utf-8",
         )
+    if dn.shape != (4,32,32):
+        raise ValueError("Unexpected cached red-edge shape")
     scales = tuple(
         (
             descriptor["bands"][name]["scale"],
