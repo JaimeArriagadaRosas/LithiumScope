@@ -59,7 +59,7 @@ dev = [
 ]
 
 [project.scripts]
-lithiumscope = "lithiumscope.cli.menu:main"
+lithiumscope = "lithiumscope.cli.menu:run_cli"
 lithiumscope-inspect = "lithiumscope.tools.inspection.pipeline_inspect:main"
 
 [tool.setuptools]

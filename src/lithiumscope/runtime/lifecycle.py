@@ -43,6 +43,11 @@ def run_application(entrypoint: Callable[[], int]) -> int:
             logger.error("Core preboot failed; application will not start")
             print("\nPreboot falló en requisitos esenciales. Revise el reporte indicado arriba.")
             return 2
+        print("[OK] Inicialización completada.")
+        try:
+            input("Presione ENTER para continuar")
+        except EOFError:
+            return 0
         return int(entrypoint())
     except GracefulExit as exc:
         return int(exc.code or 0)

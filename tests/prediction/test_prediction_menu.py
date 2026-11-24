@@ -11,8 +11,8 @@ def test_prediction_menu_has_approved_labels():
         / "predict_command.py"
     ).read_text(encoding="utf-8")
 
-    assert 'print("1. Modelo 1 — Predicción de concentración")' in text
-    assert 'print("2. Modelo 2 — Prospectividad espacial")' in text
-    assert 'print("3. Predicción completa")' in text
-    assert 'print("4. Demostración integrada automática")' in text
+    assert 'print("3. Modelo 1 — Predicción de concentración")' in text
+    assert 'print("4. Modelo 2 — Prospectividad espacial")' in text
+    assert 'print("1. Predicción completa")' in text
+    assert 'print("2. Demostración integrada automática")' in text
     assert "Modelos 1 + 2" not in text

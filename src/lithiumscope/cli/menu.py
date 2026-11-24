@@ -21,21 +21,21 @@ def main() -> int:
     while True:
         clear_screen()
         header()
-        print("1. Entrenar modelos")
-        print("2. Realizar predicción")
+        print("1. Realizar predicción")
+        print("2. Entrenar modelos")
         print("3. Métricas y resultados")
         print("4. Cargar modelo versionado")
-        print("5. Laboratorio de simulaciones")
+        print("5. Laboratorio de diagnóstico")
         print("0. Salir")
-        choice = choose("\nSeleccione una opción: ", {"0", "1", "2", "3", "4", "5"})
+        choice = choose("\nSeleccione una opción [0-5]: ", {"0", "1", "2", "3", "4", "5"})
         try:
             if choice == "1":
                 clear_screen()
-                if train_command.run() is not False:
+                if predict_command.run() is not False:
                     pause()
             elif choice == "2":
                 clear_screen()
-                if predict_command.run() is not False:
+                if train_command.run() is not False:
                     pause()
             elif choice == "3":
                 clear_screen()
@@ -57,3 +57,10 @@ def main() -> int:
             print(f"\n[ERROR {error_id}] {exc}")
             print(f"Detalle técnico: {current_error_log_path()}")
             pause()
+
+
+def run_cli() -> int:
+    """Installed console entry point uses the same lifecycle as main.py."""
+    from lithiumscope.runtime.lifecycle import run_application
+
+    return run_application(main)

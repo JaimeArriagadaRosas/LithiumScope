@@ -5,6 +5,7 @@ import tempfile
 
 from lithiumscope.cli.prompts import choose
 from lithiumscope.core.paths import MODELS_DIR
+from lithiumscope.persistence.active_models import active_model_path
 from lithiumscope.distribution.github_releases import (
     download_release_asset,
     list_model_releases,
@@ -85,6 +86,17 @@ def run() -> None:
     release = releases[
         int(choice) - 1
     ]
+    print(f"\nBundle seleccionado: {release.tag_name}")
+    print("Esta operación instalará y activará los modelos de este release.")
+    for group in ("model_1", "model_2"):
+        print(f"Modelo activo {group}: {active_model_path(group) or 'N/D'}")
+    try:
+        confirmation = input("¿Continuar? [s/N]: ").strip().lower()
+    except EOFError:
+        confirmation = ""
+    if confirmation not in {"s", "sí", "si"}:
+        print("[CANCELADO] No se descargaron ni activaron modelos.")
+        return False
     MODELS_DIR.mkdir(
         parents=True,
         exist_ok=True,

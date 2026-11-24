@@ -6,4 +6,4 @@ def choose(prompt: str, allowed: set[str]) -> str:
             return "0"
         if value in allowed:
             return value
-        print("Opción no válida.")
+        print("[ADVERTENCIA] Opción no válida. Seleccione una de las opciones mostradas.")

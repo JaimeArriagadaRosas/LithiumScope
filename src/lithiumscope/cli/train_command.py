@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import shutil
+
 from lithiumscope.cli.display import device_summary
 from lithiumscope.cli.prompts import choose
 from lithiumscope.core.device import detect_device
@@ -129,7 +131,16 @@ def _run_impl() -> None:
         )
 
 
-def run() -> None:
-    # Capture preparation, both model runs, and failures in a single session.
-    with training_session("interactive"):
-        return _run_impl()
+def run() -> bool | None:
+    # The context creates a unique directory and closes handlers before cleanup.
+    with training_session("interactive") as directory:
+        result = _run_impl()
+    if result is False:
+        if (directory / "runs.json").exists():
+            raise RuntimeError("No se puede limpiar una sesión con ejecuciones registradas.")
+        shutil.rmtree(directory)
+        try:
+            input("Se ha limpiado el registro de entrenamiento. Presione ENTER para continuar")
+        except EOFError:
+            pass
+    return result

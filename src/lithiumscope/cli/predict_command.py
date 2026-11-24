@@ -100,21 +100,21 @@ def _run_demonstration() -> None:
 
 def run() -> None:
     print("\nREALIZAR PREDICCIÓN")
-    print("1. Modelo 1 — Predicción de concentración")
-    print("2. Modelo 2 — Prospectividad espacial")
-    print("3. Predicción completa")
-    print("4. Demostración integrada automática")
+    print("1. Predicción completa")
+    print("2. Demostración integrada automática")
+    print("3. Modelo 1 — Predicción de concentración")
+    print("4. Modelo 2 — Prospectividad espacial")
     print("0. Volver")
-    choice = choose("> ", {"0", "1", "2", "3", "4"})
+    choice = choose("Seleccione una opción [0-4]: ", {"0", "1", "2", "3", "4"})
 
     if choice == "0":
         return False
 
     if choice == "1":
-        _run_model_1()
-    elif choice == "2":
-        _run_model_2()
-    elif choice == "3":
         _run_complete()
-    elif choice == "4":
+    elif choice == "2":
         _run_demonstration()
+    elif choice == "3":
+        _run_model_1()
+    elif choice == "4":
+        _run_model_2()
