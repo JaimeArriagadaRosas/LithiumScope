@@ -10,6 +10,9 @@ from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import RESULTS_DIR
 from lithiumscope.core.scientific.eda_statistics import cohort_summary, feature_profiles, numeric_correlations
 from lithiumscope.model_2.pipeline import load_model_2_training_frame
+from lithiumscope.model_2.eda.quality import patch_quality
+from lithiumscope.core.scientific.fold_profiles import fold_profiles
+from lithiumscope.model_2.training.scientific_validation import make_scientific_folds
 from lithiumscope.model_2.training.v4_inputs import spectral_v4_enabled, load_spectral_v4_training_frame
 from lithiumscope.results.eda_artifacts import complete_run, fail_run, find_compatible, new_run, signature
 from lithiumscope.results.eda_figures import save_figures
@@ -34,6 +37,10 @@ def run_eda(path: Path, *, output_root: Path | None = None) -> Path:
     for name in metadata:
         if name not in combined:
             combined[name] = manifest[name].to_numpy()
+    qa, qa_audit = patch_quality(path, cfg, manifest)
+    for name in qa:
+        if name not in combined:
+            combined[name] = qa[name].to_numpy()
     root = output_root if output_root is not None else RESULTS_DIR / "model_2" / "eda"
     key = signature("model_2", path, cfg, combined)
     cached = find_compatible(root, key)
@@ -53,6 +60,27 @@ def run_eda(path: Path, *, output_root: Path | None = None) -> Path:
                 scene["scene_cloud_mean"] = pd.to_numeric(
                     combined["sentinel_cloud_cover"], errors="coerce").groupby(combined["sentinel_scene_id"]).mean()
             scene.to_csv(tables / "scene_quality.csv")
+        if not qa.empty:
+            qa.to_csv(tables / "patch_quality.csv", index=False)
+        fold_state = "not_available"
+        validation = cfg.get("validation", {})
+        if "folds" in validation and combined[group].nunique() >= int(validation["folds"]):
+            model = cfg["model"]
+            try:
+                folds = make_scientific_folds(combined[target], combined[group],
+                    n_splits=int(validation["folds"]), random_state=int(model.get("random_seed", 42)),
+                    quantile=float(model["high_lithium_quantile"]),
+                    fixed_threshold_ppm=model.get("fixed_threshold_ppm"))
+                eligibility = qa["train_eligible"].to_numpy(bool) if "train_eligible" in qa else None
+                fold_summary, fold_features = fold_profiles(frame[features], combined[target], combined[group],
+                    [(f.train_idx, f.test_idx) for f in folds], eligibility)
+                fold_summary["label_threshold_ppm"] = [f.label_threshold_ppm for f in folds]
+                fold_summary["train_positive_count"] = [int(f.y_train.sum()) for f in folds]
+                fold_summary.to_csv(tables / "outer_train_summary.csv", index=False)
+                fold_features.to_csv(tables / "outer_train_features.csv", index=False)
+                fold_state = "group_kfold_train_profiles"
+            except ValueError as exc:
+                fold_state = f"blocked: {exc}"
         correlations = numeric_correlations(combined, [*features, target])
         correlations.to_csv(tables / "spearman_correlations.csv")
         save_figures(directory / "figures", combined, target, profiles, correlations)
@@ -61,9 +89,10 @@ def run_eda(path: Path, *, output_root: Path | None = None) -> Path:
             "model_group": "model_2", "source_path": str(path), "source_sha256": file_sha256(path),
             "rows_raw": len(manifest), "rows_prepared": len(frame), "features": len(features),
             "feature_names": features, "effective_config": cfg,
+            "quality_audit": qa_audit, "fold_profile_state": fold_state,
             "feature_extractor": "configured_v4" if spectral_v4_enabled(cfg) else "configured_legacy",
             "limitations": ["Full-cohort descriptive analysis, not holdout evidence.",
-                            "Legacy feature matrix alignment checked by labels/groups; row-level identity still pending.",
+                            "Legacy cache bound to ordered sample and image identities; frozen red-edge original patch re-extraction not performed.",
                             "Scene cloud cover is not patch-local valid-pixel quality."],
         })
     except Exception as exc:

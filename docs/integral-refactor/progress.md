@@ -65,3 +65,9 @@
 ## Separacion del renderer PDF
 - reporting/ trasladado a la raiz. Excel, graficos y mapas en prediction/exports/; decision integrada y evidencia de seleccion en prediction/analysis/. Estadisticas de aplicabilidad, clasificacion y concordancia calculadas antes del renderer. Conservada la interfaz write_pdf_report de prediction/report.py y la numeracion del informe.
 - Regresion 50 passed, 4 skipped, sin fallos (20261124T204255Z_33955736185646f69b496fd90f75a2fe). Falta prueba visual con modelos reales, reorganizacion interna restante y separar decisiones de presentacion historicas aun existentes.
+
+## EDA real preliminar (sin entrenamiento)
+- M1: 4765 filas -> 3692 con Li valido -> 3420 tras QC; 2744 GEOROC + 676 Mamani09 bootstrap, 33 predictores y 244 grupos. 1073 excluidas por validez de Li (Mamani09), 272 por QC (242 GEOROC, 30 Mamani09). 6 registros censurados en la instantanea combinada; no representa toda la fuente bruta GEOROC. Li maximo GEOROC 4160 ppm, Mamani09 100.6. Cinco folds: perfiles solo de TRAIN, sin aprendizaje estadistico; no holdout independiente.
+- M2: 706 filas, 170 predictores, 66 grupos, QA conjunto 690 elegibles, 16 excluidas solo de TRAIN. Umbrales geoquimicos por fold (21.45, 21.00, 22.40, 21.40, 21.90 ppm). No se certifica calidad de roca en campo ni se reextraen las cuatro bandas red-edge originales.
+- Evidencias: results/model_1/eda/eda_20261124T204130_035846Z_0444675e y results/model_2/eda/eda_20261124T204141_518008Z_5998c733; 15 y 13 artefactos respectivamente, integridad SHA256 verificada. Corresponden a la version del codigo en esa ejecucion, no a cambios posteriores.
+- Tests focalizados 6 aprobados, ninguno fallido (20261124T204115Z_457590a79706407993a3184beafd890c). Falta completar EDA de desarrollo/holdout, protocolos de ablation, auditoria fuente bruta, redundancia, distancias y diagnosticos.

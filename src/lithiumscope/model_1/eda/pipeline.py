@@ -11,6 +11,8 @@ from lithiumscope.core.scientific.eda_statistics import (
     category_frequencies, cohort_summary, feature_profiles, numeric_correlations,
 )
 from lithiumscope.model_1.pipeline import prepare_training_data
+from lithiumscope.model_1.steps.step_09_validation import materialize_regression_splits
+from lithiumscope.core.scientific.fold_profiles import fold_profiles
 from lithiumscope.results.eda_artifacts import (
     complete_run, fail_run, find_compatible, new_run, signature,
 )
@@ -50,6 +52,15 @@ def run_eda(path: Path, *, output_root: Path | None = None) -> Path:
         correlations.to_csv(tables / "spearman_correlations.csv")
         save_figures(directory / "figures", prepared.frame, prepared.target,
                      profiles[profiles["stage"] == "prepared"], correlations)
+        validation = cfg["validation"]
+        fold_state = "not_available"
+        if prepared.groups is not None and prepared.groups.nunique() >= int(validation["outer_folds"]):
+            splits, strategy = materialize_regression_splits(prepared.x, prepared.y, prepared.groups,
+                int(validation["outer_folds"]), int(validation["random_seed"]), require_groups=True)
+            fold_summary, fold_features = fold_profiles(prepared.x, prepared.y, prepared.groups, splits)
+            fold_summary.to_csv(tables / "outer_train_summary.csv", index=False)
+            fold_features.to_csv(tables / "outer_train_features.csv", index=False)
+            fold_state = strategy
         print(summary.to_string(index=False))
         return complete_run(directory, signature_value=key, details={
             "model_group": "model_1", "source_path": str(path), "source_sha256": file_sha256(path),
@@ -59,6 +70,7 @@ def run_eda(path: Path, *, output_root: Path | None = None) -> Path:
             "coordinate_report": prepared.coordinate_report,
             "target_validation": prepared.frame.attrs.get("target_validation", {}),
             "effective_config": cfg,
+            "fold_profile_state": fold_state,
             "limitation": "Descriptive full cohort; not an independent development subset.",
         })
     except Exception as exc:
