@@ -45,3 +45,26 @@ def test_geographic_reference_respects_fold_labels_qa_and_ties():
     assert overall["n"] == 6
     with pytest.raises(ValueError):
         evaluate_geographic_baseline(manifest, folds, quality_mask=np.ones(6, dtype=int))
+
+
+def test_spatial_components_join_scene_across_grid_and_buffer_preserves_test():
+    from lithiumscope.model_2.validation.sensitivity import plan_protocol, spatial_components
+
+    frame = pd.DataFrame({
+        "latitude": [0.] * 8,
+        "longitude": [.499, .501, 2., 2.01, 4., 4.01, 6., 6.01],
+        "scene_id": ["shared", "shared", "b", "b", "c", "c", "d", "d"],
+    })
+    groups = spatial_components(frame, .5, combine_scene=True)
+    assert groups.iloc[0] == groups.iloc[1]
+    assert groups.nunique() == 4
+    _, records = plan_protocol(
+        frame, [10, 30] * 4, grid=.5, buffer_m=1000., combine_scene=False,
+        folds=2, endpoint_ppm=20.)
+    assert sorted(i for row in records for i in row["test"]) == list(range(8))
+    assert sum(row["n_embargoed"] for row in records) >= 1
+    for row in records:
+        assert not set(row["train"]) & set(row["test"])
+        assert row["minimum_fit_test_m"] >= 1000.
+    with pytest.raises(ValueError):
+        spatial_components(frame.drop(columns="scene_id"), .5, combine_scene=True)
