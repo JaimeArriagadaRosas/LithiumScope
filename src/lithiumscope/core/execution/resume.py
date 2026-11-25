@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import platform
+from uuid import uuid4
 
 from lithiumscope.core.configuration.loading import load_config
 from lithiumscope.core.hashing import file_sha256
@@ -15,9 +16,12 @@ _RESUMABLE_STATES = {"cancelled", "partial", "running", "crashed", "completed"}
 
 
 def _atomic_write(path: Path, payload: dict) -> None:
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_text(json.dumps(payload, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
-    temporary.replace(path)
+    temporary = path.with_name(f".{path.name}.{uuid4().hex}.tmp")
+    try:
+        temporary.write_text(json.dumps(payload, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
+        temporary.replace(path)
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 def _pid_alive(pid: int) -> bool:
@@ -121,7 +125,8 @@ def _scientific_code_files(model_group: str) -> list[Path]:
         candidate = model_root / filename
         if candidate.exists():
             files.append(candidate)
-    for directory_name in ("steps", "training", "preparation", "validation", "features", "methodology", "eda"):
+    files.extend(model_root.glob("preflight_*.py"))
+    for directory_name in ("steps", "training", "preparation", "validation", "features", "methodology", "eda", "diagnostics"):
         directory = model_root / directory_name
         if directory.exists():
             files.extend(directory.rglob("*.py"))

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "scope": "Relevant regression modules; not proof of complete criterion acceptance. Several criteria require real data, manual review, or independent scientific evidence.",
+  "scope": "Associated regression modules, not criterion closure. Current branch contains new tests not yet executed.",
   "criteria": {
     "M1-01": [
       "tests/datasets/test_tabular_contract.py",
@@ -43,7 +43,7 @@
     "M1-10": [
       "tests/model_1/test_model_1_spatial_validation.py",
       "tests/scientific/shared/test_spatial_audit_contract.py",
-      "tests/scientific/shared/test_scientific_checks.py"
+      "tests/scientific/shared/test_nested_protocol.py"
     ],
     "M1-11": [
       "tests/model_1/test_preprocessing_contract.py",
@@ -83,7 +83,8 @@
     ],
     "M1-19": [
       "tests/model_1/test_model_1_scientific_guards.py",
-      "tests/model_1/test_coordinate_lineage.py"
+      "tests/model_1/test_coordinate_lineage.py",
+      "tests/scientific/shared/test_nested_protocol.py"
     ],
     "M1-20": [
       "tests/model_1/test_statistical_baselines.py",
@@ -106,7 +107,7 @@
     "M1-24": [
       "tests/model_1/test_high_lithium_diagnostics.py",
       "tests/scientific/shared/test_learning_curves.py",
-      "tests/scientific/m1/test_m1_dual_release_diagnostics.py"
+      "tests/scientific/shared/test_curve_suite.py"
     ],
     "M1-25": [
       "tests/scientific/m1/test_m1_dual_release_diagnostics.py",
@@ -189,7 +190,7 @@
     "M2-16": [
       "tests/model_2/test_scientific_training_protocol.py",
       "tests/scientific/shared/test_spatial_audit_contract.py",
-      "tests/scientific/m2_training/test_m2_canonical_protocol.py"
+      "tests/scientific/shared/test_nested_protocol.py"
     ],
     "M2-17": [
       "tests/training/test_baselines.py",
@@ -202,11 +203,13 @@
     ],
     "M2-19": [
       "tests/scientific/shared/test_optuna_contract.py",
-      "tests/scientific/m2_training/test_m2_regularized_search_profile.py"
+      "tests/scientific/m2_training/test_m2_regularized_search_profile.py",
+      "tests/scientific/shared/test_nested_protocol.py"
     ],
     "M2-20": [
       "tests/model_2/test_model_2_svm.py",
-      "tests/model_2/test_train_only_operating_policy.py"
+      "tests/model_2/test_train_only_operating_policy.py",
+      "tests/scientific/shared/test_nested_protocol.py"
     ],
     "M2-21": [
       "tests/runtime/test_checkpoints.py",
@@ -228,7 +231,8 @@
     ],
     "M2-25": [
       "tests/model_2/test_model_2_operating_threshold.py",
-      "tests/model_2/test_train_only_operating_policy.py"
+      "tests/model_2/test_train_only_operating_policy.py",
+      "tests/scientific/shared/test_nested_protocol.py"
     ],
     "M2-26": [
       "tests/prediction/test_candidate_evaluation_gates.py",
@@ -255,7 +259,8 @@
     ],
     "ARQ-001": [
       "tests/cli/test_readonly_results.py",
-      "tests/cli/test_pipeline_inspection_reporting.py"
+      "tests/cli/test_pipeline_inspection_reporting.py",
+      "tests/reporting/test_document_integrity.py"
     ],
     "ARQ-002": [
       "tests/cli/test_readonly_results.py",
@@ -302,7 +307,7 @@
     "ARQ-012": [
       "tests/model_1/test_model_1_spatial_validation.py",
       "tests/scientific/shared/test_scientific_checks.py",
-      "tests/scientific/shared/test_spatial_audit_contract.py"
+      "tests/scientific/shared/test_nested_protocol.py"
     ],
     "ARQ-013": [
       "tests/model_1/test_preprocessing_contract.py",
@@ -317,7 +322,7 @@
     "ARQ-015": [
       "tests/scientific/shared/test_learning_curves.py",
       "tests/model_1/test_physical_robustness.py",
-      "tests/scientific/m1/test_m1_dual_release_diagnostics.py"
+      "tests/scientific/shared/test_curve_suite.py"
     ],
     "ARQ-016": [
       "tests/scientific/m1/test_vnext_m1.py",
@@ -380,7 +385,8 @@
     ],
     "ARQ-029": [
       "tests/model_2/test_scientific_training_protocol.py",
-      "tests/scientific/shared/test_spatial_audit_contract.py"
+      "tests/scientific/shared/test_spatial_audit_contract.py",
+      "tests/scientific/shared/test_nested_protocol.py"
     ],
     "ARQ-030": [
       "tests/scientific/m2_training/test_m2_refactored_outer_cv_smoke.py",
@@ -388,11 +394,13 @@
     ],
     "ARQ-031": [
       "tests/model_2/test_model_2_svm.py",
-      "tests/model_2/test_train_only_operating_policy.py"
+      "tests/model_2/test_train_only_operating_policy.py",
+      "tests/scientific/shared/test_nested_protocol.py"
     ],
     "ARQ-032": [
       "tests/model_2/test_model_2_operating_threshold.py",
-      "tests/model_2/test_train_only_operating_policy.py"
+      "tests/model_2/test_train_only_operating_policy.py",
+      "tests/scientific/shared/test_nested_protocol.py"
     ],
     "ARQ-033": [
       "tests/model_2/test_binary_metrics_contract.py",
@@ -406,7 +414,7 @@
     "ARQ-035": [
       "tests/scientific/shared/test_learning_curves.py",
       "tests/scientific/m2_spectral/test_m2_spectral_overfit.py",
-      "tests/scientific/m2_training/test_m2_full_competition_diagnostics.py"
+      "tests/scientific/shared/test_curve_suite.py"
     ],
     "ARQ-036": [
       "tests/scientific/m2_training/test_m2_historical_706_control.py",
@@ -436,7 +444,8 @@
     ],
     "ARQ-042": [
       "tests/reporting/test_prediction_pdf_contract.py",
-      "tests/prediction/test_integrated_prediction_analysis.py"
+      "tests/prediction/test_integrated_prediction_analysis.py",
+      "tests/reporting/test_rendering_boundary.py"
     ],
     "ARQ-043": [
       "tests/core/test_architecture.py",
@@ -445,12 +454,12 @@
     "ARQ-044": [
       "tests/prediction/test_integrated_prediction_analysis.py",
       "tests/prediction/test_prediction_manifest_paths.py",
-      "tests/prediction/test_canonical_prediction_architecture.py"
+      "tests/prediction/test_diagnostic_integrated_guardrails.py"
     ],
     "ARQ-045": [
       "tests/core/test_architecture.py",
       "tests/prediction/test_integrated_prediction_analysis.py",
-      "tests/prediction/test_canonical_prediction_architecture.py"
+      "tests/core/test_dependency_audit.py"
     ],
     "ARQ-046": [
       "tests/prediction/test_integrated_demo_fixture.py",
@@ -479,7 +488,8 @@
       "tests/core/test_architecture.py"
     ],
     "ARQ-052": [
-      "tests/core/test_architecture.py"
+      "tests/core/test_architecture.py",
+      "tests/core/test_dependency_audit.py"
     ],
     "ARQ-053": [
       "tests/datasets/test_management_provenance_architecture.py",
@@ -515,7 +525,7 @@
     "ARQ-060": [
       "tests/scientific/shared/test_scientific_scenarios.py",
       "tests/scientific/m1/test_vnext_m1.py",
-      "tests/scientific/shared/test_experiment_architecture.py"
+      "tests/scientific/shared/test_curve_suite.py"
     ],
     "ARQ-061": [
       "tests/scientific/shared/test_scientific_scenarios.py",
@@ -541,7 +551,8 @@
     ],
     "ARQ-066": [
       "tests/core/test_canonical_execution_packages.py",
-      "tests/core/test_architecture.py"
+      "tests/core/test_architecture.py",
+      "tests/core/test_dependency_audit.py"
     ],
     "ARQ-067": [
       "tests/core/test_canonical_execution_packages.py",
@@ -569,7 +580,8 @@
     ],
     "ARQ-073": [
       "tests/core/test_canonical_execution_packages.py",
-      "tests/core/test_architecture.py"
+      "tests/core/test_architecture.py",
+      "tests/core/test_dependency_audit.py"
     ],
     "ARQ-074": [
       "tests/core/test_architecture.py",
@@ -640,7 +652,8 @@
     ],
     "ARQ-091": [
       "tests/core/test_architecture.py",
-      "tests/development/test_validation.py"
+      "tests/development/test_validation.py",
+      "tests/development/test_evidence_serialization.py"
     ],
     "ARQ-092": [
       "tests/development/test_validation.py",
@@ -677,7 +690,8 @@
     ],
     "ARQ-100": [
       "tests/runtime/test_logging_lifecycle.py",
-      "tests/runtime/test_training_logging_session.py"
+      "tests/runtime/test_training_logging_session.py",
+      "tests/core/test_tracker_atomic.py"
     ],
     "ARQ-101": [
       "tests/runtime/test_session_structured_logs.py",
@@ -705,7 +719,8 @@
     ],
     "ARQ-107": [
       "tests/development/test_validation.py",
-      "tests/datasets/test_historical_relocation.py"
+      "tests/datasets/test_historical_relocation.py",
+      "tests/development/test_protected_artifacts.py"
     ],
     "ARQ-108": [
       "tests/runtime/test_console_status.py",

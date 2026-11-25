@@ -27,7 +27,7 @@ No se atribuye CI aprobada a commits posteriores omitidos por [skip ci]. Los 166
 
 1. Este HANDOFF.md y requirements/repository-requirements.md (109 instrucciones originales con ID, evidencia contextual y siguiente comprobación).
 2. traceability.md (57 diagnósticos científicos, estado y evidencia), requirements/m1-diagnostic.md, requirements/m2-diagnostic.md (secciones de diagnóstico originales con redacciones de privacidad), requirements/console-contract.md.
-3. progress.md (resultados, hashes, sesiones, commits); module-relocation.json (rutas actuales vs históricas); sources.md (hashes de originales); controlled-experiment-design.md y prospective-holdout.md.
+3. phase-status.md (lote más reciente, pendientes antes de solicitar la regresión); progress.md (resultados, hashes, sesiones, commits); module-relocation.json (rutas actuales vs históricas); sources.md (hashes de originales); controlled-experiment-design.md y prospective-holdout.md.
 4. plan.md conserva historia de planificación; sus estados iniciales no son la fuente de estado actual. Usar esta matriz y actualizar por criterio, no inferir cierre de la cantidad de tests.
 5. Revisar HEAD remoto antes de editar, usar cuenta Jaime y cambios agrupados con tests específicos. Guardar en Git los cambios de código y documentación, no los datasets/artefactos binarios/credenciales.
 
@@ -57,7 +57,7 @@ No se atribuye CI aprobada a commits posteriores omitidos por [skip ci]. Los 166
 
 ## Diagnóstico temporal y trabajo sin Desktop Commander
 
-El recolector 5 > 4 está incorporado desde a5036ee y ampliado en 46a21ea: sintaxis completa, Ruff, arquitectura, pytest aislado con cobertura y JUnit, evidencia asociada por los 166 criterios, inventario y preflight. Todavía no se ejecutó sobre esta rama con los cambios nuevos. El usuario ejecutará git pull y 5 > 4 y compartirá development_report.json revisado. El informe debe recopilar estado/hashes, versiones, QA, preflight, recursos, cobertura y artefactos faltantes; no transmitir secretos, datos crudos, rutas personales, logs completos, modelos, ni ajustar/activar modelos. Si hace falta, pedir logs específicos o prueba nueva. Quitar opción temporal y paquete de desarrollo al terminar.
+El recolector 5 > 4 está incorporado desde a5036ee y ampliado en 46a21ea: sintaxis completa, Ruff, arquitectura, pytest aislado con cobertura y JUnit, evidencia asociada por los 166 criterios, inventario y preflight. Todavía no se ejecutó sobre esta rama con los cambios nuevos. Revisar phase-status.md y agotar las implementaciones posibles desde GitHub antes de pedir intervención. Entonces el usuario ejecutará git pull y 5 > 4 y compartirá development_report.json revisado. El informe debe recopilar estado/hashes, versiones, QA, preflight, recursos, cobertura y artefactos faltantes; no transmitir secretos, datos crudos, rutas personales, logs completos, modelos, ni ajustar/activar modelos. Si hace falta, pedir logs específicos o prueba nueva. Quitar opción temporal y paquete de desarrollo al terminar.
 
 ## Restricciones y bloqueos
 
