@@ -21,6 +21,8 @@ _LOCK = threading.RLock()
 _WARNING_LOCK = threading.RLock()
 _ERROR_LOCK = threading.Lock()
 _CONFIGURED = False
+_OWNER_PID = os.getpid()
+_FORK_PARENT: Path | None = None
 _SESSION_ID: str | None = None
 _SESSION_DIR: Path | None = None
 _CURRENT_SESSION_LOG: Path | None = None
@@ -51,6 +53,10 @@ def _log_root() -> Path:
 
 
 def _new_session() -> tuple[str, Path]:
+    worker_parent = os.environ.get("LITHIUMSCOPE_WORKER_SESSION_DIR")
+    if worker_parent or _FORK_PARENT:
+        root = Path(worker_parent) if worker_parent else _FORK_PARENT
+        return root.name, root / "workers" / unique_id(f"process_{os.getpid()}")
     parent = os.environ.get("LITHIUMSCOPE_SESSION_DIR")
     if parent and not os.environ.get("LITHIUMSCOPE_LOG_DIR"):
         root = Path(parent)
@@ -68,6 +74,8 @@ def _attached(root, handler):
 def configure_logging() -> logging.Logger:
     global _CONFIGURED, _SESSION_ID, _SESSION_DIR, _CURRENT_SESSION_LOG, _CURRENT_ERROR_LOG
     global _SESSION_HANDLER, _ERROR_HANDLER, _ERROR_COUNT
+    if _OWNER_PID != os.getpid():
+        _reset_forked_session()
     with _LOCK:
         root = logging.getLogger("lithiumscope")
         if _CONFIGURED and _attached(root, _SESSION_HANDLER) and _attached(root, _ERROR_HANDLER):
@@ -97,7 +105,7 @@ def configure_logging() -> logging.Logger:
         except (ImportError, OSError):
             pass
         (_SESSION_DIR / ".active.json").write_text(json.dumps({"pid": os.getpid(), "process_start": process_start}), encoding="utf-8")
-        if os.environ.get("LITHIUMSCOPE_SESSION_DIR") and not os.environ.get("LITHIUMSCOPE_LOG_DIR"):
+        if os.environ.get("LITHIUMSCOPE_WORKER_SESSION_DIR") or _FORK_PARENT or (os.environ.get("LITHIUMSCOPE_SESSION_DIR") and not os.environ.get("LITHIUMSCOPE_LOG_DIR")):
             removed = 0
         else:
             removed = cleanup_expired_logs(_log_root(), retention, error_retention)
@@ -225,6 +233,33 @@ def finalize_logging() -> None:
         if _WARNING_CAPTURE_INSTALLED:
             warnings.showwarning = _ORIGINAL_SHOWWARNING
             _WARNING_CAPTURE_INSTALLED = False
+
+
+def _reset_forked_session():
+    """Detach inherited descriptors without touching the parent's active marker."""
+    global _LOCK, _WARNING_LOCK, _ERROR_LOCK, _CONFIGURED, _OWNER_PID, _FORK_PARENT
+    global _SESSION_ID, _SESSION_DIR, _CURRENT_SESSION_LOG, _CURRENT_ERROR_LOG
+    global _SESSION_HANDLER, _ERROR_HANDLER, _ERROR_COUNT, _WARNING_COUNTS
+    if _OWNER_PID == os.getpid():
+        return
+    _FORK_PARENT = _SESSION_DIR or _FORK_PARENT
+    _LOCK, _WARNING_LOCK, _ERROR_LOCK = threading.RLock(), threading.RLock(), threading.Lock()
+    root = logging.getLogger("lithiumscope")
+    # Operation handlers are also inherited; do not share any file descriptor.
+    for handler in tuple(root.handlers):
+        root.removeHandler(handler)
+        if isinstance(handler, logging.FileHandler):
+            handler.close()
+    _CONFIGURED = False
+    _OWNER_PID = os.getpid()
+    _SESSION_ID = _SESSION_DIR = _CURRENT_SESSION_LOG = _CURRENT_ERROR_LOG = None
+    _SESSION_HANDLER = _ERROR_HANDLER = None
+    _ERROR_COUNT = 0
+    _WARNING_COUNTS = {}
+
+
+if hasattr(os, "register_at_fork"):
+    os.register_at_fork(after_in_child=_reset_forked_session)
 
 
 def run_log(category: str, name: str):
