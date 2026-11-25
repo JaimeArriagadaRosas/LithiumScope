@@ -1,6 +1,7 @@
 ﻿"""Multi-date within-season comparisons, audit scene overlap and satellite mixture."""
 from pathlib import Path
-import hashlib
+from lithiumscope.core.hashing import file_sha256
+from lithiumscope.results.atomic_exports import write_json,write_table,write_text,write_legacy_evidence_json
 import json
 
 import pandas as pd
@@ -23,7 +24,7 @@ def analyze(root: Path) -> Path:
         meta = pd.read_csv(manifest_file)
         metrics = pd.read_csv(metric_file)
         for path in (manifest_file, metric_file):
-            hashes[str(path.relative_to(root))] = hashlib.sha256(path.read_bytes()).hexdigest()
+            hashes[str(path.relative_to(root))] = file_sha256(path)
         if label == "existing_2025":
             meta = meta.loc[meta.image_id.str.contains(r"_(?:summer|winter)_", regex=True)].copy()
         baseline = metrics.loc[(metrics.scenario == "baseline") & (metrics.status == "SCORED"),
@@ -38,7 +39,7 @@ def analyze(root: Path) -> Path:
     combined["year"] = combined.year.astype(int)
     combined["scene_key"] = combined["region"] + "|" + combined["scene_id"]
     combined["duplicate_scene_region"] = combined.duplicated("scene_key", keep=False)
-    combined.to_csv(out / "scene_audit.csv", index=False)
+    write_table(out / "scene_audit.csv",combined)
     distinct = combined.drop_duplicates("scene_key")
     grouped = distinct.groupby(["region", "year", "season"]).agg(
         scene_count=("scene_id", "nunique"),
@@ -49,12 +50,12 @@ def analyze(root: Path) -> Path:
         max_score=("score", "max"),
     ).reset_index()
     grouped["score_range"] = grouped.max_score - grouped.min_score
-    grouped.to_csv(out / "within_season_variability.csv", index=False)
+    write_table(out / "within_season_variability.csv",grouped)
     paired = grouped.pivot(index=["region", "year"], columns="season", values="mean_score")
     paired.columns = ["mean_" + col for col in paired.columns]
     paired = paired.reset_index()
     paired["winter_minus_summer"] = paired.mean_winter - paired.mean_summer
-    paired.to_csv(out / "seasonal_mean_comparisons.csv", index=False)
+    write_table(out / "seasonal_mean_comparisons.csv",paired)
     output = {
         "all_observations": len(combined),
         "unique_region_scene": len(distinct),
@@ -68,8 +69,7 @@ def analyze(root: Path) -> Path:
             "Scores do not validate lithium labels; no external accuracy measurements are inferred.",
         ],
     }
-    (out / "analysis_manifest.json").write_text(
-        json.dumps(output, ensure_ascii=False, indent=2), encoding="utf-8")
+    write_legacy_evidence_json(out/"analysis_manifest.json",output)
     return out
 
 

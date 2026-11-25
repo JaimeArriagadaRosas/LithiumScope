@@ -1,7 +1,8 @@
 """Read-only synthesis of paired spectral perturbations, spatial and temporal variance."""
 from __future__ import annotations
 
-import hashlib
+from lithiumscope.core.hashing import file_sha256
+from lithiumscope.results.atomic_exports import write_json,write_table,write_text,write_legacy_evidence_json
 import json
 from pathlib import Path
 
@@ -10,7 +11,7 @@ import pandas as pd
 
 
 def _sha(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    return file_sha256(path)
 
 
 def summarize_experiments(base: Path) -> Path:
@@ -64,9 +65,9 @@ def summarize_experiments(base: Path) -> Path:
                 "status": "DESCRIPTIVE_ONLY" if len(values) else "ALL_ABSTAINED",
             })
     combined = pd.concat(per_case, ignore_index=True)
-    combined.to_csv(out / "paired_per_image.csv", index=False)
+    write_table(out / "paired_per_image.csv",combined)
     summary = pd.DataFrame(summaries)
-    summary.to_csv(out / "scenario_sensitivity.csv", index=False)
+    write_table(out / "scenario_sensitivity.csv",summary)
 
     baseline_spatial = spatial.loc[spatial.scenario.eq("baseline")].copy()
     centres = baseline_spatial.loc[baseline_spatial.distance_m.eq(0), ["region", "score"]].rename(
@@ -74,14 +75,14 @@ def summarize_experiments(base: Path) -> Path:
     comparisons = baseline_spatial.loc[baseline_spatial.distance_m.gt(0)].merge(
         centres, on="region", validate="many_to_one")
     comparisons["abs_shift_from_centre"] = (comparisons.score - comparisons.centre_score).abs()
-    comparisons.to_csv(out / "spatial_directions.csv", index=False)
+    write_table(out / "spatial_directions.csv",comparisons)
     by_area_distance = comparisons.groupby(["region", "distance_m"]).agg(
         n=("abs_shift_from_centre", "size"),
         mean_abs_shift=("abs_shift_from_centre", "mean"),
         std_abs_shift=("abs_shift_from_centre", lambda x: x.std(ddof=0)),
         max_abs_shift=("abs_shift_from_centre", "max")
     ).reset_index()
-    by_area_distance.to_csv(out / "spatial_by_region_distance.csv", index=False)
+    write_table(out / "spatial_by_region_distance.csv",by_area_distance)
 
     hist_baseline = historical.loc[historical.scenario.eq("baseline")].copy()
     temporal = hist_baseline.groupby("region").agg(
@@ -92,7 +93,7 @@ def summarize_experiments(base: Path) -> Path:
         score_std=("score", lambda x: x.std(ddof=0))
     ).reset_index()
     temporal["range"] = temporal.score_max - temporal.score_min
-    temporal.to_csv(out / "interannual_variability.csv", index=False)
+    write_table(out / "interannual_variability.csv",temporal)
 
     seasonal_baseline = seasonal.loc[seasonal.scenario.eq("baseline")].copy()
     seasonal_baseline["season"] = seasonal_baseline.image_id.str.extract(
@@ -100,7 +101,7 @@ def summarize_experiments(base: Path) -> Path:
     wide = seasonal_baseline.pivot(index="region", columns="season", values="score")
     wide["winter_minus_summer"] = wide["winter"] - wide["summer"]
     wide["abs_winter_summer_change"] = wide["winter_minus_summer"].abs()
-    wide.to_csv(out / "seasonal_differences.csv")
+    write_table(out / "seasonal_differences.csv",wide,index=True)
 
     def make_finite(value):
         return round(float(value), 9) if pd.notna(value) else None
@@ -127,7 +128,7 @@ def summarize_experiments(base: Path) -> Path:
             "No independent lithium reference labels exist for these images.",
         ]
     }
-    (out / "analysis_manifest.json").write_text(json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8")
+    write_legacy_evidence_json(out/"analysis_manifest.json",meta)
     report = [
         "# LithiumScope — análisis cuantitativo de sensibilidad espectral",
         "",
@@ -146,7 +147,7 @@ def summarize_experiments(base: Path) -> Path:
         "La variación de score no es un error predictivo ni demuestra generalización. La comparación con Li real queda pendiente de datos externos.",
         "No presentar estas simulaciones como ROC-AUC, AP o Balanced Accuracy externos.",
     ]
-    (out / "ANALISIS_SENSIBILIDAD.md").write_text("\n".join(report) + "\n", encoding="utf-8")
+    write_text(out/"ANALISIS_SENSIBILIDAD.md","\n".join(report) + "\n")
     return out
 
 

@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-import hashlib
+from lithiumscope.core.hashing import file_sha256
+from lithiumscope.results.atomic_exports import write_json,write_table,write_text,write_legacy_evidence_json
 import json
 from pathlib import Path
 import subprocess
@@ -12,7 +13,7 @@ import pandas as pd
 
 
 def _sha(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    return file_sha256(path)
 
 
 def compile_report(root: Path) -> Path:
@@ -54,7 +55,7 @@ def compile_report(root: Path) -> Path:
             stats["status_counts"] = json.dumps(frame["status"].value_counts().to_dict())
         records.append(stats)
         trace[name] = {"path":str(path.relative_to(root)), "sha256":_sha(path)}
-    pd.DataFrame(records).to_csv(output/"scenario_statistics.csv", index=False)
+    write_table(output/"scenario_statistics.csv",pd.DataFrame(records))
 
     installed = model_file.parent
     metadata = {}
@@ -139,7 +140,7 @@ def compile_report(root: Path) -> Path:
             "status": "RECONSTRUCTED_NO_GROUP_OVERLAP",
             "details": "66 groups, StratifiedGroupKFold 5 folds, seed 42. Sizes match original folds, zero overlap. Exact historical indices not separately archived.",
         }
-    (output/"evidence_manifest.json").write_text(json.dumps(report,indent=2,ensure_ascii=False,default=str),encoding="utf-8")
+    write_legacy_evidence_json(output/"evidence_manifest.json",report)
     lines=[
         "# LithiumScope — Evidencia científica consolidada M2",
         f"Run ID: `{run_id}`",
@@ -154,8 +155,8 @@ def compile_report(root: Path) -> Path:
         "Los valores de otras ejecuciones no se reconstruyen artificialmente. El bundle instalado no contiene los archivos OOF originales.",
         "",
         "## Umbral, particiones y fuga de información",
-        "El umbral q75 para definir Li alto se calcula sobre el conjunto completo antes de crear los folds exteriores, según el código de entrenamiento revisado. ",
-        "Esto constituye un riesgo potencial de fuga entre particiones; para corregirlo en un próximo experimento, el umbral debe definirse únicamente con datos de entrenamiento del fold, ",
+        "En el protocolo histórico revisado, el umbral q75 para definir Li alto se calculaba sobre el conjunto completo antes de crear los folds exteriores. ",
+        "Esto constituía un riesgo potencial de fuga entre particiones; el protocolo corregido debe definir el umbral únicamente con datos de entrenamiento del fold, ",
         "y las etiquetas del fold de prueba deben asignarse usando ese umbral fijo.",
         "La separación por grupos espaciales existe, pero puede recurrir a partición estratificada si no hay suficientes grupos. ",
         "Además, el umbral operativo se selecciona a partir de OOF del modelo ganador; requiere validación externa para evitar optimismo por selección.",
@@ -183,7 +184,7 @@ def compile_report(root: Path) -> Path:
             "Ninguna de estas cifras equivale a un test externo geográficamente independiente.",
             "Ver recovered_training_validation.json y reconstructed_spatial_splits.csv para el cálculo auditable.",
         ])
-    (output/"SCIENTIFIC_EVIDENCE_REPORT.md").write_text("\n".join(lines)+"\n",encoding="utf-8")
+    write_text(output/"SCIENTIFIC_EVIDENCE_REPORT.md","\n".join(lines)+"\n")
     return output
 
 
