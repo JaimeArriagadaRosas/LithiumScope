@@ -80,18 +80,18 @@ def test_prior_release_params_reuse_exact_estimator_without_optimizing():
     assert closure.LIFECYCLE=="experimental_not_for_individual_release"
 
 
-def test_model2_menu_option_2_restores_six_algorithm_competition(monkeypatch):
+def test_model2_menu_option_2_restores_six_algorithm_competition(monkeypatch, tmp_path):
     from lithiumscope.cli import train_command as menu
-    from lithiumscope.datasets import provisioner
+    from lithiumscope.runtime import preboot, dataset_provisioning
     from lithiumscope.model_2.training import competition
     called=[]
     monkeypatch.setattr(menu,"choose",lambda *a,**k:"2")
-    monkeypatch.setattr(menu,"require_full_training_environment",
+    monkeypatch.setattr(preboot,"require_full_training_environment",
                         lambda model:called.append("environment"))
     monkeypatch.setattr(menu,"detect_device",lambda **kw:types.SimpleNamespace(
         accelerator="cpu",name="CPU"))
     monkeypatch.setattr(menu,"device_summary",lambda device:None)
-    monkeypatch.setattr(menu,"require_model_2_expanded_manifest",
+    monkeypatch.setattr(dataset_provisioning,"require_model_2_expanded_manifest",
                         lambda:(called.append("expanded_783") or Path("783.csv")))
     @contextmanager
     def fake_log(*args,**kwargs):
@@ -101,7 +101,7 @@ def test_model2_menu_option_2_restores_six_algorithm_competition(monkeypatch):
     monkeypatch.setattr(competition,"run_model_2_competition",
         lambda manifest,device:(called.append("six_algorithms")
                                or types.SimpleNamespace(
-                                   run_dir=Path("results"),winner="catboost",
+                                   run_dir=tmp_path,winner="catboost",
                                    ranking=pd.DataFrame(),failed=[])))
     menu._run_impl()
     assert called==["environment","expanded_783","six_algorithms"]
@@ -109,8 +109,9 @@ def test_model2_menu_option_2_restores_six_algorithm_competition(monkeypatch):
 
 def test_model2_menu_option_0_leaves_everything_untouched(monkeypatch):
     from lithiumscope.cli import train_command as menu
+    from lithiumscope.runtime import preboot
     monkeypatch.setattr(menu,"choose",lambda *a,**k:"0")
-    monkeypatch.setattr(menu,"require_full_training_environment",
+    monkeypatch.setattr(preboot,"require_full_training_environment",
                         lambda:(_ for _ in ()).throw(
                             AssertionError("should never start")))
     assert menu._run_impl() is False

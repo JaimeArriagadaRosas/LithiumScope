@@ -10,6 +10,10 @@ def test_concurrent_worker_logs_are_disjoint(tmp_path):
     parent=tmp_path/"sessions"/"parent"
     parent.mkdir(parents=True)
     env={**os.environ,"LITHIUMSCOPE_LOG_DIR":str(tmp_path),"LITHIUMSCOPE_WORKER_SESSION_DIR":str(parent)}
+    env.pop("LITHIUMSCOPE_SESSION_DIR", None)
+    env.pop("LITHIUMSCOPE_WORKER_SESSION_DIR", None)
+    env["PYTHONPATH"] = str(Path(__file__).resolve().parents[2] / "src")
+    env["LITHIUMSCOPE_WORKER_SESSION_DIR"] = str(parent)
     code="""import sys
 from lithiumscope.core.logging.session import get_logger,finalize_logging
 from lithiumscope.core.logging.context import scientific_log_context

@@ -109,7 +109,7 @@ def test_report(root: Path, path: Path, current_commit: str | None) -> dict:
         value = float(node.attrib["line-rate"])
         if not 0 <= value <= 1:
             raise ValueError("Invalid coverage rate")
-        coverage = 100 * value
+        coverage = round(100 * value, 12)
     source_commit = report.get("git_commit")
     matches = (source_commit == current_commit and report.get("tracked_worktree_dirty") is False
                and report.get("untracked_code_present") is False

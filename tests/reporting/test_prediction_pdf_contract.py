@@ -15,7 +15,7 @@ def test_integrated_prediction_uses_pdf_not_html():
         / "src"
         / "lithiumscope"
         / "prediction"
-        / "report.py"
+        / "exports" / "report_facade.py"
     ).read_text(encoding="utf-8")
 
     output_writer = (

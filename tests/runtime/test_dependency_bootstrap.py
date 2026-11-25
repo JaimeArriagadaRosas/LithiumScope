@@ -1,6 +1,13 @@
+import pytest
 from types import SimpleNamespace
 
 import lithiumscope.runtime.dependencies as dependencies
+
+
+@pytest.fixture(autouse=True)
+def isolate_dependency_install_policy(monkeypatch):
+    # Runner forbids real installations. Unit probes below mock subprocess.run.
+    monkeypatch.delenv("LITHIUMSCOPE_DISABLE_AUTO_INSTALL", raising=False)
 
 
 def _fake_find_spec_factory(

@@ -169,6 +169,8 @@ def _scientific_code_files(model_group: str) -> list[Path]:
         files.extend(directory.rglob("*.py"))
     if model_group == "model_2":
         files.extend((source_root / "tools" / "acquisition" / "sentinel2").rglob("*.py"))
+    # Presentation-only modules must not invalidate scientific checkpoints.
+    files = [path for path in files if not (path.parent.name == "evaluation" and path.name in {"plots.py", "reports.py"})]
     return sorted(set(files), key=lambda path: path.relative_to(PROJECT_ROOT).as_posix())
 
 

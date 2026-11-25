@@ -9,7 +9,7 @@ from sklearn.covariance import LedoitWolf
 def _matrix(frame, numeric):
     if not set(numeric) <= set(frame) or len(set(numeric)) != len(numeric):
         raise ValueError("Missing or duplicated domain feature schema")
-    values = frame[list(numeric)].apply(pd.to_numeric, errors="coerce").to_numpy(float)
+    values = frame[list(numeric)].apply(pd.to_numeric, errors="coerce").to_numpy(dtype=float, copy=True)
     values[~np.isfinite(values)] = np.nan
     return values
 

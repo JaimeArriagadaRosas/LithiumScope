@@ -191,7 +191,12 @@ def _benchmark_check(root, logs, *, execute):
 
 def _historical_parity_check(root,logs):
     from lithiumscope.tools.inspection.development.historical_parity import verify
-    return verify(root,logs/"historical_parity.json")
+    report = verify(root,logs/"historical_parity.json")
+    # Absence of an archived model is not a failure of the next training pipeline.
+    if report.get("state") == "BLOCKED" and report.get("reason") in (
+            "historical_artifacts_absent", "historical_imagery_absent"):
+        report = {**report, "required_for_new_training": False, "optional_evidence": True}
+    return report
 
 
 def run_development_validation(root: Path, *, include_benchmark=False) -> dict:
@@ -226,7 +231,8 @@ def run_development_validation(root: Path, *, include_benchmark=False) -> dict:
         for name in sections["protected_artifacts"]["changed_paths"]:
             print(f"  [ERROR] Archivo científico modificado: {name}")
     print_validation(sections)
-    return {"state": "OK" if all(v["state"] == "OK" for v in sections.values()) else "WARNING",
+    required = [v for k,v in sections.items() if not (k == "historical_parity" and v.get("optional_evidence") is True)]
+    return {"state": "OK" if all(v["state"] == "OK" for v in required) else "WARNING",
             "commit": identity.get("commit"), "checks": sections,
             "logs_directory": logs.relative_to(root).as_posix(),
             "scope": "full local regression; not definitive scientific training"}

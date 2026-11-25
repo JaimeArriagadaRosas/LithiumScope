@@ -171,13 +171,14 @@ def test_first_real_main_run_must_use_v4_matrix_signature(
     assert captured == [matrix.resolve()]
 
 
-def test_menu_option_two_routes_normal_competition_without_fit(monkeypatch, capsys):
+def test_menu_option_two_routes_normal_competition_without_fit(monkeypatch, capsys, tmp_path):
     from lithiumscope.cli import train_command
+    from lithiumscope.runtime import preboot, dataset_provisioning
     from lithiumscope.model_2.training import competition as c
 
     calls = []
     monkeypatch.setattr(train_command, "choose", lambda *_a, **_kw: "2")
-    monkeypatch.setattr(train_command, "require_full_training_environment", lambda model: None)
+    monkeypatch.setattr(preboot, "require_full_training_environment", lambda model: None)
     monkeypatch.setattr(
         train_command,
         "detect_device",
@@ -185,7 +186,7 @@ def test_menu_option_two_routes_normal_competition_without_fit(monkeypatch, caps
     )
     monkeypatch.setattr(train_command, "device_summary", lambda *_: None)
     manifest = PROJECT_ROOT / "data/processed/model_2/training_manifest.csv"
-    monkeypatch.setattr(train_command, "require_model_2_expanded_manifest", lambda: manifest)
+    monkeypatch.setattr(dataset_provisioning, "require_model_2_expanded_manifest", lambda: manifest)
 
     @contextmanager
     def fake_logger(*_a, **_kw):
@@ -197,7 +198,7 @@ def test_menu_option_two_routes_normal_competition_without_fit(monkeypatch, caps
     def fake_competition(mpath, device):
         calls.append((mpath, device.accelerator))
         return SimpleNamespace(
-            run_dir=PROJECT_ROOT / "results/test_only",
+            run_dir=tmp_path,
             winner=None,
             ranking=pd.DataFrame(),
             failed=[],

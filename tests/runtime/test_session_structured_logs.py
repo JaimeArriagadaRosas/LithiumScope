@@ -11,6 +11,9 @@ from lithiumscope.core.logger import cleanup_expired_logs
 def test_concurrent_operations_share_session_but_not_operation_logs(tmp_path):
     env = os.environ.copy()
     env["LITHIUMSCOPE_LOG_DIR"] = str(tmp_path)
+    env.pop("LITHIUMSCOPE_SESSION_DIR", None)
+    env.pop("LITHIUMSCOPE_WORKER_SESSION_DIR", None)
+    env["PYTHONPATH"] = str(Path(__file__).resolve().parents[2] / "src")
     code = """
 from concurrent.futures import ThreadPoolExecutor
 from threading import Barrier
