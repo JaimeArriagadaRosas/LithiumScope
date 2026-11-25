@@ -1,0 +1,5 @@
+{
+  "tests/model_1/test_development_gate.py": "tests/model_1/diagnostics/test_development_gate.py",
+  "tests/model_1/test_domain_group_intervals.py": "tests/model_1/diagnostics/test_domain_group_intervals.py",
+  "tests/model_1/test_observation_audit.py": "tests/model_1/diagnostics/test_observation_audit.py"
+}

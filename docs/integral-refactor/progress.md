@@ -240,3 +240,7 @@ Los cambios requieren regresión local en el commit actual. No se han cerrado cr
 ## Continuación: identidad, QA y manifiestos
 
 Commits 7c3d2a01, 34236a84, 1b0c9037 y 80c7840f: nueva reconciliación de M2, controles de reanudación, adquisición registrada con SCL y corregistro, auditoría M1. Los cambios nuevos quedan pendientes de validación local; las fuentes históricas no se regeneraron. Se movieron seis tests experimentales al directorio correspondiente y se actualizaron sus asociaciones. Conteo principal 127/166; 39 parciales; cierre acotado 6/166. No se ejecutaron tests, workflows, adquisiciones, ajustes ni promoción.
+
+## Continuación M1: selección y aplicabilidad
+
+Commits 973c5f42 y 76169f7c: gate de desarrollo pareado y política multivariada con protocolo de incertidumbre por grupos. Nuevas pruebas y reorganización de directorio, sin ejecución; 129/166 (77,7 %) de implementación principal, 37 parciales, 6 cierres acotados históricos. Los límites se fijaron como hipótesis conservadoras de desarrollo sin evaluar datos; no se afirma calibración ni superioridad externa.

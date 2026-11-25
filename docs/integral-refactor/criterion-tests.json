@@ -88,7 +88,7 @@
       "tests/model_1/test_model_1_scientific_guards.py",
       "tests/model_1/test_coordinate_lineage.py",
       "tests/scientific/shared/test_nested_protocol.py",
-      "tests/model_1/test_observation_audit.py"
+      "tests/model_1/diagnostics/test_observation_audit.py"
     ],
     "M1-20": [
       "tests/model_1/test_statistical_baselines.py",
@@ -102,7 +102,8 @@
     "M1-22": [
       "tests/runtime/test_candidate_evidence.py",
       "tests/model_1/test_statistical_baselines.py",
-      "tests/prediction/test_demo_promotion_guard.py"
+      "tests/prediction/test_demo_promotion_guard.py",
+      "tests/model_1/diagnostics/test_development_gate.py"
     ],
     "M1-23": [
       "tests/model_1/test_physical_robustness.py",
@@ -122,7 +123,8 @@
     "M1-26": [
       "tests/prediction/test_applicability.py",
       "tests/prediction/test_m1_input_provenance.py",
-      "tests/model_1/test_model_1_prediction_diagnostics.py"
+      "tests/model_1/test_model_1_prediction_diagnostics.py",
+      "tests/model_1/diagnostics/test_domain_group_intervals.py"
     ],
     "M1-27": [
       "tests/release/test_final_fit_contract.py",
@@ -332,7 +334,8 @@
     "ARQ-014": [
       "tests/model_1/test_statistical_baselines.py",
       "tests/runtime/test_candidate_evidence.py",
-      "tests/model_1/test_high_lithium_diagnostics.py"
+      "tests/model_1/test_high_lithium_diagnostics.py",
+      "tests/model_1/diagnostics/test_development_gate.py"
     ],
     "ARQ-015": [
       "tests/scientific/experiments/test_learning_curves.py",
@@ -344,12 +347,14 @@
       "tests/scientific/m1/test_vnext_m1_diagnostics.py",
       "tests/scientific/experiments/test_compare_vnext_trained_runs.py",
       "tests/scientific/experiments/test_paired_experiment_design.py",
-      "tests/scientific/experiments/test_paired_suite.py"
+      "tests/scientific/experiments/test_paired_suite.py",
+      "tests/model_1/diagnostics/test_domain_group_intervals.py"
     ],
     "ARQ-017": [
       "tests/prediction/test_m1_input_provenance.py",
       "tests/model_1/test_model_1_prediction_diagnostics.py",
-      "tests/prediction/test_applicability.py"
+      "tests/prediction/test_applicability.py",
+      "tests/model_1/diagnostics/test_domain_group_intervals.py"
     ],
     "ARQ-018": [
       "tests/results/test_eda_training_integration.py",

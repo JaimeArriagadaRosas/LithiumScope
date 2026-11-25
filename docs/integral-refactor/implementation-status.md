@@ -1,13 +1,13 @@
 # Estado de implementación por criterio
 
-Corte de código: 80c7840f21bea376bac2a19724ac3476320264f6. Conteo de implementación solicitado, **independiente de la ejecución de pruebas**. I = implementación principal incorporada al código (no necesariamente todos los detalles ni aceptación); P = implementación parcial con trabajo de código concreto pendiente. Cada criterio vale una unidad, incluidos requisitos superpuestos; P no suma como implementado. La clasificación es revisión documental y estática, no resultado de una suite. Los originales completos permanecen locales; se usan los extractos y matrices versionados. Consola adicional excluida del denominador textual de 166.
+Corte de código: 76169f7c4ae9e9bfb6c13bd20e5bcdc93aa0e4e0. Conteo de implementación solicitado, **independiente de la ejecución de pruebas**. I = implementación principal incorporada al código (no necesariamente todos los detalles ni aceptación); P = implementación parcial con trabajo de código concreto pendiente. Cada criterio vale una unidad, incluidos requisitos superpuestos; P no suma como implementado. La clasificación es revisión documental y estática, no resultado de una suite. Los originales completos permanecen locales; se usan los extractos y matrices versionados. Consola adicional excluida del denominador textual de 166.
 
 | Diagnóstico | Total | Implementación principal | Parcial | Avance de implementación |
 |---|---:|---:|---:|---:|
-| M1 | 27 | 24 | 3 | 88,9 % |
+| M1 | 27 | 26 | 1 | 96,3 % |
 | M2 | 30 | 29 | 1 | 96,7 % |
 | ARQ | 109 | 74 | 35 | 67,9 % |
-| **Total** | **166** | **127** | **39** | **76,5 %** |
+| **Total** | **166** | **129** | **37** | **77,7 %** |
 
 Los seis cierres acotados y la última suite histórica se conservan por separado en HANDOFF.md. Los experimentos son ejecutables pero no ejecutados; el rendimiento no está demostrado. La revisión podrá reclasificar criterios si surgen faltantes.
 
@@ -34,11 +34,11 @@ Los seis cierres acotados y la última suite histórica se conservan por separad
 | M1-19 | Parcial | Auditoría de identidad, réplicas y coincidencias entre fuentes integrada al preflight sin mutar cohorte; falta resolución documentada por procedencia y calidad de los conflictos reales y comparación controlada. |
 | M1-20 | Principal incorporada | Baselines estadísticos independientes. |
 | M1-21 | Principal incorporada | Competencia de seis familias. |
-| M1-22 | Parcial | Selección y gate implementados; falta incorporar explícitamente estabilidad y colas altas a la política del ganador. |
+| M1-22 | Principal incorporada | Política versionada de elegibilidad de desarrollo con baseline pareado, fracción de folds ganados, peor fold, error/sesgo de Li alto, sesgo por fuente y validez física; mantiene ranking relativo y gate externo. |
 | M1-23 | Principal incorporada | Diagnósticos de robustez y comparación emparejada. |
 | M1-24 | Principal incorporada | Curvas, errores y diagnósticos científicos. |
 | M1-25 | Principal incorporada | Auditoría específica de concentraciones extremas. |
-| M1-26 | Parcial | Intervalos y perfil disponibles; falta ampliar calibración de incertidumbre y dominio multivariado. |
+| M1-26 | Principal incorporada | Perfil multivariado de covarianza regularizada con cobertura de entrada y categorías inéditas; estudio de intervalos por grupos separados para ajuste/calibración/evaluación, preflight por defecto; P90 OOF etiquetado descriptivo. |
 | M1-27 | Principal incorporada | Persistencia, contratos y promoción explícita. |
 | M2-01 | Principal incorporada | Configuración validada y versionada. |
 | M2-02 | Principal incorporada | Reconciliación por fuente, identidad original y réplica explícita; cuarentena de conflictos, censura excluida sin imputación, unidades y auditoría de inclusión. Cohorte congelada intacta. |

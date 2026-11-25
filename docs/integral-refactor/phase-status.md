@@ -5,9 +5,9 @@
 - 166 criterios documentados: 27 M1, 30 M2, 109 arquitectura, con requisitos superpuestos.
 - 6/166 cierres acotados previos (3,6 %); 160/166 siguen abiertos. No confundir con porcentaje de implementación, cobertura de líneas o cantidad de tests.
 - 57/57 diagnósticos científicos tienen evidencia parcial histórica.
-- 166/166 criterios con asociaciones a módulos de pruebas (432 asociaciones). Las asociaciones no son pruebas de aceptación completa.
+- 166/166 criterios con asociaciones a módulos de pruebas (437 asociaciones). Las asociaciones no son pruebas de aceptación completa.
 - La última ejecución integral observada sigue siendo b0c3857: 647 aprobadas, 7 omitidas, 57 % de cobertura de líneas, CI 7/7. No se han ejecutado los tests nuevos de esta rama tras ese commit.
-- Revisión de implementación principal, separada del cierre: 127/166 (76,5 %), 39 parciales. Véase implementation-status.md; no certifica aceptación.
+- Revisión de implementación principal, separada del cierre: 129/166 (77,7 %), 37 parciales. Véase implementation-status.md; no certifica aceptación.
 
 ## Lote de trabajo posterior a 6dc2385
 
@@ -86,3 +86,18 @@ Políticas nuevas: las mediciones censuradas M2 se excluyen en preparación de n
 | **Total** | **166** | **127** | **39** | **76,5 %** |
 
 Reclasificados M2-02/05/06 y ARQ-023/024. Aceptación todavía pendiente. M1-19 y M2-04 conservan estado parcial. Próximos: estabilidad y colas altas M1, incertidumbre y dominio multivariado, composición temporal y SCL histórica, arquitectura residual, recursos y concurrencia. No solicitar todavía 5 > 4 ni ejecutar entrenamientos.
+
+## Lote de continuidad: selección e incertidumbre M1
+
+- 973c5f42: nueva política de elegibilidad de desarrollo previa a selección final, conserva ranking relativo. Exige superar baseline medio/mediano en RMSE medio (gate existente), ganar al menos 60 % de folds frente a mejor referencia RMSE, no exceder el peor fold de esa referencia, ni MAE/sesgo absoluto de Li alto ni peor sesgo por fuente respecto a las mejores referencias por indicador; no admite predicciones negativas. Son límites de desarrollo conservadores, no tolerancias geológicas ni aprobación de release. No se ajustaron tras observar resultados.
+- 76169f7c: perfil multivariado Ledoit-Wolf de referencia de desarrollo, cobertura mínima 75 % de variables numéricas, corte empírico Q99 de distancias y categorías inéditas; disponible para nuevas bundles sin modificar releases. Estudio de intervalos conformales por máximos de error de cada grupo, ajuste/calibración/evaluación disjuntos, semilla y alpha 0,1 predefinidos, hiperparámetros por defecto, ejecución opt-in. La cobertura teórica requiere intercambiabilidad de grupos, no demostrada para los datos espaciales. La cohorte histórica no es holdout externo auténtico. El intervalo OOF existente sigue siendo descriptivo.
+- Este commit: reorganización de tres módulos de tests M1 y actualización de asociaciones. No se ejecutaron pruebas ni ajustes. Se reclasifican M1-22 y M1-26 como implementación principal; M1-19 sigue parcial por resolución de conflictos reales. M2-04 sigue parcial por SCL histórica y composición temporal.
+
+| Diagnóstico | Total | Implementación principal | Parcial | Avance de implementación |
+|---|---:|---:|---:|---:|
+| M1 | 27 | 26 | 1 | 96,3 % |
+| M2 | 30 | 29 | 1 | 96,7 % |
+| ARQ | 109 | 74 | 35 | 67,9 % |
+| **Total** | **166** | **129** | **37** | **77,7 %** |
+
+Siguiente: recuperar SCL histórica y diseñar composición temporal controlada sin reemplazar imágenes congeladas, resolución de conflictos con evidencia por fuente y arquitectura residual, concurrencia, logging y regresión. No solicitar aún 5 > 4.
