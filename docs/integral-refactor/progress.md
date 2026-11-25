@@ -232,3 +232,7 @@ Sin Desktop Commander, CI omitida explícitamente; no se ejecutaron tests ni ent
 - Este commit: protección M1 también si el archivo congelado falta, comprobación en diagnóstico local, pruebas de conservación de bytes, huella de código y actualización de catálogo y handoff.
 
 Los cambios requieren regresión local en el commit actual. No se han cerrado criterios nuevos; 160 abiertos, 6 verificaciones acotadas previas. Revisar especialmente compatibilidad de aliases, límites físicos y directorios, preparación con datos reales, EDA M2 y generación de PDF. El hash congelado M1 está en config; si no coincide con el artefacto local, no sobrescribir ni cambiarlo para ocultar el problema. Configuración independiente sin congelación para experimentos nuevos, no sustitución del histórico. No instalar ni adquirir automáticamente durante 5 > 4.
+
+## Continuación M2 (24-11-2026)
+- Commits 1b45d9f9 y 03d98833: ablación de textura, baseline geográfico suplementario y sensibilidad espacial con preflight y embargo exterior. Pruebas sintéticas añadidas y asociadas a cuatro criterios; sin ejecución ni afirmación de éxito. Comparación espacial exige endpoint fijo predeclarado externamente; las métricas entre protocolos solo se interpretan con cobertura completa y mismas identidades. No se presupone independencia geológica.
+- Conteo principal: 122/166 (73,5 %); parciales 44; cierre acotado sigue 6/166. Conservados main, modelos y releases.

@@ -5,9 +5,9 @@
 - 166 criterios documentados: 27 M1, 30 M2, 109 arquitectura, con requisitos superpuestos.
 - 6/166 cierres acotados previos (3,6 %); 160/166 siguen abiertos. No confundir con porcentaje de implementación, cobertura de líneas o cantidad de tests.
 - 57/57 diagnósticos científicos tienen evidencia parcial histórica.
-- 166/166 criterios con asociaciones a módulos de pruebas (422 asociaciones). Las asociaciones no son pruebas de aceptación completa.
+- 166/166 criterios con asociaciones a módulos de pruebas (426 asociaciones). Las asociaciones no son pruebas de aceptación completa.
 - La última ejecución integral observada sigue siendo b0c3857: 647 aprobadas, 7 omitidas, 57 % de cobertura de líneas, CI 7/7. No se han ejecutado los tests nuevos de esta rama tras ese commit.
-- Revisión de implementación principal, separada del cierre: 118/166 (71,1 %), 48 parciales. Véase implementation-status.md; no certifica aceptación.
+- Revisión de implementación principal, separada del cierre: 122/166 (73,5 %), 44 parciales. Véase implementation-status.md; no certifica aceptación.
 
 ## Lote de trabajo posterior a 6dc2385
 
@@ -52,3 +52,18 @@ No se ha utilizado Desktop Commander en este lote ni se han ejecutado workflows.
 | **Total** | **166** | **118** | **48** | **71,1 %** |
 
 Pendientes prioritarios de código: criterios P en implementation-status.md, en particular QA de imágenes y manifiestos, dominios, baselines espaciales, diagnósticos por modelo, módulos restantes de adquisición/experimentos/reporting, concurrencia y pruebas. No ejecutar entrenamientos ni pedir el pull hasta agotar implementaciones posibles.
+
+## Lote de continuación: controles M2 (24-11-2026)
+
+- 1b45d9f9: referencia geográfica nearest-TRAIN con QA, empates promediados y tablas OOF/fold/globales; ablación reflectancia 60 frente a reflectancia+textura 80 mediante el estudio pareado existente, v4 o v5 con artefactos verificados.
+- 03d98833: sensibilidad espacial con seis protocolos predeclarados, grupos por rejilla y componentes de escena, buffer de 1/5 km exclusivamente sobre TRAIN y endpoint fijo independiente obligatorio. Preflight por defecto; ejecución opt-in y comparación con baseline prior y familias configuradas. Las particiones internas agrupan, pero no aplican el embargo adicional exterior. No selecciona automáticamente protocolo ni modelo.
+- Ajustes de prueba de frontera, alineación de etiquetas, validación de identidades y registro de trazabilidad en el commit documental siguiente. No se ejecutó CI ni entrenamiento.
+
+| Diagnóstico | Total | Implementación principal | Parcial | Avance de implementación |
+|---|---:|---:|---:|---:|
+| M1 | 27 | 24 | 3 | 88,9 % |
+| M2 | 30 | 26 | 4 | 86,7 % |
+| ARQ | 109 | 72 | 37 | 66,1 % |
+| **Total** | **166** | **122** | **44** | **73,5 %** |
+
+Criterios reclasificados por incorporación principal: M2-03, M2-11, M2-17, ARQ-036. Mantienen aceptación pendiente. Próximos: reconciliación de réplicas y censura por fuente (M1-19/M2-02), QA local SCL, geometría y manifiestos (M2-04/05/06), estabilidad y aplicabilidad M1 y arquitectura restante. No solicitar aún 5 > 4 ni iniciar entrenamientos definitivos.

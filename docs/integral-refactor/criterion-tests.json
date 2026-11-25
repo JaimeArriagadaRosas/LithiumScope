@@ -138,7 +138,8 @@
     ],
     "M2-03": [
       "tests/model_2/test_scientific_training_protocol.py",
-      "tests/scientific/shared/test_spatial_audit_contract.py"
+      "tests/scientific/shared/test_spatial_audit_contract.py",
+      "tests/model_2/test_texture_geographic_reference.py"
     ],
     "M2-04": [
       "tests/datasets/test_sentinel2_provider.py",
@@ -174,7 +175,8 @@
     ],
     "M2-11": [
       "tests/model_2/test_physical_v5.py",
-      "tests/model_2/test_model_2_spectral_features.py"
+      "tests/model_2/test_model_2_spectral_features.py",
+      "tests/model_2/test_texture_geographic_reference.py"
     ],
     "M2-12": [
       "tests/model_2/test_physical_v5.py",
@@ -199,7 +201,8 @@
     ],
     "M2-17": [
       "tests/training/test_baselines.py",
-      "tests/model_2/test_scientific_training_protocol.py"
+      "tests/model_2/test_scientific_training_protocol.py",
+      "tests/model_2/test_texture_geographic_reference.py"
     ],
     "M2-18": [
       "tests/scientific/m2_training/test_m2_full_competition_quality.py",
@@ -433,7 +436,8 @@
       "tests/scientific/m2_spectral/test_m2_rededge_v4.py",
       "tests/scientific/m2_spectral/test_m2_vnext_expansion.py",
       "tests/scientific/shared/test_paired_experiment_design.py",
-      "tests/scientific/shared/test_paired_suite.py"
+      "tests/scientific/shared/test_paired_suite.py",
+      "tests/model_2/test_texture_geographic_reference.py"
     ],
     "ARQ-037": [
       "tests/prediction/test_spectral_inference_contract.py",

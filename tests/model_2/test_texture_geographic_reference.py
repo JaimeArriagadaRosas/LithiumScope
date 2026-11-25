@@ -60,7 +60,7 @@ def test_spatial_components_join_scene_across_grid_and_buffer_preserves_test():
     assert groups.nunique() == 4
     _, records = plan_protocol(
         frame, [10, 30] * 4, grid=.5, buffer_m=1000., combine_scene=False,
-        folds=2, endpoint_ppm=20.)
+        folds=5, endpoint_ppm=20.)
     assert sorted(i for row in records for i in row["test"]) == list(range(8))
     assert sum(row["n_embargoed"] for row in records) >= 1
     for row in records:

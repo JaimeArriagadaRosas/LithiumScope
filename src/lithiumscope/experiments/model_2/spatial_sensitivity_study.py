@@ -43,6 +43,10 @@ def run(*, output: Path, endpoint_ppm: float, algorithms=None, execute=False):
     lithium = frame[training["lithium_column"]].to_numpy(float)
     if len(manifest) != len(frame) or not np.array_equal(manifest.Li_icpms.to_numpy(float), lithium):
         raise ValueError("Spatial study source rows differ from feature matrix")
+    if not np.isfinite(endpoint_ppm) or endpoint_ppm < 0:
+        raise ValueError("Independent endpoint must be finite and nonnegative")
+    if manifest.sample_id.isna().any() or not manifest.sample_id.is_unique:
+        raise ValueError("Spatial study requires unique sample identities")
     labels = (lithium >= endpoint_ppm).astype(int)
     plans, groups_by_protocol = [], {}
     for name, grid, buffer_m, scene in POLICIES:
@@ -97,7 +101,7 @@ def run(*, output: Path, endpoint_ppm: float, algorithms=None, execute=False):
                                 scores = np.full(len(test), labels[train].mean())
                             else:
                                 fitted = fit_policy(algorithm, device, seed + item["fold"], {},
-                                                    x.iloc[train], pd.Series(labels[train]),
+                                                    x.iloc[train], pd.Series(labels[train], index=x.index[train]),
                                                     groups.iloc[train], inner, mode)
                                 scores = fitted.predict_proba(x.iloc[test])[:, 1]
                             row.update(classification_metrics(labels[test], scores), state="ok")

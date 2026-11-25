@@ -1,13 +1,13 @@
 # Estado de implementación por criterio
 
-Corte de código: a07e02c89aea7a40e4c16a1c4df139264d3b072f. Conteo de implementación solicitado, **independiente de la ejecución de pruebas**. I = implementación principal incorporada al código (no necesariamente todos los detalles ni aceptación); P = implementación parcial con trabajo de código concreto pendiente. Cada criterio vale una unidad, incluidos requisitos superpuestos; P no suma como implementado. La clasificación es revisión documental y estática, no resultado de una suite. Los originales completos permanecen locales; se usan los extractos y matrices versionados. Consola adicional excluida del denominador textual de 166.
+Corte de código: 03d98833c5d8639da71af70d95bffe9b0c1b0ccc. Conteo de implementación solicitado, **independiente de la ejecución de pruebas**. I = implementación principal incorporada al código (no necesariamente todos los detalles ni aceptación); P = implementación parcial con trabajo de código concreto pendiente. Cada criterio vale una unidad, incluidos requisitos superpuestos; P no suma como implementado. La clasificación es revisión documental y estática, no resultado de una suite. Los originales completos permanecen locales; se usan los extractos y matrices versionados. Consola adicional excluida del denominador textual de 166.
 
 | Diagnóstico | Total | Implementación principal | Parcial | Avance de implementación |
 |---|---:|---:|---:|---:|
 | M1 | 27 | 24 | 3 | 88,9 % |
-| M2 | 30 | 23 | 7 | 76,7 % |
-| ARQ | 109 | 71 | 38 | 65,1 % |
-| **Total** | **166** | **118** | **48** | **71,1 %** |
+| M2 | 30 | 26 | 4 | 86,7 % |
+| ARQ | 109 | 72 | 37 | 66,1 % |
+| **Total** | **166** | **122** | **44** | **73,5 %** |
 
 Los seis cierres acotados y la última suite histórica se conservan por separado en HANDOFF.md. Los experimentos son ejecutables pero no ejecutados; el rendimiento no está demostrado. La revisión podrá reclasificar criterios si surgen faltantes.
 
@@ -42,7 +42,7 @@ Los seis cierres acotados y la última suite histórica se conservan por separad
 | M1-27 | Principal incorporada | Persistencia, contratos y promoción explícita. |
 | M2-01 | Principal incorporada | Configuración validada y versionada. |
 | M2-02 | Parcial | Validación de concentración/coordenadas; falta reconciliación completa de réplicas y censura por fuente. |
-| M2-03 | Parcial | Grupos espaciales y auditoría implementados; falta sensibilidad sistemática a rejilla y escena. |
+| M2-03 | Principal incorporada | Seis protocolos predeclarados: rejillas, componentes por escena y embargo TRAIN, con preflight, cobertura y comparación por algoritmo. |
 | M2-04 | Parcial | STAC y adquisición centralizada; falta completar recuperación de QA local SCL. |
 | M2-05 | Parcial | Extracción y validación de parches; falta integrar control de corregistro y máscaras locales de extremo a extremo. |
 | M2-06 | Parcial | Manifiesto congelado e integridad; falta ampliar contrato para nuevas adquisiciones y conflictos. |
@@ -50,13 +50,13 @@ Los seis cierres acotados y la última suite histórica se conservan por separad
 | M2-08 | Principal incorporada | Preprocesamiento físico v5 aislado, con comparación de representaciones. |
 | M2-09 | Principal incorporada | Extractores versionados v4/v5 y comparación emparejada. |
 | M2-10 | Principal incorporada | Estadísticas físicas de reflectancia. |
-| M2-11 | Parcial | Textura disponible; falta comparación aislada de textura con las demás familias. |
+| M2-11 | Principal incorporada | Ablación pareada reflectancia 60 vs reflectancia+textura 80, con QA y versión v4/v5 explícitas. |
 | M2-12 | Principal incorporada | Índices versionados, divisiones inválidas y redundancia. |
 | M2-13 | Principal incorporada | Construcción de matriz con contrato de esquema. |
 | M2-14 | Principal incorporada | Caché con identidad y comprobaciones de compatibilidad. |
 | M2-15 | Principal incorporada | Generación de etiquetas separada de umbral operativo. |
 | M2-16 | Principal incorporada | Validación espacial anidada con soporte de clases. |
-| M2-17 | Parcial | Baseline de clasificación disponible; falta comparador espacial adicional. |
+| M2-17 | Principal incorporada | Baseline espacial geodésico suplementario con mismos folds, QA TRAIN, empates y OOF; no participa en ranking. |
 | M2-18 | Principal incorporada | Competencia de seis familias. |
 | M2-19 | Principal incorporada | Presupuesto y optimización Optuna controlados. |
 | M2-20 | Principal incorporada | Calibración anidada y comparación por familia. |
@@ -105,7 +105,7 @@ Los seis cierres acotados y la última suite histórica se conservan por separad
 | ARQ-033 | Principal incorporada | Métricas binarias/probabilísticas y OOF. |
 | ARQ-034 | Principal incorporada | Selección y elegibilidad científica separadas. |
 | ARQ-035 | Parcial | Diagnósticos disponibles; falta consolidación en model_2/diagnostics/. |
-| ARQ-036 | Parcial | Estudios versionados y ablaciones; falta sensibilidad sistemática al tamaño de bloques y escenas. |
+| ARQ-036 | Principal incorporada | Estudios por representación, textura, presupuesto, calibración y sensibilidad de bloques, escenas y buffers con evaluación opt-in. |
 | ARQ-037 | Principal incorporada | Inferencia versionada y abstención por perfil inválido. |
 | ARQ-038 | Parcial | Flujo interactivo existente; faltan piezas de adquisición, manifiestos e independencia prospectiva. |
 | ARQ-039 | Principal incorporada | Resultados EDA, runs y metodología separados. |
