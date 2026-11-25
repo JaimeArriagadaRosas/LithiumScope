@@ -211,3 +211,20 @@ Reclasificados ARQ-007/022/045/066 por arquitectura principal incorporada; crite
 ## Lote de cierre parcial — 22d0fab
 
 Implementación principal: 160/166 (96,4 %). Pendientes ARQ-021/041/061/073/092/109. Incorporados ARQ-038/083/095/097/100. La reserva externa M2 y las políticas CPU nuevas son opt-in; la configuración actual no cambia. Benchmark sintético no ejecutado. No se ejecutó CI ni entrenamiento definitivo. Los auxiliares históricos recover_oof_evidence y final_scope_closure no se pudieron reubicar en este lote por errores de escritura GitHub y avance concurrente de la rama; no se forzó la referencia. Reconciliar HEAD y completar esa revisión antes de iniciar regresión local 5.4. No certificar aceptación por presencia de tests.
+
+## Reconciliación y cierre del código histórico — b1491d11
+
+- 578678d6: recuperación OOF histórica portable, exige archivo separado, hash y cardinalidad de cohorte; preserva entrada histórica.
+- 545cf74f: síntesis de campañas integrada, no lee ni escribe al importar, deriva recuentos de artefactos y registra hashes; el documento generado no modifica docs versionados.
+- cbc6ea94: dos auxiliares de protocolos M2 trasladados a historical, eliminadas dependencias eager sobre fachadas, conserva aliases.
+- b1491d11: auditoría de rutas retiradas, referencias residuales y destinos canónicos terminales sin ocultar imports no resueltos.
+- Inventario experimental de 118 módulos físicos; 36 nombres del mapa de reubicación carecen de shim físico, no se certifica compatibilidad de esos nombres. Revisar hallazgos de imports y modelos serializados en regresión; no añadir import hook global ni relajar límite de 20 archivos.
+
+| Diagnóstico | Total | Implementación principal | Parcial | Avance de implementación |
+|---|---:|---:|---:|---:|
+| M1 | 27 | 27 | 0 | 100,0 % |
+| M2 | 30 | 30 | 0 | 100,0 % |
+| ARQ | 109 | 104 | 5 | 95,4 % |
+| **Total** | **166** | **161** | **5** | **97,0 %** |
+
+ARQ-061 reclasificado por incorporación principal. Pendientes ARQ-021/041/073/092/109: cierre científico de ambos modelos, auditoría de imports y correcciones que revele, ejecución de regresión y cierre global. 5.4 incluye benchmark sintético CPU/accelerator, no entrenamiento definitivo ni descarga externa. No se ejecutaron tests, CI, benchmark ni entrenamientos en estos commits; los 6 cierres acotados históricos no cambian. Si el usuario autoriza iniciar regresión local, ejecutar únicamente 5.4 y compartir su JSON; no entrenar ni activar candidatos. Los hallazgos de la ejecución pueden exigir correcciones adicionales y no se deben considerar aprobados por presencia del código.

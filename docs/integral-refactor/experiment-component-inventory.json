@@ -1,0 +1,896 @@
+{
+  "scope": "physical module inventory and canonical responsibility by directory; not a proof of runtime behavior",
+  "commit": "b1491d11005359f7bb2e820157f0c0addbc79f10",
+  "entries": [
+    {
+      "module": "lithiumscope.experiments.__init__",
+      "canonical": "lithiumscope.experiments.__init__",
+      "responsibility": "__init__.py",
+      "sha": "13c74fc40f33eb3077b6ffd5ade8df4de9b6e11d"
+    },
+    {
+      "module": "lithiumscope.experiments.acquisition.__init__",
+      "canonical": "lithiumscope.experiments.acquisition.__init__",
+      "responsibility": "experiment acquisition orchestration",
+      "sha": "4c7f9d34b682f6b49c8f74f615f6c52606087b53"
+    },
+    {
+      "module": "lithiumscope.experiments.acquisition.acquisition",
+      "canonical": "lithiumscope.experiments.acquisition.acquisition",
+      "responsibility": "experiment acquisition orchestration",
+      "sha": "e680fb0228e74db4caaacb079e4e55296f49bf65"
+    },
+    {
+      "module": "lithiumscope.experiments.acquisition.http_tiles",
+      "canonical": "lithiumscope.tools.acquisition.sentinel2.http_tiles",
+      "responsibility": "compatibility",
+      "sha": "153a610fa9323f2d8652c3ba3cda6d2e2ffbb9e2"
+    },
+    {
+      "module": "lithiumscope.experiments.acquisition.raster_worker",
+      "canonical": "lithiumscope.tools.acquisition.sentinel2.raster_worker",
+      "responsibility": "compatibility",
+      "sha": "d582b16c87bb957c4180f68f8abbdb0045892014"
+    },
+    {
+      "module": "lithiumscope.experiments.analysis.__init__",
+      "canonical": "lithiumscope.experiments.analysis.__init__",
+      "responsibility": "historical analysis and comparison helper",
+      "sha": "88d71a6a30951b600fc70eaf6ff4c40362db7e45"
+    },
+    {
+      "module": "lithiumscope.experiments.analysis.academic_evidence",
+      "canonical": "lithiumscope.experiments.integrated.academic_evidence",
+      "responsibility": "compatibility",
+      "sha": "b38bbb83db8d8f529e69690d74f74ea725c05dac"
+    },
+    {
+      "module": "lithiumscope.experiments.analysis.audit_georoc_m2_candidate_coverage",
+      "canonical": "lithiumscope.experiments.model_2.audit_georoc_m2_candidate_coverage",
+      "responsibility": "compatibility",
+      "sha": "dd5e24c8f568d9119e349c229994f6d19db8e9cb"
+    },
+    {
+      "module": "lithiumscope.experiments.analysis.audit_georoc_source_references",
+      "canonical": "lithiumscope.experiments.model_2.audit_georoc_source_references",
+      "responsibility": "compatibility",
+      "sha": "72e5ca492b799bd4cce4c2a49f5769a0b85063eb"
+    },
+    {
+      "module": "lithiumscope.experiments.analysis.compare_vnext_trained_runs",
+      "canonical": "lithiumscope.experiments.analysis.compare_vnext_trained_runs",
+      "responsibility": "historical analysis and comparison helper",
+      "sha": "1edd8001cf2495d2e98b4948081dc867b776e5c9"
+    },
+    {
+      "module": "lithiumscope.experiments.analysis.comparison.__init__",
+      "canonical": "lithiumscope.experiments.analysis.comparison.__init__",
+      "responsibility": "historical analysis and comparison helper",
+      "sha": "508394db22753addaf9b2103a231104f87f2e7b5"
+    },
+    {
+      "module": "lithiumscope.experiments.analysis.comparison.compare_vnext_trained_runs_compare_m1",
+      "canonical": "lithiumscope.experiments.analysis.comparison.compare_vnext_trained_runs_compare_m1",
+      "responsibility": "historical analysis and comparison helper",
+      "sha": "2a70c85a82c13fe931bdc83e83741e641ae99c49"
+    },
+    {
+      "module": "lithiumscope.experiments.analysis.comparison.compare_vnext_trained_runs_compare_m2",
+      "canonical": "lithiumscope.experiments.analysis.comparison.compare_vnext_trained_runs_compare_m2",
+      "responsibility": "historical analysis and comparison helper",
+      "sha": "fd879161d2ac03d7ae8f520ad2c5bda6c678cdad"
+    },
+    {
+      "module": "lithiumscope.experiments.analysis.comparison.recover_oof_evidence",
+      "canonical": "lithiumscope.experiments.model_2.historical.recover_oof_evidence",
+      "responsibility": "compatibility",
+      "sha": "3fc05e43d8577b7acda1160666fb0f24726729bb"
+    },
+    {
+      "module": "lithiumscope.experiments.analysis.m2_generalization_pilot",
+      "canonical": "lithiumscope.experiments.analysis.m2_generalization_pilot",
+      "responsibility": "historical analysis and comparison helper",
+      "sha": "127db1fd7d0e0419af58aa8f3da8410df19d5667"
+    },
+    {
+      "module": "lithiumscope.experiments.analysis.m2_nested_calibration",
+      "canonical": "lithiumscope.experiments.analysis.m2_nested_calibration",
+      "responsibility": "historical analysis and comparison helper",
+      "sha": "d7e8da20c54cbdccdc260c3006d1611dcd7abc5d"
+    },
+    {
+      "module": "lithiumscope.experiments.analysis.pilot_georoc_m2_labels",
+      "canonical": "lithiumscope.experiments.model_2.pilot_georoc_m2_labels",
+      "responsibility": "compatibility",
+      "sha": "799d3faa310561c76b9916851cb2a0e57dcbba34"
+    },
+    {
+      "module": "lithiumscope.experiments.analysis.protocols.__init__",
+      "canonical": "lithiumscope.experiments.analysis.protocols.__init__",
+      "responsibility": "historical analysis and comparison helper",
+      "sha": "ac130f3d65b0d54d64525ac883510ac9431ad0e7"
+    },
+    {
+      "module": "lithiumscope.experiments.analysis.protocols.georoc_qc_protocols",
+      "canonical": "lithiumscope.model_1.methodology.qc_protocols",
+      "responsibility": "compatibility",
+      "sha": "f6d3ad570a93cad47f30fca9dd9797e15ed68a9f"
+    },
+    {
+      "module": "lithiumscope.experiments.analysis.protocols.run_vnext_m2_run_experiments",
+      "canonical": "lithiumscope.experiments.model_2.historical.vnext_experiments",
+      "responsibility": "compatibility",
+      "sha": "22daa67ef9237ff2ce334b62e7d4652068aeb75f"
+    },
+    {
+      "module": "lithiumscope.experiments.analysis.protocols.verify_vnext_data_adequacy_run_m2_learning_curve",
+      "canonical": "lithiumscope.experiments.model_2.historical.adequacy_learning_curve",
+      "responsibility": "compatibility",
+      "sha": "cef1049d43888c62ebf1bf820185f2156fe81b5a"
+    },
+    {
+      "module": "lithiumscope.experiments.analysis.run_vnext_m1",
+      "canonical": "lithiumscope.experiments.analysis.run_vnext_m1",
+      "responsibility": "historical analysis and comparison helper",
+      "sha": "48d2ff99805c3af6f1af23b551cbb63357cd6fac"
+    },
+    {
+      "module": "lithiumscope.experiments.analysis.run_vnext_m1_diagnostics",
+      "canonical": "lithiumscope.experiments.analysis.run_vnext_m1_diagnostics",
+      "responsibility": "historical analysis and comparison helper",
+      "sha": "c17198f6386e5e29b3f52a87b96c0d7c93f2a382"
+    },
+    {
+      "module": "lithiumscope.experiments.analysis.run_vnext_m2",
+      "canonical": "lithiumscope.experiments.analysis.run_vnext_m2",
+      "responsibility": "historical analysis and comparison helper",
+      "sha": "b36187ff1f811f69abd648a08de1c67a16ab2f8d"
+    },
+    {
+      "module": "lithiumscope.experiments.analysis.run_vnext_m2_threshold",
+      "canonical": "lithiumscope.experiments.analysis.run_vnext_m2_threshold",
+      "responsibility": "historical analysis and comparison helper",
+      "sha": "6cf4f4249b68db89cf6b63dbc55ab4c95174427d"
+    },
+    {
+      "module": "lithiumscope.experiments.analysis.run_vnext_stage1",
+      "canonical": "lithiumscope.experiments.model_1.run_vnext_stage1",
+      "responsibility": "compatibility",
+      "sha": "08cf2e35a37221e960b069163c5d396469e20b3c"
+    },
+    {
+      "module": "lithiumscope.experiments.analysis.seasonal_comparison",
+      "canonical": "lithiumscope.experiments.model_2.seasonal_comparison",
+      "responsibility": "compatibility",
+      "sha": "9619cc7c754f0027a77b5a3f287a00ffe9121d7c"
+    },
+    {
+      "module": "lithiumscope.experiments.analysis.sensitivity_analysis",
+      "canonical": "lithiumscope.experiments.model_2.sensitivity_analysis",
+      "responsibility": "compatibility",
+      "sha": "ab312a00c54f74bf8458b3f13c218978705f5042"
+    },
+    {
+      "module": "lithiumscope.experiments.analysis.temporal_multiscene_analysis",
+      "canonical": "lithiumscope.experiments.model_2.temporal_multiscene_analysis",
+      "responsibility": "compatibility",
+      "sha": "c8dad72924060d4c138b96f63fb7eafe27a6fae0"
+    },
+    {
+      "module": "lithiumscope.experiments.analysis.validate_feot_expansion_m1",
+      "canonical": "lithiumscope.experiments.analysis.validate_feot_expansion_m1",
+      "responsibility": "historical analysis and comparison helper",
+      "sha": "d1c4e94decf526a802d89aca4a73adba52451eca"
+    },
+    {
+      "module": "lithiumscope.experiments.analysis.verify_vnext_data_adequacy",
+      "canonical": "lithiumscope.experiments.analysis.verify_vnext_data_adequacy",
+      "responsibility": "historical analysis and comparison helper",
+      "sha": "8d34dec0bf473786827887d27fc3045233caf3b4"
+    },
+    {
+      "module": "lithiumscope.experiments.georoc.__init__",
+      "canonical": "lithiumscope.experiments.georoc.__init__",
+      "responsibility": "historical provenance and source-specific research",
+      "sha": "9815c51fb8260446f1102a77edda40ef29cfd1c4"
+    },
+    {
+      "module": "lithiumscope.experiments.georoc.acquisition.__init__",
+      "canonical": "lithiumscope.experiments.georoc.acquisition.__init__",
+      "responsibility": "historical provenance and source-specific research",
+      "sha": "a31d46dd0c831f6f9ca75e549193afa9c8828795"
+    },
+    {
+      "module": "lithiumscope.experiments.georoc.acquisition.download_georoc_andean",
+      "canonical": "lithiumscope.experiments.georoc.acquisition.download_georoc_andean",
+      "responsibility": "historical provenance and source-specific research",
+      "sha": "2ae8ebfcc33b59d678933b34cf2ccf862a511346"
+    },
+    {
+      "module": "lithiumscope.experiments.georoc.acquisition.filter_georoc_andean",
+      "canonical": "lithiumscope.experiments.georoc.acquisition.filter_georoc_andean",
+      "responsibility": "historical provenance and source-specific research",
+      "sha": "3bccf91893acaafee7119dbcfab89099f43e3503"
+    },
+    {
+      "module": "lithiumscope.experiments.georoc.acquisition.georoc_imagery_pilot",
+      "canonical": "lithiumscope.experiments.georoc.acquisition.georoc_imagery_pilot",
+      "responsibility": "historical provenance and source-specific research",
+      "sha": "1c22142f13472d4a6fe911a4de91239ce1c59dbd"
+    },
+    {
+      "module": "lithiumscope.experiments.georoc.analyze_georoc_background",
+      "canonical": "lithiumscope.experiments.georoc.analyze_georoc_background",
+      "responsibility": "historical provenance and source-specific research",
+      "sha": "98d05edf460d7cabb77b165dc6105aba1d3e0dff"
+    },
+    {
+      "module": "lithiumscope.experiments.georoc.background_georoc_exploratory",
+      "canonical": "lithiumscope.experiments.georoc.background_georoc_exploratory",
+      "responsibility": "historical provenance and source-specific research",
+      "sha": "b247d1828119a0f3e6d09166e904611c8b81196d"
+    },
+    {
+      "module": "lithiumscope.experiments.georoc.citation_mamani_overlap",
+      "canonical": "lithiumscope.experiments.georoc.citation_mamani_overlap",
+      "responsibility": "historical provenance and source-specific research",
+      "sha": "b3bf234b153fb654e0fb6af4c5c2e2c9ab0f5c94"
+    },
+    {
+      "module": "lithiumscope.experiments.georoc.diagnose_georoc_grouped",
+      "canonical": "lithiumscope.experiments.georoc.diagnose_georoc_grouped",
+      "responsibility": "historical provenance and source-specific research",
+      "sha": "86a83c799ae326316b3b551b4e302db89b4a1fe6"
+    },
+    {
+      "module": "lithiumscope.experiments.georoc.external_geochemistry_audit",
+      "canonical": "lithiumscope.experiments.georoc.external_geochemistry_audit",
+      "responsibility": "historical provenance and source-specific research",
+      "sha": "6a1a14e2c07fe1ef6975c4169467d67e0d63c305"
+    },
+    {
+      "module": "lithiumscope.experiments.georoc.georoc_20576_final_gate",
+      "canonical": "lithiumscope.experiments.georoc.georoc_20576_final_gate",
+      "responsibility": "historical provenance and source-specific research",
+      "sha": "a26f0d2a87c53991b502c3993e09dda4aa186761"
+    },
+    {
+      "module": "lithiumscope.experiments.georoc.georoc_eligibility_gate",
+      "canonical": "lithiumscope.experiments.georoc.georoc_eligibility_gate",
+      "responsibility": "historical provenance and source-specific research",
+      "sha": "d287015e6064513216e414d2d44904e8664aff38"
+    },
+    {
+      "module": "lithiumscope.experiments.georoc.georoc_extended_screen",
+      "canonical": "lithiumscope.experiments.georoc.georoc_extended_screen",
+      "responsibility": "historical provenance and source-specific research",
+      "sha": "2af0f3d1a3193d7560bae95b698456effe2c3636"
+    },
+    {
+      "module": "lithiumscope.experiments.georoc.georoc_final_evidence_report",
+      "canonical": "lithiumscope.experiments.georoc.georoc_final_evidence_report",
+      "responsibility": "historical provenance and source-specific research",
+      "sha": "556db509e88aa5e44331d96a6334d648fdbb0894"
+    },
+    {
+      "module": "lithiumscope.experiments.georoc.georoc_full_mamani_audit",
+      "canonical": "lithiumscope.experiments.georoc.georoc_full_mamani_audit",
+      "responsibility": "historical provenance and source-specific research",
+      "sha": "1d1d07d364c1908db74941f499c4b14ad85a08bf"
+    },
+    {
+      "module": "lithiumscope.experiments.georoc.georoc_sample_method_audit",
+      "canonical": "lithiumscope.experiments.georoc.georoc_sample_method_audit",
+      "responsibility": "historical provenance and source-specific research",
+      "sha": "d54c173c18dc2b56030f7aa829c02d9644c07508"
+    },
+    {
+      "module": "lithiumscope.experiments.georoc.provenance.__init__",
+      "canonical": "lithiumscope.experiments.georoc.provenance.__init__",
+      "responsibility": "historical provenance and source-specific research",
+      "sha": "e684c651c8e1f0246a149a7681855c8e567f998b"
+    },
+    {
+      "module": "lithiumscope.experiments.georoc.provenance.georoc_bibliography_audit",
+      "canonical": "lithiumscope.experiments.georoc.provenance.georoc_bibliography_audit",
+      "responsibility": "historical provenance and source-specific research",
+      "sha": "a35ac272119cf23e2602701dc8a32d749d89737f"
+    },
+    {
+      "module": "lithiumscope.experiments.georoc.provenance.georoc_primary_li_crosswalk",
+      "canonical": "lithiumscope.experiments.georoc.provenance.georoc_primary_li_crosswalk",
+      "responsibility": "historical provenance and source-specific research",
+      "sha": "e9ef30f4763797d3191cf944993dadd21e7f6516"
+    },
+    {
+      "module": "lithiumscope.experiments.georoc.provenance.georoc_provenance_screen",
+      "canonical": "lithiumscope.experiments.georoc.provenance.georoc_provenance_screen",
+      "responsibility": "historical provenance and source-specific research",
+      "sha": "ab518759010f87366a66788422b054650c65a426"
+    },
+    {
+      "module": "lithiumscope.experiments.georoc.provenance.publication_pdf_screen",
+      "canonical": "lithiumscope.experiments.georoc.provenance.publication_pdf_screen",
+      "responsibility": "historical provenance and source-specific research",
+      "sha": "c591e39f9dcb61b3195f6cf27b825a5b0efc528b"
+    },
+    {
+      "module": "lithiumscope.experiments.georoc.provenance.publication_source_lookup",
+      "canonical": "lithiumscope.experiments.georoc.provenance.publication_source_lookup",
+      "responsibility": "historical provenance and source-specific research",
+      "sha": "56e9f74c35fec07dd5dbc03c144fc7bac0c9b858"
+    },
+    {
+      "module": "lithiumscope.experiments.georoc.publication_first_review",
+      "canonical": "lithiumscope.experiments.georoc.publication_first_review",
+      "responsibility": "historical provenance and source-specific research",
+      "sha": "c7e250709a0d0872a14670bcacbbbe2a5b2673f2"
+    },
+    {
+      "module": "lithiumscope.experiments.georoc.unab_source_review",
+      "canonical": "lithiumscope.experiments.georoc.unab_source_review",
+      "responsibility": "historical provenance and source-specific research",
+      "sha": "ce624fd004f6c7215ea2f6c2ae8e02ee10ded940"
+    },
+    {
+      "module": "lithiumscope.experiments.integrated.__init__",
+      "canonical": "lithiumscope.experiments.integrated.__init__",
+      "responsibility": "integrated",
+      "sha": "ebde5189d267fa701db5e1fca2780e842a4f96e8"
+    },
+    {
+      "module": "lithiumscope.experiments.integrated.academic_evidence",
+      "canonical": "lithiumscope.experiments.integrated.academic_evidence",
+      "responsibility": "integrated",
+      "sha": "6488d8b1669fea324474269a9ea06db51c0ea900"
+    },
+    {
+      "module": "lithiumscope.experiments.integrated.compare_vnext_trained_runs",
+      "canonical": "lithiumscope.experiments.integrated.compare_vnext_trained_runs",
+      "responsibility": "integrated",
+      "sha": "75bc1ba684341671c68a8677e8ac6d6c1738a903"
+    },
+    {
+      "module": "lithiumscope.experiments.integrated.final_scope_closure",
+      "canonical": "lithiumscope.experiments.integrated.final_scope_closure",
+      "responsibility": "integrated",
+      "sha": "26984865a7464d014d597d0225a6ad9495b0ac89"
+    },
+    {
+      "module": "lithiumscope.experiments.integrated.verify_vnext_data_adequacy",
+      "canonical": "lithiumscope.experiments.integrated.verify_vnext_data_adequacy",
+      "responsibility": "integrated",
+      "sha": "867030372572c9867dfff5dc8e3f65809f798755"
+    },
+    {
+      "module": "lithiumscope.experiments.model_1.__init__",
+      "canonical": "lithiumscope.experiments.model_1.__init__",
+      "responsibility": "model_1",
+      "sha": "4a6caeb2bcca82ea46577b89ad6b97e362085fb3"
+    },
+    {
+      "module": "lithiumscope.experiments.model_1.paired_study",
+      "canonical": "lithiumscope.experiments.model_1.paired_study",
+      "responsibility": "model_1",
+      "sha": "1840f7dde0cdef66b9eaefbebcdee82c023768b9"
+    },
+    {
+      "module": "lithiumscope.experiments.model_1.run_vnext_m1",
+      "canonical": "lithiumscope.model_1.methodology.dataset_comparison",
+      "responsibility": "compatibility",
+      "sha": "5caa21ec8bb054ef347f5bc860d5dbb8e891daf2"
+    },
+    {
+      "module": "lithiumscope.experiments.model_1.run_vnext_m1_diagnostics",
+      "canonical": "lithiumscope.experiments.model_1.run_vnext_m1_diagnostics",
+      "responsibility": "model_1",
+      "sha": "1aefa6315613929154142fe6b950f2e831e3304e"
+    },
+    {
+      "module": "lithiumscope.experiments.model_1.run_vnext_stage1",
+      "canonical": "lithiumscope.experiments.model_1.run_vnext_stage1",
+      "responsibility": "model_1",
+      "sha": "b7dee92c6870208438aa59ad0897859b2f982d1e"
+    },
+    {
+      "module": "lithiumscope.experiments.model_1.uncertainty_study",
+      "canonical": "lithiumscope.experiments.model_1.uncertainty_study",
+      "responsibility": "model_1",
+      "sha": "edd72b190481feb6edc054cc45e588ae2ddd657c"
+    },
+    {
+      "module": "lithiumscope.experiments.model_1.validate_feot_expansion_m1",
+      "canonical": "lithiumscope.model_1.methodology.feot_expansion",
+      "responsibility": "compatibility",
+      "sha": "9f7270c2b663e9c8b48c54a315c46246ec2d76b1"
+    },
+    {
+      "module": "lithiumscope.experiments.model_2.__init__",
+      "canonical": "lithiumscope.experiments.model_2.__init__",
+      "responsibility": "model_2",
+      "sha": "2eb6aa10e3d9928edd74b30ebf470a17f340f830"
+    },
+    {
+      "module": "lithiumscope.experiments.model_2.audit_georoc_m2_candidate_coverage",
+      "canonical": "lithiumscope.experiments.model_2.audit_georoc_m2_candidate_coverage",
+      "responsibility": "model_2",
+      "sha": "99ac83ec80350d72df3688854c27e1733a952cc4"
+    },
+    {
+      "module": "lithiumscope.experiments.model_2.audit_georoc_source_references",
+      "canonical": "lithiumscope.experiments.model_2.audit_georoc_source_references",
+      "responsibility": "model_2",
+      "sha": "68058e00777198c07ced2beb3a066dde683c0f68"
+    },
+    {
+      "module": "lithiumscope.experiments.model_2.historical.__init__",
+      "canonical": "lithiumscope.experiments.model_2.historical.__init__",
+      "responsibility": "model_2",
+      "sha": "e7b4bf1bdc512ce27100602b5b2af1e054af4910"
+    },
+    {
+      "module": "lithiumscope.experiments.model_2.historical.adequacy_learning_curve",
+      "canonical": "lithiumscope.experiments.model_2.historical.adequacy_learning_curve",
+      "responsibility": "model_2",
+      "sha": "59bdd2582f3e958bf0acf0c6a592a17b8388f326"
+    },
+    {
+      "module": "lithiumscope.experiments.model_2.historical.recover_oof_evidence",
+      "canonical": "lithiumscope.experiments.model_2.historical.recover_oof_evidence",
+      "responsibility": "model_2",
+      "sha": "bbcf3807a1248db58066757840e3fc2dc4133ed3"
+    },
+    {
+      "module": "lithiumscope.experiments.model_2.historical.seasonal2024_run",
+      "canonical": "lithiumscope.experiments.model_2.historical.seasonal2024_run",
+      "responsibility": "model_2",
+      "sha": "9e500d2ea46da00e9fcacac8691e5713db8c38f2"
+    },
+    {
+      "module": "lithiumscope.experiments.model_2.historical.spatial_batch_run",
+      "canonical": "lithiumscope.experiments.model_2.historical.spatial_batch_run",
+      "responsibility": "model_2",
+      "sha": "35e65cd86255c98b59bd90a8dccaaf210cec5e16"
+    },
+    {
+      "module": "lithiumscope.experiments.model_2.historical.spatial_control",
+      "canonical": "lithiumscope.experiments.model_2.historical.spatial_control",
+      "responsibility": "model_2",
+      "sha": "53a7186aeaf6a16d285fca24a29bc1e951d17412"
+    },
+    {
+      "module": "lithiumscope.experiments.model_2.historical.temporal_multiscene_run",
+      "canonical": "lithiumscope.experiments.model_2.historical.temporal_multiscene_run",
+      "responsibility": "model_2",
+      "sha": "5cd74460560ab2b315c486bdffc82916f77e33bf"
+    },
+    {
+      "module": "lithiumscope.experiments.model_2.historical.vnext_experiments",
+      "canonical": "lithiumscope.experiments.model_2.historical.vnext_experiments",
+      "responsibility": "model_2",
+      "sha": "6591a579e2ca22540dff4bd4bf63a3b4833aa0a0"
+    },
+    {
+      "module": "lithiumscope.experiments.model_2.leakage_safe_m2",
+      "canonical": "lithiumscope.experiments.model_2.leakage_safe_m2",
+      "responsibility": "model_2",
+      "sha": "df09cef61e54248775832a74ff0c1b33cb14a2dc"
+    },
+    {
+      "module": "lithiumscope.experiments.model_2.m2_generalization_pilot",
+      "canonical": "lithiumscope.experiments.model_2.m2_generalization_pilot",
+      "responsibility": "model_2",
+      "sha": "34e6d491d12a56f2f09ac99398dcd532586552db"
+    },
+    {
+      "module": "lithiumscope.experiments.model_2.m2_nested_calibration",
+      "canonical": "lithiumscope.experiments.model_2.m2_nested_calibration",
+      "responsibility": "model_2",
+      "sha": "43e8769606fdc2a01549b87651370428a49e344e"
+    },
+    {
+      "module": "lithiumscope.experiments.model_2.paired_study",
+      "canonical": "lithiumscope.experiments.model_2.paired_study",
+      "responsibility": "model_2",
+      "sha": "5b2140f3e566e6fa5c128d93061141d573ead718"
+    },
+    {
+      "module": "lithiumscope.experiments.model_2.physical_comparison",
+      "canonical": "lithiumscope.experiments.model_2.physical_comparison",
+      "responsibility": "model_2",
+      "sha": "a8af167bb59cf87bf4809de02e579560d1d50473"
+    },
+    {
+      "module": "lithiumscope.experiments.model_2.pilot_georoc_m2_labels",
+      "canonical": "lithiumscope.experiments.model_2.pilot_georoc_m2_labels",
+      "responsibility": "model_2",
+      "sha": "dcb9e66f4e86a49fefedd27d50a5b066c679a718"
+    },
+    {
+      "module": "lithiumscope.experiments.model_2.run_vnext_m2",
+      "canonical": "lithiumscope.experiments.model_2.run_vnext_m2",
+      "responsibility": "model_2",
+      "sha": "823a4c25b87fd93c3b6fb42be3f29068aaea86a2"
+    },
+    {
+      "module": "lithiumscope.experiments.model_2.run_vnext_m2_threshold",
+      "canonical": "lithiumscope.experiments.model_2.run_vnext_m2_threshold",
+      "responsibility": "model_2",
+      "sha": "3d1b93f647330727b1cf2d99f8c2c51629303ab8"
+    },
+    {
+      "module": "lithiumscope.experiments.model_2.seasonal_comparison",
+      "canonical": "lithiumscope.experiments.model_2.seasonal_comparison",
+      "responsibility": "model_2",
+      "sha": "77f8dbf4b24e5dcf2c732c0c6798b596d9622d13"
+    },
+    {
+      "module": "lithiumscope.experiments.model_2.sensitivity_analysis",
+      "canonical": "lithiumscope.experiments.model_2.sensitivity_analysis",
+      "responsibility": "model_2",
+      "sha": "942abf0ba70819b9e978172ae46d3caff4fceafe"
+    },
+    {
+      "module": "lithiumscope.experiments.model_2.spatial_sensitivity_study",
+      "canonical": "lithiumscope.experiments.model_2.spatial_sensitivity_study",
+      "responsibility": "model_2",
+      "sha": "77dd3038b80b4654cfdb4a4bb7503edb4cd52ebb"
+    },
+    {
+      "module": "lithiumscope.experiments.model_2.temporal_acquisition",
+      "canonical": "lithiumscope.experiments.model_2.temporal_acquisition",
+      "responsibility": "model_2",
+      "sha": "b603a025faff37a09b2adcedf6c3723ed3ac018d"
+    },
+    {
+      "module": "lithiumscope.experiments.model_2.temporal_comparison",
+      "canonical": "lithiumscope.experiments.model_2.temporal_comparison",
+      "responsibility": "model_2",
+      "sha": "ae5b28a2a3327585494982cde82330518ee26941"
+    },
+    {
+      "module": "lithiumscope.experiments.model_2.temporal_multiscene_analysis",
+      "canonical": "lithiumscope.experiments.model_2.temporal_multiscene_analysis",
+      "responsibility": "model_2",
+      "sha": "d565ecd67d3606acd135b26afccbfd17721c6dba"
+    },
+    {
+      "module": "lithiumscope.experiments.model_2.texture_study",
+      "canonical": "lithiumscope.experiments.model_2.texture_study",
+      "responsibility": "model_2",
+      "sha": "7b2078f1f699a200962670f6c94f0cd3dabff542"
+    },
+    {
+      "module": "lithiumscope.experiments.registry",
+      "canonical": "lithiumscope.experiments.registry",
+      "responsibility": "registry.py",
+      "sha": "860aa66913e3b50a4c930be63d35d85ac36012f1"
+    },
+    {
+      "module": "lithiumscope.experiments.reporting.__init__",
+      "canonical": "lithiumscope.experiments.reporting.__init__",
+      "responsibility": "experimental summaries",
+      "sha": "610686126238f82952faf6df1684570c7823cd9c"
+    },
+    {
+      "module": "lithiumscope.experiments.reporting.final_scope_closure",
+      "canonical": "lithiumscope.experiments.integrated.final_scope_closure",
+      "responsibility": "compatibility",
+      "sha": "2bcaec0cd0211d4ba11e3649269021021fd45a20"
+    },
+    {
+      "module": "lithiumscope.experiments.reporting.reporting",
+      "canonical": "lithiumscope.experiments.reporting.reporting",
+      "responsibility": "experimental summaries",
+      "sha": "688a2e17b434edab2e6d26b5a064bcf101d03001"
+    },
+    {
+      "module": "lithiumscope.experiments.scenarios.__init__",
+      "canonical": "lithiumscope.experiments.scenarios.__init__",
+      "responsibility": "scenario design and execution",
+      "sha": "52e4030d1bf46f500ad71d208dda2ca83400316c"
+    },
+    {
+      "module": "lithiumscope.experiments.scenarios.batch",
+      "canonical": "lithiumscope.experiments.scenarios.batch",
+      "responsibility": "scenario design and execution",
+      "sha": "b76527ad711b3b3ebcc1318854db059818066da0"
+    },
+    {
+      "module": "lithiumscope.experiments.scenarios.extended",
+      "canonical": "lithiumscope.experiments.scenarios.extended",
+      "responsibility": "scenario design and execution",
+      "sha": "42a270539001b7dbd3f7831946b8fc0341bfe5f8"
+    },
+    {
+      "module": "lithiumscope.experiments.scenarios.imagery",
+      "canonical": "lithiumscope.experiments.scenarios.imagery",
+      "responsibility": "scenario design and execution",
+      "sha": "906c4148e34f007949654ddee039d823d0eb3f93"
+    },
+    {
+      "module": "lithiumscope.experiments.scenarios.scenarios",
+      "canonical": "lithiumscope.experiments.scenarios.scenarios",
+      "responsibility": "scenario design and execution",
+      "sha": "e580ce2124e7f96864c2e2ae88b674acd3e73f7e"
+    },
+    {
+      "module": "lithiumscope.experiments.shared.__init__",
+      "canonical": "lithiumscope.experiments.shared.__init__",
+      "responsibility": "shared",
+      "sha": "72aa9130c8a8627daac1b8e0d362902aa67cd4ec"
+    },
+    {
+      "module": "lithiumscope.experiments.shared.curve_suite",
+      "canonical": "lithiumscope.experiments.shared.curve_suite",
+      "responsibility": "shared",
+      "sha": "44b9a6da082f750deae520113d5e6298bc06e1cd"
+    },
+    {
+      "module": "lithiumscope.experiments.shared.design",
+      "canonical": "lithiumscope.experiments.shared.design",
+      "responsibility": "shared",
+      "sha": "f8cce0058bfda039c59203a2911b5f369d9275d0"
+    },
+    {
+      "module": "lithiumscope.experiments.shared.historical_paths",
+      "canonical": "lithiumscope.experiments.shared.historical_paths",
+      "responsibility": "shared",
+      "sha": "707ea3b9267c1b7c141e4b4a5501a6188b1e08ea"
+    },
+    {
+      "module": "lithiumscope.experiments.shared.paired_comparison",
+      "canonical": "lithiumscope.experiments.shared.paired_comparison",
+      "responsibility": "shared",
+      "sha": "2db20d84fd3a347d9a8fcb61b70728ef104277b1"
+    },
+    {
+      "module": "lithiumscope.experiments.shared.paired_suite",
+      "canonical": "lithiumscope.experiments.shared.paired_suite",
+      "responsibility": "shared",
+      "sha": "48b5e9e944ef286e029a625cf6068f1e81ea40b3"
+    },
+    {
+      "module": "lithiumscope.experiments.shared.registry",
+      "canonical": "lithiumscope.experiments.shared.registry",
+      "responsibility": "shared",
+      "sha": "b0832604c3a752fc80e0a63a1478d4f903476300"
+    },
+    {
+      "module": "lithiumscope.experiments.shared.run_grouped_curves",
+      "canonical": "lithiumscope.experiments.shared.run_grouped_curves",
+      "responsibility": "shared",
+      "sha": "6b18cb94f43d9fd82797c75a0e08069eb5729cf1"
+    },
+    {
+      "module": "lithiumscope.experiments.validation.__init__",
+      "canonical": "lithiumscope.experiments.validation.__init__",
+      "responsibility": "experimental validation",
+      "sha": "94534871a89f9bffa67239c7916f0e02fd870079"
+    },
+    {
+      "module": "lithiumscope.experiments.validation.ground_truth",
+      "canonical": "lithiumscope.experiments.validation.ground_truth",
+      "responsibility": "experimental validation",
+      "sha": "6f2d34fb0e6d7f86038d739a01c4ab2516aead73"
+    },
+    {
+      "module": "lithiumscope.experiments.validation.leakage_safe_m2",
+      "canonical": "lithiumscope.experiments.model_2.leakage_safe_m2",
+      "responsibility": "compatibility",
+      "sha": "615cf57b1e3914e4a5f64cb209383aed8a8a99e8"
+    },
+    {
+      "module": "lithiumscope.experiments.validation.seasonal2024_run",
+      "canonical": "lithiumscope.experiments.model_2.historical.seasonal2024_run",
+      "responsibility": "compatibility",
+      "sha": "e94f6367acfa3f66747bb002c57208c997616a0a"
+    },
+    {
+      "module": "lithiumscope.experiments.validation.spatial_batch_run",
+      "canonical": "lithiumscope.experiments.model_2.historical.spatial_batch_run",
+      "responsibility": "compatibility",
+      "sha": "673d33f2156e84df30ae48aadb57944db9858991"
+    },
+    {
+      "module": "lithiumscope.experiments.validation.spatial_batch_worker",
+      "canonical": "lithiumscope.tools.acquisition.sentinel2.spatial_batch_worker",
+      "responsibility": "compatibility",
+      "sha": "541273242c257286c1dfd86a0fc73c4930b96afa"
+    },
+    {
+      "module": "lithiumscope.experiments.validation.spatial_control",
+      "canonical": "lithiumscope.experiments.model_2.historical.spatial_control",
+      "responsibility": "compatibility",
+      "sha": "cf27f29011988fae51568545595c7291ccfcb602"
+    },
+    {
+      "module": "lithiumscope.experiments.validation.temporal_multiscene_run",
+      "canonical": "lithiumscope.experiments.model_2.historical.temporal_multiscene_run",
+      "responsibility": "compatibility",
+      "sha": "66bcf27443d0fdac1e1295ac704df52f80b5aeb6"
+    }
+  ],
+  "retired_paths": [
+    {
+      "old": "lithiumscope.core.candidate_evidence",
+      "canonical": "lithiumscope.core.scientific.candidate_evidence",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.core.checkpoint_identity",
+      "canonical": "lithiumscope.core.scientific.checkpoint_identity",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.core.training_diagnostics",
+      "canonical": "lithiumscope.core.scientific.training_diagnostics",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.experiments.analysis.compare_vnext_trained_runs_compare_m1",
+      "canonical": "lithiumscope.experiments.analysis.comparison.compare_vnext_trained_runs_compare_m1",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.experiments.analysis.compare_vnext_trained_runs_compare_m2",
+      "canonical": "lithiumscope.experiments.analysis.comparison.compare_vnext_trained_runs_compare_m2",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.experiments.analysis.georoc_qc_protocols",
+      "canonical": "lithiumscope.model_1.methodology.qc_protocols",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.experiments.analysis.recover_oof_evidence",
+      "canonical": "lithiumscope.experiments.model_2.historical.recover_oof_evidence",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.experiments.analysis.run_vnext_m2_run_experiments",
+      "canonical": "lithiumscope.experiments.model_2.historical.vnext_experiments",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.experiments.analysis.verify_vnext_data_adequacy_run_m2_learning_curve",
+      "canonical": "lithiumscope.experiments.model_2.historical.adequacy_learning_curve",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.experiments.georoc.download_georoc_andean",
+      "canonical": "lithiumscope.experiments.georoc.acquisition.download_georoc_andean",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.experiments.georoc.filter_georoc_andean",
+      "canonical": "lithiumscope.experiments.georoc.acquisition.filter_georoc_andean",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.experiments.georoc.georoc_bibliography_audit",
+      "canonical": "lithiumscope.experiments.georoc.provenance.georoc_bibliography_audit",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.experiments.georoc.georoc_imagery_pilot",
+      "canonical": "lithiumscope.experiments.georoc.acquisition.georoc_imagery_pilot",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.experiments.georoc.georoc_primary_li_crosswalk",
+      "canonical": "lithiumscope.experiments.georoc.provenance.georoc_primary_li_crosswalk",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.experiments.georoc.georoc_provenance_screen",
+      "canonical": "lithiumscope.experiments.georoc.provenance.georoc_provenance_screen",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.experiments.georoc.publication_pdf_screen",
+      "canonical": "lithiumscope.experiments.georoc.provenance.publication_pdf_screen",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.experiments.georoc.publication_source_lookup",
+      "canonical": "lithiumscope.experiments.georoc.provenance.publication_source_lookup",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.model_2.methodology.ablations_nested_decision_probe",
+      "canonical": "lithiumscope.model_2.methodology.evaluation.ablations_nested_decision_probe",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.model_2.methodology.ablations_run",
+      "canonical": "lithiumscope.model_2.methodology.evaluation.ablations_run",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.model_2.methodology.contracts",
+      "canonical": "lithiumscope.model_2.methodology.validation.contracts",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.model_2.methodology.decision",
+      "canonical": "lithiumscope.model_2.methodology.evaluation.decision",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.model_2.methodology.domain",
+      "canonical": "lithiumscope.model_2.diagnostics.domain",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.model_2.methodology.independence_gate",
+      "canonical": "lithiumscope.model_2.methodology.validation.independence_gate",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.model_2.methodology.physical_label_audit_georoc_links",
+      "canonical": "lithiumscope.model_2.methodology.provenance.physical_label_audit_georoc_links",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.model_2.methodology.physical_label_audit_run",
+      "canonical": "lithiumscope.model_2.methodology.provenance.physical_label_audit_run",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.model_2.methodology.radiometric_features",
+      "canonical": "lithiumscope.model_2.methodology.spectral.radiometric_features",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.model_2.methodology.rededge_training",
+      "canonical": "lithiumscope.model_2.methodology.spectral.rededge_training",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.model_2.methodology.satellite_inventory_run",
+      "canonical": "lithiumscope.model_2.methodology.spectral.satellite_inventory_run",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.model_2.methodology.satellite_quality",
+      "canonical": "lithiumscope.model_2.methodology.spectral.satellite_quality",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.model_2.methodology.site_patch_lab_run_pilot",
+      "canonical": "lithiumscope.model_2.methodology.site.site_patch_lab_run_pilot",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.model_2.methodology.site_patch_lab_validate_inputs",
+      "canonical": "lithiumscope.model_2.methodology.site.site_patch_lab_validate_inputs",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.model_2.methodology.spatial",
+      "canonical": "lithiumscope.model_2.methodology.validation.spatial",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.model_2.methodology.spectral_augmentation",
+      "canonical": "lithiumscope.model_2.methodology.spectral.spectral_augmentation",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.model_2.methodology.spectral_feature_policy",
+      "canonical": "lithiumscope.model_2.methodology.spectral.spectral_feature_policy",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.model_2.methodology.spectral_overfit_inputs",
+      "canonical": "lithiumscope.model_2.diagnostics.spectral_overfit_inputs",
+      "physical_compatibility": false
+    },
+    {
+      "old": "lithiumscope.model_2.methodology.three_zone_ranking",
+      "canonical": "lithiumscope.model_2.methodology.evaluation.three_zone_ranking",
+      "physical_compatibility": false
+    }
+  ]
+}

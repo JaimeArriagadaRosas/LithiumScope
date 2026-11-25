@@ -272,3 +272,7 @@ Commits 973c5f42 y 76169f7c: gate de desarrollo pareado y política multivariada
 ## Lote de cierre parcial — 22d0fab
 
 Implementación principal: 160/166 (96,4 %). Pendientes ARQ-021/041/061/073/092/109. Incorporados ARQ-038/083/095/097/100. La reserva externa M2 y las políticas CPU nuevas son opt-in; la configuración actual no cambia. Benchmark sintético no ejecutado. No se ejecutó CI ni entrenamiento definitivo. Los auxiliares históricos recover_oof_evidence y final_scope_closure no se pudieron reubicar en este lote por errores de escritura GitHub y avance concurrente de la rama; no se forzó la referencia. Reconciliar HEAD y completar esa revisión antes de iniciar regresión local 5.4. No certificar aceptación por presencia de tests.
+
+## Aislamiento histórico y auditoría de reubicaciones
+
+578678d6, 545cf74f, cbc6ea94, b1491d11: recuperación y síntesis sin I/O al importar, helpers de M2 y auditoría explícita de rutas retiradas. 161/166 (97,0 %) implementación principal, 5 parciales. Sin ejecución de regresión ni certificación de resultados científicos.

@@ -588,7 +588,8 @@
       "tests/experiments/test_historical_entrypoint_isolation.py",
       "tests/experiments/test_dataverse_historical_contract.py",
       "tests/experiments/test_validation_import_safety.py",
-      "tests/experiments/test_georoc_provenance_import_safety.py"
+      "tests/experiments/test_georoc_provenance_import_safety.py",
+      "tests/experiments/test_historical_report_import_safety.py"
     ],
     "ARQ-062": [
       "tests/scientific/shared/test_scientific_acquisition.py",
@@ -651,7 +652,8 @@
       "tests/core/test_canonical_execution_packages.py",
       "tests/core/test_architecture.py",
       "tests/core/test_dependency_audit.py",
-      "tests/regression/test_spawn_and_scientific_identity.py"
+      "tests/regression/test_spawn_and_scientific_identity.py",
+      "tests/experiments/test_historical_report_import_safety.py"
     ],
     "ARQ-074": [
       "tests/core/test_architecture.py",
@@ -737,7 +739,8 @@
     ],
     "ARQ-092": [
       "tests/development/test_validation.py",
-      "tests/core/test_pipeline_audit_transaction.py"
+      "tests/core/test_pipeline_audit_transaction.py",
+      "tests/development/test_criteria.py"
     ],
     "ARQ-093": [
       "tests/results/test_eda_protocol.py",
