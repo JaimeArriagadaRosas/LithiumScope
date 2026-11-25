@@ -99,6 +99,9 @@ def _finalize_model_1_winner(baseline, config, context, dataset_manifest, device
         winner_prepared.schema.numeric,
     )
 
+    from lithiumscope.model_1.evaluation.domain import fit_domain_profile
+    domain_profile = fit_domain_profile(winner_prepared.x, winner_prepared.schema.numeric,
+                                        winner_prepared.schema.categorical)
     metadata = {
         "model_group": "model_1",
         "algorithm": winner_algorithm,
@@ -147,6 +150,7 @@ def _finalize_model_1_winner(baseline, config, context, dataset_manifest, device
             "spatial_group_degrees"
         ),
         "oof_absolute_residual_q90": interval_q90,
+        "interval_interpretation": "empirical_oof_residual_reference_not_calibrated",
         "dataset_sha256": dataset_manifest.source_sha256,
         "git_commit": context.tracker.payload.get("runtime", {}).get("git_commit"),
         "preflight_status": preflight.get("status"),
@@ -165,6 +169,7 @@ def _finalize_model_1_winner(baseline, config, context, dataset_manifest, device
         "schema": winner_prepared.schema,
         "oof_absolute_residual_q90": interval_q90,
         "applicability_profile": profile,
+        "multivariate_domain_profile": domain_profile,
     }
     model_path, metadata_path = save_model_bundle(
         "model_1",

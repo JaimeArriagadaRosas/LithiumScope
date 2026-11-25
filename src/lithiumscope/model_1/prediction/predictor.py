@@ -76,6 +76,15 @@ def predict_model_1_frame(
         output["coordinate_status"]=coordinate_status
         unresolved=output.coordinate_status.ne("valid_numeric_coordinates")
         output.loc[unresolved & ~invalid_output,"applicability_warning"]="INSUFFICIENT_COORDINATE_EVIDENCE"
+    multivariate = bundle.get("multivariate_domain_profile")
+    if multivariate is not None:
+        from lithiumscope.model_1.evaluation.domain import evaluate_domain
+        domain = evaluate_domain(x, multivariate)
+        for col in domain:
+            output[col] = domain[col]
+        # Do not override existing invalid/insufficient warnings.
+        replace = output.applicability_warning.eq("OK") & domain.multivariate_warning.ne("OK")
+        output.loc[replace,"applicability_warning"] = domain.loc[replace,"multivariate_warning"]
     diagnostics = {
         "coordinate_report":provenance.get("coordinate_report"),
         "algorithm": bundle.get("algorithm", "unknown"),
@@ -91,6 +100,8 @@ def predict_model_1_frame(
         "out_of_domain_rows": int((fractions > 0.25).sum()),
         "mean_out_of_training_range_fraction": float(fractions.mean()) if fractions.notna().any() else None,
         "oof_absolute_residual_q90": interval,
+        "interval_interpretation": "empirical_oof_residual_reference_not_calibrated",
+        "multivariate_profile_available": multivariate is not None,
     }
     return output, diagnostics
 
