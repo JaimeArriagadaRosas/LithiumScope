@@ -27,3 +27,11 @@ def test_temporal_median_uses_only_joint_valid_dates_and_reference_order():
     assert np.all(composite[:,1,1]==2)
     with pytest.raises(ValueError,match="distinct"):
         compare_cubes([one,two,three],["2024-01-01"]*3)
+
+
+def test_temporal_windows_require_three_nonoverlapping_intervals():
+    from lithiumscope.experiments.model_2.temporal_acquisition import validate_windows
+    valid=["2024-03-01/2024-03-15","2024-01-01/2024-01-15","2024-02-01/2024-02-15"]
+    assert validate_windows(valid)==sorted(valid)
+    with pytest.raises(ValueError,match="disjoint"):
+        validate_windows([valid[0],valid[1],"2024-01-15/2024-01-31"])

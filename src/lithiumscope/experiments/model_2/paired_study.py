@@ -110,7 +110,12 @@ def run(*, output: Path, study="representation", algorithms=None, execute=False,
         import json
         import pandas as pd
         from lithiumscope.experiments.model_2.temporal_comparison import temporal_arms
-        arms,audit=temporal_arms(frame,pd.read_csv(temporal_manifest),selected,interval=temporal_interval,
+        cohort=pd.read_csv(source)
+        if (len(cohort)!=len(frame) or not np.array_equal(cohort[training["lithium_column"]].to_numpy(),frame[training["lithium_column"]].to_numpy())
+                or not np.array_equal(cohort[training["spatial_group_column"]].astype(str).to_numpy(),groups.astype(str).to_numpy())):
+            raise ValueError("Temporal cohort must align with canonical labels and groups")
+        cohort.index=frame.index
+        arms,audit=temporal_arms(cohort,pd.read_csv(temporal_manifest),selected,interval=temporal_interval,
                                 root=temporal_root,seed=seed,mode=mode,mask=mask)
         (preparation/"temporal_acquisition_evidence.json").write_text(json.dumps(audit,indent=2),encoding="utf-8")
     elif study=="policy":
