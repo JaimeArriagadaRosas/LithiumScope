@@ -88,7 +88,8 @@
       "tests/model_1/test_model_1_scientific_guards.py",
       "tests/model_1/test_coordinate_lineage.py",
       "tests/scientific/shared/test_nested_protocol.py",
-      "tests/model_1/diagnostics/test_observation_audit.py"
+      "tests/model_1/diagnostics/test_observation_audit.py",
+      "tests/model_1/diagnostics/test_conflict_review.py"
     ],
     "M1-20": [
       "tests/model_1/test_statistical_baselines.py",
@@ -148,7 +149,8 @@
       "tests/datasets/test_sentinel2_provider.py",
       "tests/scientific/shared/test_scientific_acquisition.py",
       "tests/scientific/m2_spectral/test_m2_satellite_quality_radiometry.py",
-      "tests/datasets/test_registered_sentinel_patch.py"
+      "tests/datasets/test_registered_sentinel_patch.py",
+      "tests/scientific/m2_spectral/test_historical_scl_temporal.py"
     ],
     "M2-05": [
       "tests/prediction/test_verified_patch_contract.py",
@@ -340,7 +342,8 @@
     "ARQ-015": [
       "tests/scientific/experiments/test_learning_curves.py",
       "tests/model_1/test_physical_robustness.py",
-      "tests/scientific/experiments/test_curve_suite.py"
+      "tests/scientific/experiments/test_curve_suite.py",
+      "tests/core/test_diagnostic_module_relocation.py"
     ],
     "ARQ-016": [
       "tests/scientific/m1/test_vnext_m1.py",
@@ -440,7 +443,8 @@
     "ARQ-035": [
       "tests/scientific/experiments/test_learning_curves.py",
       "tests/scientific/m2_spectral/test_m2_spectral_overfit.py",
-      "tests/scientific/experiments/test_curve_suite.py"
+      "tests/scientific/experiments/test_curve_suite.py",
+      "tests/core/test_diagnostic_module_relocation.py"
     ],
     "ARQ-036": [
       "tests/scientific/m2_training/test_m2_historical_706_control.py",
@@ -591,11 +595,13 @@
     ],
     "ARQ-067": [
       "tests/core/test_canonical_execution_packages.py",
-      "tests/scientific/shared/test_scientific_fingerprint.py"
+      "tests/scientific/shared/test_scientific_fingerprint.py",
+      "tests/core/test_diagnostic_module_relocation.py"
     ],
     "ARQ-068": [
       "tests/core/test_architecture.py",
-      "tests/core/test_visualization_backend.py"
+      "tests/core/test_visualization_backend.py",
+      "tests/core/test_diagnostic_module_relocation.py"
     ],
     "ARQ-069": [
       "tests/core/test_canonical_execution_packages.py",

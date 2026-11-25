@@ -101,3 +101,21 @@ Reclasificados M2-02/05/06 y ARQ-023/024. Aceptación todavía pendiente. M1-19 
 | **Total** | **166** | **129** | **37** | **77,7 %** |
 
 Siguiente: recuperar SCL histórica y diseñar composición temporal controlada sin reemplazar imágenes congeladas, resolución de conflictos con evidencia por fuente y arquitectura residual, concurrencia, logging y regresión. No solicitar aún 5 > 4.
+
+## Continuación: cierre de implementación científica principal y arquitectura diagnóstica
+
+- 25a498c0: recuperación de máscaras SCL archivadas por escena, coordenadas, bytes y metadatos; máscaras y resultados separados de originales, autorización online explícita y posibilidad de reanudación; comparación temporal mediana BOA frente a escena individual con tres fechas distintas, misma geometría y soporte de al menos dos fechas por píxel.
+- abbd0d4f: registro de revisión documental M1, evidencia con hash, identidad estable y revisor/justificación, decisión explícita y comparación pareada de exclusiones SOLO TRAIN manteniendo todos los TEST. No se infiere identidad física ni se certifica la veracidad del documento por el hash.
+- 75025a7b: cinco módulos diagnósticos M1 trasladados, core/reproducibility e integridad, core/visualization.py en raíz. Imports históricos conservados.
+- 17029a6c: doce módulos diagnósticos M2 trasladados, aliases y entradas CLI anteriores conservadas.
+- c9400d84: ejecutores de curvas por modelo, adquisición temporal opt-in con al menos tres ventanas cerradas no superpuestas, cohorte alineada con etiquetas/grupos canónicos. Un caso sin todas las fechas requeridas impide comparar la cohorte completa; no se elimina TEST automáticamente.
+- 6076047a: tests de recuperación offline y paridad de imports, identificación textual de muestras, importación diferida del gestor de recursos.
+
+| Diagnóstico | Total | Implementación principal | Parcial | Avance de implementación |
+|---|---:|---:|---:|---:|
+| M1 | 27 | 27 | 0 | 100,0 % |
+| M2 | 30 | 30 | 0 | 100,0 % |
+| ARQ | 109 | 78 | 31 | 71,6 % |
+| **Total** | **166** | **135** | **31** | **81,3 %** |
+
+Reclasificados M1-19, M2-04, ARQ-015/035/067/068 por incorporar código principal. El estado de aceptación sigue abierto; no se realizaron revisiones de documentos reales, recuperación online, adquisiciones, pruebas, ajuste ni CI. La reconstrucción SCL utiliza la ventana histórica; no certifica su corregistro independiente. El experimento temporal requiere disponibilidad de la cohorte completa, puede resultar no evaluable. Los aliases de módulos mantienen compatibilidad prevista pero requieren prueba de ejecución. Se conservan 6 cierres acotados, 160 abiertos para aceptación. Siguiente: arquitectura, dependencias, adquisición centralizada, renderer, planificación y logging multiproceso, pruebas de regresión y benchmark. No solicitar aún git pull ni 5 > 4.

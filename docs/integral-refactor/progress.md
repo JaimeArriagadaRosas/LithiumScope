@@ -244,3 +244,7 @@ Commits 7c3d2a01, 34236a84, 1b0c9037 y 80c7840f: nueva reconciliación de M2, co
 ## Continuación M1: selección y aplicabilidad
 
 Commits 973c5f42 y 76169f7c: gate de desarrollo pareado y política multivariada con protocolo de incertidumbre por grupos. Nuevas pruebas y reorganización de directorio, sin ejecución; 129/166 (77,7 %) de implementación principal, 37 parciales, 6 cierres acotados históricos. Los límites se fijaron como hipótesis conservadoras de desarrollo sin evaluar datos; no se afirma calibración ni superioridad externa.
+
+## Lote: cierre de implementación científica principal y arquitectura
+
+25a498c0, abbd0d4f, 75025a7b, 17029a6c, c9400d84, 6076047a: recuperación SCL, comparación temporal, revisión documental M1, organización diagnóstica de M1/M2, reproducibilidad, visualización y pruebas de regresión añadidas. Conteo 135/166 (81,3 %), 31 parciales, 57/57 científicos con código principal, sin certificación. No se ejecutaron pruebas, workflows ni operaciones sobre los datos.
