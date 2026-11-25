@@ -55,3 +55,16 @@ def test_deferred_and_missing_static_imports_are_audited(tmp_path):
     assert report["eager_cycles"]==[]
     assert report["core_to_model_edges"][0]["scope"]=="deferred"
     assert report["unresolved_local_imports"][0]["target"]=="lithiumscope.missing"
+
+
+def test_relocation_inventory_does_not_hide_retired_imports(tmp_path):
+    import json
+    create(tmp_path,"new.py","pass\n")
+    create(tmp_path,"caller.py","from lithiumscope.old import symbol\n")
+    catalog=tmp_path/"docs/integral-refactor/module-relocation.json"
+    catalog.parent.mkdir(parents=True)
+    catalog.write_text(json.dumps({"lithiumscope.old":"lithiumscope.new"}),encoding="utf-8")
+    report=audit_imports(tmp_path)
+    assert report["unresolved_local_imports"][0]["target"]=="lithiumscope.old"
+    assert report["relocations"]["stale_references"][0]["canonical_destination"]=="lithiumscope.new"
+    assert report["relocations"]["state"]=="review_required"

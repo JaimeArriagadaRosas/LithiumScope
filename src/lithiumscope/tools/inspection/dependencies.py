@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import ast
+import json
 from importlib.util import resolve_name
 from pathlib import Path
 
@@ -74,6 +75,35 @@ def _strong_components(graph):
     return sorted(components)
 
 
+def _relocation_inventory(root, paths, unresolved):
+    """Document real shims and retired paths without hiding unresolved references."""
+    source=root/"docs/integral-refactor/module-relocation.json"
+    if not source.is_file():
+        return {"state":"not_available","retired":[],"existing_shims":[],"missing_destinations":[],"stale_references":[]}
+    mapping=json.loads(source.read_text(encoding="utf-8"))
+    retired,existing,missing,stale=[],[],[],[]
+    for old,new in sorted(mapping.items()):
+        seen={old}
+        terminal=new
+        while terminal in mapping:
+            if terminal in seen:
+                raise ValueError(f"Relocation mapping cycle: {old}")
+            seen.add(terminal)
+            terminal=mapping[terminal]
+        item={"old":old,"destination":terminal}
+        if terminal not in paths:
+            missing.append(item)
+        if old in paths:
+            existing.append(item)
+        else:
+            retired.append(item)
+            stale.extend({**edge,"canonical_destination":terminal} for edge in unresolved if edge["target"]==old)
+    return {"state":"review_required" if missing or stale else "mapped",
+            "retired":retired,"existing_shims":existing,"missing_destinations":missing,
+            "stale_references":stale,
+            "scope":"physical path inventory; compatibility and serialized model imports require runtime tests"}
+
+
 def audit_imports(root: Path) -> dict:
     """Read ASTs only. Dynamic imports and conditional execution are not proven."""
     source = root / "src"
@@ -142,6 +172,7 @@ def audit_imports(root: Path) -> dict:
             "compatibility_edges": compatibility_edges,
             "unresolved_literal_imports": unresolved_local_imports,
             "unresolved_local_imports": unresolved_local_imports,
+            "relocations": _relocation_inventory(root,paths,unresolved_local_imports),
             "deferred_edges": sum(e["scope"] == "deferred" for e in edges),
             "type_only_edges": sum(e["scope"] == "type_only" for e in edges),
             "scope": "static imports and literal import_module/run_module targets; computed imports and execution not proven"}
