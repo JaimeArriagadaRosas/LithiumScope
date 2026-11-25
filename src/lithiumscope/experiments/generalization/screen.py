@@ -1,0 +1,139 @@
+"""Nested, paired development screening. No release artifacts are written."""
+from __future__ import annotations
+
+import argparse
+import json
+from datetime import datetime, timezone
+from uuid import uuid4
+
+import numpy as np
+import pandas as pd
+from sklearn.metrics import average_precision_score, mean_absolute_error, mean_squared_error, r2_score, roc_auc_score
+from sklearn.model_selection import GroupKFold
+
+from lithiumscope.core.config import load_config
+from lithiumscope.core.paths import RESULTS_DIR
+from lithiumscope.experiments.generalization.arms import M1_ARMS, M2_ARMS, classification_fit, regression_fit
+from lithiumscope.experiments.generalization.prepared import load_snapshot, prepare_version
+from lithiumscope.resources.detection.device import detect_device
+
+
+def metrics(group, y, scores):
+    if not np.isfinite(scores).all():
+        raise ValueError("Nonfinite predictions")
+    if group == "model_1":
+        return {"rmse": float(np.sqrt(mean_squared_error(y, scores))), "mae": float(mean_absolute_error(y, scores)),
+                "r2": float(r2_score(y, scores)), "negative_predictions": int((scores < 0).sum())}
+    return {"roc_auc": float(roc_auc_score(y, scores)), "ap": float(average_precision_score(y, scores))}
+
+
+def evaluate(group, algorithm, arm, device, seed, data, train, test, cfg):
+    x, y, groups, sources, eligible, numeric, categorical = data
+    train, test = np.asarray(train), np.asarray(test)
+    if np.intersect1d(train, test).size or set(groups.iloc[train]) & set(groups.iloc[test]):
+        raise ValueError("Spatial leakage in experiment")
+    real_train = train.copy()
+    train = train[eligible[train]]
+    if not len(train):
+        raise ValueError("No QA eligible TRAIN")
+    if group == "model_1":
+        fit_y, test_y = y.iloc[train], y.iloc[test]
+        pred, train_pred, provenance = regression_fit(algorithm, arm, device, seed, x.iloc[train], fit_y,
+            groups.iloc[train], sources.iloc[train], numeric, categorical, x.iloc[test])
+        if arm == "reference":
+            pass
+    else:
+        model = cfg["model"]
+        fixed = model.get("fixed_threshold_ppm")
+        threshold = float(fixed if fixed is not None else y.iloc[real_train].quantile(model["high_lithium_quantile"]))
+        fit_y, test_y = (y.iloc[train] >= threshold).astype(int), (y.iloc[test] >= threshold).astype(int)
+        if fit_y.nunique() != 2 or test_y.nunique() != 2:
+            raise ValueError("Single-class spatial partition")
+        pred, train_pred, provenance = classification_fit(algorithm, arm, device, seed, x.iloc[train], fit_y,
+                                                        groups.iloc[train], x.iloc[test])
+        provenance["threshold_ppm"] = threshold
+    test_metrics = metrics(group, test_y, pred)
+    train_metrics = metrics(group, fit_y, train_pred)
+    return {**test_metrics, **{"train_"+k: v for k, v in train_metrics.items()},
+            "real_train": len(train), "test_rows": len(test), **provenance}, pred, test_y.to_numpy()
+
+
+def run_screen(group, source, *, all_families=False, output_root=None, device=None):
+    cfg = load_config(group)
+    directory, _ = prepare_version(group, source, run_eda=False)
+    data = load_snapshot(directory, directory.name)
+    x, y, groups, _, _, _, _ = data
+    device = device or detect_device(prefer_gpu=False)
+    outer_count = cfg["validation"].get("outer_folds", cfg["validation"].get("folds", 5))
+    # Three inner folds for screening only; definitive competition retains configured protocol.
+    inner_count = 3
+    outer = list(GroupKFold(n_splits=outer_count).split(x, groups=groups))
+    arms = M1_ARMS if group == "model_1" else M2_ARMS
+    algorithms = cfg["model"]["algorithms"] if all_families else ["random_forest"]
+    root = output_root or RESULTS_DIR / "generalization"
+    destination = root / group / (datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S") + "_" + uuid4().hex[:8])
+    destination.mkdir(parents=True)
+    results, inner_results, predictions, provenance = [], [], [], []
+    metric = "rmse" if group == "model_1" else "roc_auc"
+    for algorithm in algorithms:
+        for fold, (tr, te) in enumerate(outer, 1):
+            candidates = []
+            inner = list(GroupKFold(n_splits=inner_count).split(x.iloc[tr], groups=groups.iloc[tr]))
+            for arm in arms:
+                scores = []
+                for i, (a, b) in enumerate(inner, 1):
+                    try:
+                        result, _, _ = evaluate(group, algorithm, arm, device, 42+fold*10+i, data, tr[a], tr[b], cfg)
+                        scores.append(result[metric])
+                        inner_results.append({"algorithm": algorithm, "outer_fold": fold, "inner_fold": i,
+                            "arm": arm, "state": "ok", **{k:v for k,v in result.items() if k != "generated"}})
+                    except Exception as exc:
+                        inner_results.append({"algorithm": algorithm, "outer_fold": fold, "inner_fold": i,
+                                              "arm": arm, "state": "failed", "reason": str(exc)})
+                if len(scores) == inner_count:
+                    candidates.append((arm, float(np.mean(scores))))
+            selected = (min if group == "model_1" else max)(candidates, key=lambda v: v[1])[0] if candidates else None
+            for label, arm in (("reference", "reference"), ("selected_inner", selected)):
+                try:
+                    if arm is None:
+                        raise ValueError("No complete inner arm")
+                    result, pred, truth = evaluate(group, algorithm, arm, device, 42+fold, data, tr, te, cfg)
+                    provenance.extend({"algorithm": algorithm, "fold": fold, "arm": arm, **p} for p in result.pop("generated"))
+                    results.append({"algorithm": algorithm, "fold": fold, "mode": label, "arm": arm, "state": "ok", **result})
+                    predictions.extend({"algorithm": algorithm, "fold": fold, "mode": label, "row_id": str(x.index[j]),
+                                        "actual": float(v), "score": float(p)} for j,v,p in zip(te,truth,pred,strict=True))
+                    print(f"{group} {algorithm} fold {fold} {label}/{arm}: {metric}={result[metric]:.4f}", flush=True)
+                except Exception as exc:
+                    results.append({"algorithm": algorithm, "fold": fold, "mode": label, "arm": arm,
+                                    "state": "failed", "reason": str(exc)})
+            # Persist progress after each outer fold; never declare partial runs complete.
+            for name, rows in (("outer", results), ("inner", inner_results), ("predictions", predictions), ("augmentation", provenance)):
+                pd.DataFrame(rows).to_csv(destination / (name+".csv"), index=False)
+    table = pd.DataFrame(results)
+    complete = table.loc[table.state.eq("ok")].groupby(["algorithm", "mode"]).size()
+    required = len(algorithms)*2
+    state = "complete" if len(complete) == required and (complete == outer_count).all() else "partial"
+    if not complete.empty:
+        good = table.loc[table.state.eq("ok")]
+        good = good.merge(complete[complete == outer_count].rename("folds").reset_index(), on=["algorithm", "mode"])
+        good.groupby(["algorithm", "mode"])[[metric, "train_"+metric]].mean().to_csv(destination / "summary.csv")
+    (destination / "manifest.json").write_text(json.dumps({"state": state, "scope": "development_only",
+        "prepared_identity": directory.name, "algorithms": algorithms, "arms": arms, "inner_folds": inner_count,
+        "outer_folds": outer_count, "independent_holdout": False, "promotion": False,
+        "reference": "same fixed default family settings; not archived Optuna winner"}, indent=2), encoding="utf-8")
+    print(f"Estado experimental: {state} | {destination}")
+    return destination
+
+
+def main():
+    from lithiumscope.datasets.management.diagnostic_provisioning import prepare_diagnostic_source
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model", choices=["model_1", "model_2", "both"], default="both")
+    parser.add_argument("--all", action="store_true", help="Evaluate all six families per selected model")
+    args = parser.parse_args()
+    for group in ("model_1", "model_2") if args.model == "both" else (args.model,):
+        run_screen(group, prepare_diagnostic_source(group), all_families=args.all)
+
+
+if __name__ == "__main__":
+    main()

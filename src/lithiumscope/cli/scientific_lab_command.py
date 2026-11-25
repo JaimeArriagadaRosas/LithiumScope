@@ -12,13 +12,15 @@ from lithiumscope.core.paths import PROJECT_ROOT
 
 
 def _run_eda_m1():
-    from lithiumscope.model_1.eda.pipeline import run_eda
-    return run_eda(_eda_source("model_1"))
+    from lithiumscope.experiments.generalization.prepared import prepare_version
+    _, evidence = prepare_version("model_1", _eda_source("model_1"))
+    return evidence
 
 
 def _run_eda_m2():
-    from lithiumscope.model_2.eda.pipeline import run_eda
-    return run_eda(_eda_source("model_2"))
+    from lithiumscope.experiments.generalization.prepared import prepare_version
+    _, evidence = prepare_version("model_2", _eda_source("model_2"))
+    return evidence
 
 
 def _eda_source(model_group):
