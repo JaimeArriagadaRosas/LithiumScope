@@ -24,7 +24,7 @@ from lithiumscope.core.config import load_config
 from lithiumscope.model_1.validation.spatial import build_spatial_groups
 from lithiumscope.model_2.validation.spatial import make_scientific_folds
 
-OUT = RESULTS_DIR / "scientific_simulations" / "vnext_20261106" / "stage4_evidence"
+from lithiumscope.experiments.shared.historical_paths import STAGE4_EVIDENCE as OUT
 
 
 def _json(path: Path, obj: dict) -> None:
@@ -253,7 +253,7 @@ def group_train_indices(
     return selected
 
 
-from lithiumscope.experiments.analysis.protocols.verify_vnext_data_adequacy_run_m2_learning_curve import run_m2_learning_curve
+from lithiumscope.experiments.model_2.historical.adequacy_learning_curve import run_m2_learning_curve
 
 
 if __name__=="__main__":

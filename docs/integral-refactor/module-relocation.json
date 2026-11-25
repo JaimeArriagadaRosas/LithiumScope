@@ -16,6 +16,8 @@
   "lithiumscope.experiments.analysis.georoc_qc_protocols": "lithiumscope.experiments.analysis.protocols.georoc_qc_protocols",
   "lithiumscope.experiments.analysis.pilot_georoc_m2_labels": "lithiumscope.experiments.model_2.pilot_georoc_m2_labels",
   "lithiumscope.experiments.analysis.protocols.georoc_qc_protocols": "lithiumscope.model_1.methodology.qc_protocols",
+  "lithiumscope.experiments.analysis.protocols.run_vnext_m2_run_experiments": "lithiumscope.experiments.model_2.historical.vnext_experiments",
+  "lithiumscope.experiments.analysis.protocols.verify_vnext_data_adequacy_run_m2_learning_curve": "lithiumscope.experiments.model_2.historical.adequacy_learning_curve",
   "lithiumscope.experiments.analysis.recover_oof_evidence": "lithiumscope.experiments.analysis.comparison.recover_oof_evidence",
   "lithiumscope.experiments.analysis.run_vnext_m2_run_experiments": "lithiumscope.experiments.analysis.protocols.run_vnext_m2_run_experiments",
   "lithiumscope.experiments.analysis.run_vnext_stage1": "lithiumscope.experiments.model_1.run_vnext_stage1",
