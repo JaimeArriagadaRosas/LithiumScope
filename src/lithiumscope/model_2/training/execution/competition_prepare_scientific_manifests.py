@@ -67,4 +67,16 @@ def _prepare_scientific_manifests(context, fixed_threshold, frame, groups, inner
         index=False,
     )
 
+    # Diagnostic only: keep the canonical prevalence reference and candidate ranking unchanged.
+    from lithiumscope.model_2.evaluation.geographic_baseline import evaluate_geographic_baseline
+    spatial_table, spatial_scores, distances, overall = evaluate_geographic_baseline(
+        manifest, scientific_folds, quality_mask=quality_mask)
+    spatial_oof = build_oof_table(manifest, manifest.Li_icpms,
+                                  scientific_labels(scientific_folds, len(frame)),
+                                  fold_ids, spatial_scores, scientific_folds, quality_mask)
+    spatial_oof["nearest_train_m"] = distances
+    spatial_oof.to_csv(context.tables / "geographic_baseline_oof.csv", index=False)
+    spatial_table.to_csv(context.tables / "geographic_baseline_fold_metrics.csv", index=False)
+    pd.DataFrame([overall]).to_csv(context.tables / "geographic_baseline_global_metrics.csv", index=False)
+
     return baseline, dataset_manifest, dataset_manifest_path, folds

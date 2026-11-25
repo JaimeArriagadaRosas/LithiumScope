@@ -97,6 +97,13 @@ def run(*, output: Path, study="representation", algorithms=None, execute=False,
             from lithiumscope.experiments.model_2.physical_comparison import load_physical_comparison
             physical,mask=load_physical_comparison(physical_directory,source,frame,x,mask)
         arms=representation_arms(x,selected,mask,seed=seed,mode=mode,physical=physical)
+    elif study=="texture":
+        from lithiumscope.experiments.model_2.texture_study import texture_arms
+        physical = physical_directory is not None
+        if physical:
+            from lithiumscope.experiments.model_2.physical_comparison import load_physical_comparison
+            x, mask = load_physical_comparison(physical_directory, source, frame, x, mask)
+        arms = texture_arms(x, selected, mask, seed=seed, mode=mode, physical=physical)
     elif study=="policy":
         arms=policy_arms(x,selected,mask,seed=seed,mode=mode)
     elif study=="budget":
@@ -130,7 +137,7 @@ def run(*, output: Path, study="representation", algorithms=None, execute=False,
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--study",choices=("representation","policy","budget"),default="representation")
+    parser.add_argument("--study",choices=("representation","texture","policy","budget"),default="representation")
     parser.add_argument("--algorithm",action="append")
     parser.add_argument("--physical-directory",type=Path)
     parser.add_argument("--execute",action="store_true")
