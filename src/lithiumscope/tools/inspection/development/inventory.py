@@ -64,7 +64,7 @@ def read_local_json(root: Path, value: str | Path) -> dict:
 def git_identity(root: Path) -> dict:
     def git(*args):
         result = subprocess.run(["git", "-C", str(root), *args], check=True,
-                                capture_output=True, text=True, timeout=10)
+                                capture_output=True, text=True, timeout=30)
         return result.stdout.strip()
     try:
         head = git("rev-parse", "HEAD")
@@ -115,7 +115,10 @@ def test_report(root: Path, path: Path, current_commit: str | None) -> dict:
                and report.get("untracked_code_present") is False
                and report.get("git_identity_unchanged") is True
                if isinstance(source_commit, str) and current_commit else None)
-    return {"state": "OK" if report.get("state") == "passed" else "WARNING",
+    return {"state": "OK" if report.get("state") == "passed" and not (
+                report.get("coverage_requested") and coverage is None) else "WARNING",
+            "exit_code": report.get("exit_code"),
+            "coverage_state": report.get("coverage_state", "unknown"),
             "test_state": report.get("state"), "counts": selected,
             "duration_seconds": report.get("duration_seconds"),
             "line_coverage_pct": coverage, "commit": source_commit,

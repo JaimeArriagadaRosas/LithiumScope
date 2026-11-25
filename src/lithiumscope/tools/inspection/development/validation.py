@@ -145,6 +145,10 @@ def print_validation(sections: dict) -> None:
     for key, value in sections.items():
         print(f"  {key:<16} {value['state']}")
     pytest = sections.get("pytest", {})
+    if pytest.get("coverage_state") == "missing_pytest_cov":
+        print("  [PENDIENTE] pytest-cov ausente; regresión ejecutada sin cobertura.")
+    if pytest.get("exit_code") is not None:
+        print(f"  Código de salida pytest: {pytest['exit_code']}")
     counts = pytest.get("counts") or {}
     if all(isinstance(counts.get(key), int) for key in ("tests", "errors", "failures", "skipped")):
         passed = (counts["tests"] - counts["errors"] - counts["failures"] - counts["skipped"])

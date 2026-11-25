@@ -48,3 +48,29 @@ def test_report_requires_clean_unchanged_commit(tmp_path):
 
 def test_missing_junit_is_not_passed(tmp_path):
     assert validation.junit_breakdown(Path(tmp_path) / "missing.xml")["state"] == "MISSING"
+
+
+def test_missing_coverage_cannot_be_reported_as_complete(tmp_path):
+    folder = tmp_path / "results/tests/run"
+    folder.mkdir(parents=True)
+    summary = folder / "summary.json"
+    summary.write_text(json.dumps({"state": "passed", "git_commit": "a"*40,
+        "tracked_worktree_dirty": False, "git_identity_unchanged": True,
+        "untracked_code_present": False, "counts": {"tests": 1, "errors": 0,
+        "failures": 0, "skipped": 0}, "exit_code": 0, "coverage_requested": True,
+        "coverage_state": "missing_pytest_cov"}))
+    result = inventory.test_report(tmp_path, summary, "a"*40)
+    assert result["state"] == "WARNING"
+    assert result["matches_current_clean_commit"] is True
+    assert result["coverage_state"] == "missing_pytest_cov"
+    assert result["line_coverage_pct"] is None
+    assert result["exit_code"] == 0
+
+
+def test_runner_detects_missing_coverage_plugin(monkeypatch):
+    from scripts import run_tests
+    monkeypatch.setattr(run_tests.importlib.util, "find_spec", lambda name: None)
+    assert run_tests.coverage_mode(True) == "missing_pytest_cov"
+    assert run_tests.coverage_mode(False) == "not_requested"
+    monkeypatch.setattr(run_tests.importlib.util, "find_spec", lambda name: object())
+    assert run_tests.coverage_mode(True) == "enabled"

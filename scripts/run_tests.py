@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import importlib.util
 import os
 from pathlib import Path
 import subprocess
@@ -40,7 +41,7 @@ def git_identity() -> dict:
     try:
         def git(*args):
             return subprocess.run(["git", *args], cwd=ROOT, check=True,
-                                  capture_output=True, text=True, timeout=10).stdout.strip()
+                                  capture_output=True, text=True, timeout=30).stdout.strip()
         return {"git_commit": git("rev-parse", "HEAD"),
                 "git_branch": git("branch", "--show-current"),
                 "tracked_worktree_dirty": bool(git("status", "--porcelain", "--untracked-files=no")),
@@ -50,8 +51,16 @@ def git_identity() -> dict:
         return {"git_commit": None, "git_branch": None, "tracked_worktree_dirty": None, "untracked_code_present": None}
 
 
+def coverage_mode(requested: bool) -> str:
+    if not requested:
+        return "not_requested"
+    return "enabled" if importlib.util.find_spec("pytest_cov") is not None else "missing_pytest_cov"
+
+
 def run(args: list[str]) -> int:
-    coverage = "--coverage" in args
+    coverage_requested = "--coverage" in args
+    mode = coverage_mode(coverage_requested)
+    coverage = mode == "enabled"
     args = [arg for arg in args if arg != "--coverage"]
     if args and args[0] == "--":
         args = args[1:]
@@ -91,7 +100,9 @@ def run(args: list[str]) -> int:
 
     code = 1
     error = None
-    event("started", arguments=args)
+    event("started", arguments=args, coverage_state=mode)
+    if mode == "missing_pytest_cov":
+        event("warning", reason="pytest_cov_missing; running regression without coverage")
     try:
         with tempfile.TemporaryDirectory(prefix="pytest-", dir=results) as tmp:
             command = [sys.executable, "-m", "pytest", *args,
@@ -111,6 +122,7 @@ def run(args: list[str]) -> int:
                "state": state, "exit_code": code,
                "duration_seconds": round(time.monotonic() - start, 3),
                "counts": junit_counts(report), "error": error,
+               "coverage_requested": coverage_requested, "coverage_state": mode,
                "log": (logs / "pytest.log").relative_to(ROOT).as_posix(),
                "arguments": args}
     temporary = results / ".summary.json.tmp"

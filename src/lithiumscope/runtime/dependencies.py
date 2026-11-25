@@ -42,6 +42,7 @@ IMAGERY_DEPENDENCIES = {
 
 DEV_DEPENDENCIES = {
     "pytest": "pytest",
+    "pytest-cov": "pytest_cov",
     "ruff": "ruff",
 }
 
