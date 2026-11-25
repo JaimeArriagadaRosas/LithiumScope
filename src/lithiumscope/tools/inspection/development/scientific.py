@@ -38,7 +38,12 @@ def inspect_m1(root: Path) -> dict:
         minimum_distance_m=float(cfg["validation"].get("minimum_distance_m", 0)),
     )
     plan = build_curve_plan(prepared.y, prepared.groups, splits, kind="regression")
-    return {"state": "OK" if distance.distance_policy_pass.all() else "BLOCKED",
+    from lithiumscope.core.scientific.nested_protocol import audit_nested_development, nested_summary
+    nested = audit_nested_development(prepared.frame, prepared.groups, prepared.y, splits,
+        inner_folds=int(cfg["validation"]["inner_folds"]),
+        minimum_distance_m=float(cfg["validation"].get("minimum_distance_m", 0)),
+        optimization=bool(cfg["optimization"]["enabled"]))
+    return {"state": "OK" if distance.distance_policy_pass.all() and nested_summary(nested)["state"] != "blocked" else "BLOCKED",
             "source": file_record(root, source), "raw_rows": len(prepared.raw_frame),
             "prepared_rows": len(prepared.x), "predictors": len(prepared.x.columns),
             "predictor_names": list(prepared.x.columns),
@@ -49,7 +54,8 @@ def inspect_m1(root: Path) -> dict:
                        "rows_excluded", "frame_digest_sha256")} for r in prepared.audit.records],
             "exclusion_counts": dict(Counter(r["reason"] for r in prepared.audit.exclusions)),
             "spatial_folds": distance.to_dict("records"),
-            "curve_preflight": curve_summary(plan), "fit_performed": False}
+            "curve_preflight": curve_summary(plan), "nested_spatial_preflight": nested_summary(nested),
+            "nested_spatial_folds": nested.to_dict("records"), "fit_performed": False}
 
 
 def inspect_m2(root: Path) -> dict:
@@ -136,9 +142,22 @@ def inspect_m2(root: Path) -> dict:
                  "train_negative": int((1-f.y_train[keep[f.train_idx]]).sum()),
                  "test_positive": int(f.y_test.sum()), "test_negative": int((1-f.y_test).sum()),
                  "endpoint_ppm": f.label_threshold_ppm} for i, f in enumerate(folds, 1)]
-    result.update(training_eligible=int(keep.sum()), all_test_retained=True,
+    from lithiumscope.core.scientific.nested_protocol import audit_nested_development, nested_summary
+    opt = cfg["optimization"]
+    final_endpoint = model.get("fixed_threshold_ppm")
+    if final_endpoint is None:
+        final_endpoint = float(frame[target].quantile(model["high_lithium_quantile"]))
+    nested = audit_nested_development(frame, frame[group], frame[target], splits,
+        inner_folds=validation["inner_folds"], eligible=keep, endpoints=endpoints, final_endpoint=final_endpoint,
+        quantile=model["high_lithium_quantile"], fixed_endpoint=model.get("fixed_threshold_ppm"),
+        minimum_distance_m=float(validation.get("minimum_distance_m", 0)), patch_side_m=cfg["imagery"]["patch_size_m"],
+        optimization=bool(opt["enabled"]), operating=True,
+        calibration=opt.get("calibration_policy") == "spatial_sigmoid" or any(
+            name in {"svm_rbf", "random_forest_spatial_calibrated"} for name in model["algorithms"]))
+    result.update(nested_spatial_preflight=nested_summary(nested), nested_spatial_folds=nested.to_dict("records"),
+                  training_eligible=int(keep.sum()), all_test_retained=True,
                   spatial_folds=distance.to_dict("records"), class_support=supports,
                   curve_preflight=curve_summary(plan))
-    if not distance.distance_policy_pass.all() or any(min(s["train_positive"], s["train_negative"]) == 0 for s in supports):
+    if not distance.distance_policy_pass.all() or nested_summary(nested)["state"] == "blocked" or any(min(s["train_positive"], s["train_negative"]) == 0 for s in supports):
         result["state"] = "BLOCKED"
     return result

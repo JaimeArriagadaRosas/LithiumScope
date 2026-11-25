@@ -137,6 +137,8 @@ def _scientific_code_files(model_group: str) -> list[Path]:
         source_root / "core" / "device.py",
         source_root / "core" / "resources.py",
         source_root / "core" / "reproducibility.py",
+        source_root / "core" / "hashing.py",
+        source_root / "core" / "execution" / "resume.py",
         source_root / "core" / "scientific_checks.py",
         source_root / "core" / "scientific" / "training_diagnostics.py",
         source_root / "core" / "scientific" / "candidate_evidence.py",
@@ -157,7 +159,7 @@ def _scientific_code_files(model_group: str) -> list[Path]:
     for directory in (source_root / "datasets" / "validation", source_root / "datasets" / "readers", source_root / "datasets" / "adapters", source_root / "datasets" / "management", source_root / "datasets" / "provenance", source_root / "resources"):
         if directory.exists():
             files.extend(directory.rglob("*.py"))
-    files.extend(source_root / "core" / "scientific" / name for name in ("spatial_audit.py", "applicability.py", "optuna_contract.py"))
+    files.extend(source_root / "core" / "scientific" / name for name in ("spatial_audit.py", "applicability.py", "optuna_contract.py", "nested_protocol.py", "fold_profiles.py", "learning_curves.py"))
     if model_group == "model_2":
         files.extend((source_root / "tools" / "acquisition" / "sentinel2").rglob("*.py"))
     return sorted(set(files), key=lambda path: path.relative_to(PROJECT_ROOT).as_posix())

@@ -30,12 +30,12 @@ def nearest_distance(coords: np.ndarray, train: np.ndarray, test: np.ndarray) ->
 def audit_spatial_folds(frame: pd.DataFrame, groups: pd.Series, splits,
                         *, eligible=None, patch_side_m: float | None = None,
                         minimum_distance_m: float = 0.0) -> tuple[pd.DataFrame, pd.DataFrame]:
-    if minimum_distance_m < 0 or (patch_side_m is not None and patch_side_m <= 0):
+    if not np.isfinite(minimum_distance_m) or minimum_distance_m < 0 or (patch_side_m is not None and (not np.isfinite(patch_side_m) or patch_side_m <= 0)):
         raise ValueError("Invalid spatial separation policy")
     n = len(frame)
-    mask = np.ones(n, dtype=bool) if eligible is None else np.asarray(eligible, dtype=bool)
+    mask = np.ones(n, dtype=bool) if eligible is None else np.asarray(eligible)
     groups = pd.Series(groups).reset_index(drop=True)
-    if mask.shape != (n,) or len(groups) != n or groups.isna().any():
+    if mask.shape != (n,) or mask.dtype.kind != "b" or len(groups) != n or groups.isna().any() or groups.astype(str).str.strip().eq("").any():
         raise ValueError("Spatial audit inputs do not align")
     coords = geographic_coordinates(frame)
     ids = next((frame[c].astype(str).to_numpy() for c in ("sample_id", "source_sample", "Sample") if c in frame),
@@ -43,7 +43,9 @@ def audit_spatial_folds(frame: pd.DataFrame, groups: pd.Series, splits,
     seen = np.zeros(n, dtype=int)
     summary, rows = [], []
     for i, (train, test) in enumerate(splits, 1):
-        train, test = np.asarray(train, dtype=int), np.asarray(test, dtype=int)
+        train, test = np.asarray(train), np.asarray(test)
+        if any(v.ndim != 1 or not np.issubdtype(v.dtype, np.integer) for v in (train, test)):
+            raise ValueError("Spatial partition indices must be integers")
         if not len(train) or not len(test) or len(set(train)) != len(train) or len(set(test)) != len(test):
             raise ValueError("Invalid repeated or empty partition")
         if set(train).intersection(test) or set(train).union(test) != set(range(n)):

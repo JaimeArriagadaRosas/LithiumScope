@@ -140,6 +140,23 @@ def _prepare_scientific_data(
     nearest.to_csv(context.manifests / "outer_spatial_nearest.csv", index=False)
     if not distance["distance_policy_pass"].all():
         raise ValueError("Configured minimum TRAIN/TEST physical distance not met.")
+    from lithiumscope.core.scientific.nested_protocol import audit_nested_development, nested_summary
+    optimization = cfg.get("optimization", {})
+    # Legacy SVM still calibrates using spatial folds; all families do so with spatial_sigmoid.
+    calibration = optimization.get("calibration_policy") == "spatial_sigmoid" or any(
+        name in {"svm_rbf", "random_forest_spatial_calibrated"} for name in cfg["model"]["algorithms"])
+    internal = audit_nested_development(spatial_source, groups, frame[lithium_column],
+        [(f.train_idx, f.test_idx) for f in scientific_folds], inner_folds=int(cfg["validation"]["inner_folds"]),
+        eligible=quality_mask, endpoints=[f.label_threshold_ppm for f in scientific_folds],
+        final_endpoint=threshold, quantile=q, fixed_endpoint=fixed_threshold,
+        minimum_distance_m=float(cfg["validation"].get("minimum_distance_m", 0)),
+        patch_side_m=float(cfg["imagery"].get("patch_size_m", 640)),
+        optimization=bool(optimization.get("enabled", False)), operating=True, calibration=calibration)
+    internal.to_csv(context.manifests / "nested_spatial_summary.csv", index=False)
+    nested = nested_summary(internal)
+    (context.manifests / "nested_spatial_preflight.json").write_text(json.dumps(nested, indent=2), encoding="utf-8")
+    if nested["state"] == "blocked":
+        raise ValueError("Nested spatial preflight failed; see nested_spatial_summary.csv.")
     y = pd.Series(scientific_labels(scientific_folds, len(frame)), index=frame.index)
     y_full = (frame[lithium_column] >= threshold).astype(int)
     fold_ids = pd.Series(-1, index=frame.index, dtype=int)

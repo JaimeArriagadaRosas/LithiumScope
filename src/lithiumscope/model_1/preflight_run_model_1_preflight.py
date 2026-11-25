@@ -157,6 +157,16 @@ def run_model_1_preflight(
             errors.append("Configured minimum TRAIN/TEST physical distance not met.")
         if distance["within_100m"].sum():
             warnings.append("Some outer TEST rows have TRAIN observations within 100 m; group isolation is not site independence.")
+    nested = {"state": "not_requested", "partitions": 0}
+    if outer_splits is not None and strategy == "group_kfold_spatial" and config.get("optimization", {}).get("enabled", False):
+        from lithiumscope.core.scientific.nested_protocol import audit_nested_development, nested_summary
+        internal = audit_nested_development(prepared.frame, prepared.groups, prepared.y, outer_splits,
+            inner_folds=int(validation["inner_folds"]),
+            minimum_distance_m=float(validation.get("minimum_distance_m", 0)))
+        internal.to_csv(run_context.tables / "nested_spatial_summary.csv", index=False)
+        nested = nested_summary(internal)
+        if nested["state"] == "blocked":
+            errors.append("Nested spatial optimization preflight failed; see nested_spatial_summary.csv.")
     status = "pass" if not errors else "fail"
     payload = {
         "schema_version": 1,
@@ -177,6 +187,7 @@ def run_model_1_preflight(
             "random_seed": seed,
             "strategy": strategy,
         },
+        "nested_spatial_preflight": nested,
         "duplicates": {
             "exact_predictor_target_rows": exact_duplicates,
             "repeated_coordinate_pairs": coordinate_duplicates,
