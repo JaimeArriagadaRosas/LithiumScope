@@ -18,7 +18,7 @@ Al cierre retirar la opción temporal y ejecutar CI normal; no modificar main, r
 Consola L39-1261: especificación adicional abierta, no incluida en el total textual.
 57/57 científicos tienen implementación principal incorporada; la aceptación científica continúa abierta (documentos, datos, pruebas, experimentos y evaluación independiente). No equivale a una aprobación científica.
 La arquitectura no tenía numeración original: IDs ARQ-001..109 introducidos para controlar el cierre.
-Los requisitos se superponen, pero a solicitud del usuario se cuentan por unidad para medir implementación principal: 138/166 (83,1 %), 28 parciales. Véase implementation-status.md. No confundir con cierre científico ni con cobertura.
+Los requisitos se superponen, pero a solicitud del usuario se cuentan por unidad para medir implementación principal: 143/166 (86,1 %), 23 parciales. Véase implementation-status.md. No confundir con cierre científico ni con cobertura.
 E1/E2 está vacío (0 bytes) y el checklist general del seminario contiene otras tareas académicas fuera de este alcance.
 Última suite local en b0c3857: 647 aprobadas, 7 omitidas, 8 warnings, 0 fallos, 57% cobertura de líneas, 670 archivos <=300, sin directorios Python >20.
 No se atribuye CI aprobada a commits posteriores omitidos por [skip ci]. Los 166 criterios cuentan ahora con módulos de pruebas relevantes asociados en criterion-tests.json; no implica cobertura exhaustiva ni cierre.

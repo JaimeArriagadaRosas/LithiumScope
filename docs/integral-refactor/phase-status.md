@@ -135,3 +135,20 @@ Reclasificados M1-19, M2-04, ARQ-015/035/067/068 por incorporar código principa
 | **Total** | **166** | **138** | **28** | **83,1 %** |
 
 Reclasificados ARQ-047/048/072. ARQ-042/045/066/073/095 continúan parciales. Sin ejecución de tests, PDF, CI, entrenamiento o promoción; 6 cierres acotados históricos. No solicitar todavía git pull ni 5 > 4. Próximos: adquisición, pipelines, dependencias, planificación, logging multiproceso, pruebas y benchmark.
+
+## Continuación: adquisición, pipelines y recursos
+
+- 70a7968c y 7f3deab3: diez módulos de consulta GEOROC y lectores raster HTTP/worker aislado bajo tools/acquisition; entrada Mamani09 registrada y aliases históricos.
+- b350fdc8: menú de entrenamiento delega fuente/entorno/competencia a pipelines; EDA solicita autorización si falta fuente y no reconstruye cohortes congeladas. M1 reutiliza combinado congelado sin descarga base redundante.
+- d2f26c94: procesos hijos aislados en subdirectorios de sesión padre, reinicio de handlers al fork, prueba concurrente de identidad y error_id. 
+- f8119798: scheduler por waves spawn, presupuesto reevaluado por wave, worker scope con límites de hilos, ejecución explícita. Política por defecto sigue secuencial, sin integración de todas las competencias ni GPU multi-dispositivo.
+- 482d97cf: GEOROC guarda debug y logs en sesión/acquisition con identificador único; escritura atómica de log acotado.
+
+| Diagnóstico | Total | Implementación principal | Parcial | Avance de implementación |
+|---|---:|---:|---:|---:|
+| M1 | 27 | 27 | 0 | 100,0 % |
+| M2 | 30 | 30 | 0 | 100,0 % |
+| ARQ | 109 | 86 | 23 | 78,9 % |
+| **Total** | **166** | **143** | **23** | **86,1 %** |
+
+Reclasificados ARQ-003/008/055/062/104. No se ejecutaron tests, CI, descarga ni entrenamiento. Las estimaciones de RAM/VRAM no son límites del SO; el scheduler aún requiere integración y benchmark real. Las pruebas nuevas concurrentes se verificarán localmente. Próximos: preprocessing M2, metodología/experiments, independencia de core y renderer, orquestación holdout, benchmark, rutas de logs, organización de tests y regresión. No solicitar todavía 5 > 4.

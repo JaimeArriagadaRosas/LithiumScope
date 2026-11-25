@@ -286,7 +286,8 @@
     ],
     "ARQ-003": [
       "tests/cli/test_diagnostic_lab_contract.py",
-      "tests/scientific/shared/test_integral_eda.py"
+      "tests/scientific/shared/test_integral_eda.py",
+      "tests/cli/test_diagnostic_acquisition_policy.py"
     ],
     "ARQ-004": [
       "tests/runtime/test_training_logging_session.py",
@@ -307,7 +308,8 @@
     "ARQ-008": [
       "tests/datasets/test_acquisition_architecture.py",
       "tests/datasets/test_georoc_acquisition.py",
-      "tests/datasets/test_frozen_model_1_input.py"
+      "tests/datasets/test_frozen_model_1_input.py",
+      "tests/core/test_acquisition_provider_relocation.py"
     ],
     "ARQ-009": [
       "tests/model_1/test_censoring_contract.py",
@@ -541,7 +543,8 @@
     ],
     "ARQ-055": [
       "tests/datasets/test_acquisition_architecture.py",
-      "tests/scientific/shared/test_scientific_acquisition.py"
+      "tests/scientific/shared/test_scientific_acquisition.py",
+      "tests/core/test_acquisition_provider_relocation.py"
     ],
     "ARQ-056": [
       "tests/datasets/test_georoc_ingestion.py",
@@ -575,7 +578,8 @@
     ],
     "ARQ-062": [
       "tests/scientific/shared/test_scientific_acquisition.py",
-      "tests/scientific/shared/test_scientific_http_tiles.py"
+      "tests/scientific/shared/test_scientific_http_tiles.py",
+      "tests/core/test_acquisition_provider_relocation.py"
     ],
     "ARQ-063": [
       "tests/scientific/provenance/test_georoc_qc_protocols.py",
@@ -669,7 +673,8 @@
     ],
     "ARQ-083": [
       "tests/resources/test_runtime_limits.py",
-      "tests/scientific/shared/test_optuna_contract.py"
+      "tests/scientific/shared/test_optuna_contract.py",
+      "tests/resources/test_adaptive_scheduler.py"
     ],
     "ARQ-084": [
       "tests/resources/test_resource_manager.py",
@@ -742,7 +747,9 @@
     "ARQ-100": [
       "tests/runtime/test_logging_lifecycle.py",
       "tests/runtime/test_training_logging_session.py",
-      "tests/core/test_tracker_atomic.py"
+      "tests/core/test_tracker_atomic.py",
+      "tests/datasets/test_georoc_acquisition.py",
+      "tests/runtime/test_worker_logging_isolation.py"
     ],
     "ARQ-101": [
       "tests/runtime/test_session_structured_logs.py",
@@ -760,7 +767,8 @@
     ],
     "ARQ-104": [
       "tests/runtime/test_session_structured_logs.py",
-      "tests/runtime/test_training_logging_session.py"
+      "tests/runtime/test_training_logging_session.py",
+      "tests/runtime/test_worker_logging_isolation.py"
     ],
     "ARQ-105": [
       "tests/runtime/test_logging_retention.py",

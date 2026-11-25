@@ -252,3 +252,7 @@ Commits 973c5f42 y 76169f7c: gate de desarrollo pareado y política multivariada
 ## Lote: renderer y evaluación
 
 60ecd0c4, 2f913f0d, d179654f, edda1848, 0c1ad5ce: precomputación científica para PDF, separación de evaluación prospectiva y métricas genéricas, auditoría ampliada de imports. 138/166 (83,1 %) implementación principal, 28 parciales. Sin ejecución ni modificación de releases.
+
+## Lote: adquisición, orquestación y concurrencia
+
+70a7968c, 7f3deab3, b350fdc8, d2f26c94, f8119798, 482d97cf: proveedores centralizados, delegación de pipelines, política EDA autorizada, worker logs y scheduler adaptativo. 143/166 (86,1 %) de implementación principal, 23 parciales; aceptación y ejecución pendientes.
