@@ -228,6 +228,8 @@ def run_model_1_competition(dataset_path: Path, device: DeviceInfo) -> Competiti
         context,
     )
 
+    from lithiumscope.model_1.eda.pipeline import record_training_eda
+    record_training_eda(dataset_path, prepared, config, context)
     dataset_manifest = build_tabular_manifest(
         dataset_path,
         dataset_name="model_1_training",

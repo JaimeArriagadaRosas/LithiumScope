@@ -121,7 +121,7 @@ def _scientific_code_files(model_group: str) -> list[Path]:
         candidate = model_root / filename
         if candidate.exists():
             files.append(candidate)
-    for directory_name in ("steps", "training", "preparation", "validation", "features", "methodology"):
+    for directory_name in ("steps", "training", "preparation", "validation", "features", "methodology", "eda"):
         directory = model_root / directory_name
         if directory.exists():
             files.extend(directory.rglob("*.py"))
@@ -143,6 +143,8 @@ def _scientific_code_files(model_group: str) -> list[Path]:
         source_root / "core" / "checkpoints.py",
         source_root / "core" / "scientific" / "checkpoint_identity.py",
         source_root / "core" / "pipeline_audit.py",
+        source_root / "results" / "eda_artifacts.py",
+        source_root / "results" / "eda_protocol.py",
         source_root / "datasets" / "harmonization.py",
         source_root / "persistence" / "save_model.py",
         source_root / "persistence" / "final_fit_contract.py",

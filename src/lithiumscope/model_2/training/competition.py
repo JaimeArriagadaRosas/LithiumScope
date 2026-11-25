@@ -189,6 +189,8 @@ def run_model_2_competition(
 
     fold_ids, frame, groups, quality_audit, quality_cfg, quality_mask, scientific_folds, threshold, x, y, y_full = _prepare_scientific_data(cfg, context, fixed_threshold, lithium_column, manifest_path, q, requested_folds, seed, spatial_group_column)
 
+    from lithiumscope.model_2.eda.pipeline import record_training_eda
+    record_training_eda(manifest_path, frame, cfg, scientific_folds, quality_mask, context)
     baseline, dataset_manifest, dataset_manifest_path, folds = _prepare_scientific_manifests(context, fixed_threshold, frame, groups, inner_folds, manifest_path, q, scientific_folds, threshold, quality_mask)
 
     rows: list[dict] = [baseline[0]]
