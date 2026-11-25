@@ -139,3 +139,9 @@ release_gate:
 baseline:
   enabled: true
   strategy: prior
+
+# Optional custodian-authored blind cohort plan. Never read labels during training.
+prospective_evaluation:
+  enabled: false
+  trusted_local_bundles: false
+  plan_path: data/independent/model_2/reservation_plan.json
