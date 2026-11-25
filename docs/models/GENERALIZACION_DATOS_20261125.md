@@ -12,7 +12,7 @@ El cache se reutiliza en el nuevo protocolo experimental, no todavía en la comp
 
 ## Screening espacial experimental
 
-Menú 5 > 5 > 3 > 1: piloto de ambos modelos; opción 2 de alcance para las seis familias.
+Menú principal 5 > 2 > 3: evaluación de tratamientos de ambos modelos; elegir piloto RF o todas las familias.
 Alternativamente, desde raíz: python -m lithiumscope.experiments.generalization.screen --model both
 Por defecto RF en cada modelo; --all habilita las doce familias.
 Se recomienda configurar PYTHONPATH=src si no está instalado el paquete.
@@ -55,3 +55,7 @@ Enviar la salida de consola y el informe único `results/eda_verification/eda_ve
 - Las verificaciones de preparación pasan de 480 a 580 (M1: 12 x 30; M2: 11 x 20). Se preserva el flujo normal y se requiere validación manual antes de seleccionar tratamientos. Los tratamientos bloqueados por capacidad/QA no se convierten automáticamente en éxitos. Los informes de soporte son descriptivos y no deciden qué tratamiento gana.
 
 El screening exige un plan EDA compatible y verificado antes del ajuste. No vuelve a preparar automáticamente los tratamientos bloqueados. Selecciona exclusivamente mediante folds internos, M1 exige cero predicciones negativas internas y desempata por MAE, M2 desempata por AP; los criterios de release y la validación independiente siguen siendo posteriores. La preparación no garantiza elegibilidad predictiva.
+
+## Laboratorio reorganizado
+
+El menú del laboratorio conserva solo análisis exploratorio, tests/simulaciones y salud. Las antiguas opciones temporales 4 y 5 se retiran del menú; se conserva el código científico utilizado por EDA y las evidencias históricas. El submenú 2 permite tests completos, comparación de modelos guardados, evaluación de tratamientos, o todo. La opción 2 no ajusta ni activa modelos; distingue release instalado y último candidato verificado. Ejecuta escenarios geoquímicos, batch de cinco semillas, comparación OOF si hay resultados compatibles, perturbación de descriptores de la cohorte espectral congelada, y escenarios de imagen/geografía de catálogos locales disponibles. La matriz histórica no es holdout externo. Los scripts históricos que descargan o ajustan modelos no se ejecutan ciegamente. La opción 3 realiza fits diagnósticos explícitos, sin guardarlos como candidatos. El catálogo de releases usa reintentos TLS, curl HTTPS, caché fechado y ZIP local con SHA-256 confiable; nunca se desactiva la verificación de certificados.

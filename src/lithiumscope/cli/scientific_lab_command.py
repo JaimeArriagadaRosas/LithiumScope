@@ -106,26 +106,53 @@ def _run_simulations() -> bool:
     return record["state"] == "COMPLETADO"
 
 
+def _treatment_experiments() -> bool:
+    from lithiumscope.experiments.generalization.screen import run_screen
+    from lithiumscope.core.logging.session import run_log
+    from lithiumscope.results.atomic_exports import write_json
+    from lithiumscope.core.paths import RESULTS_DIR
+    from uuid import uuid4
+    print("Evaluación espacial anidada: ajustes diagnósticos, no entrenamiento definitivo ni promoción.")
+    print("Por defecto piloto Random Forest; alcance completo incluye las doce familias.")
+    all_families=choose("¿Evaluar todas las familias? [s/n]: ",{"s","n"})=="s"
+    records=[]
+    for group in ("model_1","model_2"):
+        try:
+            with run_log("simulations",group+"_treatments"):
+                path=run_screen(group,_eda_source(group),all_families=all_families)
+            manifest=json.loads((path/"manifest.json").read_text(encoding="utf-8"))
+            records.append({"model":group,"path":str(path),**manifest})
+        except Exception as exc:
+            records.append({"model":group,"state":"blocked" if isinstance(exc,FileNotFoundError) else "error","reason":str(exc)})
+            print(f"[{records[-1]['state']}] {group}: {exc}")
+    complete=all(r["state"]=="complete" for r in records)
+    path=write_json(RESULTS_DIR/"scientific_simulations"/f"treatment_verification_{uuid4().hex[:12]}.json",
+                    {"state":"COMPLETADO" if complete else "PARCIAL/BLOQUEADO","models":records,"promotion":False})
+    print(f"Informe de tratamientos: {path}")
+    return complete
+
+
 def _validation_menu() -> bool | None:
     print("\nEJECUCIÓN DE TESTS Y SIMULACIONES")
-    print("1. Ejecutar tests")
-    print("2. Ejecutar simulaciones científicas")
-    print("3. Ejecutar ambos")
+    print("1. Tests completos del software")
+    print("2. Simulaciones y comparación de modelos guardados")
+    print("3. Evaluación experimental de tratamientos de datos")
+    print("4. Ejecutar todo (tests + comparaciones + experimentación)")
     print("0. Volver")
-    choice = choose("Seleccione una opción [0-3]: ", set("0123"))
-    if choice == "0":
+    choice=choose("Seleccione una opción [0-4]: ",set("01234"))
+    if choice=="0":
         return False
-    operations = [_run_tests, _run_simulations]
-    selected = operations if choice == "3" else [operations[int(choice) - 1]]
-    outcomes = []
+    operations=[_run_tests,_run_simulations,_treatment_experiments]
+    selected=operations if choice=="4" else [operations[int(choice)-1]]
+    outcomes=[]
     for operation in selected:
         try:
             outcomes.append(operation())
         except Exception as exc:
             print(f"[ERROR] {exc}")
             outcomes.append(False)
-    if len(outcomes) > 1:
-        print("Estado global: " + ("COMPLETADO" if all(outcomes) else "PARCIAL" if any(outcomes) else "ERROR/BLOQUEADO"))
+    if len(outcomes)>1:
+        print("Estado global: "+("COMPLETADO" if all(outcomes) else "PARCIAL" if any(outcomes) else "ERROR/BLOQUEADO"))
 
 
 def _health() -> None:
@@ -144,38 +171,6 @@ def _health() -> None:
     print("[OK] No se aplicaron reparaciones.")
 
 
-def _development_snapshot() -> None:
-    from lithiumscope.tools.inspection.development.snapshot import run_interactive
-
-    run_interactive()
-
-
-def _generalization_menu() -> bool | None:
-    from lithiumscope.experiments.generalization.screen import run_screen
-
-    print("\nOPTIMIZACIÓN CIENTÍFICA DE DATOS (desarrollo, sin promoción)")
-    print("1. Modelo 1")
-    print("2. Modelo 2")
-    print("3. Ambos modelos")
-    print("0. Volver")
-    choice = choose("Seleccione una opción [0-3]: ", set("0123"))
-    if choice == "0":
-        return False
-    print("1. Piloto Random Forest (recomendado primero)")
-    print("2. Competencia experimental: seis familias por modelo")
-    print("0. Volver")
-    mode = choose("Seleccione alcance [0-2]: ", set("012"))
-    if mode == "0":
-        return False
-    groups = ("model_1", "model_2") if choice == "3" else ("model_" + choice,)
-    for group in groups:
-        try:
-            path = run_screen(group, _eda_source(group), all_families=mode == "2")
-            print(f"Evidencia experimental: {path}")
-        except Exception as exc:
-            print(f"[ERROR] {group}: {exc}")
-
-
 def run() -> None:
     while True:
         clear_screen()
@@ -183,13 +178,11 @@ def run() -> None:
         print("1. Análisis exploratorio")
         print("2. Ejecución de tests y simulaciones")
         print("3. Salud y diagnóstico del entorno")
-        print("4. Evidencias de desarrollo (temporal)")
-        print("5. Optimización científica de datos (experimental)")
         print("0. Volver")
-        choice = choose("Seleccione una opción [0-5]: ", set("012345"))
+        choice = choose("Seleccione una opción [0-3]: ", set("0123"))
         if choice == "0":
             return
         clear_screen()
-        actions = {"1": _eda_menu, "2": _validation_menu, "3": _health, "4": _development_snapshot, "5": _generalization_menu}
+        actions = {"1": _eda_menu, "2": _validation_menu, "3": _health}
         if actions[choice]() is not False:
             pause()

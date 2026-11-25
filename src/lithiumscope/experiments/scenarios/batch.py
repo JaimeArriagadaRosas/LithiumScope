@@ -45,8 +45,8 @@ def run_m2_batch(bundle: dict, manifest: Path, destination: Path,
         path = Path(item["path"])
         if not path.is_file():
             continue
-        result = evaluate_model_2_image(bundle,load_imagery(path),
-                                       destination / "per_image" / item["image_id"])
+        from lithiumscope.experiments.scenarios.verified_imagery import evaluate_verified_image
+        result = evaluate_verified_image(bundle,path,destination / "per_image" / str(item["image_id"]))
         rows = pd.read_csv(result)
         rows.insert(0,"image_id",item["image_id"])
         rows.insert(1,"scene_id",item["scene_id"])
