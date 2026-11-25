@@ -3,6 +3,7 @@
   "lithiumscope.core.checkpoint_identity": "lithiumscope.core.scientific.checkpoint_identity",
   "lithiumscope.core.training_diagnostics": "lithiumscope.core.scientific.training_diagnostics",
   "lithiumscope.core.visualization": "lithiumscope.core.presentation.visualization",
+  "lithiumscope.datasets.harmonization_deduplication": "lithiumscope.datasets.harmonization.deduplication",
   "lithiumscope.experiments.analysis.compare_vnext_trained_runs_compare_m1": "lithiumscope.experiments.analysis.comparison.compare_vnext_trained_runs_compare_m1",
   "lithiumscope.experiments.analysis.compare_vnext_trained_runs_compare_m2": "lithiumscope.experiments.analysis.comparison.compare_vnext_trained_runs_compare_m2",
   "lithiumscope.experiments.analysis.georoc_qc_protocols": "lithiumscope.experiments.analysis.protocols.georoc_qc_protocols",
@@ -35,5 +36,13 @@
   "lithiumscope.model_2.methodology.spectral_augmentation": "lithiumscope.model_2.methodology.spectral.spectral_augmentation",
   "lithiumscope.model_2.methodology.spectral_feature_policy": "lithiumscope.model_2.methodology.spectral.spectral_feature_policy",
   "lithiumscope.model_2.methodology.spectral_overfit_inputs": "lithiumscope.model_2.methodology.spectral.spectral_overfit_inputs",
-  "lithiumscope.model_2.methodology.three_zone_ranking": "lithiumscope.model_2.methodology.evaluation.three_zone_ranking"
+  "lithiumscope.model_2.methodology.three_zone_ranking": "lithiumscope.model_2.methodology.evaluation.three_zone_ranking",
+  "lithiumscope.tools.georoc.processing.georoc_dataset_health": "lithiumscope.datasets.validation.georoc_dataset_health",
+  "lithiumscope.tools.georoc.processing.georoc_download_finalize": "lithiumscope.tools.acquisition.georoc.download_finalize",
+  "lithiumscope.tools.georoc.processing.georoc_material_filter": "lithiumscope.datasets.adapters.georoc_material_filter",
+  "lithiumscope.tools.georoc.processing.georoc_normalizer": "lithiumscope.datasets.adapters.georoc_normalizer",
+  "lithiumscope.tools.georoc.processing.georoc_postprocess": "lithiumscope.datasets.adapters.georoc_postprocess",
+  "lithiumscope.tools.georoc.processing.georoc_raw_reader": "lithiumscope.datasets.readers.georoc_raw_reader",
+  "lithiumscope.tools.georoc.processing.georoc_schema_profile": "lithiumscope.datasets.validation.georoc_schema_profile",
+  "lithiumscope.tools.georoc.processing.georoc_source_checkpoint": "lithiumscope.tools.acquisition.georoc.source_checkpoint"
 }

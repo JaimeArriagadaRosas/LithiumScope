@@ -161,7 +161,7 @@ def _scientific_code_files(model_group: str) -> list[Path]:
     ):
         if path.exists():
             files.append(path)
-    for directory in (source_root / "datasets" / "validation", source_root / "datasets" / "readers", source_root / "datasets" / "adapters", source_root / "datasets" / "management", source_root / "datasets" / "provenance", source_root / "resources"):
+    for directory in (source_root / "datasets" / "harmonization", source_root / "datasets" / "validation", source_root / "datasets" / "readers", source_root / "datasets" / "adapters", source_root / "datasets" / "management", source_root / "datasets" / "provenance", source_root / "resources"):
         if directory.exists():
             files.extend(directory.rglob("*.py"))
     files.extend(source_root / "core" / "scientific" / name for name in ("spatial_audit.py", "applicability.py", "optuna_contract.py", "nested_protocol.py", "fold_profiles.py", "learning_curves.py"))

@@ -100,7 +100,7 @@ def deduplicate_harmonized_sources(
     Rounded coordinates identify candidates, not evidence of duplication.
     Conflicts and incomplete measurements remain available for scientific review.
     """
-    from lithiumscope.datasets.harmonization_deduplication import duplicate_evidence
+    from lithiumscope.datasets.harmonization.deduplication import duplicate_evidence
 
     combined = canonicalize_coordinates(frame, strict=True).reset_index(drop=True)
     keep, audit = duplicate_evidence(combined, coordinate_decimals=coordinate_decimals)

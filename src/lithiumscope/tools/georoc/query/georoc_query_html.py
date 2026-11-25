@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re
 from urllib.parse import urljoin
 
 import requests
@@ -12,12 +11,7 @@ from lithiumscope.tools.georoc.query.georoc_query_models import (
 )
 
 
-def norm(value: str) -> str:
-    return re.sub(
-        r"[^A-Z0-9]+",
-        "",
-        str(value).upper(),
-    )
+from lithiumscope.datasets.adapters.georoc_names import norm
 
 
 def submit_form(
