@@ -469,7 +469,8 @@
     "ARQ-038": [
       "tests/integration/test_eda_training_integration.py",
       "tests/scientific/m2_training/test_m2_refactored_outer_cv_smoke.py",
-      "tests/integration/test_holdout_pipeline_dispatch.py"
+      "tests/integration/test_holdout_pipeline_dispatch.py",
+      "tests/integration/test_pretraining_holdout_reservation.py"
     ],
     "ARQ-039": [
       "tests/scientific/m2_training/test_m2_full_competition_diagnostics.py",
@@ -481,7 +482,8 @@
     ],
     "ARQ-041": [
       "tests/scientific/m2_training/test_m2_release_closure_comparison.py",
-      "tests/scientific/m2_training/test_m2_generalization_protocol.py"
+      "tests/scientific/m2_training/test_m2_generalization_protocol.py",
+      "tests/integration/test_pretraining_holdout_reservation.py"
     ],
     "ARQ-042": [
       "tests/reporting/test_prediction_pdf_contract.py",
@@ -585,7 +587,8 @@
       "tests/scientific/shared/test_experiment_architecture.py",
       "tests/experiments/test_historical_entrypoint_isolation.py",
       "tests/experiments/test_dataverse_historical_contract.py",
-      "tests/experiments/test_validation_import_safety.py"
+      "tests/experiments/test_validation_import_safety.py",
+      "tests/experiments/test_georoc_provenance_import_safety.py"
     ],
     "ARQ-062": [
       "tests/scientific/shared/test_scientific_acquisition.py",
@@ -692,7 +695,9 @@
       "tests/scientific/shared/test_optuna_contract.py",
       "tests/resources/test_adaptive_scheduler.py",
       "tests/resources/test_competition_parallel_contract.py",
-      "tests/regression/test_spawn_and_scientific_identity.py"
+      "tests/regression/test_spawn_and_scientific_identity.py",
+      "tests/resources/test_optimization_parallel_policy.py",
+      "tests/scientific/shared/test_batched_optuna_contract.py"
     ],
     "ARQ-084": [
       "tests/resources/test_resource_manager.py",
@@ -756,7 +761,8 @@
     "ARQ-097": [
       "tests/resources/test_runtime_limits.py",
       "tests/resources/test_resource_manager.py",
-      "tests/performance/test_pipeline_benchmark_contract.py"
+      "tests/performance/test_pipeline_benchmark_contract.py",
+      "tests/performance/test_acceleration_benchmark.py"
     ],
     "ARQ-098": [
       "tests/development/test_validation.py",
@@ -772,7 +778,8 @@
       "tests/core/test_tracker_atomic.py",
       "tests/datasets/test_georoc_acquisition.py",
       "tests/runtime/test_worker_logging_isolation.py",
-      "tests/development/test_validation.py"
+      "tests/development/test_validation.py",
+      "tests/runtime/test_operation_log_layout.py"
     ],
     "ARQ-101": [
       "tests/runtime/test_session_structured_logs.py",
@@ -813,7 +820,12 @@
     ],
     "ARQ-109": [
       "tests/development/test_validation.py",
-      "tests/scientific/shared/test_scientific_checks.py"
+      "tests/scientific/shared/test_scientific_checks.py",
+      "tests/integration/test_pretraining_holdout_reservation.py",
+      "tests/resources/test_optimization_parallel_policy.py",
+      "tests/scientific/shared/test_batched_optuna_contract.py",
+      "tests/performance/test_acceleration_benchmark.py",
+      "tests/runtime/test_operation_log_layout.py"
     ]
   }
 }

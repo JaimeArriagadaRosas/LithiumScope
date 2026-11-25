@@ -268,3 +268,7 @@ Commits 973c5f42 y 76169f7c: gate de desarrollo pareado y política multivariada
 ## Lote: scheduling, prediction y core
 
 33da3e87, 29ba3a58, 4e089241, ae32a8d7, 9952e902: integración opt-in CPU, límites heredados, opción 5.4 ampliada, campañas M2 y exportaciones reorganizadas, core revisado textualmente (54 archivos), bootstrap spawn y huellas actualizadas. 155/166 (93,4 %) de implementación principal, 11 parciales. Validaciones funcionales pendientes.
+
+## Lote de cierre parcial — 22d0fab
+
+Implementación principal: 160/166 (96,4 %). Pendientes ARQ-021/041/061/073/092/109. Incorporados ARQ-038/083/095/097/100. La reserva externa M2 y las políticas CPU nuevas son opt-in; la configuración actual no cambia. Benchmark sintético no ejecutado. No se ejecutó CI ni entrenamiento definitivo. Los auxiliares históricos recover_oof_evidence y final_scope_closure no se pudieron reubicar en este lote por errores de escritura GitHub y avance concurrente de la rama; no se forzó la referencia. Reconciliar HEAD y completar esa revisión antes de iniciar regresión local 5.4. No certificar aceptación por presencia de tests.
