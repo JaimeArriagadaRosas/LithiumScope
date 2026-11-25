@@ -7,6 +7,23 @@ def _evaluate_algorithm_candidates(algorithms, context, device, failed, fixed_th
     from lithiumscope.core.scientific.candidate_evidence import record_evidence, verify_candidate
     from lithiumscope.model_2.evaluation.metrics import validate_binary_inputs, reliability_table
     from lithiumscope.model_2.evaluation.oof_evidence import build_oof_table
+    from lithiumscope.resources.allocation.competition_workers import schedule_candidates, candidate_result, enabled
+    from lithiumscope.resources.allocation.estimates import estimate_fit_demand
+    from lithiumscope.resources.manager import load_policy
+    scheduled=None
+    policy=load_policy()
+    if enabled(device,policy):
+        requests=[]
+        for algorithm in algorithms:
+            demand=estimate_fit_demand(x,algorithm,folds=int(folds),inner_folds=int(inner_folds),
+                trials=int(optimization_cfg.get("per_algorithm_trials",{}).get(algorithm,optimization_cfg.get("n_trials",8))),
+                optimize=bool(optimization_cfg.get("enabled",False)))
+            requests.append((algorithm,{"x":x,"y":y,"algorithm":algorithm,"device":device,"seed":seed,
+                "folds":folds,"groups":groups,"checkpoint_root":context.checkpoints,"optimization":optimization_cfg,
+                "inner_folds":inner_folds,"scientific_folds":scientific_folds,
+                "lithium_values":frame[lithium_column].to_numpy(dtype=float),"label_quantile":q,
+                "fixed_threshold_ppm":fixed_threshold,"quality_training_mask":quality_mask},demand.working_memory_estimate_bytes))
+        scheduled=schedule_candidates("model_2",requests,context.checkpoints,device,policy=policy)
     for index, algorithm in enumerate(algorithms, start=1):
         print(f"\n[{index}/{len(algorithms)}] Entrenando {get_label(algorithm)}")
         context.tracker.event("algorithm_started", algorithm=algorithm)
@@ -17,8 +34,11 @@ def _evaluate_algorithm_candidates(algorithms, context, device, failed, fixed_th
             demand=estimate_fit_demand(x,algorithm,folds=int(folds),inner_folds=int(inner_folds),
                 trials=int(optimization_cfg.get("per_algorithm_trials",{}).get(algorithm,optimization_cfg.get("n_trials",8))),
                 optimize=bool(optimization_cfg.get("enabled",False)))
-            with fit_workload_scope(demand,evidence_path=context.manifests/f"resource_plan_{algorithm}.json"):
-                result = run_classification_cv(
+            if scheduled is not None:
+                result=candidate_result(scheduled,algorithm)
+            else:
+                with fit_workload_scope(demand,evidence_path=context.manifests/f"resource_plan_{algorithm}.json"):
+                    result = run_classification_cv(
                     x,
                     y,
                     algorithm,

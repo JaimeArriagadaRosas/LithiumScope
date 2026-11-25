@@ -6,6 +6,25 @@ def _evaluate_model_1_candidates(config, context, device, experiments, failed, p
     from lithiumscope.model_1.training.competition import _ranking_row, get_algorithm, logger, run_nested_cv
     from lithiumscope.core.scientific.candidate_evidence import record_evidence, verify_candidate
     from lithiumscope.model_1.evaluation.artifacts import save_algorithm_tables, save_algorithm_figures
+    from lithiumscope.resources.allocation.competition_workers import schedule_candidates, candidate_result
+    from lithiumscope.resources.allocation.estimates import estimate_fit_demand
+    from lithiumscope.resources.manager import load_policy
+    from lithiumscope.resources.allocation.competition_workers import enabled
+    scheduled=None
+    policy=load_policy()
+    if enabled(device,policy):
+        requests=[]
+        validation=config["validation"]
+        optimization=config.get("optimization",{})
+        for variant_id,algorithm,target_transform in experiments:
+            demand=estimate_fit_demand(prepared.x,algorithm,folds=int(validation["outer_folds"]),
+                inner_folds=int(validation["inner_folds"]),
+                trials=int(optimization.get("per_algorithm_trials",{}).get(algorithm,optimization.get("n_trials",20))),
+                optimize=bool(optimization.get("enabled",False)),categorical=prepared.schema.categorical)
+            requests.append((variant_id,{"prepared":prepared,"algorithm":algorithm,"device":device,"config":config,
+                "checkpoint_root":context.checkpoints,"target_transform":target_transform,"variant_id":variant_id},
+                demand.working_memory_estimate_bytes))
+        scheduled=schedule_candidates("model_1",requests,context.checkpoints,device,policy=policy)
     for index, (
         variant_id,
         algorithm,
@@ -47,8 +66,11 @@ def _evaluate_model_1_candidates(config, context, device, experiments, failed, p
                 inner_folds=int(validation["inner_folds"]),
                 trials=int(optimization.get("per_algorithm_trials",{}).get(algorithm,optimization.get("n_trials",20))),
                 optimize=bool(optimization.get("enabled",False)),categorical=prepared.schema.categorical)
-            with fit_workload_scope(demand,evidence_path=context.manifests/f"resource_plan_{variant_id}.json"):
-                result = run_nested_cv(
+            if scheduled is not None:
+                result=candidate_result(scheduled,variant_id)
+            else:
+                with fit_workload_scope(demand,evidence_path=context.manifests/f"resource_plan_{variant_id}.json"):
+                    result = run_nested_cv(
                     algorithm_prepared,
                     algorithm,
                     device,
