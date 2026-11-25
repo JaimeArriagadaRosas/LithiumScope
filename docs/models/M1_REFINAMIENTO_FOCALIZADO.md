@@ -27,7 +27,12 @@ sellados. Alternativa: python -m lithiumscope.experiments.model_1.targeted.runne
 
 Evidencias en results/generalization/model_1_targeted: manifiesto, métricas
 internas y externas, predicciones, selección, trazabilidad, intervalos pareados
-por grupo y errores. Son 900 evaluaciones base con 5 folds externos y 3 internos,
-más los ajustes adicionales de calibración cruzada; no se guardan estimadores.
+por grupo y errores. Son 1350 evaluaciones base con 5 folds externos y 5 internos, más 540
+ajustes previstos de calibración cruzada (1890 ajustes en total si todos completan).
+Los recuentos se calculan dinámicamente. No se guardan estimadores.
+Los brazos alternativos sustituyen el tratamiento anterior; el control refit y el
+OOF archivado se conservan separadamente. La corrección aditiva de sesgo es una
+hipótesis experimental, no una garantía de extrapolación. La evaluación general
+(opción 4 del menú anterior) no ejecuta implícitamente esta campaña focalizada.
 No se adquieren nuevos datos automáticamente. Incorporar nuevas muestras reales
 de alta concentración exige una cohorte nueva y validación independiente.

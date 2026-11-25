@@ -49,3 +49,20 @@ def test_selection_preserves_mae_and_uses_inner_scores():
             {"policy":"bad_mae","rmse":5.,"mae":6.,"high_bias":0.},
             {"policy":"good","rmse":9.,"mae":4.,"high_bias":-1.}]
     assert select_arm(rows) == "good"
+
+
+def test_fit_weighted_rf_smoke():
+    from lithiumscope.experiments.model_1.targeted.fit import fit_arm
+    from lithiumscope.resources.detection.device import detect_device
+    rng = np.random.default_rng(42)
+    x = pd.DataFrame({"Rb_icpms":rng.uniform(1.,100.,60),"Sr_icpms":rng.uniform(1.,50.,60)})
+    y = pd.Series(np.maximum(0.,x.Rb_icpms*.5+rng.normal(0.,2.,60)),index=x.index)
+    groups = pd.Series(np.arange(60)//5,index=x.index)
+    sources = pd.Series("synthetic-test",index=x.index)
+    test = pd.DataFrame({"Rb_icpms":[10.,50.],"Sr_icpms":[2.,4.]},index=[60,61])
+    scores,train,evidence = fit_arm("random_forest",Arm("weighted",weight="density_05",transform="power075"),
+        detect_device(prefer_gpu=False),42,{"n_estimators":5,"max_depth":3},
+        x,y,groups,sources,list(x.columns),[],test)
+    assert scores.shape == (2,) and train.shape == (60,)
+    assert np.isfinite(scores).all() and (scores>=0).all()
+    assert evidence["fit_rows"] == len(x)

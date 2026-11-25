@@ -37,20 +37,26 @@ def run_targeted(run_id, *, output_root=None, device=None):
     destination = root/(datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")+"_"+uuid4().hex[:8])
     destination.mkdir(parents=True, exist_ok=False)
     planned = len(ALGORITHMS)*len(ARMS)*sum(len(inner)+1 for _,_,inner in splits)
+    planned_calibration = len(ALGORITHMS)*sum(a.correction for a in ARMS)*sum(len(inner)+1 for _,_,inner in splits)*3
     manifest = {**identity,"state":"running","scope":"development_reuses_outer_folds",
                 "independent_holdout":False,"promotion":False,"fitted_models_saved":False,
                 "runtime":runtime_fingerprint(),"arms":[asdict(a) for a in ARMS],
-                "planned_evaluations":planned,"configurations":len(ALGORITHMS)*len(ARMS),
+                "planned_evaluations":planned,"planned_calibration_fits":planned_calibration,"configurations":len(ALGORITHMS)*len(ARMS),
                 "hyperparameters":"sealed_previous_outer_train_optimization_frozen_for_all_arms"}
     write_legacy_evidence_json(destination/"manifest.json", manifest)
     metrics, predictions, inner_rows, selected, trace, errors = [], [], [], [], [], []
+    print(f"M1: {planned} evaluaciones + {planned_calibration} ajustes de calibración previstos",flush=True)
     references = {}
     count = 0
 
     def prediction_rows(algorithm, policy, fold, test, scores):
+        tr = splits[fold-1][0]
+        maximum = float(y.iloc[tr].max())
+        q75 = float(y.iloc[tr].quantile(.75))
         return [{"algorithm":algorithm,"policy":policy,"fold":fold,"position":int(j),
                  "row_id":str(x.index[j]),"group":str(groups.iloc[j]),"source":str(sources.iloc[j]),
-                 "truth":float(y.iloc[j]),"prediction":float(score)}
+                 "truth":float(y.iloc[j]),"prediction":float(score),
+                 "train_max":maximum,"train_q75":q75,"actual_above_train_max":bool(y.iloc[j]>maximum)}
                 for j,score in zip(test,scores,strict=True)]
 
     def evaluate(algorithm, arm, fold, phase, tr, te):
@@ -88,6 +94,7 @@ def run_targeted(run_id, *, output_root=None, device=None):
                                              "high_bias":float(np.mean(biases)) if biases else 0.})
                     except Exception as exc:
                         errors.append({"algorithm":algorithm,"fold":fold,"policy":arm.name,"phase":"inner","reason":str(exc)})
+                        print(f"  [BLOQUEADO/ERROR] {exc}",flush=True)
                 chosen = select_arm(scores_inner)
                 selected.append({"algorithm":algorithm,"fold":fold,"policy":chosen,"inner_scores":scores_inner})
                 for arm in ARMS:
@@ -101,6 +108,7 @@ def run_targeted(run_id, *, output_root=None, device=None):
                             predictions.extend(prediction_rows(algorithm,"selected_inner",fold,te,score))
                     except Exception as exc:
                         errors.append({"algorithm":algorithm,"fold":fold,"policy":arm.name,"phase":"outer","reason":str(exc)})
+                        print(f"  [BLOQUEADO/ERROR] {exc}",flush=True)
                 write_table(destination/"fold_metrics.csv",pd.DataFrame(metrics))
                 write_table(destination/"inner_metrics.csv",pd.DataFrame(inner_rows))
                 write_table(destination/"predictions.csv",pd.DataFrame(predictions))

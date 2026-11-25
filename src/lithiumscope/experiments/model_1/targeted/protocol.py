@@ -19,9 +19,20 @@ from lithiumscope.experiments.model_1.targeted.policies import ALGORITHMS
 
 def available_runs():
     root = RESULTS_DIR / "model_1" / "runs"
-    return sorted((p.name for p in root.glob("training_*")
-                   if (p/"tables"/"oof_predictions_random_forest__identity.csv").is_file()
-                   and (p/"checkpoints"/"random_forest__identity"/"fold_01.json").is_file()), reverse=True)
+    candidates = []
+    for path in root.glob("training_*"):
+        try:
+            record = json.loads((path/"run.json").read_text(encoding="utf-8"))
+            if record.get("state") != "completed":
+                continue
+            if not all((path/"tables"/f"oof_predictions_{a}__identity.csv").is_file()
+                       and (path/"checkpoints"/f"{a}__identity"/"fold_01.json").is_file()
+                       for a in ALGORITHMS):
+                continue
+            candidates.append(path.name)
+        except (OSError, ValueError, TypeError):
+            continue
+    return sorted(candidates, reverse=True)
 
 
 def load_protocol(run_id):

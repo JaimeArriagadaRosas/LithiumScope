@@ -147,7 +147,7 @@ def _treatment_experiments(*, all_families=None, groups=("model_1", "model_2")) 
 
 def _treatment_menu():
     print("\nEVALUACIÓN EXPERIMENTAL DE TRATAMIENTOS")
-    print("1. Evaluación completa (ambos modelos)")
+    print("1. Evaluación general (ambos modelos: completa o piloto)")
     print("2. Evaluación focalizada de M1")
     print("3. Evaluación focalizada de M2 (protocolo existente)")
     print("0. Volver")
@@ -157,7 +157,7 @@ def _treatment_menu():
     if choice == "2":
         from lithiumscope.cli.m1_targeted_command import run
         return run()
-    return _treatment_experiments(all_families=True, groups=("model_2",) if choice == "3" else ("model_1", "model_2"))
+    return _treatment_experiments(all_families=True, groups=("model_2",)) if choice == "3" else _treatment_experiments()
 
 
 def _validation_menu() -> bool | None:
@@ -173,7 +173,7 @@ def _validation_menu() -> bool | None:
     print("\n")
     operations=[_run_tests,_run_simulations,_treatment_menu]
     if choice=="4":
-        print("Modo integral: incluye ajustes diagnósticos de las doce familias. Puede ser costoso.")
+        print("Modo integral general: incluye doce familias. El refinamiento focalizado M1 se ejecuta por separado.")
         selected=[_run_tests,_run_simulations,lambda:_treatment_experiments(all_families=True)]
     else:
         selected=[operations[int(choice)-1]]

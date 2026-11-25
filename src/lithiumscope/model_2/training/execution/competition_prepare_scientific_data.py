@@ -76,7 +76,7 @@ def _prepare_scientific_data(
             encoding="utf-8",
         )
         print(
-            "Modelo 2 v4: control QA95 de bandas anteriores y red-edge "
+            "Modelo 2: control QA95 de bandas anteriores y red-edge "
             f"SOLO TRAIN: {quality_audit['training_eligible']} / {len(frame)}. "
             "Ninguna fila eliminada de TEST.",
             flush=True,

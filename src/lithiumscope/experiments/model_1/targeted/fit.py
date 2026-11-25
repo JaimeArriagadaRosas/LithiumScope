@@ -21,7 +21,9 @@ def _base_fit(algorithm, arm, device, seed, params, x, y, groups, sources, numer
     if arm.name == "control":
         model = build_pipeline(algorithm, device, seed, schema, params)
         fit_regression_estimator(model, x, y, groups)
-        return model.predict, {"fit_rows": len(x), "treatment": model.treatment_evidence_, "trace": []}
+        info = model.treatment_evidence_
+        trace = [{"row": row, "action": "bootstrap_copy"} for row in info["copied_train_row_ids"]]
+        return model.predict, {"fit_rows": info["fit_rows"], "treatment": info, "trace": trace}
     features = FoldFeatures(arm, numeric, categorical).fit(x, y, groups)
     target = Target(arm.transform).fit(y)
     trace = []

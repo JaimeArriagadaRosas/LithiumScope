@@ -136,7 +136,7 @@ def load_spectral_v4_training_frame(manifest_path: Path, cfg: dict) -> pd.DataFr
     ):
         raise ValueError("M2 v4 altered one or more of the 126 base features")
     print(
-        "[OK] Modelo 2 v4: 170 características reales verificadas "
+        "[OK] Modelo 2: 170 características reales verificadas "
         f"({len(data)} muestras; 126 originales + 44 red-edge).",
         flush=True,
     )
