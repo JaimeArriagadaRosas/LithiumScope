@@ -33,6 +33,7 @@
   "lithiumscope.experiments.georoc.publication_source_lookup": "lithiumscope.experiments.georoc.provenance.publication_source_lookup",
   "lithiumscope.experiments.model_1.run_vnext_m1": "lithiumscope.model_1.methodology.dataset_comparison",
   "lithiumscope.experiments.model_1.validate_feot_expansion_m1": "lithiumscope.model_1.methodology.feot_expansion",
+  "lithiumscope.experiments.reporting.final_scope_closure": "lithiumscope.experiments.integrated.final_scope_closure",
   "lithiumscope.experiments.validation.leakage_safe_m2": "lithiumscope.experiments.model_2.leakage_safe_m2",
   "lithiumscope.experiments.validation.seasonal2024_run": "lithiumscope.experiments.model_2.historical.seasonal2024_run",
   "lithiumscope.experiments.validation.spatial_batch_run": "lithiumscope.experiments.model_2.historical.spatial_batch_run",
