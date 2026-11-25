@@ -6,6 +6,7 @@ import os
 import platform
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 from lithiumscope.core.reproducibility import runtime_fingerprint
 from lithiumscope.core.states import RunState
@@ -61,12 +62,15 @@ class ExperimentTracker:
 
     def _write(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        temporary = self.path.with_suffix(".json.tmp")
-        temporary.write_text(
-            json.dumps(self.payload, indent=2, ensure_ascii=False, default=str),
-            encoding="utf-8",
-        )
-        temporary.replace(self.path)
+        temporary = self.path.with_name(f".{self.path.name}.{uuid4().hex}.tmp")
+        try:
+            temporary.write_text(
+                json.dumps(self.payload, indent=2, ensure_ascii=False, default=str),
+                encoding="utf-8",
+            )
+            temporary.replace(self.path)
+        finally:
+            temporary.unlink(missing_ok=True)
 
     def set_state(self, state: RunState, **summary: Any) -> None:
         self.payload["state"] = state.value
