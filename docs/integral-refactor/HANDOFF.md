@@ -18,16 +18,16 @@ Al cierre retirar la opción temporal y ejecutar CI normal; no modificar main, r
 Consola L39-1261: especificación adicional abierta, no incluida en el total textual.
 57/57 científicos tienen implementación o evidencia parcial; no equivale a 57 sin código, ni a 100% finalizado.
 La arquitectura no tenía numeración original: IDs ARQ-001..109 introducidos para controlar el cierre.
-No sumar los totales como tareas independientes ni interpretar como porcentaje de avance.
+Los requisitos se superponen, pero a solicitud del usuario se cuentan por unidad para medir implementación principal: 118/166 (71,1 %), 48 parciales. Véase implementation-status.md. No confundir con cierre científico ni con cobertura.
 E1/E2 está vacío (0 bytes) y el checklist general del seminario contiene otras tareas académicas fuera de este alcance.
 Última suite local en b0c3857: 647 aprobadas, 7 omitidas, 8 warnings, 0 fallos, 57% cobertura de líneas, 670 archivos <=300, sin directorios Python >20.
-No se atribuye CI aprobada a commits posteriores omitidos por [skip ci]. Los 166 criterios cuentan ahora con 1–3 módulos de pruebas relevantes asociados en criterion-tests.json; no implica cobertura exhaustiva ni cierre.
+No se atribuye CI aprobada a commits posteriores omitidos por [skip ci]. Los 166 criterios cuentan ahora con módulos de pruebas relevantes asociados en criterion-tests.json; no implica cobertura exhaustiva ni cierre.
 
 ## Lectura inicial en un chat nuevo
 
 1. Este HANDOFF.md y requirements/repository-requirements.md (109 instrucciones originales con ID, evidencia contextual y siguiente comprobación).
 2. traceability.md (57 diagnósticos científicos, estado y evidencia), requirements/m1-diagnostic.md, requirements/m2-diagnostic.md (secciones de diagnóstico originales con redacciones de privacidad), requirements/console-contract.md.
-3. phase-status.md (lote más reciente, pendientes antes de solicitar la regresión); progress.md (resultados, hashes, sesiones, commits); module-relocation.json (rutas actuales vs históricas); sources.md (hashes de originales); controlled-experiment-design.md y prospective-holdout.md.
+3. implementation-status.md (conteo por criterio de implementación, separado de aceptación); phase-status.md (lote más reciente, pendientes antes de solicitar la regresión); progress.md (resultados, hashes, sesiones, commits); module-relocation.json (rutas actuales vs históricas); sources.md (hashes de originales); controlled-experiment-design.md y prospective-holdout.md.
 4. plan.md conserva historia de planificación; sus estados iniciales no son la fuente de estado actual. Usar esta matriz y actualizar por criterio, no inferir cierre de la cantidad de tests.
 5. Revisar HEAD remoto antes de editar, usar cuenta Jaime y cambios agrupados con tests específicos. Guardar en Git los cambios de código y documentación, no los datasets/artefactos binarios/credenciales.
 

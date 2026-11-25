@@ -9,7 +9,8 @@
     "M1-02": [
       "tests/scientific/shared/test_integral_eda.py",
       "tests/results/test_eda_training_integration.py",
-      "tests/results/test_eda_protocol.py"
+      "tests/results/test_eda_protocol.py",
+      "tests/scientific/shared/test_eda_profiles.py"
     ],
     "M1-03": [
       "tests/model_1/test_censoring_contract.py",
@@ -34,7 +35,8 @@
     ],
     "M1-08": [
       "tests/model_1/test_preprocessing_contract.py",
-      "tests/model_1/test_model_1_scientific_guards.py"
+      "tests/model_1/test_model_1_scientific_guards.py",
+      "tests/scientific/shared/test_paired_experiment_design.py"
     ],
     "M1-09": [
       "tests/model_1/test_feature_engineering.py",
@@ -51,7 +53,8 @@
     ],
     "M1-12": [
       "tests/scientific/shared/test_optuna_contract.py",
-      "tests/training/test_optuna_resume_helpers.py"
+      "tests/training/test_optuna_resume_helpers.py",
+      "tests/scientific/shared/test_paired_experiment_design.py"
     ],
     "M1-13": [
       "tests/model_1/test_spatial_tabnet.py",
@@ -102,7 +105,8 @@
     ],
     "M1-23": [
       "tests/model_1/test_physical_robustness.py",
-      "tests/model_1/test_model_1_scientific_guards.py"
+      "tests/model_1/test_model_1_scientific_guards.py",
+      "tests/scientific/shared/test_paired_suite.py"
     ],
     "M1-24": [
       "tests/model_1/test_high_lithium_diagnostics.py",
@@ -156,7 +160,8 @@
     ],
     "M2-08": [
       "tests/model_2/test_physical_v5.py",
-      "tests/prediction/test_spectral_inference_contract.py"
+      "tests/prediction/test_spectral_inference_contract.py",
+      "tests/scientific/shared/test_paired_suite.py"
     ],
     "M2-09": [
       "tests/model_2/test_model_2_spectral_features.py",
@@ -204,12 +209,14 @@
     "M2-19": [
       "tests/scientific/shared/test_optuna_contract.py",
       "tests/scientific/m2_training/test_m2_regularized_search_profile.py",
-      "tests/scientific/shared/test_nested_protocol.py"
+      "tests/scientific/shared/test_nested_protocol.py",
+      "tests/scientific/shared/test_paired_experiment_design.py"
     ],
     "M2-20": [
       "tests/model_2/test_model_2_svm.py",
       "tests/model_2/test_train_only_operating_policy.py",
-      "tests/scientific/shared/test_nested_protocol.py"
+      "tests/scientific/shared/test_nested_protocol.py",
+      "tests/scientific/shared/test_paired_experiment_design.py"
     ],
     "M2-21": [
       "tests/runtime/test_checkpoints.py",
@@ -298,7 +305,8 @@
     ],
     "ARQ-010": [
       "tests/scientific/shared/test_integral_eda.py",
-      "tests/results/test_eda_protocol.py"
+      "tests/results/test_eda_protocol.py",
+      "tests/scientific/shared/test_eda_profiles.py"
     ],
     "ARQ-011": [
       "tests/results/test_eda_training_integration.py",
@@ -327,7 +335,9 @@
     "ARQ-016": [
       "tests/scientific/m1/test_vnext_m1.py",
       "tests/scientific/m1/test_vnext_m1_diagnostics.py",
-      "tests/scientific/shared/test_compare_vnext_trained_runs.py"
+      "tests/scientific/shared/test_compare_vnext_trained_runs.py",
+      "tests/scientific/shared/test_paired_experiment_design.py",
+      "tests/scientific/shared/test_paired_suite.py"
     ],
     "ARQ-017": [
       "tests/prediction/test_m1_input_provenance.py",
@@ -377,7 +387,8 @@
     ],
     "ARQ-027": [
       "tests/scientific/shared/test_integral_eda.py",
-      "tests/scientific/shared/test_fold_eda_profiles.py"
+      "tests/scientific/shared/test_fold_eda_profiles.py",
+      "tests/scientific/shared/test_eda_profiles.py"
     ],
     "ARQ-028": [
       "tests/results/test_eda_training_integration.py",
@@ -395,7 +406,8 @@
     "ARQ-031": [
       "tests/model_2/test_model_2_svm.py",
       "tests/model_2/test_train_only_operating_policy.py",
-      "tests/scientific/shared/test_nested_protocol.py"
+      "tests/scientific/shared/test_nested_protocol.py",
+      "tests/scientific/shared/test_paired_experiment_design.py"
     ],
     "ARQ-032": [
       "tests/model_2/test_model_2_operating_threshold.py",
@@ -419,7 +431,9 @@
     "ARQ-036": [
       "tests/scientific/m2_training/test_m2_historical_706_control.py",
       "tests/scientific/m2_spectral/test_m2_rededge_v4.py",
-      "tests/scientific/m2_spectral/test_m2_vnext_expansion.py"
+      "tests/scientific/m2_spectral/test_m2_vnext_expansion.py",
+      "tests/scientific/shared/test_paired_experiment_design.py",
+      "tests/scientific/shared/test_paired_suite.py"
     ],
     "ARQ-037": [
       "tests/prediction/test_spectral_inference_contract.py",
@@ -493,12 +507,14 @@
     ],
     "ARQ-053": [
       "tests/datasets/test_management_provenance_architecture.py",
-      "tests/datasets/test_acquisition_architecture.py"
+      "tests/datasets/test_acquisition_architecture.py",
+      "tests/scientific/shared/test_dataset_module_relocation.py"
     ],
     "ARQ-054": [
       "tests/datasets/test_management_provenance_architecture.py",
       "tests/datasets/test_dataset_harmonization.py",
-      "tests/datasets/test_harmonization_conflicts.py"
+      "tests/datasets/test_harmonization_conflicts.py",
+      "tests/scientific/shared/test_dataset_module_relocation.py"
     ],
     "ARQ-055": [
       "tests/datasets/test_acquisition_architecture.py",
@@ -506,7 +522,8 @@
     ],
     "ARQ-056": [
       "tests/datasets/test_georoc_ingestion.py",
-      "tests/datasets/test_acquisition_architecture.py"
+      "tests/datasets/test_acquisition_architecture.py",
+      "tests/scientific/shared/test_dataset_module_relocation.py"
     ],
     "ARQ-057": [
       "tests/datasets/test_management_provenance_architecture.py",
@@ -515,7 +532,8 @@
     "ARQ-058": [
       "tests/datasets/test_historical_relocation.py",
       "tests/datasets/test_management_provenance_architecture.py",
-      "tests/datasets/test_harmonization_conflicts.py"
+      "tests/datasets/test_harmonization_conflicts.py",
+      "tests/scientific/shared/test_dataset_module_relocation.py"
     ],
     "ARQ-059": [
       "tests/scientific/shared/test_scientific_scenarios.py",
@@ -547,7 +565,9 @@
     "ARQ-065": [
       "tests/prediction/test_prospective_holdout.py",
       "tests/prediction/test_demo_promotion_guard.py",
-      "tests/scientific/shared/test_experiment_architecture.py"
+      "tests/scientific/shared/test_experiment_architecture.py",
+      "tests/scientific/shared/test_paired_experiment_design.py",
+      "tests/scientific/shared/test_paired_suite.py"
     ],
     "ARQ-066": [
       "tests/core/test_canonical_execution_packages.py",
@@ -617,7 +637,8 @@
     ],
     "ARQ-082": [
       "tests/resources/test_resource_manager.py",
-      "tests/resources/test_runtime_limits.py"
+      "tests/resources/test_runtime_limits.py",
+      "tests/resources/test_fit_workload.py"
     ],
     "ARQ-083": [
       "tests/resources/test_runtime_limits.py",
@@ -625,12 +646,14 @@
     ],
     "ARQ-084": [
       "tests/resources/test_resource_manager.py",
-      "tests/runtime/test_session_structured_logs.py"
+      "tests/runtime/test_session_structured_logs.py",
+      "tests/resources/test_fit_workload.py"
     ],
     "ARQ-085": [
       "tests/scientific/shared/test_scientific_fingerprint.py",
       "tests/runtime/test_checkpoints.py",
-      "tests/resources/test_runtime_limits.py"
+      "tests/resources/test_runtime_limits.py",
+      "tests/resources/test_fit_workload.py"
     ],
     "ARQ-086": [
       "tests/runtime/test_runtime.py",
@@ -695,11 +718,13 @@
     ],
     "ARQ-101": [
       "tests/runtime/test_session_structured_logs.py",
-      "tests/core/test_experiment_tracker.py"
+      "tests/core/test_experiment_tracker.py",
+      "tests/runtime/test_scientific_log_context.py"
     ],
     "ARQ-102": [
       "tests/runtime/test_session_structured_logs.py",
-      "tests/runtime/test_warning_capture.py"
+      "tests/runtime/test_warning_capture.py",
+      "tests/runtime/test_scientific_log_context.py"
     ],
     "ARQ-103": [
       "tests/resources/test_resource_manager.py",
@@ -711,7 +736,8 @@
     ],
     "ARQ-105": [
       "tests/runtime/test_logging_retention.py",
-      "tests/runtime/test_run_recovery.py"
+      "tests/runtime/test_run_recovery.py",
+      "tests/runtime/test_scientific_log_context.py"
     ],
     "ARQ-106": [
       "tests/development/test_validation.py",

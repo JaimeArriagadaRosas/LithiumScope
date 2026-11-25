@@ -5,9 +5,9 @@
 - 166 criterios documentados: 27 M1, 30 M2, 109 arquitectura, con requisitos superpuestos.
 - 6/166 cierres acotados previos (3,6 %); 160/166 siguen abiertos. No confundir con porcentaje de implementación, cobertura de líneas o cantidad de tests.
 - 57/57 diagnósticos científicos tienen evidencia parcial histórica.
-- 166/166 criterios con asociaciones a módulos de pruebas (396 asociaciones). Las asociaciones no son pruebas de aceptación completa.
+- 166/166 criterios con asociaciones a módulos de pruebas (422 asociaciones). Las asociaciones no son pruebas de aceptación completa.
 - La última ejecución integral observada sigue siendo b0c3857: 647 aprobadas, 7 omitidas, 57 % de cobertura de líneas, CI 7/7. No se han ejecutado los tests nuevos de esta rama tras ese commit.
-- No se certifica un porcentaje de implementación integral sin revisar la aceptación individual de los requisitos.
+- Revisión de implementación principal, separada del cierre: 118/166 (71,1 %), 48 parciales. Véase implementation-status.md; no certifica aceptación.
 
 ## Lote de trabajo posterior a 6dc2385
 
@@ -34,3 +34,21 @@ La auditoría de importaciones es estática: no prueba que un ciclo detectado se
 6. Retirar opción temporal tras validación y ejecutar CI normal. Sin activar modelos ni publicar release por el solo resultado de pruebas.
 
 No se ha utilizado Desktop Commander en este lote ni se han ejecutado workflows. Todos los commits son intermedios y llevan [skip ci].
+
+## Lote siguiente, hasta a07e02c8
+
+- 19577d72: evaluación pareada con particiones externas comunes e intervalos por grupos.
+- 40d2cd6a: ejecutores M1/M2 de ablación, presupuesto y calibración, preflight por defecto.
+- 5a128fe3: estimación de demanda computacional por algoritmo y picos VRAM.
+- 482ff622: contexto científico y correlación de errores.
+- 56a74610: EDA de ambos modelos separado en estadísticas, visualización y reporting.
+- a07e02c8: traslado de procesamiento GEOROC a datasets y adquisición a tools, alias históricos y huella de armonización.
+
+| Diagnóstico | Total | Implementación principal | Parcial | Avance de implementación |
+|---|---:|---:|---:|---:|
+| M1 | 27 | 24 | 3 | 88,9 % |
+| M2 | 30 | 23 | 7 | 76,7 % |
+| ARQ | 109 | 71 | 38 | 65,1 % |
+| **Total** | **166** | **118** | **48** | **71,1 %** |
+
+Pendientes prioritarios de código: criterios P en implementation-status.md, en particular QA de imágenes y manifiestos, dominios, baselines espaciales, diagnósticos por modelo, módulos restantes de adquisición/experimentos/reporting, concurrencia y pruebas. No ejecutar entrenamientos ni pedir el pull hasta agotar implementaciones posibles.
