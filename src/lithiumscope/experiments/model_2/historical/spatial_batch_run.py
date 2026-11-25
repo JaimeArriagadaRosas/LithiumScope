@@ -4,7 +4,6 @@ import json, subprocess, sys, tempfile
 from pathlib import Path
 import numpy as np
 import pandas as pd
-from pystac_client import Client
 from lithiumscope.experiments.model_2.historical.spatial_control import plan
 from lithiumscope.experiments.acquisition.acquisition import quality_from_scl
 from lithiumscope.tools.acquisition.sentinel2.provider import _asset_href
@@ -27,6 +26,8 @@ def worker(href, positions, mode, tmp, timeout=130):
 
 
 def main():
+    from pystac_client import Client
+
     centers=pd.read_csv(ROOT/"sentinel2_real"/"manifest.csv")
     bands=load_config("model_2")["imagery"]["bands"]
     DEST.mkdir(parents=True,exist_ok=True)

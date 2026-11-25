@@ -49,4 +49,4 @@ jobs:
             results/tests/**/summary.json
             results/tests/**/junit.xml
             results/tests/**/coverage.xml
-            logs/sessions/**/tests/pytest.log
+            logs/sessions/**/tests/**/pytest.log
