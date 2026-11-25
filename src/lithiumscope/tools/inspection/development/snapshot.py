@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from importlib.metadata import PackageNotFoundError, version
 import json
 import logging
+import math
 from pathlib import Path
 import platform
 import sys
@@ -47,10 +48,39 @@ DIAGNOSTICS = (
 )
 
 
+def _json_value(value, undefined):
+    """Normalize scientific scalars without misrepresenting undefined metrics as zero."""
+    if value is None or isinstance(value, (str, bool, int)):
+        return value
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            undefined[0] += 1
+            return None
+        return value
+    if isinstance(value, dict):
+        if any(not isinstance(key, str) for key in value):
+            raise TypeError("Evidence mapping keys must be strings")
+        return {key: _json_value(item, undefined) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_value(item, undefined) for item in value]
+    if type(value).__module__.startswith("numpy") and getattr(value, "ndim", None) == 0:
+        return _json_value(value.item(), undefined)
+    if type(value).__name__ == "NAType" and type(value).__module__.startswith("pandas"):
+        undefined[0] += 1
+        return None
+    raise TypeError("Unsupported evidence value")
+
+
 def _section(name, action):
     print(f"  Verificando {name}...", flush=True)
     try:
-        value = action()
+        undefined = [0]
+        value = _json_value(action(), undefined)
+        if not isinstance(value, dict):
+            raise TypeError("Evidence section must be a mapping")
+        value.setdefault("state", "OK")
+        if undefined[0]:
+            value["undefined_numeric_values"] = undefined[0]
     except Exception as exc:
         # Keep detailed exception in local session log, never in shared JSON.
         LOGGER.exception("Development evidence failed: %s", name)
@@ -118,7 +148,7 @@ def collect_snapshot(root: Path = PROJECT_ROOT, *, validation=None) -> dict:
         "model_2": _section("Preflight M2", lambda: inspect_m2(root)),
     }
     if validation is not None:
-        sections["development_validation"] = validation
+        sections["development_validation"] = _section("Validación ejecutada", lambda: validation)
     return {"schema_version": 1, "created_at_utc": datetime.now(timezone.utc).isoformat(),
             "scope": "temporary development evidence; not external validation",
             "state": "COMPLETE" if all(x["state"] == "OK" for x in sections.values()) else "PARTIAL",
@@ -133,7 +163,12 @@ def write_snapshot(root: Path = PROJECT_ROOT, *, validation=None) -> Path:
     directory = local_path(root, f"results/diagnostics/development_{stamp}_{uuid4().hex[:8]}")
     directory.mkdir(parents=True, exist_ok=False)
     path = directory / "development_report.json"
-    path.write_text(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False), encoding="utf-8")
+    temporary = directory / ".development_report.json.tmp"
+    try:
+        temporary.write_text(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False), encoding="utf-8")
+        temporary.replace(path)
+    finally:
+        temporary.unlink(missing_ok=True)
     return path
 
 

@@ -82,6 +82,8 @@ def run_pytest(root: Path, logs: Path, current_commit: str | None) -> dict:
     runner = local_path(root, "scripts/run_tests.py")
     env = os.environ.copy()
     env["PYTHONIOENCODING"] = "utf-8"
+    env.pop("PYTEST_ADDOPTS", None)
+    env["LITHIUMSCOPE_DISABLE_AUTO_INSTALL"] = "1"
     # This uses the same isolated runner as the canonical test menu.
     result = subprocess.run([sys.executable, str(runner), "--coverage", "--", "-q"],
                             cwd=root, env=env, capture_output=True, check=False)
@@ -95,15 +97,22 @@ def run_pytest(root: Path, logs: Path, current_commit: str | None) -> dict:
         directory = local_path(root, f"results/tests/{identity}")
         report = test_report(root, directory / "summary.json", current_commit)
         report["breakdown"] = junit_breakdown(directory / "junit.xml")
+        current = git_identity(root)
+        trusted = (result.returncode in (0, 1)
+                   and result.returncode == summary.get("exit_code")
+                   and report["matches_current_clean_commit"] is True
+                   and current.get("state") == "OK"
+                   and current.get("commit") == current_commit
+                   and report["breakdown"]["state"] == "OK")
         report["state"] = ("OK" if result.returncode == 0
                            and report["state"] == "OK"
                            and report["breakdown"]["state"] == "OK"
-                           and report["matches_current_clean_commit"] is True
+                           and trusted
                            else "ERROR" if result.returncode else "WARNING")
         from lithiumscope.tools.inspection.development.criteria import evaluate_catalog, load_catalog
         report["criterion_evidence"] = evaluate_catalog(
             load_catalog(root), report["breakdown"].pop("cases"),
-            trusted_run=report["matches_current_clean_commit"] is True,
+            trusted_run=trusted,
         )
         return report
     except (ValueError, OSError, KeyError, TypeError, ET.ParseError):

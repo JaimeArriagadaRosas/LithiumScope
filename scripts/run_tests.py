@@ -43,9 +43,11 @@ def git_identity() -> dict:
                                   capture_output=True, text=True, timeout=10).stdout.strip()
         return {"git_commit": git("rev-parse", "HEAD"),
                 "git_branch": git("branch", "--show-current"),
-                "tracked_worktree_dirty": bool(git("status", "--porcelain", "--untracked-files=no"))}
+                "tracked_worktree_dirty": bool(git("status", "--porcelain", "--untracked-files=no")),
+                "untracked_code_present": bool(git("ls-files", "--others", "--exclude-standard",
+                                                    "--", "src", "tests", "scripts", "config", "docs/integral-refactor"))}
     except (OSError, subprocess.SubprocessError):
-        return {"git_commit": None, "git_branch": None, "tracked_worktree_dirty": None}
+        return {"git_commit": None, "git_branch": None, "tracked_worktree_dirty": None, "untracked_code_present": None}
 
 
 def run(args: list[str]) -> int:
@@ -65,6 +67,8 @@ def run(args: list[str]) -> int:
     env.pop("LITHIUMSCOPE_HOME", None)
     env.pop("PYTHONPATH", None)
     env.pop("LITHIUMSCOPE_LOG_DIR", None)
+    env.pop("PYTEST_ADDOPTS", None)
+    env["LITHIUMSCOPE_DISABLE_AUTO_INSTALL"] = "1"
     env["LITHIUMSCOPE_TEST_SESSION_ID"] = session_id
     env["LITHIUMSCOPE_SESSION_DIR"] = str(logs.parent)
     if coverage:
@@ -103,7 +107,9 @@ def run(args: list[str]) -> int:
                "counts": junit_counts(report), "error": error,
                "log": (logs / "pytest.log").relative_to(ROOT).as_posix(),
                "arguments": args}
-    (results / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    temporary = results / ".summary.json.tmp"
+    temporary.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    temporary.replace(results / "summary.json")
     event(state, exit_code=code, duration_seconds=summary["duration_seconds"], error=error)
     print(json.dumps(summary, indent=2))
     return code

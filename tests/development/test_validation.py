@@ -34,9 +34,13 @@ def test_report_requires_clean_unchanged_commit(tmp_path):
     folder.mkdir(parents=True)
     summary = folder / "summary.json"
     data = {"state": "passed", "git_commit": "a"*40, "tracked_worktree_dirty": False,
-            "git_identity_unchanged": True, "counts": {}}
+            "git_identity_unchanged": True, "untracked_code_present": False, "counts": {}}
     summary.write_text(json.dumps(data))
     assert inventory.test_report(tmp_path, summary, "a"*40)["matches_current_clean_commit"]
+    data["untracked_code_present"] = True
+    summary.write_text(json.dumps(data))
+    assert not inventory.test_report(tmp_path, summary, "a"*40)["matches_current_clean_commit"]
+    data["untracked_code_present"] = False
     data["git_identity_unchanged"] = False
     summary.write_text(json.dumps(data))
     assert not inventory.test_report(tmp_path, summary, "a"*40)["matches_current_clean_commit"]

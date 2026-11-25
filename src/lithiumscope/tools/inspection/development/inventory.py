@@ -72,8 +72,12 @@ def git_identity(root: Path) -> dict:
             raise ValueError("Invalid commit")
         branch = git("branch", "--show-current")
         dirty = bool(git("status", "--porcelain", "--untracked-files=no"))
-        return {"state": "OK", "commit": head, "branch": branch or "detached",
-                "tracked_worktree_dirty": dirty, "untracked_files_inspected": False}
+        untracked = bool(git("ls-files", "--others", "--exclude-standard", "--",
+                             "src", "tests", "scripts", "config", "docs/integral-refactor"))
+        return {"state": "WARNING" if dirty or untracked else "OK",
+                "commit": head, "branch": branch or "detached",
+                "tracked_worktree_dirty": dirty, "untracked_code_present": untracked,
+                "untracked_files_inspected": True}
     except (OSError, subprocess.SubprocessError, ValueError):
         return {"state": "UNAVAILABLE"}
 
@@ -108,6 +112,7 @@ def test_report(root: Path, path: Path, current_commit: str | None) -> dict:
         coverage = 100 * value
     source_commit = report.get("git_commit")
     matches = (source_commit == current_commit and report.get("tracked_worktree_dirty") is False
+               and report.get("untracked_code_present") is False
                and report.get("git_identity_unchanged") is True
                if isinstance(source_commit, str) and current_commit else None)
     return {"state": "OK" if report.get("state") == "passed" else "WARNING",
