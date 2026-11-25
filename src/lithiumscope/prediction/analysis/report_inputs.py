@@ -1,0 +1,65 @@
+"""Prepare scientific report inputs; never fit, predict, or change source frames."""
+from __future__ import annotations
+
+from copy import deepcopy
+import math
+
+import numpy as np
+import pandas as pd
+
+
+def operating_classification(score, threshold):
+    try:
+        s,t=float(score),float(threshold)
+    except (ValueError,TypeError):
+        return "N/D"
+    if not (math.isfinite(s) and math.isfinite(t) and 0<=s<=1 and 0<=t<=1):
+        return "N/D"
+    return "POSITIVA" if s>=t else "NEGATIVA"
+
+
+def physical_interval(low, high):
+    try:
+        lo,hi=float(low),float(high)
+    except (ValueError,TypeError):
+        return None,None
+    if not (math.isfinite(lo) and math.isfinite(hi) and hi>=max(0.,lo)):
+        return None,None
+    return max(0.,lo),hi
+
+
+def prepare_cases(model_1,model_2,paired,threshold):
+    one,two,joined=(frame.copy() for frame in (model_1,model_2,paired))
+    def column(frame,name):
+        return frame.get(name,pd.Series(np.nan,index=frame.index))
+    intervals=[physical_interval(lo,hi) for lo,hi in zip(
+        column(one,"Li_icpms_interval_low_q90"),column(one,"Li_icpms_interval_high_q90"),strict=True)]
+    one["report_interval_low"]=[p[0] for p in intervals]
+    one["report_interval_high"]=[p[1] for p in intervals]
+    two["report_operating_class"]=[operating_classification(s,t) for s,t in zip(
+        column(two,"prospectivity_score"),column(two,"operating_threshold"),strict=True)]
+    joined["report_absolute_error"]=(pd.to_numeric(column(joined,"Li_icpms"),errors="coerce")-
+        pd.to_numeric(column(joined,"Li_icpms_predicted"),errors="coerce")).abs()
+    joined["report_operating_class"]=[operating_classification(s,threshold) for s in column(joined,"prospectivity_score")]
+    return one,two,joined
+
+
+def prepare_selection_evidence(evidence):
+    """Compute historical paired differences, with undefined zero-reference gains."""
+    result=deepcopy(evidence)
+    if not result or result.get("state")!="HISTORICAL_COMPARISON":
+        return result
+    def delta(a,b,relative=False):
+        a,b=float(a),float(b)
+        if not math.isfinite(a) or not math.isfinite(b) or (relative and a==0):
+            return None
+        return (a-b)/a if relative else b-a
+    paired=result["model_1_paired"]
+    shared=paired["common"]
+    high=paired["high_lithium"]
+    result["report_m1_gains"]={k:delta(shared["old"][k],shared["new"][k],True) for k in ("rmse","mae")}
+    result["report_m1_gains"]["high_rmse"]=delta(high["old"]["rmse"],high["new"]["rmse"],True)
+    compared={row["algorithm"]:row for row in result["model_2_same_706_comparison"]}
+    old,new=compared["original_release_protocol_retrained"],compared["random_forest"]
+    result["report_m2_deltas"]={key:delta(old[key],new[key]) for key in ("roc_auc","average_precision","brier")}
+    return result

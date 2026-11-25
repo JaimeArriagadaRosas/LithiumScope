@@ -151,6 +151,12 @@ def write_pdf_report(
     from lithiumscope.prediction.analysis.decision import calculate_decision
     from lithiumscope.prediction.analysis.report_statistics import report_statistics
 
+    from lithiumscope.prediction.analysis.report_inputs import prepare_cases, prepare_selection_evidence
+    model_1_predictions, model_2_predictions, paired = prepare_cases(
+        model_1_predictions, model_2_predictions, paired, model_2_classification_threshold)
+    runtime = dict(runtime or {})
+    if "model_selection_evidence" in runtime:
+        runtime["model_selection_evidence"] = prepare_selection_evidence(runtime["model_selection_evidence"])
     decision = calculate_decision(paired)
     statistics = report_statistics(model_1_predictions, model_2_predictions, concordance,
                                    model_2_classification_threshold, model_1_diagnostics)

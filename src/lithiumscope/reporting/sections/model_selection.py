@@ -94,16 +94,15 @@ def build_model_selection(context, styles) -> list:
     paired_rows = [["Error (menor es mejor)", "Historico", "Ampliado", "Mejora"]]
     for metric, label in (("rmse", "RMSE global (ppm)"),
                           ("mae", "MAE global (ppm)")):
-        a = float(shared["old"][metric])
-        b = float(shared["new"][metric])
+        a = shared["old"][metric]
+        b = shared["new"][metric]
         paired_rows.append([label, _number(a,2), _number(b,2),
-                            _pct((a-b)/a)])
+                            _pct(evidence.get("report_m1_gains", {}).get(metric))])
     paired_rows.append([
         "RMSE, Li alto Q75 (ppm)",
         _number(high["old"]["rmse"], 2),
         _number(high["new"]["rmse"], 2),
-        _pct((high["old"]["rmse"]-high["new"]["rmse"]) /
-             high["old"]["rmse"]),
+        _pct(evidence.get("report_m1_gains", {}).get("high_rmse")),
     ])
     story.append(table(paired_rows,
                        widths=[5.2*cm,3.3*cm,3.3*cm,4.2*cm],font_size=7.5))
@@ -194,8 +193,8 @@ def _comparison_and_decision(evidence, styles):
         ("average_precision", "Average Precision OOF"),
         ("brier", "Brier OOF (menor mejor)"),
     ):
-        a,b=float(old[key]),float(new[key])
-        rows.append([label,_number(a,4),_number(b,4),_number(b-a,4)])
+        a,b=old[key],new[key]
+        rows.append([label,_number(a,4),_number(b,4),_number(evidence.get("report_m2_deltas", {}).get(key),4)])
     return [
         PageBreak(),
         paragraph("C. Comparacion M2 sobre el mismo conjunto historico",

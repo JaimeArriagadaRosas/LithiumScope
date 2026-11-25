@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import pandas as pd
 from reportlab.lib.units import cm
 from reportlab.platypus import PageBreak, Spacer
 
@@ -10,7 +9,6 @@ from lithiumscope.reporting.case_cards import (
 )
 from lithiumscope.reporting.formatting import (
     number,
-    operating_classification,
 )
 from lithiumscope.reporting.primitives import (
     paragraph,
@@ -53,26 +51,9 @@ def build_cases(context, styles) -> list:
         ]
         for _, row in paired.iterrows():
             case_id = str(row["case_id"])
-            real = pd.to_numeric(
-                pd.Series(
-                    [row.get("Li_icpms")]
-                ),
-                errors="coerce",
-            ).iloc[0]
-            predicted = pd.to_numeric(
-                pd.Series(
-                    [row.get("Li_icpms_predicted")]
-                ),
-                errors="coerce",
-            ).iloc[0]
-            error = (
-                abs(real - predicted)
-                if (
-                    pd.notna(real)
-                    and pd.notna(predicted)
-                )
-                else None
-            )
+            real = row.get("Li_icpms")
+            predicted = row.get("Li_icpms_predicted")
+            error = row.get("report_absolute_error")
             concordance_row = (
                 concordance_lookup.get(case_id)
             )
@@ -94,10 +75,7 @@ def build_cases(context, styles) -> list:
                             "N/D",
                         )
                     ).upper(),
-                    operating_classification(
-                        row.get("prospectivity_score"),
-                        context.model_2_classification_threshold,
-                    ),
+                    row.get("report_operating_class", "N/D"),
                     (
                         str(
                             concordance_row.get(

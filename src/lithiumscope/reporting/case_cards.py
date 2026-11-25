@@ -8,7 +8,6 @@ from lithiumscope.reporting.formatting import (
     fraction,
     nonnegative_interval,
     number,
-    operating_classification,
 )
 from lithiumscope.reporting.primitives import (
     paragraph,
@@ -57,12 +56,12 @@ def case_story(
         else None
     )
     interval_low = (
-        model_1_row.get("Li_icpms_interval_low_q90")
+        model_1_row.get("report_interval_low")
         if model_1_row is not None
         else None
     )
     interval_high = (
-        model_1_row.get("Li_icpms_interval_high_q90")
+        model_1_row.get("report_interval_high")
         if model_1_row is not None
         else None
     )
@@ -135,12 +134,7 @@ def case_story(
         [
             "Clasificacion segun umbral operativo M2",
             (
-                operating_classification(
-                    score,
-                    model_2_row.get(
-                        "operating_threshold"
-                    ),
-                )
+                model_2_row.get("report_operating_class", "N/D")
                 if model_2_row is not None
                 else "N/D"
             ),
