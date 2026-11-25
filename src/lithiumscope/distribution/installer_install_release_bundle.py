@@ -13,6 +13,11 @@ def install_release_bundle(
     asset_sha256: str,
 ) -> InstallationResult:
     from lithiumscope.distribution.installer import InstallationResult, MODELS_DIR, ModelRelease, Path, _discover_artifacts, _prepare_installation, _release_manifest, _safe_extract, _validate_deserialization, _validate_manifest_against_artifacts, datetime, json, os, set_active_models, shutil, tempfile, timezone
+    from lithiumscope.core.hashing import file_sha256
+    if file_sha256(archive) != asset_sha256:
+        raise ValueError("El ZIP cambió antes de la instalación")
+    if release.asset_digest and release.asset_digest != "sha256:"+asset_sha256:
+        raise ValueError("El SHA-256 del ZIP no coincide con el release")
     MODELS_DIR.mkdir(
         parents=True,
         exist_ok=True,

@@ -16,7 +16,7 @@ def _prepare_installation(
         metadata.get("run_id")
         or artifact_dir.name
     )
-    if not run_id:
+    if not run_id or Path(run_id).name != run_id or any(x in run_id for x in ("..","/","\\",":")):
         raise RuntimeError(
             f"El artefacto {model_group} no contiene run_id."
         )

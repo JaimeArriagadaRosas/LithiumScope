@@ -9,6 +9,7 @@ from lithiumscope.persistence.active_models import active_model_path
 from lithiumscope.distribution.github_releases import (
     download_release_asset,
     list_model_releases,
+    cached_model_releases,
 )
 from lithiumscope.distribution.installer import (
     install_release_bundle,
@@ -22,6 +23,34 @@ def _size_mib(size: int) -> str:
     return f"{size / 1048576:.2f} MiB"
 
 
+def _local_install():
+    from lithiumscope.distribution.local_archive import local_release
+    from lithiumscope.core.logging.session import run_log
+    raw=input("Ruta del ZIP oficial descargado (Enter para cancelar): ").strip().strip('"')
+    if not raw:
+        return False
+    path=Path(raw)
+    print("Use un SHA-256 obtenido de GitHub o de una fuente confiable independiente.")
+    digest=input("SHA-256 esperado: ").strip()
+    release, verified=local_release(path,digest)
+    print(f"Bundle local verificado: {release.tag_name}")
+    if input("¿Instalar y activar ambos modelos? [s/N]: ").strip().lower() not in {"s","si","sí"}:
+        return False
+    with run_log("installation","local_release"):
+        result=install_release_bundle(path,release,asset_sha256=verified)
+    print(f"[OK] {result.release_tag} | Registro: {result.receipt_path}")
+    return True
+
+
+def _recovery():
+    print("Descarga manual oficial: https://github.com/JaimeArriagadaRosas/LithiumScope/releases")
+    print("L. Instalar ZIP oficial local con SHA-256 confiable")
+    print("0. Volver (modelos activos y candidatos sin cambios)")
+    if choose("Seleccione [L/0]: ",{"l","L","0"}).lower()=="l":
+        return _local_install()
+    return False
+
+
 def run() -> None:
     print("\nCARGAR MODELO VERSIONADO")
     spinner = Spinner(
@@ -33,11 +62,20 @@ def run() -> None:
             "Modelos publicados encontrados: "
             f"{len(releases)}"
         )
-    except Exception:
-        spinner.fail(
-            "No fue posible consultar GitHub Releases"
-        )
-        raise
+    except Exception as exc:
+        spinner.fail("No fue posible consultar GitHub Releases")
+        from lithiumscope.distribution.transport import explain_error
+        from lithiumscope.core.logging.session import get_logger
+        get_logger("distribution.installation").exception("Release catalog unavailable")
+        print(explain_error(exc))
+        try:
+            releases, checked = cached_model_releases()
+        except (OSError, ValueError, KeyError, TypeError):
+            releases, checked = [], None
+        if releases:
+            print(f"[AVISO] Catálogo local del {checked}; no confirma la última versión remota.")
+        else:
+            return _recovery()
 
     if not releases:
         print(
@@ -48,8 +86,9 @@ def run() -> None:
             "El programa busca únicamente assets *-artifacts.zip; "
             "ignora los archivos Source code generados por GitHub."
         )
-        return
+        return _recovery()
 
+    print("Orden: publicación más reciente primero (según catálogo disponible).")
     for index, release in enumerate(
         releases,
         start=1,
@@ -64,10 +103,11 @@ def run() -> None:
             f"{published} | "
             f"{_size_mib(release.asset_size)}"
         )
+    print("L. Instalar ZIP oficial local")
     print("0. Volver")
 
     allowed = {
-        "0",
+        "0", "l", "L",
         *{
             str(index)
             for index in range(
@@ -82,6 +122,8 @@ def run() -> None:
     )
     if choice == "0":
         return False
+    if choice.lower() == "l":
+        return _local_install()
 
     release = releases[
         int(choice) - 1
@@ -145,12 +187,15 @@ def run() -> None:
                     "Descarga verificada: "
                     f"{release.asset_name}"
                 )
-            except Exception:
-                download_spinner.fail(
-                    "Falló la descarga: "
-                    f"{release.asset_name}"
-                )
-                raise
+            except Exception as exc:
+                download_spinner.fail(f"Falló la descarga: {release.asset_name}")
+                from lithiumscope.distribution.transport import explain_error
+                get_logger("distribution.installation").exception("Release download failed")
+                print(explain_error(exc))
+                print(f"Asset oficial: {release.asset_url}")
+                if release.asset_digest:
+                    print(f"SHA-256 esperado: {release.asset_digest}")
+                return _recovery()
 
             install_spinner = Spinner(
                 "Validando e instalando Modelos 1 y 2..."
