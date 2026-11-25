@@ -8,7 +8,7 @@ import pandas as pd
 from lithiumscope.core.config import load_config
 from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.paths import PROJECT_ROOT
-from lithiumscope.datasets.georoc_ingestion import (
+from lithiumscope.datasets.adapters.georoc_ingestion import (
     ingest_georoc_files,
 )
 from lithiumscope.datasets.harmonization import (
@@ -67,7 +67,7 @@ def prepare_model_1_training_source(
     if not georoc_files:
         # Reuse the existing filtered GEOROC acquisition path from the lab.
         # A missing or failed GEOROC source must never silently be skipped.
-        from lithiumscope.datasets.georoc_filtered_acquisition import (
+        from lithiumscope.tools.acquisition.georoc.filtered import (
             GEOROC_FILTERED_NAME,
             acquire_filtered_georoc,
             write_acquisition_contract,
