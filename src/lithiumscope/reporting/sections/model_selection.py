@@ -1,6 +1,8 @@
 """Scientific selection justification in the ORIGINAL integrated PDF builder."""
 from __future__ import annotations
 
+import math
+
 from reportlab.lib.units import cm
 from reportlab.platypus import PageBreak, Spacer
 
@@ -11,7 +13,8 @@ def _number(x, digits=3):
     if x is None:
         return "N/D"
     try:
-        return f"{float(x):.{digits}f}".replace(".", ",")
+        value = float(x)
+        return f"{value:.{digits}f}".replace(".", ",") if math.isfinite(value) else "N/D"
     except (ValueError, TypeError):
         return "N/D"
 
@@ -21,17 +24,15 @@ def _pct(x):
 
 
 def _run_label(run_id, group):
-    day = run_id.split("_")[1]
-    time = run_id.split("_")[2][:4]
-    if group == "m1":
-        if day == "20260925":
-            return "Release Sep (SVM)"
-        if day == "20261105":
-            return "Control Nov 5 (SVM)"
-        return "Ampliado Nov 6 (SVM)"
-    if day == "20260920":
-        return "Release Sep (CatBoost)"
-    return f"Nov {int(day[-2:])} {time[:2]}:{time[2:]}"
+    historical = {
+        "training_20260925_111245_m0300": "Release Sep (SVM)",
+        "training_20261105_204029_m0300": "Control Nov 5 (SVM)",
+        "training_20261106_111653_m0300": "Ampliado Nov 6 (SVM)",
+        "training_20260920_195933_m0300": "Release Sep (CatBoost)",
+    }
+    if run_id in historical:
+        return historical[run_id]
+    return str(run_id)
 
 
 def build_model_selection(context, styles) -> list:
@@ -39,6 +40,12 @@ def build_model_selection(context, styles) -> list:
     evidence = context.runtime.get("model_selection_evidence")
     if context.mode != "demonstration" or not evidence:
         return []
+    if evidence.get("state") in {"NOT_APPLICABLE_TO_SELECTED_PAIR", "HISTORICAL_EVIDENCE_UNAVAILABLE"}:
+        return [PageBreak(), paragraph("Anexo científico - evidencia histórica no disponible para esta selección",
+                                       styles["LS_H1"]),
+                paragraph(f"M1: {evidence.get('model_1_selected_run')}; M2: {evidence.get('model_2_selected_run')}. "
+                          "Se conservan las predicciones de los modelos utilizados, sin extrapolar comparaciones "
+                          "de otras versiones ni certificar un release.", styles["LS_Body"])]
     m1_rows = evidence["model_1_runs"]
     m2_rows = evidence["model_2_runs"]
     paired = evidence["model_1_paired"]
@@ -238,15 +245,11 @@ def _comparison_and_decision(evidence, styles):
         paragraph("E. Decision de seleccion para este reporte",
                   styles["LS_H2"]),
         paragraph(
-            "M1: SVM ampliado de 3.420 observaciones. "
-            "M2: CatBoost historico publicado, de 126 caracteristicas. "
-            "La v4 es el candidato de investigacion con mejores "
-            "metricas de desarrollo, pero su superioridad no es "
-            "estadisticamente concluyente y la prediccion operativa "
-            "actual no incorpora sus 44 descriptores red-edge: "
-            "sustituirlos por ceros produciria scores incorrectos. "
-            "Por eso NO se usa v4 para generar las predicciones "
-            "de esta demostracion.",
+            f"M1: {evidence.get('model_1_selected_run', 'N/D')}. "
+            f"M2: {evidence.get('model_2_selected_run', 'N/D')}. "
+            "La comparación corresponde a los artefactos históricos recuperados; "
+            "no certifica superioridad ni compatibilidad del scorer actual. "
+            "La evaluación v4 requiere descriptores red-edge reales; no se sustituyen por ceros.",
             styles["LS_Body"],
         ),
         paragraph(

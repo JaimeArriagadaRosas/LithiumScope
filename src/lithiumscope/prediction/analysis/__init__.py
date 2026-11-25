@@ -22,12 +22,25 @@ def ensure_case_ids(frame: pd.DataFrame) -> pd.DataFrame:
             for index, value in enumerate(result[source].tolist())
         ]
 
-    seen: dict[str, int] = {}
+    reserved = set(values)
+    used: set[str] = set()
     unique: list[str] = []
     for value in values:
-        count = seen.get(value, 0) + 1
-        seen[value] = count
-        unique.append(value if count == 1 else f"{value}__{count}")
+        candidate = value
+        count = 2
+        while candidate in used:
+            candidate = f"{value}__{count}"
+            count += 1
+            if candidate in reserved:
+                continue
+            if candidate not in used:
+                break
+        if candidate != value:
+            while candidate in reserved or candidate in used:
+                candidate = f"{value}__{count}"
+                count += 1
+        unique.append(candidate)
+        used.add(candidate)
     result["case_id"] = unique
     return result
 
@@ -203,16 +216,19 @@ def concordance_table(
         )
 
     output = paired.copy()
-    output["model_1_relative_high"] = (
-        pd.to_numeric(output["Li_icpms_predicted"], errors="coerce")
-        >= float(lithium_threshold_ppm)
-    )
-    output["model_2_relative_high"] = (
-        pd.to_numeric(output["prospectivity_score"], errors="coerce")
-        >= float(model_2_probability_threshold)
-    )
+    li_cut, score_cut = float(lithium_threshold_ppm), float(model_2_probability_threshold)
+    if not math.isfinite(li_cut) or li_cut < 0 or not 0 <= score_cut <= 1:
+        raise ValueError("Invalid concordance thresholds")
+    li = pd.to_numeric(output["Li_icpms_predicted"], errors="coerce")
+    scores = pd.to_numeric(output["prospectivity_score"], errors="coerce")
+    valid_li = np.isfinite(li) & li.ge(0)
+    valid_score = np.isfinite(scores) & scores.between(0, 1)
+    output["model_1_relative_high"] = li.ge(li_cut).astype("boolean").where(valid_li)
+    output["model_2_relative_high"] = scores.ge(score_cut).astype("boolean").where(valid_score)
 
     def label(row) -> str:
+        if pd.isna(row["model_1_relative_high"]) or pd.isna(row["model_2_relative_high"]):
+            return "no_comparable"
         m1 = bool(row["model_1_relative_high"])
         m2 = bool(row["model_2_relative_high"])
         if m1 and m2:

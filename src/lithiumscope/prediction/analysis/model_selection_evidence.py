@@ -66,6 +66,25 @@ def _selection_row(group: str, run_id: str, root: Path) -> dict:
 
 def gather_selection_evidence(m1_identity: dict, m2_identity: dict,
                               *, root: Path = PROJECT_ROOT) -> dict:
+    """Historical annex is optional evidence, never a prerequisite for inference."""
+    if (m1_identity.get("run_id"), m2_identity.get("run_id")) != (M1_RUNS[2], M2_RUNS[0]):
+        return {"state": "NOT_APPLICABLE_TO_SELECTED_PAIR",
+                "model_1_selected_run": m1_identity.get("run_id"),
+                "model_2_selected_run": m2_identity.get("run_id"),
+                "model_2_external_independent_holdout": False,
+                "user_release_approval_required": True}
+    try:
+        return _historical_evidence(m1_identity, m2_identity, root=root)
+    except (OSError, ValueError, KeyError, TypeError, pd.errors.ParserError) as exc:
+        return {"state": "HISTORICAL_EVIDENCE_UNAVAILABLE", "error_type": type(exc).__name__,
+                "model_1_selected_run": m1_identity.get("run_id"),
+                "model_2_selected_run": m2_identity.get("run_id"),
+                "model_2_external_independent_holdout": False,
+                "user_release_approval_required": True}
+
+
+def _historical_evidence(m1_identity: dict, m2_identity: dict,
+                         *, root: Path) -> dict:
     if m1_identity.get("run_id") != M1_RUNS[2]:
         raise ValueError("The planned demonstration must use expanded M1 SVM")
     if m2_identity.get("run_id") != M2_RUNS[0]:
@@ -97,6 +116,7 @@ def gather_selection_evidence(m1_identity: dict, m2_identity: dict,
     if len(six) != 6:
         raise ValueError("Six-model v4 ranking is incomplete")
     out = {
+        "state": "HISTORICAL_COMPARISON",
         "source": "training_artifacts_only_no_manual_metrics",
         "model_1_selected_run": m1_identity["run_id"],
         "model_2_selected_run": m2_identity["run_id"],
@@ -117,9 +137,10 @@ def gather_selection_evidence(m1_identity: dict, m2_identity: dict,
         "model_2_reference_is_retrained_protocol_not_deployed_artifact": True,
         "model_2_external_independent_holdout": False,
         "v4_original_prediction_interface_has_44_missing_features": True,
+        "v4_missing_feature_note_scope": "historical_interface_only_not_current_inference",
         "selection_reason": {
             "model_1": "Pareado exploratorio 1004 casos: RMSE y MAE menores, con limites de folds cambiados y sensibilidad a Li extremo.",
-            "model_2": "CatBoost publicado de 126 features mantiene inferencia operativa; v4 no demuestra superioridad estadistica y el scorer aun no usa sus 44 features adicionales.",
+            "model_2": "CatBoost publicado de 126 features es la referencia de esta comparacion historica; v4 no demuestra superioridad estadistica. La compatibilidad espectral debe verificarse con el scorer actual y sus artefactos.",
         },
         "user_release_approval_required": True,
     }
