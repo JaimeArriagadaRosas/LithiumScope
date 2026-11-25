@@ -40,46 +40,19 @@ def fraction(value) -> str:
 
 
 
-def nonnegative_interval(
-    low,
-    high,
-    digits: int = 3,
-) -> str:
-    try:
-        low_value = float(low)
-        high_value = float(high)
-    except (TypeError, ValueError):
+def interval_text(low, high, digits: int = 3) -> str:
+    if number(low,digits)=="N/D" or number(high,digits)=="N/D":
         return "N/D"
-    if not (
-        math.isfinite(low_value)
-        and math.isfinite(high_value)
-        and high_value >= max(0.0, low_value)
-    ):
-        return "N/D"
-    return (
-        f"{max(0.0, low_value):.{digits}f} a "
-        f"{high_value:.{digits}f} ppm"
-    )
+    return f"{number(low,digits)} a {number(high,digits)} ppm"
 
 
-def operating_classification(
-    score,
-    threshold,
-) -> str:
-    try:
-        score_value = float(score)
-        threshold_value = float(threshold)
-    except (TypeError, ValueError):
-        return "N/D"
-    if not (
-        math.isfinite(score_value)
-        and math.isfinite(threshold_value)
-        and 0 <= score_value <= 1
-        and 0 <= threshold_value <= 1
-    ):
-        return "N/D"
-    return (
-        "POSITIVA"
-        if score_value >= threshold_value
-        else "NEGATIVA"
-    )
+def nonnegative_interval(low, high, digits: int = 3) -> str:
+    """Deprecated compatibility helper; scientific preparation belongs to analysis."""
+    from lithiumscope.prediction.analysis.report_inputs import physical_interval
+    return interval_text(*physical_interval(low,high),digits)
+
+
+def operating_classification(score, threshold) -> str:
+    """Deprecated compatibility helper, unused by renderer."""
+    from lithiumscope.prediction.analysis.report_inputs import operating_classification as classify
+    return classify(score,threshold)

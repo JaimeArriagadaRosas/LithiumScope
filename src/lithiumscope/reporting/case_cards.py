@@ -6,7 +6,7 @@ from reportlab.platypus import Spacer
 
 from lithiumscope.reporting.formatting import (
     fraction,
-    nonnegative_interval,
+    interval_text,
     number,
 )
 from lithiumscope.reporting.primitives import (
@@ -83,7 +83,7 @@ def case_story(
         ],
         [
             "Intervalo empirico q90 M1",
-            nonnegative_interval(
+            interval_text(
                 interval_low,
                 interval_high,
                 3,
