@@ -17,22 +17,32 @@ def frame_digest(frame: pd.DataFrame) -> str:
     return sha256(frame.to_csv(index=True).encode("utf-8")).hexdigest()
 
 
-def signature(group: str, source: Path, config: dict, frame: pd.DataFrame) -> str:
+def signature(group: str, source: Path, config: dict, frame: pd.DataFrame, *, protocol=None) -> str:
     package = Path(__file__).resolve().parents[1]
     roots = [package / group, package / "core" / "scientific", package / "datasets",
              package / "results"]
     code = {p.relative_to(package).as_posix(): file_sha256(p)
             for root in roots for p in sorted(root.rglob("*.py"))}
+    from importlib.metadata import version
+    for name in ("pipeline_audit.py", "scientific_checks.py", "config_schema.py"):
+        path = package / "core" / name
+        code[path.relative_to(package).as_posix()] = file_sha256(path)
     return canonical_json_hash({
         "model": group, "scope": "descriptive_full_dataset",
         "source_sha256": file_sha256(source), "config": config,
         "prepared_sha256": frame_digest(frame), "code": code,
+        "schema": [(str(c), str(d)) for c, d in zip(frame.columns, frame.dtypes, strict=True)],
+        "versions": {p: version(p) for p in ("numpy", "pandas", "scikit-learn", "matplotlib")},
+        "protocol": protocol,
     })
 
 
 def verify_eda(directory: Path, expected_signature: str) -> bool:
     try:
-        manifest = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
+        manifest_path = directory / "manifest.json"
+        if directory.is_symlink() or manifest_path.is_symlink():
+            return False
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         artifacts = manifest["artifacts"]
         if manifest["signature"] != expected_signature or manifest["state"] != "completed" or not artifacts:
             return False
@@ -40,7 +50,8 @@ def verify_eda(directory: Path, expected_signature: str) -> bool:
                   if p.is_file() and p != directory / "manifest.json"}
         if actual != set(artifacts):
             return False
-        return all((directory / relative).resolve().is_relative_to(directory.resolve())
+        return all(not (directory / relative).is_symlink()
+                   and (directory / relative).resolve().is_relative_to(directory.resolve())
                    and file_sha256(directory / relative) == digest
                    for relative, digest in artifacts.items())
     except (OSError, ValueError, KeyError, TypeError):
@@ -69,8 +80,10 @@ def complete_run(directory: Path, *, signature_value: str, details: dict) -> Pat
         "schema_version": 1, "run_id": directory.name,
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "state": "completed", "scope": "descriptive_full_dataset",
-        "training_reusable": False, "signature": signature_value,
+        "signature": signature_value,
         **details, "artifacts": artifacts,
+        # Descriptive evidence may be reused for reporting, never as fitted transforms.
+        "training_reusable": False,
     }
     temporary = directory / "manifest.json.tmp"
     temporary.write_text(json.dumps(manifest, indent=2, ensure_ascii=False, allow_nan=False),

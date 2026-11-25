@@ -57,6 +57,7 @@ class PipelineAudit:
         declared={} if exclusion_reasons is None else {str(r["row_index"]):r for r in exclusion_reasons}
         if exclusion_reasons is not None and len(declared)!=len(exclusion_reasons):
             raise ValueError(f"Stage {stage}: duplicate exclusion reasons")
+        pending_exclusions = []
         if self.records:
             if any(idx not in self._previous for idx in current):
                 raise ValueError(f"Stage {stage}: introduced unknown rows")
@@ -76,7 +77,7 @@ class PipelineAudit:
                 item=declared[str(idx)]
                 if not str(item.get("reason","")).strip():
                     raise ValueError(f"Stage {stage}: empty exclusion reason")
-                self.exclusions.append({"stage":stage,"row_index":str(idx),"source":source,"sample_id":sample,
+                pending_exclusions.append({"stage":stage,"row_index":str(idx),"source":source,"sample_id":sample,
                     "source_row_id":stable_source_row_id(self.dataset_sha256,idx) if self.dataset_sha256 else None,
                     "column":item.get("column"),"original":item.get("original"),"reason":item["reason"]})
         elif declared:
@@ -89,14 +90,18 @@ class PipelineAudit:
             "digest_method":f"pandas_hash_rows_{pd.__version__}_plus_schema",
             "added_columns":json.dumps(added,ensure_ascii=False),"removed_columns":json.dumps(removed,ensure_ascii=False),
             "rows_excluded":len(declared)}
-        self.records.append(record)
+        pending_sources, pending_columns = [], []
         for source,group in frame.groupby(sources,sort=True):
             missing=group.isna().sum()
-            self.source_records.append({"stage":stage,"source":str(source),"rows":len(group),
+            pending_sources.append({"stage":stage,"source":str(source),"rows":len(group),
                                         "missing_cells":int(missing.sum())})
-            self.column_records.extend({"stage":stage,"source":str(source),"column":str(name),
+            pending_columns.extend({"stage":stage,"source":str(source),"column":str(name),
                                         "rows":len(group),"missing_cells":int(count)}
                                        for name,count in missing.items())
+        self.records.append(record)
+        self.exclusions.extend(pending_exclusions)
+        self.source_records.extend(pending_sources)
+        self.column_records.extend(pending_columns)
         self._previous=current
         self._previous_columns=columns
         logger.info("STEP %-28s rows=%d cols=%d missing=%d %s",stage,record["rows"],record["columns"],record["missing_cells"],note)
