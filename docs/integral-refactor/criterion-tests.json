@@ -7,7 +7,7 @@
       "tests/datasets/test_csv_encoding.py"
     ],
     "M1-02": [
-      "tests/scientific/shared/test_integral_eda.py",
+      "tests/scientific/shared/treatments/test_integral_eda.py",
       "tests/integration/test_eda_training_integration.py",
       "tests/results/test_eda_protocol.py",
       "tests/scientific/shared/test_eda_profiles.py"
@@ -77,7 +77,7 @@
     "M1-17": [
       "tests/model_1/test_coordinate_lineage.py",
       "tests/core/test_pipeline_audit_transaction.py",
-      "tests/scientific/shared/test_integral_eda.py"
+      "tests/scientific/shared/treatments/test_integral_eda.py"
     ],
     "M1-18": [
       "tests/model_1/test_coordinate_lineage.py",
@@ -286,7 +286,7 @@
     ],
     "ARQ-003": [
       "tests/cli/test_diagnostic_lab_contract.py",
-      "tests/scientific/shared/test_integral_eda.py",
+      "tests/scientific/shared/treatments/test_integral_eda.py",
       "tests/cli/test_diagnostic_acquisition_policy.py"
     ],
     "ARQ-004": [
@@ -318,7 +318,7 @@
       "tests/model_1/test_coordinate_lineage.py"
     ],
     "ARQ-010": [
-      "tests/scientific/shared/test_integral_eda.py",
+      "tests/scientific/shared/treatments/test_integral_eda.py",
       "tests/results/test_eda_protocol.py",
       "tests/scientific/shared/test_eda_profiles.py"
     ],
@@ -370,7 +370,7 @@
       "tests/integration/test_holdout_pipeline_dispatch.py"
     ],
     "ARQ-019": [
-      "tests/scientific/shared/test_integral_eda.py",
+      "tests/scientific/shared/treatments/test_integral_eda.py",
       "tests/runtime/test_candidate_evidence.py",
       "tests/cli/test_readonly_results.py"
     ],
@@ -410,7 +410,7 @@
       "tests/scientific/m2_spectral/test_v4_local_integrity_contract.py"
     ],
     "ARQ-027": [
-      "tests/scientific/shared/test_integral_eda.py",
+      "tests/scientific/shared/treatments/test_integral_eda.py",
       "tests/scientific/shared/test_fold_eda_profiles.py",
       "tests/scientific/shared/test_eda_profiles.py"
     ],
