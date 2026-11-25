@@ -106,6 +106,19 @@ def _prepare_one(group, arm, data, cfg, train, test, seed):
     return result,trace
 
 
+def require_treatments(snapshot, cfg):
+    """Screening must consume the compatible, manually prepared plan."""
+    snapshot = Path(snapshot)
+    key = _identity(snapshot,cfg)
+    directory = snapshot/"treatment_plans"/key
+    if not directory.is_dir():
+        raise FileNotFoundError("Ejecute primero el EDA actualizado (5 > 1) para preparar tratamientos")
+    manifest = _validate(directory,key)
+    if manifest["state"] == "blocked":
+        raise ValueError("El EDA informa una referencia bloqueada; no iniciar competencia")
+    return directory,manifest
+
+
 def prepare_treatments(group, snapshot, cfg):
     snapshot=Path(snapshot)
     data=load_snapshot(snapshot,snapshot.name)

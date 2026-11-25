@@ -15,6 +15,7 @@ from lithiumscope.core.paths import RESULTS_DIR
 from lithiumscope.experiments.generalization.arms import M1_ARMS, M2_ARMS, classification_fit, regression_fit
 from lithiumscope.experiments.generalization.prepared import load_snapshot, prepare_version
 from lithiumscope.experiments.generalization.partitions import partitions
+from lithiumscope.experiments.generalization.preflight import require_treatments
 from lithiumscope.resources.detection.device import detect_device
 
 
@@ -68,9 +69,17 @@ def run_screen(group, source, *, all_families=False, output_root=None, device=No
     data = load_snapshot(directory, directory.name)
     x, y, groups, _, _, _, _ = data
     device = device or detect_device(prefer_gpu=False)
+    plan_directory, plan_manifest = require_treatments(directory,cfg)
+    readiness = pd.read_csv(plan_directory/"treatments.csv")
     outer = partitions(group, data, cfg)
     outer_count, inner_count = len(outer), len(outer[0][2])
     arms = M1_ARMS if group == "model_1" else M2_ARMS
+    expected = {(fold,inner,arm) for fold in range(1,outer_count+1)
+                for inner in range(inner_count+1) for arm in arms}
+    observed = set(zip(readiness.outer_fold,readiness.inner_fold,readiness.arm,strict=True))
+    if expected != observed or len(readiness) != len(expected):
+        raise ValueError("Treatment readiness differs from current partition contract")
+    ready = {(int(row.outer_fold),int(row.inner_fold),row.arm) for row in readiness.itertuples() if row.state == "ready"}
     algorithms = cfg["model"]["algorithms"] if all_families else ["random_forest"]
     from pathlib import Path
     root = Path(output_root) if output_root is not None else RESULTS_DIR / "generalization"
@@ -82,20 +91,29 @@ def run_screen(group, source, *, all_families=False, output_root=None, device=No
         for fold, (tr, te, inner) in enumerate(outer, 1):
             candidates = []
             for arm in arms:
+                if not all((fold,i,arm) in ready for i in range(inner_count+1)):
+                    inner_results.append({"algorithm":algorithm,"outer_fold":fold,"arm":arm,
+                                          "state":"blocked_preflight","reason":"Treatment not ready in every TRAIN partition"})
+                    continue
                 scores = []
+                secondary = []
+                admissible = True
                 for i, (a, b) in enumerate(inner, 1):
                     try:
                         result, _, _ = evaluate(group, algorithm, arm, device, 42+fold*10+i, data, a, b, cfg)
                         scores.append(result[metric])
+                        secondary.append(result["mae"] if group == "model_1" else result["ap"])
+                        if group == "model_1" and result["negative_predictions"]:
+                            admissible = False
                         provenance.extend({"algorithm": algorithm, "fold": fold, "inner_fold": i, "arm": arm, "stage": "inner", **p} for p in result["generated"])
                         inner_results.append({"algorithm": algorithm, "outer_fold": fold, "inner_fold": i,
                             "arm": arm, "state": "ok", **{k:v for k,v in result.items() if k != "generated"}})
                     except Exception as exc:
                         inner_results.append({"algorithm": algorithm, "outer_fold": fold, "inner_fold": i,
                                               "arm": arm, "state": "failed", "reason": str(exc)})
-                if len(scores) == inner_count:
-                    candidates.append((arm, float(np.mean(scores))))
-            selected = (min if group == "model_1" else max)(candidates, key=lambda v: v[1])[0] if candidates else None
+                if len(scores) == inner_count and admissible:
+                    candidates.append((arm, float(np.mean(scores)), float(np.mean(secondary))))
+            selected = (min if group == "model_1" else max)(candidates, key=lambda v: (v[1],v[2]))[0] if candidates else None
             for label, arm in (("reference", "reference"), ("selected_inner", selected)):
                 try:
                     if arm is None:
@@ -121,7 +139,8 @@ def run_screen(group, source, *, all_families=False, output_root=None, device=No
         good = good.merge(complete[complete == outer_count].rename("folds").reset_index(), on=["algorithm", "mode"])
         good.groupby(["algorithm", "mode"])[[metric, "train_"+metric]].mean().to_csv(destination / "summary.csv")
     (destination / "manifest.json").write_text(json.dumps({"state": state, "scope": "development_only",
-        "prepared_identity": directory.name, "algorithms": algorithms, "arms": arms, "inner_folds": inner_count,
+        "prepared_identity": directory.name, "treatment_plan_identity": plan_manifest["identity"],
+        "algorithms": algorithms, "arms": arms, "inner_folds": inner_count,
         "outer_folds": outer_count, "independent_holdout": False, "promotion": False,
         "reference": "same fixed default family settings; not archived Optuna winner"}, indent=2), encoding="utf-8")
     print(f"Estado experimental: {state} | {destination}")
