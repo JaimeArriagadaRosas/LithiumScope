@@ -11,8 +11,8 @@ from lithiumscope.datasets.validation.concentration import valid_concentration
 from lithiumscope.datasets.readers.tabular import load_data
 from lithiumscope.datasets.validation.analytical import parse_analytical_value
 from lithiumscope.datasets.harmonization.observations import reconcile_observations, stable_disambiguation
-from lithiumscope.model_1.preparation.missing_values import normalize_missing_values
-from lithiumscope.model_1.preparation.target_filtering import resolve_target
+from lithiumscope.datasets.validation.missing_values import normalize_missing_values
+from lithiumscope.datasets.validation.target_column import resolve_target
 
 logger = get_logger("model_2.sample_source")
 

@@ -90,3 +90,30 @@ def test_retired_from_import_and_script_reference_detected(tmp_path):
     report=audit_imports(tmp_path)
     assert report["unresolved_local_imports"][0]["target"]=="lithiumscope.core.old"
     assert report["retired_external_references"][0]["target"]=="scripts/scientific/old.py"
+
+
+def test_repository_refactor_has_no_import_boundary_blockers():
+    from pathlib import Path
+    report = audit_imports(Path(__file__).resolve().parents[2])
+    for key in ("syntax_errors", "eager_cycles", "cross_model_edges",
+                "core_to_model_edges", "reporting_to_science_edges",
+                "unresolved_local_imports", "retired_external_references"):
+        assert not report[key], (key, report[key])
+
+
+def test_shared_helpers_preserve_legacy_imports():
+    from lithiumscope.datasets.validation.missing_values import normalize_missing_values
+    from lithiumscope.datasets.validation.target_column import resolve_target
+    from lithiumscope.model_1.preparation import missing_values, target_filtering
+    from lithiumscope.model_1.evaluation import reports as m1_reports
+    from lithiumscope.model_2.evaluation import reports as m2_reports
+    assert missing_values.normalize_missing_values is normalize_missing_values
+    assert target_filtering.resolve_target is resolve_target
+    assert m1_reports.save_json_report is m2_reports.save_json_report
+
+
+def test_historical_bootstrap_is_accessible_without_experiment_import():
+    from lithiumscope.model_1.methodology.dataset_comparison_diagnostics import cluster_bootstrap_improvement
+    report = cluster_bootstrap_improvement([1, 2], [2, 3], [1, 2], ["a", "b"], repeats=8)
+    assert report["mae_gain"]["median"] == 1.0
+    assert report["rmse_gain"]["median"] == 1.0

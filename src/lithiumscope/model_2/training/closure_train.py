@@ -1,11 +1,9 @@
 """Separated train responsibility; preserve prior public API."""
 from __future__ import annotations
 
-from lithiumscope.model_2.training.closure import PROJECT_ROOT
-from typing import TYPE_CHECKING
+from pathlib import Path
 
-if TYPE_CHECKING:
-    from lithiumscope.model_2.training.closure import Path
+from lithiumscope.core.paths import PROJECT_ROOT
 
 def train(root:Path=PROJECT_ROOT, *,preflight_only=False,
           smoke=False,output:Path|None=None):

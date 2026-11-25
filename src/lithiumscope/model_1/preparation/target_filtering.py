@@ -3,20 +3,13 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from lithiumscope.core.exceptions import InputValidationError
 from lithiumscope.core.logging.session import get_logger
 from lithiumscope.datasets.validation.concentration import valid_concentration
 
 logger = get_logger("model_1.target_filtering")
 
 
-def resolve_target(frame: pd.DataFrame, candidates: list[str]) -> str:
-    normalized = {str(column).strip().lower(): column for column in frame.columns}
-    for candidate in candidates:
-        match = normalized.get(candidate.strip().lower())
-        if match is not None:
-            return match
-    raise InputValidationError("Target column not found. Tried: " + ", ".join(candidates))
+from lithiumscope.datasets.validation.target_column import resolve_target as resolve_target
 
 
 def filter_target(
