@@ -52,6 +52,7 @@ def _ranking_row(result) -> dict:
         ),
         "base_algorithm": result.algorithm,
         "target_transform": result.target_transform,
+        "final_treatment_policy": result.final_params.get("treatment_policy","legacy"),
         "label": result.label,
         "rmse_mean": float(folds["rmse"].mean(skipna=False)),
         **{f"oof_{name}": value for name,value in result.overall_metrics.items()},

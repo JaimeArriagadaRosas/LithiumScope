@@ -33,7 +33,7 @@ class ProbeTrial:
 def test_regularized_profile_permits_pilot_while_restricting_complexity():
     trial = ProbeTrial()
     spec = get_algorithm("random_forest")
-    cfg = load_config("model_2")["optimization"]
+    cfg = {**load_config("model_2")["optimization"],"treatment_search_profile":"legacy"}
     assert cfg["random_forest_search_profile"] == "regularized_v3"
     chosen = parameter_space_for("random_forest", spec, cfg)
     assert chosen is random_forest.optuna_space_regularized_v3
@@ -92,7 +92,7 @@ def test_legacy_size_exceptions_have_been_retired():
 
 def test_extra_trees_fairly_receives_class_weight_search():
     from lithiumscope.model_2.training.algorithms import extra_trees
-    cfg = load_config("model_2")["optimization"]
+    cfg = {**load_config("model_2")["optimization"],"treatment_search_profile":"legacy"}
     assert cfg["extra_trees_search_profile"] == "regularized_v2"
     chosen = parameter_space_for("extra_trees", get_algorithm("extra_trees"), cfg)
     assert chosen is extra_trees.optuna_space_regularized_v2
@@ -110,3 +110,20 @@ def test_legacy_rf_v2_and_extra_trees_searches_remain_available():
         "extra_trees", get_algorithm("extra_trees"),
         {"extra_trees_search_profile": "legacy"}
     ) is get_algorithm("extra_trees").module.optuna_space
+
+
+def test_current_profile_preserves_regularized_ranges_and_searches_spectral_treatment():
+    cfg=load_config("model_2")["optimization"]
+    assert cfg["treatment_search_profile"]=="spectral_refinement_v1"
+    class TreatmentProbe(ProbeTrial):
+        def suggest_categorical(self,name,choices):
+            if name=="spectral_treatment":
+                self.calls.append((name,tuple(choices)))
+                return "v3_126"
+            return super().suggest_categorical(name,choices)
+    for name in ("random_forest","extra_trees"):
+        trial=TreatmentProbe()
+        params=parameter_space_for(name,get_algorithm(name),cfg)(trial)
+        assert params["spectral_treatment"]=="v3_126"
+        assert params["min_samples_leaf"]==10
+        assert ("spectral_treatment",("v4","v3_126")) in trial.calls

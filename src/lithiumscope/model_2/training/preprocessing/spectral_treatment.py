@@ -110,3 +110,18 @@ def refinement_search_space(algorithm,base):
             params=base(trial)
         return {**params,"spectral_treatment":trial.suggest_categorical("spectral_treatment",list(OPTIONS[algorithm]))}
     return space
+
+
+def fitted_spectral_evidence(estimator,representation):
+    """Inspect fitted input/selected columns, including final calibrated SVM."""
+    pipelines=[estimator]
+    if hasattr(estimator,"calibrated_classifiers_"):
+        pipelines=[entry.estimator for entry in estimator.calibrated_classifiers_]
+    records=[]
+    for pipeline in pipelines:
+        steps=pipeline.named_steps
+        if steps["spectral_columns"].representation!=representation:
+            raise ValueError("Fitted spectral treatment differs from selected policy")
+        names=list(map(str,pipeline[:-1].get_feature_names_out()))
+        records.append({"input_features":170,"selected_features":names,"selected_count":len(names)})
+    return {"policy":representation,"scope":"final_development_fit_only","fitted_estimators":records}

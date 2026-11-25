@@ -232,6 +232,8 @@ def run_classification_cv(
                 raise
         previous_elapsed = 0.0
 
+    if optimization.get("treatment_search_profile","legacy")!="legacy" and "spectral_treatment" not in final_params:
+        raise ValueError("Missing selected spectral treatment in final Optuna parameters")
     elapsed = (
         previous_elapsed
         + (time.perf_counter() - started)

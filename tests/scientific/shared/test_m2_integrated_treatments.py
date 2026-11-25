@@ -30,3 +30,20 @@ def test_kbest_selection_is_fitted_inside_pipeline():
     estimator=spectral_pipeline(LogisticRegression(),"xgboost","kbest48",42).fit(x,y)
     assert estimator.named_steps["selection"].selector_.get_support().sum()==48
     assert estimator.predict_proba(x.iloc[:2]).shape==(2,2)
+
+
+def test_calibrated_svm_preserves_fold_local_spectral_treatment():
+    from types import SimpleNamespace
+    from sklearn.model_selection import GroupKFold
+    from lithiumscope.model_2.training.factory import create_model
+    from lithiumscope.model_2.training.preprocessing.spectral_treatment import fitted_spectral_evidence
+    x=pd.DataFrame(np.random.default_rng(123).normal(size=(60,170)),columns=[f"f{i}" for i in range(170)])
+    y=np.tile([0,1],30)
+    groups=np.repeat(np.arange(6),10)
+    folds=list(GroupKFold(3).split(x,y,groups))
+    estimator=create_model("svm_rbf",SimpleNamespace(accelerator="cpu"),42,
+        {"spectral_treatment":"v3_126","C":.5,"class_weight":None},
+        calibrated=True,calibration_cv=folds)
+    estimator.fit(x,y)
+    assert estimator.predict_proba(x.iloc[:4]).shape==(4,2)
+    assert fitted_spectral_evidence(estimator,"v3_126")["fitted_estimators"][0]["selected_count"]==126

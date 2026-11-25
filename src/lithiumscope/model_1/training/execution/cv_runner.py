@@ -123,6 +123,8 @@ def run_nested_cv(
     if treatment_profile!="legacy" and (not optimize or target_transform!="identity" or groups is None):
         raise ValueError("Treatment search requires Optuna, grouped CV and identity variant")
     parameter_space=search_space(algorithm,spec.module.optuna_space,treatment_profile)
+    if treatment_profile!="legacy":
+        label += " · tratamientos TRAIN"
     checkpoint = (
         FoldCheckpointStore(checkpoint_root, variant_id, identity=evaluation_identity(checkpoint_root,model_group="model_1",
             x=prepared.x,y=prepared.y,groups=groups,splits=outer_splits,
@@ -228,6 +230,8 @@ def run_nested_cv(
                 raise
         previous_elapsed = 0.0
 
+    if treatment_profile!="legacy" and "treatment_policy" not in final_params:
+        raise ValueError("Missing selected treatment in final Optuna parameters")
     elapsed = previous_elapsed + (time.perf_counter() - started)
     if checkpoint and algorithm_cache is None:
         checkpoint.save_algorithm(

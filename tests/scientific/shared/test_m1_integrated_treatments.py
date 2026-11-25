@@ -34,3 +34,21 @@ def test_bootstrap_matches_verified_experiment():
     g=pd.Series(np.repeat(list("abcdefghij"),10),index=y.index)
     _,_,_,trace=regression_resample(x,y,g,g,"rare_group_bootstrap",42)
     assert [str(y.index[i]) for i in rare_group_positions(y,g,42)]==[t["row"] for t in trace]
+
+
+def test_canonical_factory_produces_nonnegative_raw_schema_predictor():
+    from types import SimpleNamespace
+    from lithiumscope.model_1.training.factory import build_pipeline
+    from lithiumscope.model_1.training.preprocessing.tabular import FeatureSchema
+    x=pd.DataFrame({"a":np.arange(40,dtype=float),"Latitude":np.linspace(-22,-20,40),
+                    "Longitude":np.linspace(-70,-68,40)})
+    y=pd.Series(np.arange(40,dtype=float))
+    g=pd.Series(np.repeat(np.arange(4),10))
+    schema=FeatureSchema(list(x.columns),[],2,"stable_v1")
+    estimator=build_pipeline("svm",SimpleNamespace(accelerator="cpu"),42,schema,
+                             {"treatment_policy":"bounded_log_no_coordinates","C":10.})
+    fit_regression_estimator(estimator,x,y,g)
+    baseline=estimator.predict(x)
+    changed=x.assign(Latitude=0.,Longitude=0.)
+    assert np.allclose(baseline,estimator.predict(changed))
+    assert ((baseline>=0)&(baseline<=y.max()+1e-10)).all()

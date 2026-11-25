@@ -48,7 +48,13 @@ def predict_model_1_frame(
     provenance = x.attrs.get("prediction_provenance", {})
     missing_after_preparation = provenance.get("missing_expected_columns", missing_after_preparation)
     generated_during_preparation = provenance.get("generated_during_preparation", generated_during_preparation)
-    predictions = np.asarray(bundle["estimator"].predict(x), dtype=float)
+    estimator=bundle["estimator"]
+    treatment_projection=None
+    if bundle.get("treatment_policy") is not None and hasattr(estimator,"prediction_evidence"):
+        predictions,treatment_projection=estimator.prediction_evidence(x)
+        predictions=np.asarray(predictions,dtype=float)
+    else:
+        predictions=np.asarray(estimator.predict(x),dtype=float)
     if predictions.shape != (len(x),):
         raise ValueError("M1 estimator did not emit one prediction per input row")
     output = frame.copy()
@@ -56,7 +62,8 @@ def predict_model_1_frame(
 
     interval = bundle.get("oof_absolute_residual_q90")
     if interval is not None and np.isfinite(float(interval)) and float(interval) >= 0:
-        output["Li_icpms_interval_low_q90"] = predictions - float(interval)
+        lower=predictions-float(interval)
+        output["Li_icpms_interval_low_q90"] = np.maximum(lower,0.) if treatment_projection is not None else lower
         output["Li_icpms_interval_high_q90"] = predictions + float(interval)
 
     profile = bundle.get("applicability_profile", {})
@@ -88,6 +95,9 @@ def predict_model_1_frame(
     diagnostics = {
         "coordinate_report":provenance.get("coordinate_report"),
         "algorithm": bundle.get("algorithm", "unknown"),
+        "treatment_policy":bundle.get("treatment_policy"),
+        "effective_target_transform":bundle.get("effective_target_transform",bundle.get("target_transform")),
+        "treatment_projection":treatment_projection,
         "rows": len(frame),
         "expected_columns": expected,
         "missing_raw_input_columns": missing_from_raw_input,

@@ -97,6 +97,11 @@ def _finalize_scientific_winner(
         policy={"algorithm":winner,"li_cutoff_ppm":threshold,"operating_threshold":operating_threshold,
                 "calibration":selected_calibration,"quality_policy":quality_audit})
     final_estimator = fit_final_policy(x_final,y_final,groups_final)
+    spectral_treatment=winner_result.final_params.get("spectral_treatment","legacy")
+    if spectral_treatment!="legacy":
+        from lithiumscope.model_2.training.preprocessing.spectral_treatment import fitted_spectral_evidence
+        from lithiumscope.results.atomic_exports import write_json
+        write_json(context.manifests/"winner_spectral_treatment.json",fitted_spectral_evidence(final_estimator,spectral_treatment))
     profile = feature_range_profile(x_final)
 
     baseline_row = baseline[0]
