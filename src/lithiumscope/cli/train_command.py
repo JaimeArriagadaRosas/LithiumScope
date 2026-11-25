@@ -68,7 +68,7 @@ def _run_impl() -> None:
         if model_2_config["training"].get("spectral_v4", {}).get("enabled"):
             cohort = "783 ampliadas" if expansion_enabled else "706 históricas"
             print(
-                "\nModelo 2 v4: 170 características espectrales reales "
+                "\nModelo 2: 170 características espectrales reales "
                 "(126 originales + 44 red-edge), seis algoritmos, "
                 f"{cohort}; QA95 SOLO TRAIN."
             )

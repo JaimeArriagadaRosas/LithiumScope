@@ -71,10 +71,18 @@ def test_validation_menu_integral_dispatch(monkeypatch):
 
 def test_validation_menu_labels_and_spacing(monkeypatch, capsys):
     monkeypatch.setattr(lab,"choose",lambda *_:"3")
-    monkeypatch.setattr(lab,"_treatment_experiments",lambda:print("EVALUACIÓN EXPERIMENTAL"))
+    monkeypatch.setattr(lab,"_treatment_menu",lambda:print("EVALUACIÓN EXPERIMENTAL"))
     lab._validation_menu()
     out=capsys.readouterr().out
     assert "2. Simulación y comparaciones de modelos" in out
     assert "3. Evaluación experimental de tratamiento de datos" in out
     assert "4. Ejecutar todo\n" in out
     assert "\n\nEVALUACIÓN EXPERIMENTAL" in out
+
+def test_treatment_menu_m1_dispatch(monkeypatch):
+    from lithiumscope.cli import m1_targeted_command
+    monkeypatch.setattr(lab, "choose", lambda *_: "2")
+    calls = []
+    monkeypatch.setattr(m1_targeted_command, "run", lambda: calls.append("m1") or True)
+    assert lab._treatment_menu() is True
+    assert calls == ["m1"]

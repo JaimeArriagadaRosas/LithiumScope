@@ -106,7 +106,7 @@ def _run_simulations() -> bool:
     return record["state"] == "COMPLETADO"
 
 
-def _treatment_experiments(*, all_families=None) -> bool:
+def _treatment_experiments(*, all_families=None, groups=("model_1", "model_2")) -> bool:
     from lithiumscope.experiments.generalization.screen import run_screen
     from lithiumscope.core.logging.session import run_log
     from lithiumscope.results.atomic_exports import write_json
@@ -120,11 +120,11 @@ def _treatment_experiments(*, all_families=None) -> bool:
             return False
         all_families=selection=="s"
     print("\nModo: "+("evaluación completa" if all_families else "piloto Random Forest"))
-    print("Modelos: M1 y M2")
+    print("Modelos: " + ", ".join(group.replace("model_", "M") for group in groups))
     print("Algoritmos: "+("12 familias" if all_families else "Random Forest en ambos modelos"))
     print("Ajustes diagnósticos, sin guardar ni promover modelos.\n",flush=True)
     records=[]
-    for group in ("model_1","model_2"):
+    for group in groups:
         try:
             with run_log("simulations",group+"_treatments"):
                 path=run_screen(group,_eda_source(group),all_families=all_families)
@@ -145,6 +145,21 @@ def _treatment_experiments(*, all_families=None) -> bool:
     return complete
 
 
+def _treatment_menu():
+    print("\nEVALUACIÓN EXPERIMENTAL DE TRATAMIENTOS")
+    print("1. Evaluación completa (ambos modelos)")
+    print("2. Evaluación focalizada de M1")
+    print("3. Evaluación focalizada de M2 (protocolo existente)")
+    print("0. Volver")
+    choice = choose("Seleccione una opción [0-3]: ", set("0123"))
+    if choice == "0":
+        return False
+    if choice == "2":
+        from lithiumscope.cli.m1_targeted_command import run
+        return run()
+    return _treatment_experiments(all_families=True, groups=("model_2",) if choice == "3" else ("model_1", "model_2"))
+
+
 def _validation_menu() -> bool | None:
     print("\nEJECUCIÓN DE TESTS Y SIMULACIONES\n")
     print("1. Tests completos del software")
@@ -156,7 +171,7 @@ def _validation_menu() -> bool | None:
     if choice=="0":
         return False
     print("\n")
-    operations=[_run_tests,_run_simulations,_treatment_experiments]
+    operations=[_run_tests,_run_simulations,_treatment_menu]
     if choice=="4":
         print("Modo integral: incluye ajustes diagnósticos de las doce familias. Puede ser costoso.")
         selected=[_run_tests,_run_simulations,lambda:_treatment_experiments(all_families=True)]
