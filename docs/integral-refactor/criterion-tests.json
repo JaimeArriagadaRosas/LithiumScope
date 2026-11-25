@@ -69,7 +69,7 @@
     "M1-16": [
       "tests/datasets/test_georoc_provenance_contract.py",
       "tests/model_1/test_source_reconciliation.py",
-      "tests/datasets/test_training_georoc_auto_acquisition.py"
+      "tests/datasets/test_harmonization_conflicts.py"
     ],
     "M1-17": [
       "tests/model_1/test_coordinate_lineage.py",
@@ -483,7 +483,8 @@
     ],
     "ARQ-054": [
       "tests/datasets/test_management_provenance_architecture.py",
-      "tests/datasets/test_dataset_harmonization.py"
+      "tests/datasets/test_dataset_harmonization.py",
+      "tests/datasets/test_harmonization_conflicts.py"
     ],
     "ARQ-055": [
       "tests/datasets/test_acquisition_architecture.py",
@@ -499,7 +500,8 @@
     ],
     "ARQ-058": [
       "tests/datasets/test_historical_relocation.py",
-      "tests/datasets/test_management_provenance_architecture.py"
+      "tests/datasets/test_management_provenance_architecture.py",
+      "tests/datasets/test_harmonization_conflicts.py"
     ],
     "ARQ-059": [
       "tests/scientific/shared/test_scientific_scenarios.py",

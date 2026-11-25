@@ -17,6 +17,7 @@ data_sources:
     input_glob: data/raw/model_1/georoc/*.csv
     harmonized_path: data/interim/model_1/georoc_harmonized.csv
     combined_path: data/processed/model_1/training_combined.csv
+    frozen_combined_sha256: 94e78b2662b002184bcfd550be0aacc522f5eec73283d0c12f75be29599bcc94
     audit_path: data/processed/model_1/source_merge_audit.json
     chunksize: 100000
     allowed_material_types:

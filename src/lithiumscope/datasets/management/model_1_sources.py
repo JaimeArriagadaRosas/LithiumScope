@@ -6,6 +6,7 @@ from pathlib import Path
 import pandas as pd
 
 from lithiumscope.core.config import load_config
+from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.datasets.adapters.georoc_ingestion import (
@@ -53,6 +54,14 @@ def prepare_model_1_training_source(
     )
     if not use_georoc:
         return base_dataset
+
+    existing = _project_path(str(georoc.get('combined_path', 'data/processed/model_1/training_combined.csv')))
+    expected = georoc.get('frozen_combined_sha256')
+    if existing.is_file() and expected:
+        if file_sha256(existing) != expected:
+            raise ValueError('Frozen combined M1 dataset hash mismatch; no automatic overwrite')
+        logger.info('Reusing verified frozen M1 dataset: %s', existing)
+        return existing
 
     raw_glob = str(
         georoc.get(

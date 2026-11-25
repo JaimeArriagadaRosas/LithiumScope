@@ -18,7 +18,7 @@ def test_packaged_defaults_copy_only_missing_files(monkeypatch, tmp_path: Path) 
     (defaults / "app.yaml").write_text("schema_version: 1\napp: {}\npaths: {}\n", encoding="utf-8")
     (defaults / "frozen.json").write_text('{"status":"new"}\n', encoding="utf-8")
 
-    monkeypatch.setattr(config, "__file__", str(package / "core" / "config.py"))
+    monkeypatch.setattr(config, "__file__", str(package / "core" / "configuration" / "loading.py"))
     local = tmp_path / "user-config"
     monkeypatch.setattr(config, "CONFIG_DIR", local)
 
