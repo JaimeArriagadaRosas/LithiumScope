@@ -11,7 +11,10 @@ from typing import Any
 
 import numpy as np
 
-from lithiumscope.resources.manager import resource_snapshot
+def resource_snapshot(*args, **kwargs):
+    # Keep lightweight integrity imports independent of resource initialization.
+    from lithiumscope.resources.manager import resource_snapshot as snapshot
+    return snapshot(*args, **kwargs)
 
 _TRACKED_PACKAGES = (
     "numpy",

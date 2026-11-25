@@ -31,9 +31,9 @@ def recover(root, manifest, expected_sha, output, *, metadata_cache, online=Fals
     root, manifest, output, metadata_cache = map(Path, (root, manifest, output, metadata_cache))
     if not expected_sha or file_sha256(manifest) != expected_sha or max_new < 0:
         raise ValueError("Unverified archived manifest or invalid budget")
-    data = pd.read_csv(manifest)
+    data = pd.read_csv(manifest,dtype={"sample_id":str,"sentinel_scene_id":str})
     required = {"sample_id", "image_path", "sentinel_scene_id", "latitude", "longitude"}
-    if not required <= set(data) or data.sample_id.isna().any() or not data.sample_id.is_unique:
+    if not required <= set(data) or data.sample_id.isna().any() or not data.sample_id.is_unique or not data.latitude.between(-90,90).all() or not data.longitude.between(-180,180).all():
         raise ValueError("Archived manifest identity incomplete")
     if not output.resolve().is_relative_to((root/"results").resolve()):
         raise ValueError("Recovery must remain under isolated results directory")

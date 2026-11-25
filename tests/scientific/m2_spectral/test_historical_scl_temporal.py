@@ -35,3 +35,36 @@ def test_temporal_windows_require_three_nonoverlapping_intervals():
     assert validate_windows(valid)==sorted(valid)
     with pytest.raises(ValueError,match="disjoint"):
         validate_windows([valid[0],valid[1],"2024-01-15/2024-01-31"])
+
+
+def test_historical_recovery_persists_mask_without_mutating_source(tmp_path):
+    import json
+    import pandas as pd
+    from lithiumscope.core.hashing import file_sha256
+    from lithiumscope.model_2.methodology.historical_scl_recovery import recover
+
+    patch=tmp_path/"patch.npy"
+    np.save(patch,np.ones((6,32,32)))
+    side=patch.with_suffix(".json")
+    side.write_text(json.dumps({"sample_id":"0001","scene_id":"scene","latitude":-20.,"longitude":-70.}))
+    manifest=tmp_path/"manifest.csv"
+    pd.DataFrame([{"sample_id":"0001","image_path":str(patch),"sentinel_scene_id":"scene",
+                   "latitude":-20.,"longitude":-70.}]).to_csv(manifest,index=False)
+    cache=tmp_path/"metadata"
+    cache.mkdir()
+    scl_asset=tmp_path/"scl.tif"
+    scl_asset.write_bytes(b"synthetic")
+    (cache/"scene.json").write_text(json.dumps({"id":"scene","collection":"sentinel-2-l2a",
+                                    "assets":{"scl":{"href":str(scl_asset)}}}))
+    hashes=[file_sha256(p) for p in (patch,side,manifest)]
+    calls=[]
+    def reader(*args,**kwargs):
+        calls.append(1)
+        assert kwargs["categorical"]
+        return np.full((32,32),5.)
+    out=tmp_path/"results"/"audit"
+    first=recover(tmp_path,manifest,hashes[2],out,metadata_cache=cache,reader=reader)
+    second=recover(tmp_path,manifest,hashes[2],out,metadata_cache=cache,reader=reader)
+    assert first["recovered"]==second["recovered"]==1
+    assert first["new_attempts"]==1 and second["new_attempts"]==0 and len(calls)==1
+    assert [file_sha256(p) for p in (patch,side,manifest)]==hashes
