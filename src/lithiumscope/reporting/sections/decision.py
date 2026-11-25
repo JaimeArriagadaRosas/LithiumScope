@@ -1,17 +1,14 @@
 """One-page dynamic M1 -> M2 decision view for the existing ReportLab PDF."""
 from __future__ import annotations
 
-import io
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from PIL import Image as PILImage
 from reportlab.lib import colors
 from reportlab.lib.units import cm
 from reportlab.platypus import Image, KeepTogether, Spacer, Table, TableStyle
 
-from lithiumscope.prediction.exports.charts import _rgb_preview
 from lithiumscope.reporting.primitives import paragraph, table
 
 
@@ -24,25 +21,15 @@ def _fmt(value, digits: int = 2) -> str:
 
 
 def _image_or_note(path_value, styles):
-    path = Path(str(path_value))
-    if not path.is_file():
-        return paragraph("Imagen original no disponible.", styles["LS_Small"])
-    try:
-        rgb = _rgb_preview(path)
-        if rgb is None:
-            return paragraph("RGB no disponible.", styles["LS_Small"])
-        rgb_uint8 = np.uint8(np.clip(rgb, 0, 1) * 255)
-        buffer = io.BytesIO()
-        PILImage.fromarray(rgb_uint8, mode="RGB").resize(
-            (192, 192), PILImage.Resampling.NEAREST
-        ).save(buffer, format="PNG")
-        buffer.seek(0)
-        return Image(buffer, width=3.6 * cm, height=3.6 * cm)
-    except (OSError, ValueError, RuntimeError):
-        return paragraph("No fue posible visualizar el parche.", styles["LS_Small"])
+    if path_value is None:
+        return paragraph("Vista RGB no disponible o sin orden de bandas documentado.", styles["LS_Small"])
+    path = Path(path_value)
+    if path.suffix.lower() != ".png" or not path.is_file():
+        return paragraph("Vista RGB preparada no disponible.", styles["LS_Small"])
+    return Image(str(path), width=3.6 * cm, height=3.6 * cm)
 
 
-def _image_cards(selected: pd.DataFrame, winner_id: str | None, styles):
+def _image_cards(selected: pd.DataFrame, winner_id: str | None, styles, previews):
     cards = []
     for _, row in selected.iterrows():
         case_id = str(row.case_id)
@@ -52,8 +39,8 @@ def _image_cards(selected: pd.DataFrame, winner_id: str | None, styles):
             styles["LS_Small"],
         )
         score = _fmt(row["_m2_score"], 3)
-        status = "M2 aplicable" if bool(row["_m2_ok"]) else "M2 fuera de dominio"
-        contents = [[heading], [_image_or_note(row.get("image"), styles)], [
+        status = "M2 aplicable" if bool(row["_m2_ok"]) else "M2 no aplicable"
+        contents = [[heading], [_image_or_note(previews.get(case_id), styles)], [
             paragraph(f"Score M2: {score}", styles["LS_Small"])
         ], [paragraph(status, styles["LS_Small"])]]
         card = Table(contents, colWidths=[5.35 * cm], hAlign="CENTER")
@@ -92,7 +79,9 @@ def build_decision_page(context, styles) -> list:
         ),
         paragraph("Etapa 1 - Preselección por Modelo 1", styles["LS_H2"]),
     ]
-    if decision.ranked.empty:
+    required = {"case_id", "_m1_ppm", "_m1_rank_score", "_m1_position", "_m2_score", "_m1_ok"}
+    if decision.ranked.empty or not required <= set(decision.ranked.columns):
+        story.append(paragraph(decision.reason, styles["LS_Body"]))
         return story
 
     top_ids = set(decision.selected.case_id.astype(str)) if not decision.selected.empty else set()
@@ -141,14 +130,15 @@ def build_decision_page(context, styles) -> list:
         styles["LS_Small"],
     ))
     if decision.selected.empty:
+        story.append(paragraph(decision.reason, styles["LS_Body"]))
         return story
 
     story.extend([
         paragraph("Etapa 2 - Comparación espectral de las tres imágenes", styles["LS_H2"]),
-        _image_cards(decision.selected, decision.winner_id, styles),
+        _image_cards(decision.selected, decision.winner_id, styles, getattr(context, "decision_previews", {})),
         paragraph(
             "Las imágenes RGB son vistas ilustrativas; el score M2 procede "
-            "del parche multibanda completo (seis bandas).",
+            "de los descriptores espectrales declarados por el modelo, no solo del RGB.",
             styles["LS_Small"],
         ),
         Spacer(1, 0.10 * cm),
@@ -173,7 +163,7 @@ def build_decision_page(context, styles) -> list:
             f"acierto del primer puesto M1 = "
             f"{'sí' if retrospective['m1_first_matches_observed'] else 'no'}; "
             f"acierto tras priorizar con M2 = "
-            f"{'sí' if retrospective['m2_winner_matches_observed'] else 'no'}. "
+            f"{('N/D' if retrospective['m2_winner_matches_observed'] is None else 'sí' if retrospective['m2_winner_matches_observed'] else 'no')}. "
             "No se atribuye ganancia al M2 sin comparar ambos métodos en "
             "más conjuntos independientes. La independencia "
             "geográfica de la demostración no está certificada.",

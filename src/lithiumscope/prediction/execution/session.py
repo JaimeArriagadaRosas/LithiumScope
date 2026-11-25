@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 import json
 from pathlib import Path
+from uuid import uuid4
 
 import joblib
 
@@ -34,8 +35,11 @@ class PredictionSession:
 
     @classmethod
     def create(cls, mode: str) -> "PredictionSession":
-        run_id = f"{mode}_{_timestamp_with_offset()}"
+        if mode not in {"complete", "demonstration"}:
+            raise ValueError("Modo de predicción inválido")
+        run_id = f"{mode}_{_timestamp_with_offset()}_{uuid4().hex[:12]}"
         root = RESULTS_DIR / "predictions" / run_id
+        root.mkdir(parents=True, exist_ok=False)
         model_1 = root / "model_1"
         model_2 = root / "model_2"
         inputs = root / "inputs"
@@ -110,4 +114,9 @@ def load_model_with_identity(model_group: str, *, candidate_run_id: str | None =
         "candidate_status": candidate_status,
         "release_promoted_by_demonstration": False,
     }
+    if model_group == "model_2":
+        bands = bundle.get("bands", bundle.get("band_names"))
+        identity["bands"] = list(bands) if isinstance(bands, (list, tuple)) else None
+        identity["feature_extractor_version"] = bundle.get("feature_extractor_version")
+        identity["feature_count"] = len(bundle.get("feature_columns", [])) or None
     return bundle, model_path, identity

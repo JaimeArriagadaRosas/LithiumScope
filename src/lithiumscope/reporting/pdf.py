@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from uuid import uuid4
 
 import pandas as pd
 from reportlab.lib.pagesizes import A4
@@ -49,6 +50,7 @@ def write_pdf_report(
     runtime: dict | None = None,
     decision,
     statistics: dict,
+    decision_previews: dict[str, Path] | None = None,
 ) -> Path:
     path.parent.mkdir(
         parents=True,
@@ -82,11 +84,13 @@ def write_pdf_report(
         runtime=dict(runtime or {}),
         decision=decision,
         statistics=statistics,
+        decision_previews=dict(decision_previews or {}),
     )
     styles = build_styles()
 
+    temporary = path.with_name(f".{path.name}.{uuid4().hex}.tmp")
     document = SimpleDocTemplate(
-        str(path),
+        str(temporary),
         pagesize=A4,
         rightMargin=1.55 * cm,
         leftMargin=1.55 * cm,
@@ -117,9 +121,13 @@ def write_pdf_report(
             )
         )
 
-    document.build(
-        story,
-        onFirstPage=page_footer,
-        onLaterPages=page_footer,
-    )
+    try:
+        document.build(
+            story,
+            onFirstPage=page_footer,
+            onLaterPages=page_footer,
+        )
+        temporary.replace(path)
+    finally:
+        temporary.unlink(missing_ok=True)
     return path

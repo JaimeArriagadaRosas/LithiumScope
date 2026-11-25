@@ -154,6 +154,10 @@ def write_pdf_report(
     decision = calculate_decision(paired)
     statistics = report_statistics(model_1_predictions, model_2_predictions, concordance,
                                    model_2_classification_threshold, model_1_diagnostics)
+    from lithiumscope.prediction.exports.decision_previews import prepare_decision_previews
+    decision_previews = prepare_decision_previews(
+        decision.selected, model_2_identity, path.parent / "decision_previews"
+    )
     writer = _load_reporting_callable(
         "lithiumscope.reporting.pdf",
         "write_pdf_report",
@@ -187,4 +191,5 @@ def write_pdf_report(
         runtime=runtime,
         decision=decision,
         statistics=statistics,
+        decision_previews=decision_previews,
     )

@@ -8,7 +8,7 @@ def test_integrated_prediction_uses_pdf_not_html():
         / "src"
         / "lithiumscope"
         / "prediction"
-        / "integrated.py"
+        / "execution" / "integrated.py"
     ).read_text(encoding="utf-8")
     report = (
         root
@@ -23,10 +23,10 @@ def test_integrated_prediction_uses_pdf_not_html():
         / "src"
         / "lithiumscope"
         / "prediction"
-        / "integrated_write_outputs.py"
+        / "exports" / "integrated_outputs.py"
     ).read_text(encoding="utf-8")
 
-    assert "integrated_write_outputs import _write_outputs" in integrated
+    assert "prediction.exports.integrated_outputs import _write_outputs" in integrated
     assert 'session.root / "report.pdf"' in output_writer
     assert '"report_pdf": str(report_path)' in output_writer
     assert "def write_pdf_report" in report

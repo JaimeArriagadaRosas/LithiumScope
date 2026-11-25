@@ -11,12 +11,14 @@ from lithiumscope.prediction.exports.chart_guides import bar_guides, scatter_gui
 from lithiumscope.model_2.preparation.imagery import load_imagery
 
 
-def _rgb_preview(path: Path) -> np.ndarray | None:
+def _rgb_preview(path: Path, bands=None) -> np.ndarray | None:
     image = load_imagery(path)
     band_names = [
         str(value).strip().lower()
-        for value in load_config("model_2")["imagery"]["bands"]
+        for value in (bands if bands is not None else load_config("model_2")["imagery"]["bands"])
     ]
+    if bands is not None and (image.shape[0] != len(band_names) or len(set(band_names)) != len(band_names)):
+        return None
     required = ("red", "green", "blue")
     if any(name not in band_names for name in required):
         return None
@@ -36,7 +38,7 @@ def _rgb_preview(path: Path) -> np.ndarray | None:
         if high <= low:
             high = low + 1.0
         rendered[:, :, channel] = np.clip(
-            (band - low) / (high - low),
+            (np.where(np.isfinite(band), band, low) - low) / (high - low),
             0.0,
             1.0,
         )
