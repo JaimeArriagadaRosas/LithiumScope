@@ -18,7 +18,11 @@ def test_reconcile_checkpoint_updates_labels_and_rejects_removed_corrupt_and_inc
     for sid in ("current", "bad", "removed"):
         path = tmp_path / (sid + ".npy")
         np.save(path, np.ones((6, 32, 32), dtype=np.float32))
-        meta = {**make_patch_contract(), "sample_id": sid, "latitude": -20., "longitude": -70.,
+        scl = path.with_suffix(".scl.npy")
+        np.save(scl, np.full((32, 32), 5.))
+        meta = {**make_patch_contract(), "scl_sha256": file_sha256(scl),
+                "acquisition_geometry": "registered_metric_grid_v2",
+                "scientific_patch_qa": {"scientifically_accepted_proxy": True}, "sample_id": sid, "latitude": -20., "longitude": -70.,
                 "scene_id": "scene", "image_sha256": file_sha256(path),
                 "acquisition_signature": acquisition_signature(imagery)}
         path.with_suffix(".json").write_text(json.dumps(meta))

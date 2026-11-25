@@ -1,11 +1,8 @@
 """Isolated responsibility with unchanged original API."""
 from __future__ import annotations
 from typing import TYPE_CHECKING
-
 if TYPE_CHECKING:
     from lithiumscope.model_2.data.builder import Model2DatasetResult, Path
-
-
 def ensure_model_2_dataset(
     model_1_dataset: Path,
     force: bool = False,
@@ -27,6 +24,8 @@ def ensure_model_2_dataset(
         source_signature, acquisition_signature, reconcile_checkpoint, atomic_text, archive_failures,
     )
     import json
+    from lithiumscope.tools.acquisition.sentinel2.registered_patch import validate_interval
+    validate_interval(imagery["datetime"])
     manifest_path = _resolve_project_path(
         str(training["manifest_path"])
     )
@@ -95,10 +94,7 @@ def ensure_model_2_dataset(
                 resumed_samples=len(manifest),
             )
     if manifest_path.exists() and not source_matches:
-        logger.info(
-            "Model 2 source dataset changed; rebuilding manifest "
-            "while reusing cached imagery when possible."
-        )
+        logger.info("Model 2 source or policy changed; reconcile cached imagery.")
     provider = Sentinel2Provider(_sentinel_config(config))
     checkpoint = pd.DataFrame(columns=_MANIFEST_COLUMNS)
     if not force:
@@ -291,9 +287,7 @@ def ensure_model_2_dataset(
             partial_manifest_path,
             failures_path,
         )
-    spinner.succeed(
-        f"Modelo 2 · dataset listo: {len(rows)}/{total} muestras"
-    )
+    spinner.succeed(f"Modelo 2 · dataset listo: {len(rows)}/{total} muestras")
     logger.info(
         "Model 2 manifest generated: %s ready=%d failed=%d resumed=%d",
         manifest_path,

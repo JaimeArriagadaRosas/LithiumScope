@@ -14,7 +14,7 @@ from lithiumscope.model_2.preparation.patch_contract import make_patch_contract,
 
 
 def acquisition_signature(imagery):
-    return canonical_json_hash({"version": 2, **imagery})
+    return canonical_json_hash({"version": 3, **imagery})
 
 
 def source_signature(source_sha, imagery, training):
@@ -53,6 +53,8 @@ def reconcile_checkpoint(checkpoint, samples, imagery, *, root=None):
             sample = current.loc[sid]
             path = resolve_image_path(str(row["image_path"]), root=root)
             raw, meta, _ = load_verified_patch(path, contract)
+            from lithiumscope.tools.acquisition.sentinel2.registered_patch import verify_registered_mask
+            verify_registered_mask(path, meta)
             if (meta.get("acquisition_signature") != expected
                     or meta.get("sample_id") != sid
                     or meta.get("scene_id") != row["sentinel_scene_id"]

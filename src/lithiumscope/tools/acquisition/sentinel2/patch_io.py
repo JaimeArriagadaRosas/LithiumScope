@@ -80,6 +80,11 @@ def download_patch(
 ) -> tuple[Path, dict]:
     from lithiumscope.tools.acquisition.sentinel2.provider import Path, Sentinel2Provider, SentinelAssetError, _asset_href, _read_patch, json, np
     from lithiumscope.core.hashing import file_sha256
+    if acquisition_signature is not None:
+        from lithiumscope.tools.acquisition.sentinel2.registered_patch import download_registered_patch
+        if selected_scene is not None or scientific_quality is not None:
+            raise ValueError("Registered acquisition independently verifies its selected scene")
+        return download_registered_patch(sample_id, latitude, longitude, destination, provider, acquisition_signature)
     if destination.exists() and destination.stat().st_size > 0:
         metadata_path = destination.with_suffix(".json")
         metadata = {}
