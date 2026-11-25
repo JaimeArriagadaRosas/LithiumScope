@@ -24,7 +24,7 @@ def _imports(node, scope="eager"):
             for child in node.orelse:
                 yield from _imports(child, scope)
             return
-    if isinstance(node, (ast.Import, ast.ImportFrom)):
+    if isinstance(node, (ast.Import, ast.ImportFrom, ast.Call)):
         yield node, scope
     for child in ast.iter_child_nodes(node):
         yield from _imports(child, scope)
@@ -90,27 +90,42 @@ def audit_imports(root: Path) -> dict:
         except (SyntaxError, OSError) as exc:
             syntax_errors.append({"path": path.relative_to(root).as_posix(), "type": type(exc).__name__})
             continue
-        # Explicit compatibility shims use import_module with a literal target.
-        # Include these as real dependency edges; do not conceal them from cycles.
-        for node in ast.walk(tree):
-            if not isinstance(node, ast.Call) or not node.args:
-                continue
-            function = node.func
-            name = function.id if isinstance(function, ast.Name) else function.attr if isinstance(function, ast.Attribute) else ""
-            target = node.args[0]
-            if name == "import_module" and isinstance(target, ast.Constant) and isinstance(target.value, str) and target.value.startswith("lithiumscope."):
-                record = {"source": module, "target": target.value, "line": node.lineno}
-                if target.value not in paths:
-                    unresolved_local_imports.append(record)
-                elif target.value != module:
-                    compatibility_edges.append(record)
-                    # Only literal shims in the top level or __main__ branch
-                    # are treated as potential eager edges; conservative audit.
-                    graph[module].add(target.value)
         for node, scope in _imports(tree):
-            for target in sorted(_targets(node, module, package, paths)):
-                edges.append({"source": module, "target": target, "scope": scope, "line": node.lineno})
-                if scope == "eager":
+            if isinstance(node, ast.Call):
+                if not node.args:
+                    continue
+                fn=node.func
+                name=fn.id if isinstance(fn,ast.Name) else fn.attr if isinstance(fn,ast.Attribute) else ""
+                arg=node.args[0]
+                if name not in {"import_module","run_module"} or not isinstance(arg,ast.Constant) or not isinstance(arg.value,str) or not arg.value.startswith("lithiumscope."):
+                    continue
+                target=arg.value
+                record={"source":module,"target":target,"scope":scope,"line":node.lineno}
+                if target not in paths:
+                    unresolved_local_imports.append(record)
+                elif target!=module:
+                    compatibility_edges.append(record)
+                    edges.append(record)
+                    if scope=="eager" and name=="import_module":
+                        graph[module].add(target)
+                continue
+            # A from-import's base is a module, but the imported member can be a symbol.
+            if isinstance(node,ast.Import):
+                declared=[alias.name for alias in node.names]
+            else:
+                base=node.module or ""
+                if node.level:
+                    try:
+                        base=resolve_name("."*node.level+base,package)
+                    except ImportError:
+                        base=""
+                declared=[base]
+            for target in declared:
+                if target.startswith("lithiumscope.") and target not in paths:
+                    unresolved_local_imports.append({"source":module,"target":target,"scope":scope,"line":node.lineno})
+            for target in sorted(_targets(node,module,package,paths)):
+                edges.append({"source":module,"target":target,"scope":scope,"line":node.lineno})
+                if scope=="eager":
                     graph[module].add(target)
     def under(name, layer):
         return name == f"lithiumscope.{layer}" or name.startswith(f"lithiumscope.{layer}.")
@@ -126,6 +141,7 @@ def audit_imports(root: Path) -> dict:
             "reporting_to_science_edges": reporting_to_science, "syntax_errors": syntax_errors,
             "compatibility_edges": compatibility_edges,
             "unresolved_literal_imports": unresolved_local_imports,
+            "unresolved_local_imports": unresolved_local_imports,
             "deferred_edges": sum(e["scope"] == "deferred" for e in edges),
             "type_only_edges": sum(e["scope"] == "type_only" for e in edges),
-            "scope": "static imports and literal import_module targets; computed imports and execution not proven"}
+            "scope": "static imports and literal import_module/run_module targets; computed imports and execution not proven"}

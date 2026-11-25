@@ -46,3 +46,12 @@ def test_literal_compatibility_imports_do_not_hide_cycles_or_missing_targets(tmp
     assert ["lithiumscope.new","lithiumscope.old"] in report["eager_cycles"]
     assert report["compatibility_edges"][0]["target"]=="lithiumscope.new"
     assert report["unresolved_literal_imports"][0]["target"]=="lithiumscope.missing"
+
+
+def test_deferred_and_missing_static_imports_are_audited(tmp_path):
+    create(tmp_path,"core/a.py",'def load():\n    from importlib import import_module\n    return import_module("lithiumscope.model_1.x")\n')
+    create(tmp_path,"model_1/x.py",'import lithiumscope.core.a\nfrom lithiumscope.missing import symbol\n')
+    report=audit_imports(tmp_path)
+    assert report["eager_cycles"]==[]
+    assert report["core_to_model_edges"][0]["scope"]=="deferred"
+    assert report["unresolved_local_imports"][0]["target"]=="lithiumscope.missing"
