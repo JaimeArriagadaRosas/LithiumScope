@@ -106,3 +106,19 @@ def resource_operation(path: Path, workload: Workload | None = None):
     finally:
         _active_plan.reset(plan_token)
         _active_threads.reset(token)
+
+
+@contextmanager
+def worker_plan_scope(plan):
+    """Propagate an allocated worker budget into nested estimator operations."""
+    previous=_active_threads.get()
+    threads=min(plan.threads_per_task,previous) if previous is not None else plan.threads_per_task
+    from dataclasses import replace
+    token=_active_threads.set(threads)
+    plan_token=_active_plan.set(replace(plan,threads_per_task=threads))
+    try:
+        with estimator_thread_scope():
+            yield
+    finally:
+        _active_plan.reset(plan_token)
+        _active_threads.reset(token)
