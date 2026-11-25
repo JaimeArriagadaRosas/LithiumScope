@@ -303,7 +303,8 @@
     ],
     "ARQ-007": [
       "tests/core/test_architecture.py",
-      "tests/model_1/test_model_1_scientific_guards.py"
+      "tests/model_1/test_model_1_scientific_guards.py",
+      "tests/model_1/diagnostics/test_methodology_relocation.py"
     ],
     "ARQ-008": [
       "tests/datasets/test_acquisition_architecture.py",
@@ -384,7 +385,8 @@
     ],
     "ARQ-022": [
       "tests/core/test_architecture.py",
-      "tests/model_2/test_scientific_training_protocol.py"
+      "tests/model_2/test_scientific_training_protocol.py",
+      "tests/model_2/test_preprocessing_contracts.py"
     ],
     "ARQ-023": [
       "tests/datasets/test_sentinel2_provider.py",
@@ -500,7 +502,8 @@
       "tests/core/test_architecture.py",
       "tests/prediction/test_integrated_prediction_analysis.py",
       "tests/core/test_dependency_audit.py",
-      "tests/release/test_evaluation_relocation.py"
+      "tests/release/test_evaluation_relocation.py",
+      "tests/prediction/test_canonical_prediction_architecture.py"
     ],
     "ARQ-046": [
       "tests/end_to_end/test_integrated_demo_fixture.py",
@@ -581,7 +584,8 @@
       "tests/core/test_architecture.py",
       "tests/scientific/shared/test_experiment_architecture.py",
       "tests/experiments/test_historical_entrypoint_isolation.py",
-      "tests/experiments/test_dataverse_historical_contract.py"
+      "tests/experiments/test_dataverse_historical_contract.py",
+      "tests/experiments/test_validation_import_safety.py"
     ],
     "ARQ-062": [
       "tests/scientific/shared/test_scientific_acquisition.py",
@@ -610,7 +614,8 @@
       "tests/core/test_canonical_execution_packages.py",
       "tests/core/test_architecture.py",
       "tests/core/test_dependency_audit.py",
-      "tests/core/test_shared_metrics_contract.py"
+      "tests/core/test_shared_metrics_contract.py",
+      "tests/regression/test_spawn_and_scientific_identity.py"
     ],
     "ARQ-067": [
       "tests/core/test_canonical_execution_packages.py",
@@ -642,7 +647,8 @@
     "ARQ-073": [
       "tests/core/test_canonical_execution_packages.py",
       "tests/core/test_architecture.py",
-      "tests/core/test_dependency_audit.py"
+      "tests/core/test_dependency_audit.py",
+      "tests/regression/test_spawn_and_scientific_identity.py"
     ],
     "ARQ-074": [
       "tests/core/test_architecture.py",
@@ -684,7 +690,9 @@
     "ARQ-083": [
       "tests/resources/test_runtime_limits.py",
       "tests/scientific/shared/test_optuna_contract.py",
-      "tests/resources/test_adaptive_scheduler.py"
+      "tests/resources/test_adaptive_scheduler.py",
+      "tests/resources/test_competition_parallel_contract.py",
+      "tests/regression/test_spawn_and_scientific_identity.py"
     ],
     "ARQ-084": [
       "tests/resources/test_resource_manager.py",
@@ -737,7 +745,8 @@
     "ARQ-095": [
       "tests/core/test_architecture.py",
       "tests/core/test_canonical_execution_packages.py",
-      "tests/core/test_dependency_audit.py"
+      "tests/core/test_dependency_audit.py",
+      "tests/regression/test_spawn_and_scientific_identity.py"
     ],
     "ARQ-096": [
       "tests/scientific/shared/test_scientific_checks.py",
@@ -762,7 +771,8 @@
       "tests/runtime/test_training_logging_session.py",
       "tests/core/test_tracker_atomic.py",
       "tests/datasets/test_georoc_acquisition.py",
-      "tests/runtime/test_worker_logging_isolation.py"
+      "tests/runtime/test_worker_logging_isolation.py",
+      "tests/development/test_validation.py"
     ],
     "ARQ-101": [
       "tests/runtime/test_session_structured_logs.py",

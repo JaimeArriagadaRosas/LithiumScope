@@ -18,7 +18,7 @@ from lithiumscope.tools.inspection.development.inventory import (
 
 
 def tracked_python(root: Path) -> list[Path]:
-    result = subprocess.run(["git", "ls-files", "-z", "src", "tests", "scripts"],
+    result = subprocess.run(["git", "ls-files", "-z", "main.py", "src", "tests", "scripts"],
                             cwd=root, check=True, capture_output=True, timeout=20)
     paths = []
     for name in result.stdout.decode("utf-8").split("\0"):
@@ -165,7 +165,7 @@ def run_development_validation(root: Path) -> dict:
     before = protected_inventory(root)
     checks = (
         ("syntax", lambda: syntax_check(root, tracked_python(root))),
-        ("lint", lambda: command_check(root, logs, "ruff", ["-m", "ruff", "check", "--no-cache", "src", "tests", "scripts"])),
+        ("lint", lambda: command_check(root, logs, "ruff", ["-m", "ruff", "check", "--no-cache", "main.py", "src", "tests", "scripts"])),
         ("architecture", lambda: command_check(root, logs, "architecture", ["scripts/check_code_size.py", "--check"])),
         ("imports", lambda: _check_dependencies(root)),
         ("pytest", lambda: run_pytest(root, logs, identity.get("commit"))),

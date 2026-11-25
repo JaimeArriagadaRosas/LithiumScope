@@ -187,3 +187,21 @@ Reclasificados ARQ-016/030/090/018. No se ejecutaron pruebas, CI, benchmarks ni 
 | **Total** | **166** | **151** | **15** | **91,0 %** |
 
 Reclasificados ARQ-042/059/063/064; quedan auditorías de rutas históricas, dependencias, integración de scheduler, benchmarking real, logs, ejecución de regresión y requisitos globales. El conector alcanzó límite de llamadas al intentar revisar todo core en un lote; no se certifica ausencia de ciclos. No se ejecutaron tests, CI, benchmarks, descargas ni entrenamientos. No solicitar todavía git pull ni 5 > 4.
+
+## Continuación: scheduling, inventario de prediction y auditoría core
+
+- 33da3e87: scheduling opt-in de candidatos CPU M1/M2; ranking y evidencia en padre, CV en workers con entradas/resultados temporales joblib y hash, sin GPU concurrente ni reintento silencioso.
+- 29ba3a58: reparto de presupuesto RAM por worker y límites heredados, opción 5.4 muestra conteo de implementación y auditoría explícita de dependencias; usa sesión de logging vigente.
+- 4e089241: cinco estudios históricos M2 trasladados, importación sin lecturas de datos, ejecución explícita, logs de simulación y eliminación de ruta absoluta del experimento de fuga; piloto GEOROC exige autorización.
+- ae32a8d7: fachada de informes y reconstrucción en prediction/exports, aliases anteriores e inventario de 54 módulos de prediction.
+- 9952e902: main.py sin bootstrap de dependencias al importar por spawn, fingerprints incluyen todos los archivos de evaluación, reproducibilidad y contratos científicos compartidos, runner de tests conserva sesión padre cuando existe.
+- Revisión textual de los 54 archivos core por bloques de hasta ocho, sin coincidencias de imports directos a modelos/prediction/experiments. No prueba ciclos, imports calculados o dependencias transitivas.
+
+| Diagnóstico | Total | Implementación principal | Parcial | Avance de implementación |
+|---|---:|---:|---:|---:|
+| M1 | 27 | 27 | 0 | 100,0 % |
+| M2 | 30 | 30 | 0 | 100,0 % |
+| ARQ | 109 | 98 | 11 | 89,9 % |
+| **Total** | **166** | **155** | **11** | **93,4 %** |
+
+Reclasificados ARQ-007/022/045/066 por arquitectura principal incorporada; criterios de cierre global y aceptación siguen abiertos. ARQ-083 sigue parcial: política predeterminada serial y folds/trials seriales, paralelismo de candidatos CPU opt-in, no benchmark real. ARQ-038 permanece parcial por holdout externo real, ARQ-061 por módulos históricos restantes, ARQ-073/095 por auditoría global y regresión, ARQ-100 por rutas/logging residual. No se ejecutaron pruebas, CI, descargas, benchmarks, entrenamiento ni generación final de PDF. No solicitar todavía git pull ni 5 > 4.

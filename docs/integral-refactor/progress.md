@@ -264,3 +264,7 @@ Commits 973c5f42 y 76169f7c: gate de desarrollo pareado y política multivariada
 ## Lote: experimentos históricos y límites de capas
 
 9b45857c, e8095f3f, b4402816, d451a4fe, 91f3e1ad: redistribución experimental, frontera renderer, adquisición y adaptación Dataverse, auditoría ampliada de imports y exportaciones compartidas. 151/166 (91,0 %) de implementación principal, 15 parciales. Sin ejecución ni modificación de releases.
+
+## Lote: scheduling, prediction y core
+
+33da3e87, 29ba3a58, 4e089241, ae32a8d7, 9952e902: integración opt-in CPU, límites heredados, opción 5.4 ampliada, campañas M2 y exportaciones reorganizadas, core revisado textualmente (54 archivos), bootstrap spawn y huellas actualizadas. 155/166 (93,4 %) de implementación principal, 11 parciales. Validaciones funcionales pendientes.
