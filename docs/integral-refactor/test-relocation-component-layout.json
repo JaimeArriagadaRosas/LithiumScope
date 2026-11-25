@@ -1,0 +1,9 @@
+{
+  "tests/release/test_release_bundle_builder.py": "tests/distribution/test_release_bundle_builder.py",
+  "tests/release/test_candidate_model_lifecycle.py": "tests/persistence/test_candidate_model_lifecycle.py",
+  "tests/development/test_snapshot.py": "tests/tools/test_snapshot.py",
+  "tests/prediction/test_integrated_demo_fixture.py": "tests/end_to_end/test_integrated_demo_fixture.py",
+  "tests/scientific/experiments/test_paired_suite.py": "tests/experiments/test_paired_suite.py",
+  "tests/runtime/test_run_resume.py": "tests/regression/test_run_resume.py",
+  "tests/results/test_eda_training_integration.py": "tests/integration/test_eda_training_integration.py"
+}
