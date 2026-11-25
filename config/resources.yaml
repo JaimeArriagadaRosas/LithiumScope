@@ -4,6 +4,10 @@ resources:
   minimum_workers: 1
   # Sequential outer operations; estimator threads are budgeted centrally.
   max_parallel_tasks: 1
+  # One outer layer only: estimator, algorithm, inner_fold, trial_batch.
+  parallel_level: algorithm
+  # Batch TPE is a different search protocol; opt in explicitly, with pruning disabled.
+  allow_batched_optuna: false
   max_ram_fraction: 0.60
   max_vram_fraction: 0.75
   monitor_interval_seconds: 2.0

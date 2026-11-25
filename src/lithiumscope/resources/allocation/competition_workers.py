@@ -18,7 +18,7 @@ RUNNERS={
 
 def enabled(device,policy):
     # Backend selection remains unchanged: no concurrent GPU or MPS fits.
-    return policy.max_parallel_tasks>1 and not (
+    return policy.parallel_level=="algorithm" and policy.max_parallel_tasks>1 and not (
         device.is_gpu or device.any_cuda_backend or device.mps_available)
 
 

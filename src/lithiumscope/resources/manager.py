@@ -16,6 +16,7 @@ from lithiumscope.resources.monitoring.monitor import monitor_operation
 
 _active_threads: ContextVar[int | None] = ContextVar("resource_threads", default=None)
 _active_plan = ContextVar("resource_plan",default=None)
+_active_fit_demand = ContextVar("fit_demand",default=None)
 _native_lock=RLock()
 
 
@@ -66,6 +67,7 @@ def fit_workload_scope(demand, *, evidence_path=None):
     plan=replace(plan,threads_per_task=threads)
     token=_active_threads.set(threads)
     plan_token=_active_plan.set(plan)
+    demand_token=_active_fit_demand.set(demand)
     try:
         if evidence_path is not None:
             import json
@@ -81,8 +83,13 @@ def fit_workload_scope(demand, *, evidence_path=None):
         with estimator_thread_scope():
             yield plan
     finally:
+        _active_fit_demand.reset(demand_token)
         _active_plan.reset(plan_token)
         _active_threads.reset(token)
+
+
+def active_fit_demand():
+    return _active_fit_demand.get()
 
 
 def resource_snapshot(policy: ResourcePolicy | None = None) -> dict:

@@ -15,8 +15,14 @@ class ResourcePolicy:
     max_ram_fraction: float = .60
     max_vram_fraction: float = .75
     monitor_interval_seconds: float = 2.0
+    parallel_level: str = "algorithm"
+    allow_batched_optuna: bool = False
 
     def __post_init__(self):
+        if self.parallel_level not in {"estimator","algorithm","inner_fold","trial_batch"}:
+            raise ValueError("Unknown parallel execution level")
+        if type(self.allow_batched_optuna) is not bool:
+            raise ValueError("allow_batched_optuna must be boolean")
         for name in ("max_cpu_fraction", "max_ram_fraction", "max_vram_fraction"):
             value = getattr(self, name)
             if not math.isfinite(value) or not 0 < value <= 1:
