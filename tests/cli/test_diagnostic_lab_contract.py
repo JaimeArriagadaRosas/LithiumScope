@@ -77,12 +77,44 @@ def test_validation_menu_labels_and_spacing(monkeypatch, capsys):
     assert "2. Simulación y comparaciones de modelos" in out
     assert "3. Evaluación experimental de tratamiento de datos" in out
     assert "4. Ejecutar todo\n" in out
-    assert "\n\nEVALUACIÓN EXPERIMENTAL" in out
+    assert "EVALUACIÓN EXPERIMENTAL" in out
 
 def test_treatment_menu_m1_dispatch(monkeypatch):
     from lithiumscope.cli import m1_targeted_command
     monkeypatch.setattr(lab, "choose", lambda *_: "2")
     calls = []
+    monkeypatch.setattr(lab, "clear_screen", lambda: calls.append("clear"))
     monkeypatch.setattr(m1_targeted_command, "run", lambda: calls.append("m1") or True)
     assert lab._treatment_menu() is True
-    assert calls == ["m1"]
+    assert calls == ["clear", "m1"]
+
+
+def test_validation_clears_screen_before_dispatch(monkeypatch):
+    calls = []
+    monkeypatch.setattr(lab, "choose", lambda *_: "1")
+    monkeypatch.setattr(lab, "clear_screen", lambda: calls.append("clear"))
+    monkeypatch.setattr(lab, "_run_tests", lambda: calls.append("tests") or True)
+    lab._validation_menu()
+    assert calls == ["clear", "tests"]
+
+
+def test_targeted_m1_runs_approved_reference_without_extra_prompts(monkeypatch, tmp_path):
+    from contextlib import nullcontext
+    from lithiumscope.cli import m1_targeted_command as command
+    from lithiumscope.experiments.model_1.targeted import protocol, runner
+    from lithiumscope.core.logging import session
+
+    calls = []
+    reference = "training_20261125_115932_m0300_826123c1"
+    monkeypatch.setattr(protocol, "available_runs", lambda: ["newer-unrelated", reference, "old"])
+    monkeypatch.setattr(session, "run_log", lambda *args: nullcontext())
+    def forbidden_input(*args):
+        raise AssertionError("No additional input expected")
+    monkeypatch.setattr("builtins.input", forbidden_input)
+    (tmp_path/"manifest.json").write_text('{"state":"complete"}', encoding="utf-8")
+    monkeypatch.setattr(runner, "run_targeted", lambda run_id: calls.append(run_id) or tmp_path)
+    assert command.run() is True
+    assert calls == [reference]
+    monkeypatch.setattr(protocol, "available_runs", lambda: ["old"])
+    assert command.run() is False
+    assert calls == [reference]

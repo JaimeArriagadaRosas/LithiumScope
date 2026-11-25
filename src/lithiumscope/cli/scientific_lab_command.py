@@ -154,6 +154,7 @@ def _treatment_menu():
     choice = choose("Seleccione una opción [0-3]: ", set("0123"))
     if choice == "0":
         return False
+    clear_screen()
     if choice == "2":
         from lithiumscope.cli.m1_targeted_command import run
         return run()
@@ -170,7 +171,7 @@ def _validation_menu() -> bool | None:
     choice=choose("Seleccione una opción [0-4]: ",set("01234"))
     if choice=="0":
         return False
-    print("\n")
+    clear_screen()
     operations=[_run_tests,_run_simulations,_treatment_menu]
     if choice=="4":
         print("Modo integral general: incluye doce familias. El refinamiento focalizado M1 se ejecuta por separado.")

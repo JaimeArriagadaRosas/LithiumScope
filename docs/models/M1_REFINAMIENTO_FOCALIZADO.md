@@ -21,8 +21,11 @@ restringida y dos combinaciones. No se generan valores de litio extrapolados.
 Yeo-Johnson se acota al soporte de TRAIN para evitar singularidades inversas.
 Los tratamientos no cambian el flujo productivo ni M2.
 
-Ruta: 5 > 2 > 3 > 2. Seleccionar la competencia M1 reciente con checkpoints
-sellados. Alternativa: python -m lithiumscope.experiments.model_1.targeted.runner
+Ruta: 5 > 2 > 3 > 2. Inicia directamente con la competencia acordada
+training_20261125_115932_m0300_826123c1, sin selector ni confirmación adicional.
+Si faltan sus evidencias, se bloquea sin usar otra competencia. Para investigaciones
+posteriores se puede indicar otra referencia explícitamente con el comando:
+python -m lithiumscope.experiments.model_1.targeted.runner
 --previous-run training_20261125_115932_m0300_826123c1
 
 Evidencias en results/generalization/model_1_targeted: manifiesto, métricas
