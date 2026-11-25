@@ -49,6 +49,36 @@ def estimator_thread_scope():
             yield
 
 
+@contextmanager
+def fit_workload_scope(demand, *, evidence_path=None):
+    """Reassess available RAM/CPU for this algorithm without nested parallelism."""
+    policy=load_policy()
+    plan=plan_workload(detect_host(include_gpu=False),policy,demand.workload())
+    parent=_active_threads.get()
+    threads=min(plan.threads_per_task,parent) if parent is not None else plan.threads_per_task
+    from dataclasses import replace
+    plan=replace(plan,threads_per_task=threads)
+    token=_active_threads.set(threads)
+    plan_token=_active_plan.set(plan)
+    try:
+        if evidence_path is not None:
+            import json
+            from uuid import uuid4
+            evidence_path.parent.mkdir(parents=True,exist_ok=True)
+            temporary=evidence_path.with_name(f".{evidence_path.name}.{uuid4().hex}.tmp")
+            try:
+                temporary.write_text(json.dumps({"demand":demand.to_dict(),"plan":asdict(plan),
+                    "estimate_is_hard_cap":False},indent=2),encoding="utf-8")
+                temporary.replace(evidence_path)
+            finally:
+                temporary.unlink(missing_ok=True)
+        with estimator_thread_scope():
+            yield plan
+    finally:
+        _active_plan.reset(plan_token)
+        _active_threads.reset(token)
+
+
 def resource_snapshot(policy: ResourcePolicy | None = None) -> dict:
     host = detect_host()
     effective = policy or load_policy()

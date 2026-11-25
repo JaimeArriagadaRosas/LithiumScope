@@ -39,15 +39,24 @@ def _evaluate_model_1_candidates(config, context, device, experiments, failed, p
         try:
             algorithm_prepared = prepared
 
-            result = run_nested_cv(
-                algorithm_prepared,
-                algorithm,
-                device,
-                config,
-                checkpoint_root=context.checkpoints,
-                target_transform=target_transform,
-                variant_id=variant_id,
-            )
+            from lithiumscope.resources.allocation.estimates import estimate_fit_demand
+            from lithiumscope.resources.manager import fit_workload_scope
+            validation=config["validation"]
+            optimization=config.get("optimization",{})
+            demand=estimate_fit_demand(prepared.x,algorithm,folds=int(validation["outer_folds"]),
+                inner_folds=int(validation["inner_folds"]),
+                trials=int(optimization.get("per_algorithm_trials",{}).get(algorithm,optimization.get("n_trials",20))),
+                optimize=bool(optimization.get("enabled",False)),categorical=prepared.schema.categorical)
+            with fit_workload_scope(demand,evidence_path=context.manifests/f"resource_plan_{variant_id}.json"):
+                result = run_nested_cv(
+                    algorithm_prepared,
+                    algorithm,
+                    device,
+                    config,
+                    checkpoint_root=context.checkpoints,
+                    target_transform=target_transform,
+                    variant_id=variant_id,
+                )
             verify_candidate(result, result.predictions, len(prepared.y), ("rmse", "mae", "r2"),
                 expected_folds=len(prepared.outer_splits))
             from numpy import array_equal

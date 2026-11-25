@@ -12,23 +12,29 @@ def _evaluate_algorithm_candidates(algorithms, context, device, failed, fixed_th
         context.tracker.event("algorithm_started", algorithm=algorithm)
 
         try:
-            result = run_classification_cv(
-                x,
-                y,
-                algorithm,
-                device,
-                seed,
-                folds,
-                groups,
-                checkpoint_root=context.checkpoints,
-                optimization=optimization_cfg,
-                inner_folds=inner_folds,
-                scientific_folds=scientific_folds,
-                lithium_values=frame[lithium_column].to_numpy(dtype=float),
-                label_quantile=q,
-                fixed_threshold_ppm=fixed_threshold,
-                quality_training_mask=quality_mask,
-            )
+            from lithiumscope.resources.allocation.estimates import estimate_fit_demand
+            from lithiumscope.resources.manager import fit_workload_scope
+            demand=estimate_fit_demand(x,algorithm,folds=int(folds),inner_folds=int(inner_folds),
+                trials=int(optimization_cfg.get("per_algorithm_trials",{}).get(algorithm,optimization_cfg.get("n_trials",8))),
+                optimize=bool(optimization_cfg.get("enabled",False)))
+            with fit_workload_scope(demand,evidence_path=context.manifests/f"resource_plan_{algorithm}.json"):
+                result = run_classification_cv(
+                    x,
+                    y,
+                    algorithm,
+                    device,
+                    seed,
+                    folds,
+                    groups,
+                    checkpoint_root=context.checkpoints,
+                    optimization=optimization_cfg,
+                    inner_folds=inner_folds,
+                    scientific_folds=scientific_folds,
+                    lithium_values=frame[lithium_column].to_numpy(dtype=float),
+                    label_quantile=q,
+                    fixed_threshold_ppm=fixed_threshold,
+                    quality_training_mask=quality_mask,
+                )
             validate_binary_inputs(y, result.probabilities)
             verify_candidate(result, result.probabilities, len(y), ("roc_auc", "average_precision", "balanced_accuracy"), folds)
             row = _ranking_row(result)

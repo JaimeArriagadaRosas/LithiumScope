@@ -4,6 +4,7 @@ from __future__ import annotations
 from contextlib import contextmanager
 from datetime import datetime, timezone
 import json
+import math
 import os
 from pathlib import Path
 import threading
@@ -15,7 +16,7 @@ from lithiumscope.resources.monitoring.sampler import ProcessTreeSampler
 
 @contextmanager
 def monitor_operation(path: Path, *, interval_seconds: float = 2.0, metadata=None):
-    if interval_seconds <= 0:
+    if not math.isfinite(interval_seconds) or interval_seconds <= 0:
         raise ValueError("Monitoring interval must be positive.")
     path.parent.mkdir(parents=True, exist_ok=True)
     stop = threading.Event()
@@ -45,6 +46,12 @@ def monitor_operation(path: Path, *, interval_seconds: float = 2.0, metadata=Non
                     value=g.get("utilization_percent")
                     if value is not None:
                         peaks["gpu_percent"]=max(peaks.get("gpu_percent",value),value)
+                    total,free=g.get("vram_total_bytes"),g.get("vram_available_bytes")
+                    if total is not None and free is not None and 0<=free<=total and total>0:
+                        used=total-free
+                        peaks["vram_used_bytes"]=max(peaks.get("vram_used_bytes",used),used)
+                        percent=100*used/total
+                        peaks["vram_percent"]=max(peaks.get("vram_percent",percent),percent)
                 emit("sample", **sample)
             except Exception as exc:
                 errors.append(str(exc))
@@ -76,5 +83,6 @@ def monitor_operation(path: Path, *, interval_seconds: float = 2.0, metadata=Non
                  peak_process_cpu_percent=peaks.get("process_cpu_percent"),
                  peak_tree_cpu_percent=peaks.get("tree_cpu_percent"),
                  peak_ram_percent=peaks.get("ram_percent"),peak_gpu_percent=peaks.get("gpu_percent"),
+                 peak_vram_used_bytes=peaks.get("vram_used_bytes"),peak_vram_percent=peaks.get("vram_percent"),
                  warnings=errors,
-                 saturation_signals=[name for name in ("cpu","ram","gpu") if peaks.get(name+"_percent",0)>=95])
+                 saturation_signals=[name for name in ("cpu","ram","gpu","vram") if peaks.get(name+"_percent",0)>=95])
