@@ -19,9 +19,12 @@ def _training_overlap(sites, manifest, minimum_distance):
     required={"sample_id","spatial_group","latitude","longitude","image_path"}
     if not required<=set(manifest) or manifest.empty:
         raise ValueError("Cannot certify development cohort identities")
-    for field in ("sample_id","spatial_group","scene_id"):
-        if field in manifest and field in sites and set(normalized(manifest[field])) & set(normalized(sites[field])):
-            raise ValueError(f"Reserved cohort overlaps development {field}")
+    scene_field="sentinel_scene_id" if "sentinel_scene_id" in manifest else "scene_id"
+    if scene_field not in manifest:
+        raise ValueError("Development scene identities are absent")
+    for source_field,external_field in (("sample_id","sample_id"),("spatial_group","spatial_group"),(scene_field,"scene_id")):
+        if set(normalized(manifest[source_field])) & set(normalized(sites[external_field])):
+            raise ValueError(f"Reserved cohort overlaps development {external_field}")
     image_hashes={file_sha256(resolve_image_path(p)) for p in manifest.image_path}
     if image_hashes & set(sites.image_sha256):
         raise ValueError("Reserved images overlap development images")
@@ -47,7 +50,7 @@ def reserve(root, *, plan_path, manifest_path, fixed_endpoint):
     for key in ("sites_path","review_path","reference"):
         plan[key]=str((base/plan[key]).resolve(strict=True))
     plan["exposure_paths"]=[str((base/p).resolve(strict=True)) for p in plan["exposure_paths"]]
-    if fixed_endpoint is None or float(fixed_endpoint)!=float(plan["label_cutoff_ppm"]):
+    if fixed_endpoint is None or not np.isfinite(float(fixed_endpoint)) or float(fixed_endpoint)<0 or float(fixed_endpoint)!=float(plan["label_cutoff_ppm"]):
         raise ValueError("Prospective comparison needs the same fixed Li endpoint in M2 configuration and plan")
     if not reg.valid_sha(plan["label_commitment_sha256"]):
         raise ValueError("Missing label commitment")
@@ -63,6 +66,10 @@ def reserve(root, *, plan_path, manifest_path, fixed_endpoint):
     reg.review_document(plan["review_path"])
     _training_overlap(sites,reg.read_csv(manifest_path),float(plan["minimum_distance_m"]))
     # Prior reservations, even abandoned ones, must not be silently reused.
+    earlier_registrations=list(root.parent.glob("*/holdout/registration.json"))
+    for earlier in earlier_registrations:
+        if reg.read_sealed(earlier)["label_commitment_sha256"]==plan["label_commitment_sha256"]:
+            raise ValueError("Label commitment already registered")
     for earlier in root.parent.glob("*/reservation.json"):
         if reg.read_sealed(earlier)["plan"]["label_commitment_sha256"]==plan["label_commitment_sha256"]:
             raise ValueError("Label commitment already reserved")

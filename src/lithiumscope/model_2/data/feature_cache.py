@@ -37,9 +37,9 @@ def validate_manifest(manifest: pd.DataFrame, config: dict) -> None:
 
 
 def source_identity(manifest_path: Path, config: dict) -> tuple[pd.DataFrame, dict]:
-    manifest = pd.read_csv(manifest_path)
-    validate_manifest(manifest, config)
     sample = config["training"].get("sample_id_column", "sample_id")
+    manifest = pd.read_csv(manifest_path,dtype={sample:"string"})
+    validate_manifest(manifest, config)
     hashes = {}
     identities = []
     for key, raw in zip(manifest[sample], manifest["image_path"]):

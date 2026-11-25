@@ -112,7 +112,7 @@ def _load_valid_manifest(path: Path) -> pd.DataFrame:
     if not path.exists():
         return pd.DataFrame(columns=_MANIFEST_COLUMNS)
     try:
-        frame = pd.read_csv(path)
+        frame = pd.read_csv(path, dtype={"sample_id":"string","sentinel_scene_id":"string"})
     except Exception:
         logger.warning(
             "Could not read Model 2 checkpoint %s; ignoring it",
