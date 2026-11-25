@@ -7,13 +7,6 @@ from lithiumscope.cli.prompts import choose
 from lithiumscope.resources.detection.device import detect_device
 from lithiumscope.core.logging.session import run_log
 from lithiumscope.core.logging.training import training_session, register_training_run
-from lithiumscope.datasets.provisioner import (
-    require_model_1_dataset,
-    require_model_2_expanded_manifest,
-)
-from lithiumscope.runtime.preboot import (
-    require_full_training_environment,
-)
 
 
 def _print_outcome(outcome, model_name: str) -> None:
@@ -47,12 +40,8 @@ def _print_outcome(outcome, model_name: str) -> None:
 
 
 def _run_impl() -> None:
-    from lithiumscope.model_1.training.competition import (
-        run_model_1_competition,
-    )
-    from lithiumscope.model_2.training.competition import (
-        run_model_2_competition,
-    )
+    from lithiumscope.model_1.pipeline import run_training as train_m1
+    from lithiumscope.model_2.pipeline import run_training as train_m2
 
     print("\nENTRENAMIENTO")
     print("1. Modelo 1 — Competencia de predicción de Li")
@@ -66,10 +55,6 @@ def _run_impl() -> None:
     if choice == "0":
         return False
 
-    if choice in {"1", "3"}:
-        require_full_training_environment("model_1")
-    if choice in {"2", "3"}:
-        require_full_training_environment("model_2")
     device = detect_device(prefer_gpu=True)
     device_summary(device)
 
@@ -99,16 +84,12 @@ def _run_impl() -> None:
             print("\nModelo 2: control experimental SOLO 706 históricos (77 GEOROC excluidos; sin borrar los datos).")
 
     if choice in {"1", "3"}:
-        model_1_dataset = require_model_1_dataset(include_georoc=True)
         print("\nOrden Modelo 1: RF → XGBoost → SVM → TabNet → HistGradientBoosting → CatBoost")
         with run_log(
             "training",
             "model_1_competition",
         ) as training_log:
-            outcome = run_model_1_competition(
-                model_1_dataset,
-                device,
-            )
+            outcome = train_m1(device)
         register_training_run("model_1", outcome.run_dir)
         print(f"Log detallado Modelo 1: {training_log}")
         _print_outcome(
@@ -117,16 +98,12 @@ def _run_impl() -> None:
         )
 
     if choice in {"2", "3"}:
-        model_2_manifest = require_model_2_expanded_manifest()
         print("\nModelo 2: RF, Extra Trees, HGB, XGBoost, CatBoost y SVM-RBF.")
         with run_log(
             "training",
             "model_2_competition",
         ):
-            outcome = run_model_2_competition(
-                model_2_manifest,
-                device,
-            )
+            outcome = train_m2(device)
         register_training_run("model_2", outcome.run_dir)
         _print_outcome(
             outcome,

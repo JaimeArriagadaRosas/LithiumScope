@@ -46,3 +46,13 @@ def load_model_2_training_frame(path: Path | None = None) -> pd.DataFrame:
         raise ValueError("Spectral sources changed during feature extraction")
     write_cache(cache, frame, manifest, cfg, identity)
     return frame
+
+
+def run_training(device, *, manifest=None):
+    """M2 owns source resolution independently of M1 training."""
+    from lithiumscope.runtime.preboot import require_full_training_environment
+    from lithiumscope.runtime.dataset_provisioning import require_model_2_expanded_manifest
+    from lithiumscope.model_2.training.competition import run_model_2_competition
+    require_full_training_environment("model_2")
+    source = manifest if manifest is not None else require_model_2_expanded_manifest()
+    return run_model_2_competition(source, device)

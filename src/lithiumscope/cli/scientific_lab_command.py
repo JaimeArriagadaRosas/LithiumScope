@@ -11,17 +11,24 @@ from lithiumscope.core.paths import PROJECT_ROOT
 
 
 def _run_eda_m1():
-    from lithiumscope.datasets.local_sources import local_training_source
     from lithiumscope.model_1.eda.pipeline import run_eda
-
-    return run_eda(local_training_source("model_1"))
+    return run_eda(_eda_source("model_1"))
 
 
 def _run_eda_m2():
-    from lithiumscope.datasets.local_sources import local_training_source
     from lithiumscope.model_2.eda.pipeline import run_eda
+    return run_eda(_eda_source("model_2"))
 
-    return run_eda(local_training_source("model_2"))
+
+def _eda_source(model_group):
+    from lithiumscope.datasets.management.diagnostic_provisioning import prepare_diagnostic_source
+    try:
+        return prepare_diagnostic_source(model_group)
+    except FileNotFoundError:
+        print(f"{model_group}: faltan datos locales. Las cohortes congeladas no se reconstruyen.")
+        if choose("¿Autorizar adquisición de fuentes configuradas? [s/n]: ", {"s","n"}) != "s":
+            raise
+        return prepare_diagnostic_source(model_group,acquire=True)
 
 
 def _eda_menu() -> bool | None:

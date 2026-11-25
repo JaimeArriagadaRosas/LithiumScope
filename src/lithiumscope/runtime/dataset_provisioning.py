@@ -100,7 +100,14 @@ def provision_required_datasets(
     statuses: list[DatasetStatus] = []
 
     try:
-        base_model_1 = ensure_dataset("mamani09_public_mirror")
+        cfg = load_config("model_1")
+        georoc = cfg.get("data_sources",{}).get("georoc",{})
+        use_georoc = georoc.get("enabled",False) if include_georoc is None else include_georoc
+        if use_georoc and georoc.get("frozen_combined_sha256"):
+            # The verified combined source does not need a duplicate bootstrap download.
+            base_model_1 = _project_path(str(georoc["combined_path"]))
+        else:
+            base_model_1 = ensure_dataset(cfg.get("data_sources",{}).get("base",{}).get("key","mamani09_public_mirror"))
         model_1 = prepare_model_1_training_source(
             base_model_1,
             include_georoc=include_georoc,
@@ -244,6 +251,9 @@ def require_model_2_dataset(
     *,
     include_georoc: bool | None = None,
 ) -> Path:
+    training = load_config("model_2")["training"]
+    if training.get("frozen_manifest_sha256"):
+        return require_frozen_model_2_manifest()
     statuses = _status_map(
         prepare_model_2=True,
         include_georoc=include_georoc,

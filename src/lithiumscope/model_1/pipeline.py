@@ -251,3 +251,13 @@ def prepare_prediction_data(frame: pd.DataFrame, model_family: str, schema: Feat
         output.attrs["prediction_provenance"]["coordinate_status"]=coordinate_evidence.coordinate_status.tolist()
         output.attrs["prediction_provenance"]["coordinate_report"]=coordinate_summary(coordinate_evidence)
     return output
+
+
+def run_training(device, *, dataset=None):
+    """M1 owns environment/source resolution and delegates scientific competition."""
+    from lithiumscope.runtime.preboot import require_full_training_environment
+    from lithiumscope.runtime.dataset_provisioning import require_model_1_dataset
+    from lithiumscope.model_1.training.competition import run_model_1_competition
+    require_full_training_environment("model_1")
+    source = dataset if dataset is not None else require_model_1_dataset(include_georoc=True)
+    return run_model_1_competition(source, device)
