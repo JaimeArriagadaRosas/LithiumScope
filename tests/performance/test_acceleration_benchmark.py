@@ -10,3 +10,10 @@ def test_acceleration_benchmark_is_preflight_without_permission(tmp_path):
 def test_benchmark_worker_rejects_external_network():
     with pytest.raises(ValueError,match="loopback"):
         benchmark_worker("https://example.org/fixture.npy","0"*64,42,"cpu")
+
+
+def test_development_benchmark_can_be_skipped_without_execution(tmp_path):
+    from lithiumscope.tools.inspection.development.validation import _benchmark_check
+    result=_benchmark_check(tmp_path,tmp_path,execute=False)
+    assert result["state"]=="SKIPPED"
+    assert not list(tmp_path.iterdir())

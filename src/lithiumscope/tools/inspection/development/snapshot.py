@@ -221,9 +221,9 @@ def write_snapshot(root: Path = PROJECT_ROOT, *, validation=None) -> Path:
 
 def run_interactive() -> None:
     print("\nEVIDENCIAS DE DESARROLLO (TEMPORAL)")
-    print("Suite local y comprobaciones; no entrenamiento definitivo, descarga, cambio de modelos ni envio de informacion.")
+    print("Suite local, comprobaciones y benchmark sintético CPU/GPU (si disponible), sin descarga externa, entrenamiento definitivo, cambio de modelos ni envío de información.")
     from lithiumscope.tools.inspection.development.validation import run_development_validation
-    validation = run_development_validation(PROJECT_ROOT)
+    validation = run_development_validation(PROJECT_ROOT,include_benchmark=True)
     path = write_snapshot(validation=validation)
     report = json.loads(path.read_text(encoding="utf-8"))
     print(f"\nEstado: {report['state']}")

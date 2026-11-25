@@ -153,7 +153,22 @@ def _check_dependencies(root):
     return {"state":"ERROR" if any(report[k] for k in blockers) else "OK",**report}
 
 
-def run_development_validation(root: Path) -> dict:
+def _benchmark_check(root, logs, *, execute):
+    if not execute:
+        return {"state":"SKIPPED","reason":"Synthetic benchmark not authorized"}
+    from lithiumscope.resources.monitoring.acceleration_benchmark import compare
+    output=logs/"acceleration_benchmark"
+    report=compare(output,execute=True)
+    complete=report.get("state")=="complete" and report.get("cpu_equivalent") is True
+    return {"state":"OK" if complete and report.get("parallel_state")=="measured" else
+                    "WARNING" if complete else "ERROR",
+            "scope":report["scope"],"cpu_equivalent":report.get("cpu_equivalent"),
+            "parallel_state":report.get("parallel_state"),"gpu_state":report.get("gpu_state"),
+            "observed_speedup":report.get("observed_speedup"),
+            "runs":report.get("runs",[]),"evidence":file_record(root,output/"comparison.json")}
+
+
+def run_development_validation(root: Path, *, include_benchmark=False) -> dict:
     root = root.resolve()
     identity = git_identity(root)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S_%fZ")
@@ -169,6 +184,7 @@ def run_development_validation(root: Path) -> dict:
         ("architecture", lambda: command_check(root, logs, "architecture", ["scripts/check_code_size.py", "--check"])),
         ("imports", lambda: _check_dependencies(root)),
         ("pytest", lambda: run_pytest(root, logs, identity.get("commit"))),
+        *((("benchmark", lambda: _benchmark_check(root,logs,execute=True)),) if include_benchmark else ()),
     )
     for name, check in checks:
         print(f"  Ejecutando {name}...", flush=True)

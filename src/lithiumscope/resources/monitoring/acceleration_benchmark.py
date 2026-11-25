@@ -137,6 +137,12 @@ def compare(output,*,execute=False,rows=96,seed=42):
             return _results(evidence)
         for name,policy in policies:
             results[name]=run_arm(name,policy,"cpu")
+        serial_arm,parallel_arm=report["runs"][:2]
+        report["parallel_state"]=("measured" if any(n>1 for n in parallel_arm["actual_parallel_tasks"])
+                                  else "not_available_under_current_budget")
+        report["serial_wall_seconds"]=serial_arm["wall_seconds"]
+        report["parallel_wall_seconds"]=parallel_arm["wall_seconds"]
+        report["observed_speedup"]=serial_arm["wall_seconds"]/parallel_arm["wall_seconds"] if parallel_arm["wall_seconds"]>0 else None
         a,b=results["serial"],results["parallel"]
         report["cpu_equivalent"]=len(a)==len(b)==2 and all(
             a[key]["selected_depth"]==b[key]["selected_depth"] and
@@ -144,7 +150,7 @@ def compare(output,*,execute=False,rows=96,seed=42):
             for key in a)
         from lithiumscope.resources.detection.device import detect_device
         device=detect_device(prefer_gpu=True)
-        if device.xgboost_cuda_available and len(host.gpus)==1 and host.gpus[0].get("vram_available_bytes",0)>=512*1024**2:
+        if device.xgboost_cuda_available and len(host.gpus)==1 and (host.gpus[0].get("vram_available_bytes") or 0)>=512*1024**2:
             g=run_arm("cuda",ResourcePolicy(max_parallel_tasks=1),"cuda")
             report["gpu_state"]="measured" if len(g)==2 else "failed"
             report["gpu_cpu_prediction_max_abs_difference"]={
