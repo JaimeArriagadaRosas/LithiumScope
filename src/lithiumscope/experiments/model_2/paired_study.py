@@ -78,7 +78,7 @@ def policy_arms(x, algorithms, mask, *, seed, mode):
 
 
 def run(*, output: Path, study="representation", algorithms=None, execute=False, prefer_gpu=False,
-        physical_directory=None):
+        physical_directory=None, temporal_manifest=None, temporal_interval=None, temporal_root=None):
     config=load_config("model_2")
     model,training,validation=config["model"],config["training"],config["validation"]
     selected=choose_algorithms(model["algorithms"],algorithms)
@@ -104,6 +104,15 @@ def run(*, output: Path, study="representation", algorithms=None, execute=False,
             from lithiumscope.experiments.model_2.physical_comparison import load_physical_comparison
             x, mask = load_physical_comparison(physical_directory, source, frame, x, mask)
         arms = texture_arms(x, selected, mask, seed=seed, mode=mode, physical=physical)
+    elif study=="temporal":
+        if temporal_manifest is None or temporal_interval is None or temporal_root is None:
+            raise ValueError("Temporal study requires explicit staged manifest, root and fixed interval")
+        import json
+        import pandas as pd
+        from lithiumscope.experiments.model_2.temporal_comparison import temporal_arms
+        arms,audit=temporal_arms(frame,pd.read_csv(temporal_manifest),selected,interval=temporal_interval,
+                                root=temporal_root,seed=seed,mode=mode,mask=mask)
+        (preparation/"temporal_acquisition_evidence.json").write_text(json.dumps(audit,indent=2),encoding="utf-8")
     elif study=="policy":
         arms=policy_arms(x,selected,mask,seed=seed,mode=mode)
     elif study=="budget":
@@ -137,15 +146,19 @@ def run(*, output: Path, study="representation", algorithms=None, execute=False,
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--study",choices=("representation","texture","policy","budget"),default="representation")
+    parser.add_argument("--study",choices=("representation","texture","temporal","policy","budget"),default="representation")
     parser.add_argument("--algorithm",action="append")
     parser.add_argument("--physical-directory",type=Path)
+    parser.add_argument("--temporal-manifest",type=Path)
+    parser.add_argument("--temporal-interval")
+    parser.add_argument("--temporal-root",type=Path)
     parser.add_argument("--execute",action="store_true")
     parser.add_argument("--prefer-gpu",action="store_true")
     args=parser.parse_args()
     output=RESULTS_DIR/"model_2"/"methodology"/("paired_"+datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")+"_"+uuid4().hex[:8])
     result=run(output=output,study=args.study,algorithms=args.algorithm,execute=args.execute,
-               prefer_gpu=args.prefer_gpu,physical_directory=args.physical_directory)
+               prefer_gpu=args.prefer_gpu,physical_directory=args.physical_directory,
+               temporal_manifest=args.temporal_manifest,temporal_interval=args.temporal_interval,temporal_root=args.temporal_root)
     print(f"M2 {args.study}: {result['state']} — {output}")
 
 
