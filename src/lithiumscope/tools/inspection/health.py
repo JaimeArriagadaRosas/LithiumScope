@@ -11,8 +11,8 @@ from uuid import uuid4
 
 import yaml
 
-from lithiumscope.core.code_size_audit import ALLOWED, SKIP, scan
-from lithiumscope.core.config_schema import validate_config
+from lithiumscope.tools.inspection.code_size import ALLOWED, SKIP, scan
+from lithiumscope.core.configuration.schema import validate_config
 from lithiumscope.core.paths import CONFIG_DIR, DATA_DIR, LOGS_DIR, MODELS_DIR, PROJECT_ROOT, RESULTS_DIR
 from lithiumscope.resources.manager import resource_snapshot
 from lithiumscope.resources.allocation.policy import ResourcePolicy

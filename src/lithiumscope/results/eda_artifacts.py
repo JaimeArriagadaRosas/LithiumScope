@@ -24,7 +24,7 @@ def signature(group: str, source: Path, config: dict, frame: pd.DataFrame, *, pr
     code = {p.relative_to(package).as_posix(): file_sha256(p)
             for root in roots for p in sorted(root.rglob("*.py"))}
     from importlib.metadata import version
-    for name in ("pipeline_audit.py", "scientific_checks.py", "config_schema.py"):
+    for name in ("pipeline_audit.py", "scientific_checks.py", "configuration/schema.py", "configuration/loading.py"):
         path = package / "core" / name
         code[path.relative_to(package).as_posix()] = file_sha256(path)
     return canonical_json_hash({
