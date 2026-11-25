@@ -1,0 +1,21 @@
+# Scientific script paths
+
+The audit and benchmark entrypoints have moved into responsibility-based subdirectories. Run from the project root with the installed environment. CLI arguments and file contents are unchanged. Old direct filesystem commands must use the new path; archived evidence retains original paths. No global import hook is installed.
+
+| Previous path | Current path |
+|---|---|
+| `scripts/scientific/audit_historical_m2_checkpoints.py` | `scripts/scientific/audits/audit_historical_m2_checkpoints.py` |
+| `scripts/scientific/audit_historical_m2_competitions.py` | `scripts/scientific/audits/audit_historical_m2_competitions.py` |
+| `scripts/scientific/audit_historical_optuna.py` | `scripts/scientific/audits/audit_historical_optuna.py` |
+| `scripts/scientific/audit_m1_extreme_provenance.py` | `scripts/scientific/audits/audit_m1_extreme_provenance.py` |
+| `scripts/scientific/audit_m1_high_lithium.py` | `scripts/scientific/audits/audit_m1_high_lithium.py` |
+| `scripts/scientific/audit_m1_historical_extremes.py` | `scripts/scientific/audits/audit_m1_historical_extremes.py` |
+| `scripts/scientific/audit_m1_preprocessing_contract.py` | `scripts/scientific/audits/audit_m1_preprocessing_contract.py` |
+| `scripts/scientific/audit_m1_source_reconciliation.py` | `scripts/scientific/audits/audit_m1_source_reconciliation.py` |
+| `scripts/scientific/audit_m1_spatial_training_contract.py` | `scripts/scientific/audits/audit_m1_spatial_training_contract.py` |
+| `scripts/scientific/audit_m1_statistical_baselines.py` | `scripts/scientific/audits/audit_m1_statistical_baselines.py` |
+| `scripts/scientific/audit_m2_physical_v5.py` | `scripts/scientific/audits/audit_m2_physical_v5.py` |
+| `scripts/scientific/audit_m2_v4_inference_parity.py` | `scripts/scientific/audits/audit_m2_v4_inference_parity.py` |
+| `scripts/scientific/benchmark_acceleration.py` | `scripts/scientific/benchmarks/benchmark_acceleration.py` |
+| `scripts/scientific/benchmark_pipeline_resources.py` | `scripts/scientific/benchmarks/benchmark_pipeline_resources.py` |
+| `scripts/scientific/benchmark_resource_policy.py` | `scripts/scientific/benchmarks/benchmark_resource_policy.py` |
