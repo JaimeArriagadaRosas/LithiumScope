@@ -150,6 +150,8 @@ def run_development_validation(root: Path) -> dict:
     logs = local_path(root, f"logs/sessions/development_{stamp}_{uuid4().hex[:8]}/validation")
     logs.mkdir(parents=True, exist_ok=False)
     sections = {}
+    from lithiumscope.tools.inspection.development.protected import protected_inventory, compare_protected
+    before = protected_inventory(root)
     checks = (
         ("syntax", lambda: syntax_check(root, tracked_python(root))),
         ("lint", lambda: command_check(root, logs, "ruff", ["-m", "ruff", "check", "--no-cache", "src", "tests", "scripts"])),
@@ -162,6 +164,10 @@ def run_development_validation(root: Path) -> dict:
             sections[name] = check()
         except Exception as exc:
             sections[name] = {"state": "ERROR", "error_type": type(exc).__name__}
+    sections["protected_artifacts"] = compare_protected(before, protected_inventory(root))
+    if sections["protected_artifacts"]["state"] != "OK":
+        for name in sections["protected_artifacts"]["changed_paths"]:
+            print(f"  [ERROR] Archivo científico modificado: {name}")
     print_validation(sections)
     return {"state": "OK" if all(v["state"] == "OK" for v in sections.values()) else "WARNING",
             "commit": identity.get("commit"), "checks": sections,
