@@ -15,7 +15,7 @@ TERMINAL = {"COMPLETE", "PRUNED", "FAIL"}
 
 
 def study_contract(storage_path, *, x, y, groups, splits, seed, budget, pruning,
-                   direction, parameter_space, estimator_factory, model_group, extra=None):
+                   direction, parameter_space, estimator_factory, model_group, extra=None, execution=None):
     if budget < 1 or int(budget) != budget:
         raise ValueError("Optuna attempt budget must be a positive integer")
     # Closure configuration is bound by the outer checkpoint identity in normal runs.
@@ -38,6 +38,8 @@ def study_contract(storage_path, *, x, y, groups, splits, seed, budget, pruning,
               "pruning": pruning, "direction": direction,
               "space_source_sha256": code_digest(parameter_space),
               "factory_source_sha256": code_digest(estimator_factory)}
+    if execution is not None and execution.mode!="serial":
+        policy["optimization_execution"]={"mode":execution.mode,"batch_width":execution.width,"pruning":False}
     # No assumption that a standalone caller has a surrounding run.json.
     root = Path(storage_path).parent if storage_path else Path.cwd() / ".optuna_ephemeral"
     identity = evaluation_identity(root, x=x, y=y, groups=groups, splits=splits,
@@ -96,7 +98,7 @@ def summarize_study(study, contract):
             "sufficiency_certified": False}
 
 
-def run_bounded_study(study, objective, contract, *, storage_path=None, progress_callback=None):
+def run_bounded_study(study, objective, contract, *, storage_path=None, progress_callback=None, batch_runner=None):
     bind_study(study, contract)
     budget = contract["planned_attempts"]
 
@@ -126,8 +128,11 @@ def run_bounded_study(study, objective, contract, *, storage_path=None, progress
         remaining = budget - report["attempted"]
         if remaining:
             # Estimator failures remain FAIL and propagate (no infinite retries).
-            study.optimize(objective, n_trials=remaining, callbacks=[on_terminal],
-                           show_progress_bar=False, n_jobs=1)
+            if batch_runner is None:
+                study.optimize(objective, n_trials=remaining, callbacks=[on_terminal],
+                               show_progress_bar=False, n_jobs=1)
+            else:
+                batch_runner(study,remaining,on_terminal)
         report = snapshot()
         if report["complete_valid"] != report["completed"]:
             raise RuntimeError("Optuna COMPLETE trial lacks finite full-fold evidence")

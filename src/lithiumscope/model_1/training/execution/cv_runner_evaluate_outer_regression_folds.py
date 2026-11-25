@@ -95,6 +95,7 @@ def _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, group
                         y_train,
                         inner_splits,
                         trials,
+                        device=device,
                         groups=groups_train,
                         progress_callback=progress,
                         storage_path=(

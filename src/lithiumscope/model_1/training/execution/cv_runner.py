@@ -193,6 +193,7 @@ def run_nested_cv(
                     prepared.y,
                     final_splits,
                     trials,
+                    device=device,
                     groups=groups,
                     progress_callback=final_progress,
                     storage_path=(

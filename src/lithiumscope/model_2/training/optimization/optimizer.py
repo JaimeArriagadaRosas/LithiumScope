@@ -55,6 +55,7 @@ def optimize_classifier_with_optuna(
     label_quantile: float = 0.75,
     fixed_threshold_ppm: float | None = None,
     groups=None,
+    device=None,
 ) -> dict:
     try:
         import optuna
@@ -79,10 +80,13 @@ def optimize_classifier_with_optuna(
         study_contract, run_bounded_study, record_fold, validate_splits,
     )
     splits = validate_splits(splits, x, y, groups)
+    from lithiumscope.resources.allocation.optimization_parallel import choose_execution,map_calls
+    execution=choose_execution(device,pruning_enabled)
+    logger.info("Optimization execution: %s",execution)
     contract = study_contract(storage_path, x=x, y=y, groups=groups, splits=splits,
         seed=random_seed, budget=n_trials, pruning=[pruning_enabled,startup_trials,warmup_folds],
         direction="maximize", parameter_space=parameter_space, estimator_factory=estimator_factory,
-        model_group="model_2", extra={"lithium_values": None if lithium_values is None else np.asarray(lithium_values).tolist(),
+        model_group="model_2", execution=execution, extra={"lithium_values": None if lithium_values is None else np.asarray(lithium_values).tolist(),
                                      "label_quantile":label_quantile,"fixed_threshold_ppm":fixed_threshold_ppm})
     prepared_splits = []
     if lithium_values is not None:
@@ -103,35 +107,30 @@ def optimize_classifier_with_optuna(
 
     from lithiumscope.core.logging.context import scientific_log_context
 
+    def score_fold(params,step):
+        train_idx,valid_idx,training_y,validation_y=prepared_splits[step]
+        estimator=estimator_factory(params)
+        from lithiumscope.resources.manager import estimator_thread_scope
+        with estimator_thread_scope():
+            estimator.fit(_take_rows(x,train_idx),training_y)
+        return float(roc_auc_score(validation_y,_score_vector(estimator,_take_rows(x,valid_idx))))
+
+    def score_trial(params):
+        return [score_fold(params,step) for step in range(len(prepared_splits))]
+
     def objective(trial):
         with scientific_log_context(trial=trial.number,stage="optuna_inner_cv"):
-            params = parameter_space(trial)
-            scores: list[float] = []
-
-            for step, (train_idx, valid_idx, training_y, validation_y) in enumerate(prepared_splits):
-                estimator = estimator_factory(params)
-                from lithiumscope.resources.manager import estimator_thread_scope
-                with estimator_thread_scope():
-                    estimator.fit(_take_rows(x, train_idx), training_y)
-                score = roc_auc_score(
-                    validation_y,
-                    _score_vector(
-                        estimator,
-                        _take_rows(x, valid_idx),
-                    ),
-                )
-                record_fold(trial, score, step)
-                scores.append(float(score))
-                running = float(np.mean(scores))
-                trial.report(running, step=step)
-
+            params=parameter_space(trial)
+            scores=[]
+            parallel=(map_calls(score_fold,[((params,step),trial.number,step+1) for step in range(len(prepared_splits))],execution)
+                      if execution.mode=="inner_fold" else None)
+            for step in range(len(prepared_splits)):
+                score=parallel[step] if parallel is not None else score_fold(params,step)
+                record_fold(trial,score,step)
+                scores.append(score)
+                trial.report(float(np.mean(scores)),step=step)
                 if pruning_enabled and trial.should_prune():
                     raise optuna.TrialPruned()
-
-            if len(scores) != len(prepared_splits):
-                raise RuntimeError(
-                    "No inner validation split contained both target classes."
-                )
             return float(np.mean(scores))
 
     storage = _sqlite_storage(storage_path)
@@ -144,7 +143,13 @@ def optimize_classifier_with_optuna(
         pruner=pruner,
     )
 
+    batch_runner=None
+    if execution.mode=="trial_batch":
+        from functools import partial
+        from lithiumscope.core.scientific.optuna_batch import run_batched_trials
+        batch_runner=partial(run_batched_trials,parameter_space=parameter_space,score_trial=score_trial,
+                             execution=execution,expected_folds=len(prepared_splits))
     report = run_bounded_study(study, objective, contract, storage_path=storage_path,
-                               progress_callback=progress_callback)
+                               progress_callback=progress_callback,batch_runner=batch_runner)
     logger.info("Optuna audit: %s", report)
     return dict(report["best_params"])

@@ -195,6 +195,7 @@ def run_classification_cv(
                     final_y,
                     final_splits,
                     n_trials=trials,
+                    device=device,
                     groups=final_groups if split_groups is not None else None,
                     random_seed=seed + 5000,
                     progress_callback=final_progress,

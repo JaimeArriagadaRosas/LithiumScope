@@ -136,6 +136,7 @@ def _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_th
                         y_train,
                         inner_splits,
                         n_trials=trials,
+                        device=device,
                         groups=groups_train if split_groups is not None else None,
                         random_seed=seed + fold,
                         progress_callback=progress,
