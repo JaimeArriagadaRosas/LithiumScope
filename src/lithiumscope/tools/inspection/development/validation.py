@@ -168,6 +168,11 @@ def _benchmark_check(root, logs, *, execute):
             "runs":report.get("runs",[]),"evidence":file_record(root,output/"comparison.json")}
 
 
+def _historical_parity_check(root,logs):
+    from lithiumscope.tools.inspection.development.historical_parity import verify
+    return verify(root,logs/"historical_parity.json")
+
+
 def run_development_validation(root: Path, *, include_benchmark=False) -> dict:
     root = root.resolve()
     identity = git_identity(root)
@@ -184,6 +189,7 @@ def run_development_validation(root: Path, *, include_benchmark=False) -> dict:
         ("architecture", lambda: command_check(root, logs, "architecture", ["scripts/check_code_size.py", "--check"])),
         ("imports", lambda: _check_dependencies(root)),
         ("pytest", lambda: run_pytest(root, logs, identity.get("commit"))),
+        ("historical_parity", lambda: _historical_parity_check(root,logs)),
         *((("benchmark", lambda: _benchmark_check(root,logs,execute=True)),) if include_benchmark else ()),
     )
     for name, check in checks:
