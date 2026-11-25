@@ -51,6 +51,8 @@ def _eda_menu() -> bool | None:
                 path = job()
             states.append("COMPLETADO")
             print(f"[OK] {label}: {path}")
+            from lithiumscope.cli.eda_console import show_eda_summary
+            show_eda_summary(path)
         except FileNotFoundError as exc:
             states.append("BLOQUEADO")
             print(f"[BLOQUEADO] {label}: {exc}")
