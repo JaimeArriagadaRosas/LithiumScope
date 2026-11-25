@@ -44,6 +44,9 @@ def run_targeted(run_id, *, output_root=None, device=None):
                 "planned_evaluations":planned,"planned_calibration_fits":planned_calibration,"configurations":len(ALGORITHMS)*len(ARMS),
                 "hyperparameters":"sealed_previous_outer_train_optimization_frozen_for_all_arms"}
     write_legacy_evidence_json(destination/"manifest.json", manifest)
+    write_legacy_evidence_json(destination/"partitions.json", [{"fold":n,"train":tr.tolist(),"test":te.tolist(),
+        "inner":[{"train":a.tolist(),"validation":b.tolist()} for a,b in inner]}
+        for n,(tr,te,inner) in enumerate(splits,1)])
     metrics, predictions, inner_rows, selected, trace, errors = [], [], [], [], [], []
     print(f"M1: {planned} evaluaciones + {planned_calibration} ajustes de calibración previstos",flush=True)
     references = {}

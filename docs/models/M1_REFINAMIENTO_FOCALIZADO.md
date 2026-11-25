@@ -36,3 +36,9 @@ hipótesis experimental, no una garantía de extrapolación. La evaluación gene
 (opción 4 del menú anterior) no ejecuta implícitamente esta campaña focalizada.
 No se adquieren nuevos datos automáticamente. Incorporar nuevas muestras reales
 de alta concentración exige una cohorte nueva y validación independiente.
+
+Los folds externos se obtienen del manifiesto histórico y se comprueban contra
+los checkpoints, evitando diferencias de GroupKFold entre versiones. El plan
+interno archivado se usa si su hash y su cohorte coinciden; si no existe, se
+reconstruye exclusivamente dentro del TRAIN externo y se advierte expresamente.
+Las particiones efectivas quedan exportadas con el resultado.

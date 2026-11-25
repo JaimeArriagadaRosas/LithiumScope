@@ -66,3 +66,14 @@ def test_fit_weighted_rf_smoke():
     assert scores.shape == (2,) and train.shape == (60,)
     assert np.isfinite(scores).all() and (scores>=0).all()
     assert evidence["fit_rows"] == len(x)
+
+
+def test_frozen_outer_group_assignment_is_not_recomputed():
+    from lithiumscope.experiments.model_1.targeted.partitions import outer_from_manifest
+    import pytest
+    groups = pd.Series(["g1","g1","g2","g2","g3","g3"])
+    pairs = outer_from_manifest([3,3,1,1,2,2],groups,3)
+    assert pairs[0][1].tolist()==[2,3]
+    assert pairs[2][1].tolist()==[0,1]
+    with pytest.raises(ValueError):
+        outer_from_manifest([1,3,1,1,2,2],groups,3)

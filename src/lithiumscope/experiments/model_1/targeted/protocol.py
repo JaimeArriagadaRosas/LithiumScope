@@ -12,7 +12,7 @@ from lithiumscope.core.config import load_config
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import RESULTS_DIR
 from lithiumscope.datasets.management.diagnostic_provisioning import prepare_diagnostic_source
-from lithiumscope.experiments.generalization.partitions import partitions
+from lithiumscope.experiments.model_1.targeted.partitions import outer_from_manifest, find_plan
 from lithiumscope.experiments.generalization.prepared import load_snapshot, prepare_version
 from lithiumscope.experiments.model_1.targeted.policies import ALGORITHMS
 
@@ -52,19 +52,17 @@ def load_protocol(run_id):
     x, y, groups, sources, eligible, _, _ = data
     if not eligible.all():
         raise ValueError("Original M1 cohort must be preserved")
-    splits = partitions("model_1", data, cfg)
-    fold_ids = np.zeros(len(x), dtype=int)
-    for fold, (_, test, _) in enumerate(splits, 1):
-        fold_ids[test] = fold
     manifest_path = run/"tables"/"outer_fold_manifest.csv"
     saved = pd.read_csv(manifest_path, dtype={"row_index":str}).sort_values("row_position")
     if (not np.array_equal(saved.row_position, np.arange(len(x)))
             or not np.array_equal(saved.row_index.to_numpy(str), x.index.to_numpy(str))
-            or not np.array_equal(saved.outer_fold, fold_ids)
             or not np.array_equal(saved.spatial_group.to_numpy(str), groups.to_numpy(str))
             or not np.array_equal(saved.source_dataset.to_numpy(str), sources.to_numpy(str))
             or not np.allclose(saved[["Longitude","Latitude"]], x[["Longitude","Latitude"]], rtol=0, atol=1e-8)):
         raise ValueError("Reference cohort or spatial folds changed")
+    fold_ids = saved.outer_fold.to_numpy(int)
+    outer = outer_from_manifest(fold_ids, groups, int(cfg["validation"]["outer_folds"]))
+    splits, partition_evidence = find_plan(snapshot, digest, outer, groups, int(cfg["validation"]["inner_folds"]))
     params, references, hashes = {}, {}, {"outer_fold_manifest.csv": file_sha256(manifest_path)}
     for algorithm in ALGORITHMS:
         variant = algorithm+"__identity"
@@ -88,7 +86,7 @@ def load_protocol(run_id):
                 raise ValueError("Checkpoint and OOF differ or treatment absent")
             params[algorithm, fold] = saved_fold["params"]
             hashes[f"{variant}/fold_{fold:02d}.json"] = file_sha256(ck)
-    evidence = {"reference_run":run_id, "source_sha256":digest, "snapshot":snapshot.name,
+    evidence = {**partition_evidence,"reference_run":run_id, "source_sha256":digest, "snapshot":snapshot.name,
                 "reference_artifact_sha256":hashes, "rows":len(x), "groups":int(groups.nunique()),
                 "seed":int(cfg["validation"]["random_seed"])}
     return data, splits, params, references, evidence
