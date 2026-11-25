@@ -1,0 +1,117 @@
+from __future__ import annotations
+
+from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
+import json
+from pathlib import Path
+from typing import Any
+
+import pandas as pd
+
+from lithiumscope.core.hashing import file_sha256
+from lithiumscope.core.reproducibility import runtime_fingerprint, canonical_json_hash
+from lithiumscope.datasets.validation.paths import resolve_image_path
+from uuid import uuid4
+from lithiumscope.core.states import DatasetState
+
+
+@dataclass(frozen=True)
+class DatasetManifest:
+    schema_version: int
+    dataset_name: str
+    model_group: str
+    stage: str
+    source_path: str
+    source_sha256: str
+    state: str
+    rows: int | None
+    columns: int | None
+    column_names: list[str]
+    created_at_utc: str
+    runtime: dict[str, Any]
+    metadata: dict[str, Any]
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+def _linked_file_metadata(path: Path, frame: pd.DataFrame | None, model_group: str) -> dict[str, Any]:
+    # M2 preparation supplies a feature matrix; the raw source manifest has paths.
+    if frame is not None and "image_path" in frame:
+        source = frame
+    elif model_group == "model_2" and path.suffix.lower() == ".csv":
+        source = pd.read_csv(path)
+    else:
+        return {}
+    if "image_path" not in source:
+        return {}
+    records, cache = [], {}
+    for position, raw in enumerate(source["image_path"]):
+        digest = None
+        if pd.notna(raw) and str(raw).strip():
+            try:
+                resolved = resolve_image_path(str(raw))
+                if resolved not in cache:
+                    cache[resolved] = file_sha256(resolved) if resolved.is_file() and resolved.stat().st_size else None
+                digest = cache[resolved]
+            except (OSError, ValueError):
+                pass
+        records.append({"position": position, "sha256": digest})
+    missing = sum(r["sha256"] is None for r in records)
+    return {"linked_file_count": len(records), "linked_file_missing_count": missing,
+            "linked_files_complete": bool(records) and missing == 0,
+            "linked_hash_policy": "ordered_resolved_content_v2",
+            "linked_files_sha256": canonical_json_hash({"rows": records})}
+
+
+def build_tabular_manifest(
+    path: Path,
+    dataset_name: str,
+    model_group: str,
+    stage: str,
+    frame: pd.DataFrame | None = None,
+    metadata: dict[str, Any] | None = None,
+) -> DatasetManifest:
+    digest = file_sha256(path)
+    if frame is None:
+        suffix = path.suffix.lower()
+        if suffix == ".csv":
+            frame = pd.read_csv(path)
+        elif suffix in {".xlsx", ".xls"}:
+            frame = pd.read_excel(path)
+
+    linked = _linked_file_metadata(path, frame, model_group)
+    merged_metadata = {**(metadata or {}), **linked}
+    if file_sha256(path) != digest:
+        raise ValueError("Dataset changed during manifest construction")
+
+    return DatasetManifest(
+        schema_version=1,
+        dataset_name=dataset_name,
+        model_group=model_group,
+        stage=stage,
+        source_path=str(path),
+        source_sha256=digest,
+        state=(DatasetState.PARTIAL if linked and not linked["linked_files_complete"] else DatasetState.READY).value,
+        rows=int(frame.shape[0]) if frame is not None else None,
+        columns=int(frame.shape[1]) if frame is not None else None,
+        column_names=[str(column) for column in frame.columns] if frame is not None else [],
+        created_at_utc=datetime.now(timezone.utc).isoformat(),
+        runtime=runtime_fingerprint(),
+        metadata=merged_metadata,
+    )
+
+
+def write_manifest(manifest: DatasetManifest, destination: Path) -> Path:
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary = destination.with_name(f".{destination.name}.{uuid4().hex}.tmp")
+    temporary.write_text(
+        json.dumps(manifest.to_dict(), indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    temporary.replace(destination)
+    return destination
+
+
+def load_manifest(path: Path) -> dict[str, Any]:
+    return json.loads(path.read_text(encoding="utf-8"))
