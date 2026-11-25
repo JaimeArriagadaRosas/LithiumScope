@@ -8,7 +8,6 @@ import pandas as pd
 from lithiumscope.core.config import load_config
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import RESULTS_DIR
-from lithiumscope.core.scientific.eda_statistics import cohort_summary, feature_profiles, numeric_correlations
 from lithiumscope.model_2.pipeline import load_model_2_training_frame
 from lithiumscope.model_2.eda.quality import patch_quality
 from lithiumscope.core.scientific.fold_profiles import fold_profiles
@@ -16,7 +15,9 @@ from lithiumscope.core.scientific.spatial_audit import audit_spatial_folds
 from lithiumscope.model_2.validation.spatial import make_scientific_folds
 from lithiumscope.model_2.preparation.features.v4_inputs import spectral_v4_enabled, load_spectral_v4_training_frame
 from lithiumscope.results.eda_artifacts import complete_run, fail_run, find_compatible, new_run, signature
-from lithiumscope.results.eda_figures import save_figures
+from lithiumscope.model_2.eda.statistics.profile import descriptive_tables
+from lithiumscope.model_2.eda.reporting.artifacts import write_descriptive_tables
+from lithiumscope.model_2.eda.visualization.spectral_quality import render_profiles
 from lithiumscope.results.eda_protocol import fold_protocol, attach_training_eda
 
 
@@ -75,18 +76,8 @@ def run_eda(path: Path, *, output_root: Path | None = None, frame=None, config=N
     directory = new_run(root)
     try:
         tables = directory / "tables"
-        profiles = feature_profiles(combined, features, stage="prepared")
-        profiles.to_csv(tables / "feature_profiles.csv", index=False)
-        cohort_summary(combined, target).to_csv(tables / "cohort_summary.csv", index=False)
-        combined[[target, group, *metadata]].to_csv(tables / "sample_provenance.csv", index=False)
-        if "sentinel_scene_id" in combined:
-            scene = combined.groupby("sentinel_scene_id", dropna=False)[target].agg(["count", "median"])
-            if "sentinel_cloud_cover" in combined:
-                scene["scene_cloud_mean"] = pd.to_numeric(
-                    combined["sentinel_cloud_cover"], errors="coerce").groupby(combined["sentinel_scene_id"]).mean()
-            scene.to_csv(tables / "scene_quality.csv")
-        if not qa.empty:
-            qa.to_csv(tables / "patch_quality.csv", index=False)
+        calculated=descriptive_tables(combined,features,target)
+        write_descriptive_tables(calculated,combined,target,group,metadata,qa,tables)
         if folds is not None:
             fold_summary, fold_features = fold_profiles(frame[features], combined[target], combined[group],
                 [(f.train_idx, f.test_idx) for f in folds], eligibility)
@@ -103,10 +94,8 @@ def run_eda(path: Path, *, output_root: Path | None = None, frame=None, config=N
             spatial_summary.to_csv(tables / "outer_spatial_summary.csv", index=False)
             spatial_rows.to_csv(tables / "outer_spatial_nearest.csv", index=False)
             fold_state = "group_kfold_train_profiles"
-        correlations = numeric_correlations(combined, [*features, target])
-        correlations.to_csv(tables / "spearman_correlations.csv")
-        save_figures(directory / "figures", combined, target, profiles, correlations)
-        print(cohort_summary(combined, target).to_string(index=False))
+        render_profiles(directory/"figures",combined,target,calculated)
+        print(calculated["cohort_summary"].to_string(index=False))
         return complete_run(directory, signature_value=key, details={
             "model_group": "model_2", "source_path": str(path), "source_sha256": file_sha256(path),
             "rows_raw": len(manifest), "rows_prepared": len(frame), "features": len(features),

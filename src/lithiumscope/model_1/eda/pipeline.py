@@ -2,14 +2,10 @@
 from __future__ import annotations
 
 from pathlib import Path
-import pandas as pd
 
 from lithiumscope.core.config import load_config
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import RESULTS_DIR
-from lithiumscope.core.scientific.eda_statistics import (
-    category_frequencies, cohort_summary, feature_profiles, numeric_correlations,
-)
 from lithiumscope.model_1.pipeline import prepare_training_data
 from lithiumscope.model_1.validation.spatial import materialize_regression_splits
 from lithiumscope.core.scientific.fold_profiles import fold_profiles
@@ -17,7 +13,9 @@ from lithiumscope.core.scientific.spatial_audit import audit_spatial_folds
 from lithiumscope.results.eda_artifacts import (
     complete_run, fail_run, find_compatible, new_run, signature,
 )
-from lithiumscope.results.eda_figures import save_figures
+from lithiumscope.model_1.eda.statistics.profile import descriptive_tables
+from lithiumscope.model_1.eda.reporting.artifacts import write_descriptive_tables
+from lithiumscope.model_1.eda.visualization.source_profiles import render_profiles
 from lithiumscope.results.eda_protocol import fold_protocol, attach_training_eda
 
 
@@ -46,32 +44,10 @@ def run_eda(path: Path, *, output_root: Path | None = None, prepared=None, confi
     try:
         tables = directory / "tables"
         cols = [*prepared.schema.numeric, *prepared.schema.categorical]
-        profiles = pd.concat([
-            feature_profiles(prepared.raw_frame, cols, stage="raw"),
-            feature_profiles(prepared.frame, cols, stage="prepared"),
-        ], ignore_index=True)
-        profiles.to_csv(tables / "feature_profiles.csv", index=False)
-        prepared.audit.to_frame().to_csv(tables / "preparation_stages.csv", index=False)
-        pd.DataFrame(prepared.audit.source_records).to_csv(tables / "stage_sources.csv", index=False)
-        prepared.audit.exclusions_frame().to_csv(tables/"stage_exclusions.csv",index=False)
-        pd.DataFrame(prepared.audit.column_records).to_csv(tables/"stage_column_missingness.csv",index=False)
-        if prepared.coordinate_evidence is not None:
-            prepared.coordinate_evidence.to_csv(tables/"coordinate_alias_audit.csv",index=False)
-        reasons = []
-        for stage, attr in (("05_target_validity", "target_exclusions"), ("06_quality_control", "qc_exclusions")):
-            reasons.extend({"stage": stage, **record} for record in prepared.frame.attrs.get(attr, []))
-        pd.DataFrame(reasons, columns=["stage", "row_index", "column", "original", "reason"]).to_csv(tables / "exclusion_reasons.csv", index=False)
-        pd.DataFrame(prepared.audit.censoring, columns=["row_index", "source", "column", "original", "censor_type", "limit", "substituted"]).to_csv(tables / "censoring.csv", index=False)
-        categories = pd.concat([category_frequencies(prepared.raw_frame, prepared.schema.categorical).assign(stage="raw"),
-                                category_frequencies(prepared.frame, prepared.schema.categorical).assign(stage="prepared")], ignore_index=True)
-        categories.to_csv(
-            tables / "category_frequencies.csv", index=False)
-        summary = cohort_summary(prepared.frame, prepared.target)
-        summary.to_csv(tables / "cohort_summary.csv", index=False)
-        correlations = numeric_correlations(prepared.frame, [*prepared.schema.numeric, prepared.target])
-        correlations.to_csv(tables / "spearman_correlations.csv")
-        save_figures(directory / "figures", prepared.frame, prepared.target,
-                     profiles[profiles["stage"] == "prepared"], correlations)
+        calculated=descriptive_tables(prepared)
+        write_descriptive_tables(calculated,prepared,tables)
+        render_profiles(directory/"figures",prepared,calculated)
+        summary=calculated["cohort_summary"]
         fold_state = "not_available"
         if splits is not None:
             fold_summary, fold_features = fold_profiles(prepared.x, prepared.y, prepared.groups, splits)
