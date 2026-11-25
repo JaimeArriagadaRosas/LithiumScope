@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from sklearn.calibration import CalibratedClassifierCV
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
+from lithiumscope.model_2.training.preprocessing.contracts import scaled_estimator
 from sklearn.svm import SVC
 
 
@@ -17,10 +16,7 @@ def _base_model(random_seed: int = 42, **params):
     from lithiumscope.resources.manager import svm_cache_limit
     defaults.update(params)
     defaults['cache_size']=svm_cache_limit(defaults.get('cache_size',200.))
-    return Pipeline([
-        ("scaler", StandardScaler()),
-        ("model", SVC(**defaults)),
-    ])
+    return scaled_estimator(SVC(**defaults))
 
 
 def create_model(random_seed: int = 42, *, calibrated: bool = True, calibration_cv=None, **params):

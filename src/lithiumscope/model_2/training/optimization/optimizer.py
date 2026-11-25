@@ -91,10 +91,9 @@ def optimize_classifier_with_optuna(
             raise ValueError("Invalid inner Li labels")
     for train_idx, valid_idx in splits:
         if lithium_values is not None:
-            label_limit = (float(fixed_threshold_ppm) if fixed_threshold_ppm is not None
-                           else float(np.quantile(inner_lithium[train_idx], label_quantile)))
-            training_y = (inner_lithium[train_idx] >= label_limit).astype(int)
-            validation_y = (inner_lithium[valid_idx] >= label_limit).astype(int)
+            from lithiumscope.model_2.training.preprocessing.contracts import inner_fold_labels
+            training_y, validation_y, _ = inner_fold_labels(inner_lithium,train_idx,valid_idx,
+                quantile=label_quantile,fixed_threshold=fixed_threshold_ppm)
         else:
             training_y = np.asarray(_take_rows(y, train_idx))
             validation_y = np.asarray(_take_rows(y, valid_idx))

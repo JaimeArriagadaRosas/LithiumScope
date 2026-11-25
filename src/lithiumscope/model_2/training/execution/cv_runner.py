@@ -68,10 +68,10 @@ def run_classification_cv(
     fixed_threshold_ppm: float | None = None,
     quality_training_mask: np.ndarray | None = None,
 ) -> ClassificationCVResult:
+    from lithiumscope.model_2.training.preprocessing.contracts import eligible_positions
+    eligible_positions(quality_training_mask,len(x))
     if quality_training_mask is not None:
-        quality_training_mask = np.asarray(quality_training_mask, dtype=bool)
-        if quality_training_mask.shape != (len(x),) or not quality_training_mask.any():
-            raise ValueError("Train-only quality mask must align with all observations")
+        quality_training_mask = np.asarray(quality_training_mask)
     if scientific_folds is not None:
         if lithium_values is None or groups is None:
             raise ValueError("Scientific CV requires Li values and spatial groups.")
@@ -131,11 +131,7 @@ def run_classification_cv(
     _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_threshold_ppm, folds, groups, inner_folds, label, label_quantile, lithium_values, optimize, probabilities, pruning, quality_training_mask, records, scientific_folds, seed, spec, split_groups, split_iter, trials, x, y, parameter_space, calibration_mode, operating_objective, operating_records)
 
     assert_oof_complete(probabilities, len(y))
-    final_indices = (
-        np.flatnonzero(quality_training_mask)
-        if quality_training_mask is not None
-        else np.arange(len(y), dtype=int)
-    )
+    final_indices = eligible_positions(quality_training_mask,len(y))
     final_x = x.iloc[final_indices]
     final_y = y.iloc[final_indices]
     final_groups = (
