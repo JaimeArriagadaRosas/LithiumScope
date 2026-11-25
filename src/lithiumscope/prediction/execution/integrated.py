@@ -35,7 +35,7 @@ from lithiumscope.prediction.analysis.interpretation import (
     model_1_case_text,
     model_2_case_text,
 )
-from lithiumscope.prediction.report import (
+from lithiumscope.prediction.exports.report_facade import (
     save_integrated_figures,
     save_satellite_input_preview,
     save_spatial_maps,

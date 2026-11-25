@@ -84,6 +84,8 @@
   "lithiumscope.prediction.candidates.holdout.registry": "lithiumscope.evaluation.holdout.registry",
   "lithiumscope.prediction.candidates.holdout.scoring": "lithiumscope.evaluation.holdout.scoring",
   "lithiumscope.prediction.candidates.scoring": "lithiumscope.prediction.execution.candidate_scoring",
+  "lithiumscope.prediction.rebuild_pdf": "lithiumscope.prediction.exports.rebuild_pdf",
+  "lithiumscope.prediction.report": "lithiumscope.prediction.exports.report_facade",
   "lithiumscope.tools.georoc.processing.georoc_dataset_health": "lithiumscope.datasets.validation.georoc_dataset_health",
   "lithiumscope.tools.georoc.processing.georoc_download_finalize": "lithiumscope.tools.acquisition.georoc.download_finalize",
   "lithiumscope.tools.georoc.processing.georoc_material_filter": "lithiumscope.datasets.adapters.georoc_material_filter",

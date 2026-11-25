@@ -5,6 +5,8 @@ import pytest
 
 
 @pytest.mark.parametrize(("old", "new"), [
+    ("lithiumscope.prediction.report", "lithiumscope.prediction.exports.report_facade"),
+    ("lithiumscope.prediction.rebuild_pdf", "lithiumscope.prediction.exports.rebuild_pdf"),
     ("lithiumscope.prediction.demo", "lithiumscope.prediction.demonstration.cases"),
     ("lithiumscope.prediction.imagery", "lithiumscope.prediction.inputs.imagery"),
     ("lithiumscope.prediction.integrated", "lithiumscope.prediction.execution.integrated"),
