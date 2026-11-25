@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from hashlib import sha1
+from uuid import uuid4
 from pathlib import Path
 
 import pandas as pd
-from lithiumscope.datasets.validation.paths import resolve_image_path
 
 from lithiumscope.core.config import load_config
 from lithiumscope.core.hashing import file_sha256
@@ -100,9 +100,12 @@ def _sample_key(
 
 def _atomic_write_csv(frame: pd.DataFrame, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_name(path.name + ".tmp")
-    frame.to_csv(temporary, index=False)
-    temporary.replace(path)
+    temporary = path.with_name(f".{path.name}.{uuid4().hex}.tmp")
+    try:
+        frame.to_csv(temporary, index=False)
+        temporary.replace(path)
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 def _load_valid_manifest(path: Path) -> pd.DataFrame:
@@ -121,11 +124,8 @@ def _load_valid_manifest(path: Path) -> pd.DataFrame:
     if "image_path" not in frame.columns:
         return pd.DataFrame(columns=_MANIFEST_COLUMNS)
 
-    valid = frame[
-        frame["image_path"].map(
-            lambda value: resolve_image_path(str(value)).is_file()
-        )
-    ].copy()
+    # Byte/geometry/identity verification follows in reconcile_checkpoint.
+    valid = frame.copy()
     for column in _MANIFEST_COLUMNS:
         if column not in valid.columns:
             valid[column] = pd.NA

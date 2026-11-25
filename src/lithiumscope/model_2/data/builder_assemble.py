@@ -14,6 +14,19 @@ def ensure_model_2_dataset(
     config = load_config("model_2")
     training = config["training"]
     imagery = config["imagery"]
+    # Frozen historical manifest: do not re-download, rebuild or overwrite it.
+    if training.get("frozen_manifest_sha256"):
+        from lithiumscope.datasets.management.frozen_m2 import require_frozen_manifest
+        from lithiumscope.core.paths import PROJECT_ROOT
+        if force:
+            raise ValueError("Cannot rebuild a frozen M2 cohort")
+        frozen = require_frozen_manifest(training, PROJECT_ROOT)
+        count = len(pd.read_csv(frozen))
+        return Model2DatasetResult(frozen, count, count, 0, resumed_samples=count)
+    from lithiumscope.model_2.data.checkpoint_contract import (
+        source_signature, acquisition_signature, reconcile_checkpoint, atomic_text, archive_failures,
+    )
+    import json
     manifest_path = _resolve_project_path(
         str(training["manifest_path"])
     )
@@ -39,7 +52,9 @@ def ensure_model_2_dataset(
     source_fingerprint_path = manifest_path.with_suffix(
         manifest_path.suffix + ".source.sha256"
     )
-    current_source_sha256 = file_sha256(model_1_dataset)
+    current_source_sha256 = source_signature(file_sha256(model_1_dataset), imagery, training)
+    samples = load_georeferenced_li_samples(model_1_dataset)
+    atomic_text(manifest_path.with_suffix('.source-audit.json'), json.dumps(samples.attrs.get('source_reconciliation', []), ensure_ascii=False, indent=2))
     minimum_samples = int(training.get("minimum_samples", 50))
     checkpoint_every = max(
         1,
@@ -65,7 +80,8 @@ def ensure_model_2_dataset(
     )
     if manifest_path.exists() and not force and source_matches:
         manifest = _load_valid_manifest(manifest_path)
-        if len(manifest) >= minimum_samples:
+        manifest, rejected = reconcile_checkpoint(manifest, samples, imagery)
+        if len(manifest) >= minimum_samples and len(manifest) == len(samples) and not rejected:
             logger.info(
                 "Model 2 dataset already ready: %s (%d samples)",
                 manifest_path,
@@ -83,11 +99,17 @@ def ensure_model_2_dataset(
             "Model 2 source dataset changed; rebuilding manifest "
             "while reusing cached imagery when possible."
         )
-    samples = load_georeferenced_li_samples(model_1_dataset)
     provider = Sentinel2Provider(_sentinel_config(config))
     checkpoint = pd.DataFrame(columns=_MANIFEST_COLUMNS)
     if not force:
         checkpoint = _load_valid_manifest(partial_manifest_path)
+        if manifest_path.is_file():
+            previous = _load_valid_manifest(manifest_path)
+            if checkpoint.empty:
+                checkpoint = previous
+        checkpoint, rejected = reconcile_checkpoint(checkpoint, samples, imagery)
+        atomic_text(manifest_path.with_suffix('.checkpoint-audit.json'), json.dumps(rejected, indent=2))
+    archive_failures(failures_path)
     rows: dict[str, dict] = {}
     for row in checkpoint.to_dict(orient="records"):
         key = _sample_key(
@@ -126,7 +148,7 @@ def ensure_model_2_dataset(
                 longitude,
             )
             if key not in rows:
-                destination = image_cache / _cache_name(
+                destination = image_cache / acquisition_signature(imagery) / _cache_name(
                     sample_id,
                     latitude,
                     longitude,
@@ -138,6 +160,7 @@ def ensure_model_2_dataset(
                         longitude=longitude,
                         destination=destination,
                         provider=provider,
+                        acquisition_signature=acquisition_signature(imagery),
                     )
                     rows[key] = {
                         "sample_id": sample_id,
@@ -252,10 +275,7 @@ def ensure_model_2_dataset(
                 f"fallos={failed_samples}. Revise {failures_path}."
             )
         _atomic_write_csv(manifest, manifest_path)
-        source_fingerprint_path.write_text(
-            current_source_sha256 + "\n",
-            encoding="utf-8",
-        )
+        atomic_text(source_fingerprint_path, current_source_sha256 + "\n")
     except (KeyboardInterrupt, SystemExit):
         spinner.stop("Modelo 2 · adquisición interrumpida")
         raise

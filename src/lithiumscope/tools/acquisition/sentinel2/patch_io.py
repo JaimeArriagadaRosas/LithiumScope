@@ -76,6 +76,7 @@ def download_patch(
     *,
     selected_scene: dict | None = None,
     scientific_quality: dict | None = None,
+    acquisition_signature: str | None = None,
 ) -> tuple[Path, dict]:
     from lithiumscope.tools.acquisition.sentinel2.provider import Path, Sentinel2Provider, SentinelAssetError, _asset_href, _read_patch, json, np
     from lithiumscope.core.hashing import file_sha256
@@ -84,6 +85,9 @@ def download_patch(
         metadata = {}
         if metadata_path.exists():
             metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        if acquisition_signature is not None and (metadata.get("acquisition_signature") != acquisition_signature
+                or metadata.get("sample_id") != sample_id or not metadata.get("image_sha256")):
+            raise SentinelAssetError("Cache identity or acquisition signature differs")
         if metadata.get("image_sha256"):
             if metadata["image_sha256"] != file_sha256(destination):
                 raise SentinelAssetError("Cached patch hash differs; no silent refresh")
@@ -139,6 +143,7 @@ def download_patch(
         "radiometric_representation": "raw_dn",
         "image_sha256": file_sha256(destination),
         "acquisition_geometry": "declared_metric_window",
+        "acquisition_signature": acquisition_signature,
 
     }
     if scientific_quality is not None:
