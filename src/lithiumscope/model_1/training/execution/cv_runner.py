@@ -118,6 +118,11 @@ def run_nested_cv(
     )
     optimize = bool(optimization.get("enabled", True))
     pruning = optimization.get("pruning", {})
+    from lithiumscope.model_1.training.preprocessing.treatment_policy import search_space
+    treatment_profile=optimization.get("treatment_search_profile","legacy")
+    if treatment_profile!="legacy" and (not optimize or target_transform!="identity" or groups is None):
+        raise ValueError("Treatment search requires Optuna, grouped CV and identity variant")
+    parameter_space=search_space(algorithm,spec.module.optuna_space,treatment_profile)
     checkpoint = (
         FoldCheckpointStore(checkpoint_root, variant_id, identity=evaluation_identity(checkpoint_root,model_group="model_1",
             x=prepared.x,y=prepared.y,groups=groups,splits=outer_splits,
@@ -143,7 +148,7 @@ def run_nested_cv(
         f"{outer_strategy}"
     )
 
-    _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, groups, label, optimize, outer_splits, outer_strategy, predictions, prepared, pruning, require_groups, seed, spec, target_transform, trials, validation, robustness_records, preprocessing_records, bool(config.get('robustness',{}).get('physical_scenarios_enabled',True)))
+    _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, groups, label, optimize, outer_splits, outer_strategy, predictions, prepared, pruning, require_groups, seed, spec, target_transform, trials, validation, robustness_records, preprocessing_records, bool(config.get('robustness',{}).get('physical_scenarios_enabled',True)),parameter_space=parameter_space)
 
     assert_oof_complete(predictions, len(prepared.y))
     overall = regression_metrics(
@@ -188,7 +193,7 @@ def run_nested_cv(
                 )
                 final_params = optimize_with_optuna(
                     final_factory,
-                    spec.module.optuna_space,
+                    parameter_space,
                     prepared.x,
                     prepared.y,
                     final_splits,

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 
-def _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, groups, label, optimize, outer_splits, outer_strategy, predictions, prepared, pruning, require_groups, seed, spec, target_transform, trials, validation, robustness_records, preprocessing_records, physical_scenarios_enabled):
+def _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, groups, label, optimize, outer_splits, outer_strategy, predictions, prepared, pruning, require_groups, seed, spec, target_transform, trials, validation, robustness_records, preprocessing_records, physical_scenarios_enabled, parameter_space=None):
     from lithiumscope.model_1.training.execution.cv_runner import Spinner, assert_group_isolation, build_pipeline, logger, materialize_regression_splits, np, optimize_with_optuna, regression_metrics
     from lithiumscope.model_1.training.preprocessing.spatial_tabnet import fit_regression_estimator, early_stopping_evidence
     from lithiumscope.core.logging.context import scientific_log_context
@@ -38,6 +38,7 @@ def _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, group
                         "n_train": len(train_idx),
                         "n_test": len(test_idx),
                         "validation_strategy": outer_strategy,
+                        "treatment_policy":cached.get("params",{}).get("treatment_policy","legacy"),
                         "resumed": True,
                     }
                 )
@@ -90,7 +91,7 @@ def _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, group
                     )
                     params = optimize_with_optuna(
                         factory,
-                        spec.module.optuna_space,
+                        parameter_space or spec.module.optuna_space,
                         x_train,
                         y_train,
                         inner_splits,
@@ -133,12 +134,17 @@ def _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, group
                 prep_evidence=preprocessing_evidence(estimator,x_train,x_test)
                 if prep_evidence is not None:
                     preprocessing_records.append({'fold':fold,**prep_evidence})
-                fold_predictions = estimator.predict(x_test)
+                projection = {}
+                if hasattr(estimator,"prediction_evidence"):
+                    fold_predictions,projection=estimator.prediction_evidence(x_test)
+                else:
+                    fold_predictions=estimator.predict(x_test)
                 predictions[test_idx] = fold_predictions
                 metrics = regression_metrics(
                     y_test,
                     fold_predictions,
                 ).to_dict()
+                metrics.update(projection)
                 if prep_evidence is not None:
                     metrics['transformed_feature_count']=prep_evidence['feature_count']
                     metrics['train_all_missing_feature_count']=len(prep_evidence['train_all_missing_columns'])
@@ -198,6 +204,7 @@ def _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, group
                         "n_train": len(train_idx),
                         "n_test": len(test_idx),
                         "validation_strategy": outer_strategy,
+                        "treatment_policy":params.get("treatment_policy","legacy"),
                         "resumed": False,
                     }
                 )

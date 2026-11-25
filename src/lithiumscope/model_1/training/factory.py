@@ -79,6 +79,10 @@ def build_pipeline(
     final_fit: bool = False,
     target_transform: str = "identity",
 ):
+    params = dict(params)
+    treatment = params.pop("treatment_policy", None)
+    if treatment is not None and target_transform != "identity":
+        raise ValueError("Do not combine a treatment target with a legacy target variant")
     preprocessor = build_preprocessor(schema, model_family=name)
     from lithiumscope.model_1.training.preprocessing.spatial_tabnet import SpatialTabNetPipeline
     pipeline_type = SpatialTabNetPipeline if name == "tabnet" else Pipeline
@@ -97,6 +101,9 @@ def build_pipeline(
             ),
         ]
     )
+    if treatment is not None:
+        from lithiumscope.model_1.training.preprocessing.treatment_policy import treatment_pipeline
+        return treatment_pipeline(pipeline,schema,name,treatment,seed)
     return wrap_target_regressor(
         pipeline,
         target_transform,

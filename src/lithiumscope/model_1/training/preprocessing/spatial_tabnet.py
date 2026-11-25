@@ -79,6 +79,8 @@ def fit_regression_estimator(estimator, x, y, groups=None):
     from lithiumscope.resources.manager import estimator_thread_scope
     raw = getattr(estimator, "regressor", estimator)
     with estimator_thread_scope():
+        if getattr(estimator,"requires_spatial_groups",False):
+            return estimator.fit(x,y,groups=groups)
         if isinstance(raw, SpatialTabNetPipeline):
             return estimator.fit(x, y, groups=groups)
         return estimator.fit(x, y)

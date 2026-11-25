@@ -37,7 +37,7 @@ def preprocessing_evidence(estimator, x_train, x_test):
         elif hasattr(encoder,"categories_"):
             record["train_category_vocabulary"]=[list(map(str,v)) for v in encoder.categories_]
         stats[name]=record
-    return {"transformed_features":names,"feature_count":len(names),
+    return {"treatment":getattr(estimator,"treatment_evidence_",None),"transformed_features":names,"feature_count":len(names),
             "train_rows":len(x_train),"test_rows":len(x_test),
             "train_all_missing_columns":[str(c) for c in x_train if x_train[c].isna().all()],
             "train_missing_counts":{str(c):int(x_train[c].isna().sum()) for c in x_train},

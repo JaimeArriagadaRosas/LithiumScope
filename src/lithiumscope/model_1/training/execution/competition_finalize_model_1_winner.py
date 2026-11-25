@@ -77,6 +77,10 @@ def _finalize_model_1_winner(baseline, config, context, dataset_manifest, device
                 "schema":vars(winner_prepared.schema),"scope":"development_only"})
     fit_regression_estimator(final_estimator,winner_prepared.x,winner_prepared.y,winner_prepared.groups)
     tabnet_evidence=early_stopping_evidence(final_estimator)
+    treatment_evidence=getattr(final_estimator,"treatment_evidence_",None)
+    if treatment_evidence is not None:
+        from lithiumscope.results.atomic_exports import write_json
+        write_json(context.manifests/"winner_treatment.json",treatment_evidence)
 
     save_feature_importance(
         final_estimator,
@@ -107,6 +111,9 @@ def _finalize_model_1_winner(baseline, config, context, dataset_manifest, device
         "algorithm": winner_algorithm,
         "variant_id": winner_variant,
         "target_transform": winner_transform,
+        "treatment_policy":winner_result.final_params.get("treatment_policy"),
+        "effective_target_transform":(treatment_evidence or {}).get("target_transform",winner_transform),
+        "treatment_evidence":treatment_evidence,
         "label": winner_result.label,
         "samples": len(winner_prepared.y),
         "metrics": winner_result.overall_metrics,
@@ -165,6 +172,9 @@ def _finalize_model_1_winner(baseline, config, context, dataset_manifest, device
         "algorithm": winner_algorithm,
         "variant_id": winner_variant,
         "target_transform": winner_transform,
+        "treatment_policy":winner_result.final_params.get("treatment_policy"),
+        "effective_target_transform":(treatment_evidence or {}).get("target_transform",winner_transform),
+        "treatment_evidence":treatment_evidence,
         "target": winner_prepared.target,
         "schema": winner_prepared.schema,
         "oof_absolute_residual_q90": interval_q90,

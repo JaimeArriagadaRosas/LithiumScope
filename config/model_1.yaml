@@ -58,6 +58,8 @@ validation:
 
 optimization:
   enabled: true
+  # Joint inner-CV search of hyperparameters and predeclared data treatments.
+  treatment_search_profile: refinement_v1
   n_trials: 20
   per_algorithm_trials:
     tabnet: 8
@@ -68,8 +70,8 @@ optimization:
     warmup_folds: 2
 
 competition:
-  # Keep the outer competition unbiased: target transform is fixed.
-  # If log1p is revisited, it must be selected inside inner CV.
+  # One candidate per family; target treatments are selected only in inner CV.
+  # The outer evaluation remains development evidence (folds were previously observed).
   target_transforms:
     identity: all
   primary_metric: rmse
