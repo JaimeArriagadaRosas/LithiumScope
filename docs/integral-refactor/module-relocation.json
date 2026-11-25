@@ -72,5 +72,15 @@
   "lithiumscope.tools.georoc.processing.georoc_postprocess": "lithiumscope.datasets.adapters.georoc_postprocess",
   "lithiumscope.tools.georoc.processing.georoc_raw_reader": "lithiumscope.datasets.readers.georoc_raw_reader",
   "lithiumscope.tools.georoc.processing.georoc_schema_profile": "lithiumscope.datasets.validation.georoc_schema_profile",
-  "lithiumscope.tools.georoc.processing.georoc_source_checkpoint": "lithiumscope.tools.acquisition.georoc.source_checkpoint"
+  "lithiumscope.tools.georoc.processing.georoc_source_checkpoint": "lithiumscope.tools.acquisition.georoc.source_checkpoint",
+  "lithiumscope.tools.georoc.query.georoc_query_actions": "lithiumscope.tools.acquisition.georoc.georoc_query_actions",
+  "lithiumscope.tools.georoc.query.georoc_query_diagnostics": "lithiumscope.tools.acquisition.georoc.georoc_query_diagnostics",
+  "lithiumscope.tools.georoc.query.georoc_query_download": "lithiumscope.tools.acquisition.georoc.georoc_query_download",
+  "lithiumscope.tools.georoc.query.georoc_query_download_links": "lithiumscope.tools.acquisition.georoc.georoc_query_download_links",
+  "lithiumscope.tools.georoc.query.georoc_query_export": "lithiumscope.tools.acquisition.georoc.georoc_query_export",
+  "lithiumscope.tools.georoc.query.georoc_query_html": "lithiumscope.tools.acquisition.georoc.georoc_query_html",
+  "lithiumscope.tools.georoc.query.georoc_query_log": "lithiumscope.tools.acquisition.georoc.georoc_query_log",
+  "lithiumscope.tools.georoc.query.georoc_query_models": "lithiumscope.tools.acquisition.georoc.georoc_query_models",
+  "lithiumscope.tools.georoc.query.georoc_query_payload": "lithiumscope.tools.acquisition.georoc.georoc_query_payload",
+  "lithiumscope.tools.georoc.query.georoc_query_transfer": "lithiumscope.tools.acquisition.georoc.georoc_query_transfer"
 }
