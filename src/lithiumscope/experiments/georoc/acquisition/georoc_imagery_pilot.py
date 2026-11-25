@@ -33,4 +33,12 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    from lithiumscope.core.logging.session import run_log
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--acquire",action="store_true")
+    if parser.parse_args().acquire:
+        with run_log("simulations","georoc_imagery_pilot"):
+            main()
+    else:
+        print("Preflight: use --acquire to authorize acquisition.")
