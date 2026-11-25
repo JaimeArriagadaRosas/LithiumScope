@@ -36,4 +36,7 @@ def main():
     (BASE/"georoc_20576_final_candidate_gate.json").write_text(json.dumps(stats,ensure_ascii=False,indent=2),encoding="utf8")
     print("FINAL_GATE",json.dumps(stats,ensure_ascii=False),flush=True)
     print(merged[["sample_name","li_ppm","nearest_full_mamani_km","gate_reason"]].to_string(index=False),flush=True)
-if __name__=="__main__":main()
+if __name__=="__main__":
+    from lithiumscope.core.logging.session import run_log
+    with run_log("simulations","georoc_20576_final_gate"):
+        main()

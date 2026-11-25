@@ -58,4 +58,7 @@ def main():
  "Threshold 0.08752 was tuned on historical OOF and was not independently calibrated"]
  (B/"final_exploratory_metrics.json").write_text(json.dumps(summary,indent=2,ensure_ascii=False),encoding="utf8")
  print("FINAL",json.dumps(summary,indent=2,ensure_ascii=False),flush=True)
-if __name__=="__main__":main()
+if __name__=="__main__":
+    from lithiumscope.core.logging.session import run_log
+    with run_log("simulations","analyze_georoc_background"):
+        main()

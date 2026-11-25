@@ -50,4 +50,7 @@ def run():
     (BASE/"pilot_eligibility_gate.json").write_text(json.dumps(detail,indent=2,ensure_ascii=False),encoding="utf8")
     print(json.dumps(detail,indent=2),flush=True)
 
-if __name__=="__main__": run()
+if __name__=="__main__":
+    from lithiumscope.core.logging.session import run_log
+    with run_log("simulations","georoc_eligibility_gate"):
+        run()

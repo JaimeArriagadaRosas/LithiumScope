@@ -61,4 +61,7 @@ def main():
  results["interpretation"]="DIAGNOSTIC_ONLY; no sample-level independent labels verified"
  (B/"diagnostic_grouped_statistics.json").write_text(json.dumps(results,indent=2,ensure_ascii=False),encoding="utf8")
  print(json.dumps(results,indent=2,ensure_ascii=False),flush=True)
-if __name__=="__main__":main()
+if __name__=="__main__":
+    from lithiumscope.core.logging.session import run_log
+    with run_log("simulations","diagnose_georoc_grouped"):
+        main()

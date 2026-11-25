@@ -59,5 +59,7 @@ def run():
     top[["sample_name","citation_number","citation_doi","latitude","longitude","li_ppm","nearest_training_km"]].head(25).to_csv(
         ROOT/"method_review_shortlist.csv",index=False)
     print("SHORTLIST",len(top),flush=True)
-if __name__=="__main__":run()
-
+if __name__=="__main__":
+    from lithiumscope.core.logging.session import run_log
+    with run_log("simulations","georoc_extended_screen"):
+        run()
