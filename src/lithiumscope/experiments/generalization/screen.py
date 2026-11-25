@@ -87,18 +87,25 @@ def run_screen(group, source, *, all_families=False, output_root=None, device=No
     destination.mkdir(parents=True)
     results, inner_results, predictions, provenance = [], [], [], []
     metric = "rmse" if group == "model_1" else "roc_auc"
-    for algorithm in algorithms:
+    from lithiumscope.experiments.generalization.progress import ScreenProgress
+    progress = ScreenProgress(group, algorithms, arms, outer_count, inner_count)
+    for algorithm_index, algorithm in enumerate(algorithms, 1):
+        progress.algorithm(algorithm_index, algorithm)
         for fold, (tr, te, inner) in enumerate(outer, 1):
+            progress.fold(fold)
             candidates = []
-            for arm in arms:
+            for arm_index, arm in enumerate(arms, 1):
+                progress.treatment(arm_index, arm)
                 if not all((fold,i,arm) in ready for i in range(inner_count+1)):
                     inner_results.append({"algorithm":algorithm,"outer_fold":fold,"arm":arm,
                                           "state":"blocked_preflight","reason":"Treatment not ready in every TRAIN partition"})
+                    progress.skip(inner_count, "Tratamiento bloqueado por EDA")
                     continue
                 scores = []
                 secondary = []
                 admissible = True
                 for i, (a, b) in enumerate(inner, 1):
+                    progress.start(f"Fold interior {i}/{inner_count}")
                     try:
                         result, _, _ = evaluate(group, algorithm, arm, device, 42+fold*10+i, data, a, b, cfg)
                         scores.append(result[metric])
@@ -111,10 +118,15 @@ def run_screen(group, source, *, all_families=False, output_root=None, device=No
                     except Exception as exc:
                         inner_results.append({"algorithm": algorithm, "outer_fold": fold, "inner_fold": i,
                                               "arm": arm, "state": "failed", "reason": str(exc)})
+                        progress.finish(error=str(exc))
+                    else:
+                        progress.finish(result=result, metric=metric)
                 if len(scores) == inner_count and admissible:
                     candidates.append((arm, float(np.mean(scores)), float(np.mean(secondary))))
             selected = (min if group == "model_1" else max)(candidates, key=lambda v: (v[1],v[2]))[0] if candidates else None
+            progress.selection(selected)
             for label, arm in (("reference", "reference"), ("selected_inner", selected)):
+                progress.start(f"Evaluación exterior: {label} / {arm or 'N/D'}")
                 try:
                     if arm is None:
                         raise ValueError("No complete inner arm")
@@ -123,10 +135,15 @@ def run_screen(group, source, *, all_families=False, output_root=None, device=No
                     results.append({"algorithm": algorithm, "fold": fold, "mode": label, "arm": arm, "state": "ok", **result})
                     predictions.extend({"algorithm": algorithm, "fold": fold, "mode": label, "row_id": str(x.index[j]),
                                         "actual": float(v), "score": float(p)} for j,v,p in zip(te,truth,pred,strict=True))
-                    print(f"{group} {algorithm} fold {fold} {label}/{arm}: {metric}={result[metric]:.4f}", flush=True)
                 except Exception as exc:
                     results.append({"algorithm": algorithm, "fold": fold, "mode": label, "arm": arm,
                                     "state": "failed", "reason": str(exc)})
+                    if arm is None:
+                        progress.skip(1, "No hay tratamiento elegible")
+                    else:
+                        progress.finish(error=str(exc))
+                else:
+                    progress.finish(result=result, metric=metric)
             # Persist progress after each outer fold; never declare partial runs complete.
             for name, rows in (("outer", results), ("inner", inner_results), ("predictions", predictions), ("augmentation", provenance)):
                 pd.DataFrame(rows).to_csv(destination / (name+".csv"), index=False)
@@ -143,7 +160,7 @@ def run_screen(group, source, *, all_families=False, output_root=None, device=No
         "algorithms": algorithms, "arms": arms, "inner_folds": inner_count,
         "outer_folds": outer_count, "independent_holdout": False, "promotion": False,
         "reference": "same fixed default family settings; not archived Optuna winner"}, indent=2), encoding="utf-8")
-    print(f"Estado experimental: {state} | {destination}")
+    progress.end(state, destination)
     return destination
 
 

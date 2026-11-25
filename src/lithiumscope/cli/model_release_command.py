@@ -44,9 +44,9 @@ def _local_install():
 
 def _recovery():
     print("Descarga manual oficial: https://github.com/JaimeArriagadaRosas/LithiumScope/releases")
-    print("L. Instalar ZIP oficial local con SHA-256 confiable")
+    print("1. Instalar ZIP oficial local con SHA-256 confiable")
     print("0. Volver (modelos activos y candidatos sin cambios)")
-    if choose("Seleccione [L/0]: ",{"l","L","0"}).lower()=="l":
+    if choose("Seleccione [0-1]: ",{"1","0"})=="1":
         return _local_install()
     return False
 
@@ -103,11 +103,12 @@ def run() -> None:
             f"{published} | "
             f"{_size_mib(release.asset_size)}"
         )
-    print("L. Instalar ZIP oficial local")
+    local_option = str(len(releases) + 1)
+    print(f"{local_option}. Instalar ZIP oficial local")
     print("0. Volver")
 
     allowed = {
-        "0", "l", "L",
+        "0", local_option,
         *{
             str(index)
             for index in range(
@@ -122,7 +123,7 @@ def run() -> None:
     )
     if choice == "0":
         return False
-    if choice.lower() == "l":
+    if choice == local_option:
         return _local_install()
 
     release = releases[

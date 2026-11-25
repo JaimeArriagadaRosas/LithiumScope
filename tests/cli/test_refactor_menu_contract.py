@@ -82,3 +82,16 @@ def test_release_confirmation_cancellation_does_not_download(monkeypatch, tmp_pa
     monkeypatch.setattr(model_release_command, "download_release_asset", forbidden)
     assert model_release_command.run() is False
     assert not (tmp_path / "models").exists()
+
+
+def test_release_local_option_is_next_number(monkeypatch,capsys):
+    releases=[SimpleNamespace(tag_name=f"release-{i}",published_at="2026-01-01",
+                              asset_size=42,asset_name="bundle.zip") for i in range(4)]
+    monkeypatch.setattr(model_release_command,"list_model_releases",lambda:releases)
+    def select(prompt,allowed):
+        assert "5" in allowed and "L" not in allowed
+        return "5"
+    monkeypatch.setattr(model_release_command,"choose",select)
+    monkeypatch.setattr(model_release_command,"_local_install",lambda:"local")
+    assert model_release_command.run()=="local"
+    assert "5. Instalar ZIP oficial local" in capsys.readouterr().out

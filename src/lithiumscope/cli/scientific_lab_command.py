@@ -112,13 +112,17 @@ def _treatment_experiments(*, all_families=None) -> bool:
     from lithiumscope.results.atomic_exports import write_json
     from lithiumscope.core.paths import RESULTS_DIR
     from uuid import uuid4
-    print("Evaluación espacial anidada: ajustes diagnósticos, no entrenamiento definitivo ni promoción.")
-    print("Por defecto piloto Random Forest; alcance completo incluye las doce familias.")
+    print("EVALUACIÓN EXPERIMENTAL DE TRATAMIENTO DE DATOS\n")
+    print("s: evaluación completa | n: piloto Random Forest")
     if all_families is None:
         selection=choose("¿Evaluar todas las familias? [s/n/0 cancelar]: ",{"s","n","0"})
         if selection=="0":
             return False
         all_families=selection=="s"
+    print("\nModo: "+("evaluación completa" if all_families else "piloto Random Forest"))
+    print("Modelos: M1 y M2")
+    print("Algoritmos: "+("12 familias" if all_families else "Random Forest en ambos modelos"))
+    print("Ajustes diagnósticos, sin guardar ni promover modelos.\n",flush=True)
     records=[]
     for group in ("model_1","model_2"):
         try:
@@ -142,15 +146,16 @@ def _treatment_experiments(*, all_families=None) -> bool:
 
 
 def _validation_menu() -> bool | None:
-    print("\nEJECUCIÓN DE TESTS Y SIMULACIONES")
+    print("\nEJECUCIÓN DE TESTS Y SIMULACIONES\n")
     print("1. Tests completos del software")
-    print("2. Simulaciones y comparación de modelos guardados")
-    print("3. Evaluación experimental de tratamientos de datos")
-    print("4. Ejecutar todo (tests + comparaciones + experimentación)")
+    print("2. Simulación y comparaciones de modelos")
+    print("3. Evaluación experimental de tratamiento de datos")
+    print("4. Ejecutar todo")
     print("0. Volver")
-    choice=choose("Seleccione una opción [0-4]: ",set("01234"))
+    choice=choose("\nSeleccione una opción [0-4]: ",set("01234"))
     if choice=="0":
         return False
+    print("\n")
     operations=[_run_tests,_run_simulations,_treatment_experiments]
     if choice=="4":
         print("Modo integral: incluye ajustes diagnósticos de las doce familias. Puede ser costoso.")

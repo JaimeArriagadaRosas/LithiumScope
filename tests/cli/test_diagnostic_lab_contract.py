@@ -67,3 +67,14 @@ def test_validation_menu_integral_dispatch(monkeypatch):
         monkeypatch.setattr(lab,name,lambda n=name,**kwargs:calls.append(n) or True)
     lab._validation_menu()
     assert calls==["_run_tests","_run_simulations","_treatment_experiments"]
+
+
+def test_validation_menu_labels_and_spacing(monkeypatch, capsys):
+    monkeypatch.setattr(lab,"choose",lambda *_:"3")
+    monkeypatch.setattr(lab,"_treatment_experiments",lambda:print("EVALUACIÓN EXPERIMENTAL"))
+    lab._validation_menu()
+    out=capsys.readouterr().out
+    assert "2. Simulación y comparaciones de modelos" in out
+    assert "3. Evaluación experimental de tratamiento de datos" in out
+    assert "4. Ejecutar todo\n" in out
+    assert "\n\nEVALUACIÓN EXPERIMENTAL" in out
