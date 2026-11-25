@@ -260,3 +260,7 @@ Commits 973c5f42 y 76169f7c: gate de desarrollo pareado y política multivariada
 ## Lote: metodología y arquitectura de pruebas
 
 00c9f411, 69895b02, a696f5c2, 2d15fa7d, d2148fdb, 38352a61: preprocessing M2, metodología M1, validación y exports compartidos, layout de tests, despacho de holdout, benchmark local sintético. 147/166 (88,6 %) de implementación principal; 19 parciales. No se ejecutaron pruebas ni benchmarks.
+
+## Lote: experimentos históricos y límites de capas
+
+9b45857c, e8095f3f, b4402816, d451a4fe, 91f3e1ad: redistribución experimental, frontera renderer, adquisición y adaptación Dataverse, auditoría ampliada de imports y exportaciones compartidas. 151/166 (91,0 %) de implementación principal, 15 parciales. Sin ejecución ni modificación de releases.

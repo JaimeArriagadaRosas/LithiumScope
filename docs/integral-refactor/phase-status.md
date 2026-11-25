@@ -170,3 +170,20 @@ Reclasificados ARQ-003/008/055/062/104. No se ejecutaron tests, CI, descarga ni 
 | **Total** | **166** | **147** | **19** | **88,6 %** |
 
 Reclasificados ARQ-016/030/090/018. No se ejecutaron pruebas, CI, benchmarks ni entrenamientos. La evaluación prospectiva requiere evidencia local independiente y autorización; no se puede fabricar. ARQ-038/063/064/097 continúan parciales, así como requisitos globales y de regresión. Próximos: auditoría integral de imports, inventario de experimentos históricos, eliminación de duplicaciones, planificación real de competencias y evidencia de desarrollo. No solicitar todavía git pull ni 5 > 4.
+
+## Continuación: experimentos históricos y límites de capas
+
+- 9b45857c: nueve módulos trasladados por modelo, investigación integrada y adquisición; aliases históricos; tres scripts GEOROC ya no adquieren ni leen datos al importar.
+- e8095f3f: renderer sin imports directos de prediction; escalares históricos en core/scientific/report_values con reexports, prueba estática de frontera.
+- b4402816: proveedor Dataverse, transferencia temporal y publicación exclusiva sin sobrescritura, hash declarado opcional; adaptación de candidatos GEOROC reutilizable, filtro experimental sin ruta absoluta de Windows. Descarga histórica requiere --acquire, por defecto preflight.
+- d451a4fe: auditoría AST de imports estáticos no resueltos, import_module/run_module literales y scope; no se certifican imports calculados ni ciclos en ejecución.
+- 91f3e1ad: exportadores atómicos de CSV/JSON/texto reutilizados por comparaciones históricas temporales, sensibilidad y evidencia integrada, conserva índice solicitado y convierte no finitos a null. Texto de riesgo q75 se contextualiza como protocolo histórico.
+
+| Diagnóstico | Total | Implementación principal | Parcial | Avance de implementación |
+|---|---:|---:|---:|---:|
+| M1 | 27 | 27 | 0 | 100,0 % |
+| M2 | 30 | 30 | 0 | 100,0 % |
+| ARQ | 109 | 94 | 15 | 86,2 % |
+| **Total** | **166** | **151** | **15** | **91,0 %** |
+
+Reclasificados ARQ-042/059/063/064; quedan auditorías de rutas históricas, dependencias, integración de scheduler, benchmarking real, logs, ejecución de regresión y requisitos globales. El conector alcanzó límite de llamadas al intentar revisar todo core en un lote; no se certifica ausencia de ciclos. No se ejecutaron tests, CI, benchmarks, descargas ni entrenamientos. No solicitar todavía git pull ni 5 > 4.

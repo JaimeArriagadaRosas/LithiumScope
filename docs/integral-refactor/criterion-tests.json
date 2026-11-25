@@ -568,7 +568,8 @@
     "ARQ-059": [
       "tests/scientific/shared/test_scientific_scenarios.py",
       "tests/scientific/experiments/test_compare_vnext_trained_runs.py",
-      "tests/scientific/shared/test_experiment_architecture.py"
+      "tests/scientific/shared/test_experiment_architecture.py",
+      "tests/experiments/test_historical_entrypoint_isolation.py"
     ],
     "ARQ-060": [
       "tests/scientific/shared/test_scientific_scenarios.py",
@@ -578,7 +579,9 @@
     "ARQ-061": [
       "tests/scientific/shared/test_scientific_scenarios.py",
       "tests/core/test_architecture.py",
-      "tests/scientific/shared/test_experiment_architecture.py"
+      "tests/scientific/shared/test_experiment_architecture.py",
+      "tests/experiments/test_historical_entrypoint_isolation.py",
+      "tests/experiments/test_dataverse_historical_contract.py"
     ],
     "ARQ-062": [
       "tests/scientific/shared/test_scientific_acquisition.py",
@@ -588,7 +591,8 @@
     "ARQ-063": [
       "tests/scientific/provenance/test_georoc_qc_protocols.py",
       "tests/scientific/shared/test_integral_physical_inputs.py",
-      "tests/results/test_atomic_experimental_exports.py"
+      "tests/results/test_atomic_experimental_exports.py",
+      "tests/experiments/test_dataverse_historical_contract.py"
     ],
     "ARQ-064": [
       "tests/scientific/experiments/test_compare_vnext_trained_runs.py",
