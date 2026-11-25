@@ -44,3 +44,17 @@ def test_renderer_does_not_import_raw_patch_extractors():
     source = Path(__file__).resolve().parents[2] / "src/lithiumscope/reporting/sections/decision.py"
     assert "load_imagery" not in source.read_text()
     assert "_rgb_preview" not in source.read_text()
+
+
+def test_reporting_has_no_imports_of_model_prediction_or_experiment_layers():
+    from lithiumscope.tools.inspection.dependencies import audit_imports
+    root=Path(__file__).resolve().parents[2]
+    audit=audit_imports(root)
+    assert audit["reporting_to_science_edges"]==[]
+
+
+def test_legacy_formatting_exports_resolve_to_shared_values():
+    from lithiumscope.reporting import formatting
+    from lithiumscope.core.scientific import report_values
+    assert formatting.nonnegative_interval is report_values.nonnegative_interval
+    assert formatting.operating_classification is report_values.operating_classification

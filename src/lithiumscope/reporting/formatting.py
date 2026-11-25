@@ -46,13 +46,5 @@ def interval_text(low, high, digits: int = 3) -> str:
     return f"{number(low,digits)} a {number(high,digits)} ppm"
 
 
-def nonnegative_interval(low, high, digits: int = 3) -> str:
-    """Deprecated compatibility helper; scientific preparation belongs to analysis."""
-    from lithiumscope.prediction.analysis.report_inputs import physical_interval
-    return interval_text(*physical_interval(low,high),digits)
-
-
-def operating_classification(score, threshold) -> str:
-    """Deprecated compatibility helper, unused by renderer."""
-    from lithiumscope.prediction.analysis.report_inputs import operating_classification as classify
-    return classify(score,threshold)
+# Legacy public names; the renderer never invokes these compatibility exports.
+from lithiumscope.core.scientific.report_values import nonnegative_interval, operating_classification
