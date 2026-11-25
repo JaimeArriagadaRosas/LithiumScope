@@ -55,14 +55,8 @@ def ensure_model_2_dataset(
     samples = load_georeferenced_li_samples(model_1_dataset)
     atomic_text(manifest_path.with_suffix('.source-audit.json'), json.dumps(samples.attrs.get('source_reconciliation', []), ensure_ascii=False, indent=2))
     minimum_samples = int(training.get("minimum_samples", 50))
-    checkpoint_every = max(
-        1,
-        int(imagery.get("checkpoint_every", 10)),
-    )
-    progress_every = max(
-        1,
-        int(imagery.get("progress_every", 25)),
-    )
+    checkpoint_every = max(1, int(imagery.get("checkpoint_every", 10)))
+    progress_every = max(1, int(imagery.get("progress_every", 25)))
     max_consecutive_failures = max(
         1,
         int(imagery.get("max_consecutive_sample_failures", 10)),
@@ -74,9 +68,7 @@ def ensure_model_2_dataset(
         if source_fingerprint_path.is_file()
         else ""
     )
-    source_matches = (
-        cached_source_sha256 == current_source_sha256
-    )
+    source_matches = cached_source_sha256 == current_source_sha256
     if manifest_path.exists() and not force and source_matches:
         manifest = _load_valid_manifest(manifest_path)
         manifest, rejected = reconcile_checkpoint(manifest, samples, imagery)
@@ -270,6 +262,9 @@ def ensure_model_2_dataset(
                 f"Disponibles={len(manifest)}, mínimo={minimum_samples}, "
                 f"fallos={failed_samples}. Revise {failures_path}."
             )
+        # Repeated/resumed acquisitions publish in the current source order.
+        order = {sid: i for i, sid in enumerate(samples.sample_id)}
+        manifest = manifest.sort_values("sample_id", key=lambda ids: ids.map(order)).reset_index(drop=True)
         _atomic_write_csv(manifest, manifest_path)
         atomic_text(source_fingerprint_path, current_source_sha256 + "\n")
     except (KeyboardInterrupt, SystemExit):

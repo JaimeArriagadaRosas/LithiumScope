@@ -84,7 +84,7 @@ def _cache_name(
     longitude: float,
 ) -> str:
     identity = (
-        f"{sample_id}|{latitude:.6f}|{longitude:.6f}"
+        f"{sample_id}|{latitude:.12f}|{longitude:.12f}"
     ).encode("utf-8")
     suffix = sha1(identity, usedforsecurity=False).hexdigest()[:10]
     return f"{sample_id}_{suffix}.npy"
@@ -95,7 +95,7 @@ def _sample_key(
     latitude: float,
     longitude: float,
 ) -> str:
-    return f"{sample_id}|{latitude:.6f}|{longitude:.6f}"
+    return f"{sample_id}|{latitude:.12f}|{longitude:.12f}"
 
 
 def _atomic_write_csv(frame: pd.DataFrame, path: Path) -> None:

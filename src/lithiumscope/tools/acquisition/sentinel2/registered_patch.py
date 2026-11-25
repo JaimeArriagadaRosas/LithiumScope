@@ -175,7 +175,8 @@ def download_registered_patch(sample_id, latitude, longitude, destination, provi
             properties = scene["properties"]
             day = date.fromisoformat(str(properties["datetime"])[:10])
             cloud = float(properties["eo:cloud_cover"])
-            if not start <= day <= end or not np.isfinite(cloud) or not 0 <= cloud <= config.cloud_cover_max:
+            if (scene.get("collection") != config.collection or not start <= day <= end
+                    or not np.isfinite(cloud) or not 0 <= cloud <= config.cloud_cover_max):
                 raise ValueError("Scene outside registered interval or cloud policy")
             raw, scl, qa, geometry = read_registered_scene(scene, latitude, longitude)
             audits.append({"scene_id": sid, "date": day.isoformat(), **qa})

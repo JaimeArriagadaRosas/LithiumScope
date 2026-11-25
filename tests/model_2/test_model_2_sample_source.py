@@ -39,3 +39,16 @@ def test_source_conflicts_censoring_and_explicit_replicates(tmp_path):
     assert audit.reason.eq("identical_duplicate").sum() == 1
     assert audit.censor_type.isin(["above", "below"]).sum() == 2
     assert audit.included.sum() == len(result)
+
+
+def test_source_scoped_id_does_not_depend_on_other_sources(tmp_path):
+    path = tmp_path / "sources.csv"
+    frame = pd.DataFrame({"source_dataset": ["one", "two"], "Sample": ["A", "A"],
+                          "Li_icpms": [5., 7.], "longitude": [-70., -70.],
+                          "latitude": [-20., -20.], "source_li_unit": ["ppm", "percent"]})
+    frame.to_csv(path, index=False)
+    first = load_georeferenced_li_samples(path)
+    assert len(first) == 1
+    assert first.attrs["source_reconciliation"][1]["unit_status"] == "incompatible"
+    frame.iloc[:1].to_csv(path, index=False)
+    assert load_georeferenced_li_samples(path).sample_id.tolist() == first.sample_id.tolist()

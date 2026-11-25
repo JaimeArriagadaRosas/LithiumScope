@@ -30,7 +30,7 @@ LATITUDE_CANDIDATES = (
     "latitude",
     "lat",
 )
-SAMPLE_ID_CANDIDATES = ("Sample", "sample_id", "Sample_ID", "ID", "id")
+SAMPLE_ID_CANDIDATES = ("source_sample", "Sample", "sample_id", "Sample_ID", "ID", "id")
 
 
 def _resolve_column(frame: pd.DataFrame, candidates: tuple[str, ...]) -> str:
@@ -129,7 +129,14 @@ def load_georeferenced_li_samples(dataset_path: Path) -> pd.DataFrame:
     evidence["raw_target"] = output["_raw_target"]
     evidence["target_valid"] = target_mask
     evidence["coordinates_valid"] = coordinates_ok
-    evidence["included"] = evidence.decision.eq("retain") & target_mask & coordinates_ok
+    # Known incompatible units are excluded; missing provenance is flagged, never invented.
+    units = output["_unit"].str.strip().str.casefold().str.replace(" ", "", regex=False)
+    unknown_units = units.isin(["", "unknown", "notreported", "n/a", "na", "none", "notgiven"])
+    units_ok = units.isin(["ppm", "mg/kg", "mgkg-1", "µg/g", "ug/g"]) | unknown_units
+    evidence["unit"] = output["_unit"]
+    evidence["method"] = output["_method"]
+    evidence["unit_status"] = np.where(unknown_units, "unverified", np.where(units_ok, "ppm_equivalent", "incompatible"))
+    evidence["included"] = evidence.decision.eq("retain") & target_mask & coordinates_ok & units_ok
     output = output.loc[evidence.included].copy()
     logger.info("M2 physical target validation: %s", target_audit)
     output = output.replace([np.inf, -np.inf], np.nan).dropna(
@@ -147,15 +154,19 @@ def load_georeferenced_li_samples(dataset_path: Path) -> pd.DataFrame:
             strict=True,
         )
     ]
-    # Keep familiar IDs when unambiguous; resolve collisions using original identity.
-    collisions = output.sample_id.duplicated(keep=False)
-    for idx in output.index[collisions]:
+    # Source-scoped IDs stay stable when another source or replicate arrives.
+    # Single-file legacy names survive only when they are unambiguous.
+    scoped = output.sample_id.duplicated(keep=False) | output["_replicate"].ne("")
+    if "source_dataset" in frame:
+        scoped[:] = True
+    for idx in output.index[scoped]:
         row = output.loc[idx]
-        unknown = not row._source.strip() or not row._original_id.strip()
-        digest = stable_disambiguation(row._source, row._original_id, row._replicate, idx if unknown else "")
+        unknown = not row["_source"].strip() or not row["_original_id"].strip()
+        digest = stable_disambiguation(row["_source"], row["_original_id"], row["_replicate"], idx if unknown else "")
         output.loc[idx, "sample_id"] = f"{row.sample_id}_{digest}"
     if output.sample_id.duplicated().any():
         raise ValueError("Unresolved sample ID collision")
+    evidence["final_sample_id"] = output.sample_id.reindex(evidence.index).fillna("")
     output = output[["Li_icpms", "longitude", "latitude", "sample_id", "spatial_group"]].reset_index(drop=True)
     output.attrs["source_reconciliation"] = evidence.to_dict("records")
 

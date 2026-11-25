@@ -125,6 +125,11 @@ def run_model_1_preflight(
                 "spatial GroupKFold keeps identical cells together."
             )
 
+    from lithiumscope.model_1.validation.observation_audit import audit_prepared_observations
+    source_identity, source_summary = audit_prepared_observations(prepared)
+    source_identity.to_csv(run_context.tables / "source_observation_audit.csv", index=False)
+    if source_summary["review_conflicts"]:
+        warnings.append("Conflicting source-scoped observations require review; historical cohort preserved.")
     outer_splits = None
     strategy = None
     if not errors:
@@ -188,6 +193,7 @@ def run_model_1_preflight(
             "strategy": strategy,
         },
         "nested_spatial_preflight": nested,
+        "source_observations": source_summary,
         "duplicates": {
             "exact_predictor_target_rows": exact_duplicates,
             "repeated_coordinate_pairs": coordinate_duplicates,
