@@ -55,9 +55,15 @@ def run(args: list[str]) -> int:
     args = [arg for arg in args if arg != "--coverage"]
     if args and args[0] == "--":
         args = args[1:]
-    session_id, run_id = new_id(), new_id()
+    run_id = new_id()
+    session_root = ROOT / "logs" / "sessions"
+    inherited = os.environ.get("LITHIUMSCOPE_SESSION_DIR")
+    parent = Path(inherited).resolve() if inherited else session_root / new_id()
+    if not parent.is_relative_to(session_root.resolve()):
+        raise ValueError("Inherited test session must stay under logs/sessions")
+    session_id = parent.relative_to(session_root.resolve()).parts[0]
     results = ROOT / "results" / "tests" / run_id
-    logs = ROOT / "logs" / "sessions" / session_id / "tests"
+    logs = parent / "tests" / run_id
     results.mkdir(parents=True, exist_ok=False)
     logs.mkdir(parents=True, exist_ok=False)
     events = logs / "events.jsonl"
@@ -70,7 +76,7 @@ def run(args: list[str]) -> int:
     env.pop("PYTEST_ADDOPTS", None)
     env["LITHIUMSCOPE_DISABLE_AUTO_INSTALL"] = "1"
     env["LITHIUMSCOPE_TEST_SESSION_ID"] = session_id
-    env["LITHIUMSCOPE_SESSION_DIR"] = str(logs.parent)
+    env["LITHIUMSCOPE_SESSION_DIR"] = str(parent)
     if coverage:
         env["COVERAGE_FILE"] = str(results / ".coverage")
         args += ["--cov=lithiumscope", f"--cov-report=xml:{results / 'coverage.xml'}", "--cov-report=term-missing"]

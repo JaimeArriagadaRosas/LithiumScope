@@ -13,25 +13,28 @@ if str(SRC) not in sys.path:
 # any transitive Matplotlib import can select a GUI backend such as TkAgg.
 os.environ["MPLBACKEND"] = "Agg"
 
-from lithiumscope.runtime.dependencies import ensure_runtime_dependencies
+def launch():
+    from lithiumscope.runtime.dependencies import ensure_runtime_dependencies
 
-# Repair declared runtime dependencies before importing the rest of the app.
-# This lets a normal "python main.py" recover after a git pull adds a package.
-dependency_repair = ensure_runtime_dependencies(verbose=True, include_optional=False)
-if not dependency_repair.success:
-    missing = ", ".join(dependency_repair.missing_after) or "desconocidas"
-    print(
-        "\nNo fue posible completar las dependencias requeridas: "
-        + missing
-    )
-    print(
-        "Revise la conexión a Internet, permisos del entorno virtual "
-        "y vuelva a ejecutar: python main.py"
-    )
-    raise SystemExit(2)
+    # Repair declared runtime dependencies before importing the rest of the app.
+    # This lets a normal "python main.py" recover after a git pull adds a package.
+    dependency_repair = ensure_runtime_dependencies(verbose=True, include_optional=False)
+    if not dependency_repair.success:
+        missing = ", ".join(dependency_repair.missing_after) or "desconocidas"
+        print(
+            "\nNo fue posible completar las dependencias requeridas: "
+            + missing
+        )
+        print(
+            "Revise la conexión a Internet, permisos del entorno virtual "
+            "y vuelva a ejecutar: python main.py"
+        )
+        raise SystemExit(2)
 
-from lithiumscope.cli.menu import main
-from lithiumscope.runtime.lifecycle import run_application
+    from lithiumscope.cli.menu import main
+    from lithiumscope.runtime.lifecycle import run_application
+    return run_application(main)
+
 
 if __name__ == "__main__":
-    raise SystemExit(run_application(main))
+    raise SystemExit(launch())
