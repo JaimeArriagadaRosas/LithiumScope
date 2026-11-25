@@ -102,35 +102,38 @@ def optimize_classifier_with_optuna(
             raise ValueError("Un fold interno no contiene dos clases; no se omitira el fold.")
         prepared_splits.append((train_idx, valid_idx, training_y, validation_y))
 
+    from lithiumscope.core.logging.context import scientific_log_context
+
     def objective(trial):
-        params = parameter_space(trial)
-        scores: list[float] = []
+        with scientific_log_context(trial=trial.number,stage="optuna_inner_cv"):
+            params = parameter_space(trial)
+            scores: list[float] = []
 
-        for step, (train_idx, valid_idx, training_y, validation_y) in enumerate(prepared_splits):
-            estimator = estimator_factory(params)
-            from lithiumscope.resources.manager import estimator_thread_scope
-            with estimator_thread_scope():
-                estimator.fit(_take_rows(x, train_idx), training_y)
-            score = roc_auc_score(
-                validation_y,
-                _score_vector(
-                    estimator,
-                    _take_rows(x, valid_idx),
-                ),
-            )
-            record_fold(trial, score, step)
-            scores.append(float(score))
-            running = float(np.mean(scores))
-            trial.report(running, step=step)
+            for step, (train_idx, valid_idx, training_y, validation_y) in enumerate(prepared_splits):
+                estimator = estimator_factory(params)
+                from lithiumscope.resources.manager import estimator_thread_scope
+                with estimator_thread_scope():
+                    estimator.fit(_take_rows(x, train_idx), training_y)
+                score = roc_auc_score(
+                    validation_y,
+                    _score_vector(
+                        estimator,
+                        _take_rows(x, valid_idx),
+                    ),
+                )
+                record_fold(trial, score, step)
+                scores.append(float(score))
+                running = float(np.mean(scores))
+                trial.report(running, step=step)
 
-            if pruning_enabled and trial.should_prune():
-                raise optuna.TrialPruned()
+                if pruning_enabled and trial.should_prune():
+                    raise optuna.TrialPruned()
 
-        if len(scores) != len(prepared_splits):
-            raise RuntimeError(
-                "No inner validation split contained both target classes."
-            )
-        return float(np.mean(scores))
+            if len(scores) != len(prepared_splits):
+                raise RuntimeError(
+                    "No inner validation split contained both target classes."
+                )
+            return float(np.mean(scores))
 
     storage = _sqlite_storage(storage_path)
     study = optuna.create_study(

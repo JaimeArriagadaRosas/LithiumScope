@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 import json
 import logging
 
-from lithiumscope.core.logging.context import operation_id, operation_category
+from lithiumscope.core.logging.context import operation_id, operation_category, scientific_context, unique_id
 
 
 class StructuredFormatter(logging.Formatter):
@@ -22,7 +22,11 @@ class StructuredFormatter(logging.Formatter):
             "function": record.funcName, "line": record.lineno, "pid": record.process,
             "thread": record.thread, "message": record.getMessage(),
         }
-        for name in ("algorithm", "fold", "trial", "state", "stage", "run_id", "error_id", "duration_seconds", "config", "resources"):
+        payload.update(scientific_context.get() or {})
+        if record.levelno >= logging.ERROR and not getattr(record,"error_id",None):
+            # The same record goes through general, error and operation handlers.
+            record.error_id=unique_id("error")
+        for name in ("algorithm", "fold", "trial", "state", "stage", "run_id", "error_id", "duration_seconds", "config", "resources", "variant_id"):
             if hasattr(record, name):
                 payload[name] = getattr(record, name)
         if record.exc_info:

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 import json
+import re
 from pathlib import Path
 
 
@@ -29,7 +30,7 @@ def cleanup_expired_logs(root: Path, retention_days: int, error_retention_days: 
     now = now or datetime.now(timezone.utc)
     protected = set()
     for session in (root / "sessions").glob("*"):
-        if not session.is_dir():
+        if not session.is_dir() or session.is_symlink():
             continue
         if any(_active(marker) for marker in session.rglob(".active.json")):
             protected.add(session)
@@ -38,11 +39,12 @@ def cleanup_expired_logs(root: Path, retention_days: int, error_retention_days: 
             protected.add(session)
     removed = 0
     for path in root.rglob("*"):
-        if not path.is_file() or path.name == ".gitkeep" or path.name == ".active.json":
+        if (not path.is_file() or path.is_symlink() or path.name in {".gitkeep",".active.json"}
+                or not path.resolve().is_relative_to(root.resolve())):
             continue
         if any(path.is_relative_to(session) for session in protected):
             continue
-        if path.suffix.lower() not in {".log", ".jsonl"}:
+        if not re.search(r"\.(?:log|jsonl)(?:\.\d+)?$",path.name,re.IGNORECASE):
             continue
         retention = error_retention_days if "errors" in path.parts else retention_days
         try:

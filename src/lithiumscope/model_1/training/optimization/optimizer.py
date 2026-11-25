@@ -77,33 +77,36 @@ def optimize_with_optuna(
         direction="minimize", parameter_space=parameter_space, estimator_factory=estimator_factory,
         model_group="model_1")
 
+    from lithiumscope.core.logging.context import scientific_log_context
+
     def objective(trial):
-        params = parameter_space(trial)
-        rmses: list[float] = []
-        for step, (train_idx, valid_idx) in enumerate(splits):
-            estimator = estimator_factory(params)
-            from lithiumscope.model_1.training.preprocessing.spatial_tabnet import fit_regression_estimator
-            fit_regression_estimator(estimator, _take_rows(x, train_idx), _take_rows(y, train_idx),
-                                     _take_rows(groups,train_idx) if groups is not None else None)
-            predictions = estimator.predict(
-                _take_rows(x, valid_idx)
-            )
-            rmse = float(
-                np.sqrt(
-                    mean_squared_error(
-                        _take_rows(y, valid_idx),
-                        predictions,
+        with scientific_log_context(trial=trial.number,stage="optuna_inner_cv"):
+            params = parameter_space(trial)
+            rmses: list[float] = []
+            for step, (train_idx, valid_idx) in enumerate(splits):
+                estimator = estimator_factory(params)
+                from lithiumscope.model_1.training.preprocessing.spatial_tabnet import fit_regression_estimator
+                fit_regression_estimator(estimator, _take_rows(x, train_idx), _take_rows(y, train_idx),
+                                         _take_rows(groups,train_idx) if groups is not None else None)
+                predictions = estimator.predict(
+                    _take_rows(x, valid_idx)
+                )
+                rmse = float(
+                    np.sqrt(
+                        mean_squared_error(
+                            _take_rows(y, valid_idx),
+                            predictions,
+                        )
                     )
                 )
-            )
-            record_fold(trial, rmse, step)
-            rmses.append(rmse)
-            running = float(np.mean(rmses))
-            trial.report(running, step=step)
-            if pruning_enabled and trial.should_prune():
-                raise optuna.TrialPruned()
+                record_fold(trial, rmse, step)
+                rmses.append(rmse)
+                running = float(np.mean(rmses))
+                trial.report(running, step=step)
+                if pruning_enabled and trial.should_prune():
+                    raise optuna.TrialPruned()
 
-        return float(np.mean(rmses))
+            return float(np.mean(rmses))
 
     storage = _sqlite_storage(storage_path)
     study = optuna.create_study(

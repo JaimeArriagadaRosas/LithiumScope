@@ -6,233 +6,235 @@ def _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_th
     from lithiumscope.model_2.training.execution.cv_runner import GroupKFold, Spinner, _fit_estimator, _materialize_splits, assert_group_isolation, classification_metrics, create_model, np, optimize_classifier_with_optuna, pd
     from lithiumscope.model_2.training.calibration.operating import learn_operating_policy, operating_evidence, fit_policy
     from lithiumscope.model_2.methodology.evaluation.decision import freeze_inner_oof_threshold
+    from lithiumscope.core.logging.context import scientific_log_context
     for fold, (train_idx, test_idx) in enumerate(split_iter, start=1):
-        train_idx = np.asarray(train_idx, dtype=int)
-        test_idx = np.asarray(test_idx, dtype=int)
-        original_train_count = len(train_idx)
-        scientific_fold = (
-            scientific_folds[fold - 1] if scientific_folds is not None else None
-        )
-        if split_groups is not None:
-            assert_group_isolation(
-                train_idx,
-                test_idx,
-                split_groups,
+        with scientific_log_context(algorithm=algorithm,fold=fold,stage="outer_cv"):
+            train_idx = np.asarray(train_idx, dtype=int)
+            test_idx = np.asarray(test_idx, dtype=int)
+            original_train_count = len(train_idx)
+            scientific_fold = (
+                scientific_folds[fold - 1] if scientific_folds is not None else None
             )
-        if quality_training_mask is not None:
-            # Never remove any test observation. This affects all algorithms,
-            # including Optuna inner folds and calibration.
-            train_idx = train_idx[quality_training_mask[train_idx]]
-            if len(train_idx) < inner_folds or not len(np.unique(
-                np.asarray(lithium_values, dtype=float)[train_idx]
-                if scientific_fold is not None else y.iloc[train_idx]
-            )) > 1:
-                raise ValueError("Insufficient two-class QA eligible TRAIN examples")
-
-        cached = (
-            checkpoint.load_fold(fold, test_idx)
-            if checkpoint
-            else None
-        )
-        if cached is not None and operating_objective:
-            if not cached.get("operating_inner_predictions"):
-                cached = None
-        if cached is not None:
-            fold_probabilities = np.asarray(
-                cached["predictions"],
-                dtype=float,
-            )
-            probabilities[test_idx] = fold_probabilities
-            metrics = classification_metrics(scientific_fold.y_test if scientific_fold is not None else y.iloc[test_idx], fold_probabilities)
-            if operating_objective:
-                inner_table = pd.DataFrame(cached["operating_inner_predictions"])
-                frozen = freeze_inner_oof_threshold(inner_table, permitted_outer_train_indices=train_idx,
-                                                     reserved_outer_test_indices=test_idx, objective=operating_objective)
-                evidence = operating_evidence(frozen, inner_table, scientific_fold.y_test, fold_probabilities)
-                metrics.update(_operating_metrics(evidence))
-                operating_records.extend(dict(row, outer_fold=fold) for row in evidence["operating_inner_predictions"])
-            records.append(
-                {
-                    "fold": fold,
-                    **metrics,
-                    **{k:v for k,v in cached["metrics"].items() if k.startswith("train_")},
-                    "n_train_before_qa": original_train_count,
-                    "n_train": len(train_idx),
-                    "n_test": len(test_idx),
-                    "resumed": True,
-                    **({"label_threshold_ppm": scientific_fold.label_threshold_ppm,
-                        "group_overlap": 0,
-                        "n_groups_train": scientific_fold.n_groups_train,
-                        "n_groups_test": scientific_fold.n_groups_test}
-                       if scientific_fold is not None else {}),
-                }
-            )
-            print(
-                f"      Fold {fold}/{folds} ↻ reutilizado | "
-                f"ROC-AUC={metrics.get('roc_auc', float('nan')):.4f} | "
-                f"AP={metrics['average_precision']:.4f}"
-            )
-            continue
-
-        spinner = Spinner(
-            f"{label} · fold {fold}/{folds} · preparando"
-        ).start()
-        try:
-            x_train = x.iloc[train_idx]
-            y_train = (
-                pd.Series(
-                    (np.asarray(lithium_values, dtype=float)[train_idx]
-                     >= scientific_fold.label_threshold_ppm).astype(int), index=x_train.index
+            if split_groups is not None:
+                assert_group_isolation(
+                    train_idx,
+                    test_idx,
+                    split_groups,
                 )
-                if scientific_fold is not None else y.iloc[train_idx]
-            )
-            if np.unique(y_train).size != 2:
-                raise ValueError("QA eligible TRAIN has one binary class")
-            x_test = x.iloc[test_idx]
-            y_test = (
-                pd.Series(scientific_fold.y_test)
-                if scientific_fold is not None else y.iloc[test_idx]
-            )
-            groups_train = (
-                groups.iloc[train_idx]
-                if groups is not None
+            if quality_training_mask is not None:
+                # Never remove any test observation. This affects all algorithms,
+                # including Optuna inner folds and calibration.
+                train_idx = train_idx[quality_training_mask[train_idx]]
+                if len(train_idx) < inner_folds or not len(np.unique(
+                    np.asarray(lithium_values, dtype=float)[train_idx]
+                    if scientific_fold is not None else y.iloc[train_idx]
+                )) > 1:
+                    raise ValueError("Insufficient two-class QA eligible TRAIN examples")
+
+            cached = (
+                checkpoint.load_fold(fold, test_idx)
+                if checkpoint
                 else None
             )
+            if cached is not None and operating_objective:
+                if not cached.get("operating_inner_predictions"):
+                    cached = None
+            if cached is not None:
+                fold_probabilities = np.asarray(
+                    cached["predictions"],
+                    dtype=float,
+                )
+                probabilities[test_idx] = fold_probabilities
+                metrics = classification_metrics(scientific_fold.y_test if scientific_fold is not None else y.iloc[test_idx], fold_probabilities)
+                if operating_objective:
+                    inner_table = pd.DataFrame(cached["operating_inner_predictions"])
+                    frozen = freeze_inner_oof_threshold(inner_table, permitted_outer_train_indices=train_idx,
+                                                         reserved_outer_test_indices=test_idx, objective=operating_objective)
+                    evidence = operating_evidence(frozen, inner_table, scientific_fold.y_test, fold_probabilities)
+                    metrics.update(_operating_metrics(evidence))
+                    operating_records.extend(dict(row, outer_fold=fold) for row in evidence["operating_inner_predictions"])
+                records.append(
+                    {
+                        "fold": fold,
+                        **metrics,
+                        **{k:v for k,v in cached["metrics"].items() if k.startswith("train_")},
+                        "n_train_before_qa": original_train_count,
+                        "n_train": len(train_idx),
+                        "n_test": len(test_idx),
+                        "resumed": True,
+                        **({"label_threshold_ppm": scientific_fold.label_threshold_ppm,
+                            "group_overlap": 0,
+                            "n_groups_train": scientific_fold.n_groups_train,
+                            "n_groups_test": scientific_fold.n_groups_test}
+                           if scientific_fold is not None else {}),
+                    }
+                )
+                print(
+                    f"      Fold {fold}/{folds} ↻ reutilizado | "
+                    f"ROC-AUC={metrics.get('roc_auc', float('nan')):.4f} | "
+                    f"AP={metrics['average_precision']:.4f}"
+                )
+                continue
 
-            params: dict = {}
-            if optimize:
-                if scientific_fold is not None:
-                    if groups_train is None or groups_train.nunique() < inner_folds:
-                        raise ValueError("Insufficient spatial groups for inner CV.")
-                    inner_splits = list(GroupKFold(n_splits=inner_folds).split(
-                        x_train, groups=groups_train,
-                    ))
+            spinner = Spinner(
+                f"{label} · fold {fold}/{folds} · preparando"
+            ).start()
+            try:
+                x_train = x.iloc[train_idx]
+                y_train = (
+                    pd.Series(
+                        (np.asarray(lithium_values, dtype=float)[train_idx]
+                         >= scientific_fold.label_threshold_ppm).astype(int), index=x_train.index
+                    )
+                    if scientific_fold is not None else y.iloc[train_idx]
+                )
+                if np.unique(y_train).size != 2:
+                    raise ValueError("QA eligible TRAIN has one binary class")
+                x_test = x.iloc[test_idx]
+                y_test = (
+                    pd.Series(scientific_fold.y_test)
+                    if scientific_fold is not None else y.iloc[test_idx]
+                )
+                groups_train = (
+                    groups.iloc[train_idx]
+                    if groups is not None
+                    else None
+                )
+
+                params: dict = {}
+                if optimize:
+                    if scientific_fold is not None:
+                        if groups_train is None or groups_train.nunique() < inner_folds:
+                            raise ValueError("Insufficient spatial groups for inner CV.")
+                        inner_splits = list(GroupKFold(n_splits=inner_folds).split(
+                            x_train, groups=groups_train,
+                        ))
+                    else:
+                        inner_splits = _materialize_splits(
+                            x_train, y_train, groups_train, inner_folds, seed + fold,
+                        )
+
+                    def factory(candidate: dict):
+                        return create_model(
+                            algorithm,
+                            device,
+                            seed,
+                            candidate,
+                            calibrated=False,
+                        )
+
+                    def progress(done: int, total: int) -> None:
+                        spinner.update(
+                            f"{label} · fold {fold}/{folds} · "
+                            f"Optuna {done}/{total}"
+                        )
+
+                    params = optimize_classifier_with_optuna(
+                        factory,
+                        parameter_space,
+                        x_train,
+                        y_train,
+                        inner_splits,
+                        n_trials=trials,
+                        groups=groups_train if split_groups is not None else None,
+                        random_seed=seed + fold,
+                        progress_callback=progress,
+                        storage_path=(
+                            checkpoint.root
+                            / f"optuna_fold_{fold:02d}.db"
+                            if checkpoint
+                            else None
+                        ),
+                        study_name=checkpoint.study_name(f"{algorithm}_fold_{fold:02d}") if checkpoint else f"{algorithm}_fold_{fold:02d}",
+                        pruning_enabled=bool(
+                            pruning.get("enabled", True)
+                        ),
+                        startup_trials=int(
+                            pruning.get("startup_trials", 3)
+                        ),
+                        warmup_folds=int(pruning.get("warmup_folds", 2)),
+                        lithium_values=(
+                            np.asarray(lithium_values, dtype=float)[train_idx]
+                            if scientific_fold is not None else None
+                        ),
+                        label_quantile=label_quantile,
+                        fixed_threshold_ppm=fixed_threshold_ppm,
+                    )
+
+                operating = None
+                if operating_objective:
+                    spinner.update(f"{label} - fold {fold}/{folds} - umbral interno")
+                    frozen, inner_table = learn_operating_policy(
+                        x_train, y_train, groups_train, row_indices=train_idx, reserved_indices=test_idx,
+                        n_splits=inner_folds, objective=operating_objective,
+                        fit=lambda a,b,c: fit_policy(algorithm, device, seed, params, a,b,c,inner_folds,calibration_mode))
+                spinner.update(
+                    f"{label} · fold {fold}/{folds} · ajustando"
+                )
+                if calibration_mode == 'spatial_sigmoid':
+                    from lithiumscope.model_2.training.calibration.policy import (
+                        fit_spatially_calibrated,
+                    )
+                    estimator = fit_spatially_calibrated(
+                        algorithm, device, seed, params, x_train, y_train,
+                        groups_train, inner_folds,
+                    )
                 else:
-                    inner_splits = _materialize_splits(
-                        x_train, y_train, groups_train, inner_folds, seed + fold,
+                    estimator = _fit_estimator(
+                        algorithm, device, seed, params, x_train, y_train,
+                        groups_train, inner_folds,
+                        strict_spatial=scientific_fold is not None,
                     )
-
-                def factory(candidate: dict):
-                    return create_model(
-                        algorithm,
-                        device,
-                        seed,
-                        candidate,
-                        calibrated=False,
-                    )
-
-                def progress(done: int, total: int) -> None:
-                    spinner.update(
-                        f"{label} · fold {fold}/{folds} · "
-                        f"Optuna {done}/{total}"
-                    )
-
-                params = optimize_classifier_with_optuna(
-                    factory,
-                    parameter_space,
-                    x_train,
-                    y_train,
-                    inner_splits,
-                    n_trials=trials,
-                    groups=groups_train if split_groups is not None else None,
-                    random_seed=seed + fold,
-                    progress_callback=progress,
-                    storage_path=(
-                        checkpoint.root
-                        / f"optuna_fold_{fold:02d}.db"
-                        if checkpoint
-                        else None
-                    ),
-                    study_name=checkpoint.study_name(f"{algorithm}_fold_{fold:02d}") if checkpoint else f"{algorithm}_fold_{fold:02d}",
-                    pruning_enabled=bool(
-                        pruning.get("enabled", True)
-                    ),
-                    startup_trials=int(
-                        pruning.get("startup_trials", 3)
-                    ),
-                    warmup_folds=int(pruning.get("warmup_folds", 2)),
-                    lithium_values=(
-                        np.asarray(lithium_values, dtype=float)[train_idx]
-                        if scientific_fold is not None else None
-                    ),
-                    label_quantile=label_quantile,
-                    fixed_threshold_ppm=fixed_threshold_ppm,
-                )
-
-            operating = None
-            if operating_objective:
-                spinner.update(f"{label} - fold {fold}/{folds} - umbral interno")
-                frozen, inner_table = learn_operating_policy(
-                    x_train, y_train, groups_train, row_indices=train_idx, reserved_indices=test_idx,
-                    n_splits=inner_folds, objective=operating_objective,
-                    fit=lambda a,b,c: fit_policy(algorithm, device, seed, params, a,b,c,inner_folds,calibration_mode))
-            spinner.update(
-                f"{label} · fold {fold}/{folds} · ajustando"
-            )
-            if calibration_mode == 'spatial_sigmoid':
-                from lithiumscope.model_2.training.calibration.policy import (
-                    fit_spatially_calibrated,
-                )
-                estimator = fit_spatially_calibrated(
-                    algorithm, device, seed, params, x_train, y_train,
-                    groups_train, inner_folds,
-                )
-            else:
-                estimator = _fit_estimator(
-                    algorithm, device, seed, params, x_train, y_train,
-                    groups_train, inner_folds,
-                    strict_spatial=scientific_fold is not None,
-                )
-            fold_probabilities = estimator.predict_proba(
-                x_test
-            )[:, 1]
-            probabilities[test_idx] = fold_probabilities
-            metrics = classification_metrics(
-                y_test.to_numpy(),
-                fold_probabilities,
-            )
-            train_scores = estimator.predict_proba(x_train)[:, 1]
-            train_metrics = classification_metrics(y_train, train_scores)
-            metrics.update({f"train_{key}": value for key,value in train_metrics.items()})
-            if operating_objective:
-                operating = operating_evidence(frozen, inner_table, y_test, fold_probabilities)
-                metrics.update(_operating_metrics(operating))
-                operating_records.extend(dict(row, outer_fold=fold) for row in operating["operating_inner_predictions"])
-            records.append(
-                {
-                    "fold": fold,
-                    **metrics,
-                    "n_train": len(train_idx),
-                    "n_test": len(test_idx),
-                    "n_train_before_qa": original_train_count,
-                    "resumed": False,
-                    **({"label_threshold_ppm": scientific_fold.label_threshold_ppm,
-                        "group_overlap": 0,
-                        "n_groups_train": scientific_fold.n_groups_train,
-                        "n_groups_test": scientific_fold.n_groups_test}
-                       if scientific_fold is not None else {}),
-                }
-            )
-            if checkpoint:
-                checkpoint.save_fold(
-                    fold,
-                    test_idx,
+                fold_probabilities = estimator.predict_proba(
+                    x_test
+                )[:, 1]
+                probabilities[test_idx] = fold_probabilities
+                metrics = classification_metrics(
+                    y_test.to_numpy(),
                     fold_probabilities,
-                    metrics,
-                    params=params,
-                    **({'operating_inner_predictions': operating['operating_inner_predictions']} if operating else {}),
                 )
-            spinner.succeed(
-                f"{label} · fold {fold}/{folds} | "
-                f"ROC-AUC={metrics.get('roc_auc', float('nan')):.4f} | "
-                f"AP={metrics['average_precision']:.4f} | "
-                f"F1={metrics['f1']:.4f}"
-            )
-        except BaseException:
-            spinner.fail(
-                f"{label} · fold {fold}/{folds} interrumpido"
-            )
-            raise
+                train_scores = estimator.predict_proba(x_train)[:, 1]
+                train_metrics = classification_metrics(y_train, train_scores)
+                metrics.update({f"train_{key}": value for key,value in train_metrics.items()})
+                if operating_objective:
+                    operating = operating_evidence(frozen, inner_table, y_test, fold_probabilities)
+                    metrics.update(_operating_metrics(operating))
+                    operating_records.extend(dict(row, outer_fold=fold) for row in operating["operating_inner_predictions"])
+                records.append(
+                    {
+                        "fold": fold,
+                        **metrics,
+                        "n_train": len(train_idx),
+                        "n_test": len(test_idx),
+                        "n_train_before_qa": original_train_count,
+                        "resumed": False,
+                        **({"label_threshold_ppm": scientific_fold.label_threshold_ppm,
+                            "group_overlap": 0,
+                            "n_groups_train": scientific_fold.n_groups_train,
+                            "n_groups_test": scientific_fold.n_groups_test}
+                           if scientific_fold is not None else {}),
+                    }
+                )
+                if checkpoint:
+                    checkpoint.save_fold(
+                        fold,
+                        test_idx,
+                        fold_probabilities,
+                        metrics,
+                        params=params,
+                        **({'operating_inner_predictions': operating['operating_inner_predictions']} if operating else {}),
+                    )
+                spinner.succeed(
+                    f"{label} · fold {fold}/{folds} | "
+                    f"ROC-AUC={metrics.get('roc_auc', float('nan')):.4f} | "
+                    f"AP={metrics['average_precision']:.4f} | "
+                    f"F1={metrics['f1']:.4f}"
+                )
+            except BaseException:
+                spinner.fail(
+                    f"{label} · fold {fold}/{folds} interrumpido"
+                )
+                raise
 
 def _operating_metrics(evidence):
     return {
