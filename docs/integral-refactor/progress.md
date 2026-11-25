@@ -236,3 +236,7 @@ Los cambios requieren regresión local en el commit actual. No se han cerrado cr
 ## Continuación M2 (24-11-2026)
 - Commits 1b45d9f9 y 03d98833: ablación de textura, baseline geográfico suplementario y sensibilidad espacial con preflight y embargo exterior. Pruebas sintéticas añadidas y asociadas a cuatro criterios; sin ejecución ni afirmación de éxito. Comparación espacial exige endpoint fijo predeclarado externamente; las métricas entre protocolos solo se interpretan con cobertura completa y mismas identidades. No se presupone independencia geológica.
 - Conteo principal: 122/166 (73,5 %); parciales 44; cierre acotado sigue 6/166. Conservados main, modelos y releases.
+
+## Continuación: identidad, QA y manifiestos
+
+Commits 7c3d2a01, 34236a84, 1b0c9037 y 80c7840f: nueva reconciliación de M2, controles de reanudación, adquisición registrada con SCL y corregistro, auditoría M1. Los cambios nuevos quedan pendientes de validación local; las fuentes históricas no se regeneraron. Se movieron seis tests experimentales al directorio correspondiente y se actualizaron sus asociaciones. Conteo principal 127/166; 39 parciales; cierre acotado 6/166. No se ejecutaron tests, workflows, adquisiciones, ajustes ni promoción.

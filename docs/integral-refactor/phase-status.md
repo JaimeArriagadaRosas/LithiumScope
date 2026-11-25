@@ -5,9 +5,9 @@
 - 166 criterios documentados: 27 M1, 30 M2, 109 arquitectura, con requisitos superpuestos.
 - 6/166 cierres acotados previos (3,6 %); 160/166 siguen abiertos. No confundir con porcentaje de implementación, cobertura de líneas o cantidad de tests.
 - 57/57 diagnósticos científicos tienen evidencia parcial histórica.
-- 166/166 criterios con asociaciones a módulos de pruebas (426 asociaciones). Las asociaciones no son pruebas de aceptación completa.
+- 166/166 criterios con asociaciones a módulos de pruebas (432 asociaciones). Las asociaciones no son pruebas de aceptación completa.
 - La última ejecución integral observada sigue siendo b0c3857: 647 aprobadas, 7 omitidas, 57 % de cobertura de líneas, CI 7/7. No se han ejecutado los tests nuevos de esta rama tras ese commit.
-- Revisión de implementación principal, separada del cierre: 122/166 (73,5 %), 44 parciales. Véase implementation-status.md; no certifica aceptación.
+- Revisión de implementación principal, separada del cierre: 127/166 (76,5 %), 39 parciales. Véase implementation-status.md; no certifica aceptación.
 
 ## Lote de trabajo posterior a 6dc2385
 
@@ -67,3 +67,22 @@ Pendientes prioritarios de código: criterios P en implementation-status.md, en 
 | **Total** | **166** | **122** | **44** | **73,5 %** |
 
 Criterios reclasificados por incorporación principal: M2-03, M2-11, M2-17, ARQ-036. Mantienen aceptación pendiente. Próximos: reconciliación de réplicas y censura por fuente (M1-19/M2-02), QA local SCL, geometría y manifiestos (M2-04/05/06), estabilidad y aplicabilidad M1 y arquitectura restante. No solicitar aún 5 > 4 ni iniciar entrenamientos definitivos.
+
+## Lote de continuidad: identidad y adquisiciones registradas
+
+- 7c3d2a01: reconciliación M2 por fuente y réplica, exclusión de concentraciones censuradas sin asignar un valor artificial, cuarentena de conflictos y auditoría.
+- 34236a84: protección explícita de la cohorte congelada, firma de preparación y adquisición, checkpoints con verificación de bytes, actualización de etiquetas, descarte de entradas obsoletas, escritura atómica e historial de fallos.
+- 1b0c9037: adquisición nueva estricta de seis bandas y SCL, cuadrícula común y corregistro, QA local, metadatos radiométricos y hashes; elección determinista. Se exige intervalo cerrado y prerregistrado (el intervalo abierto de la configuración histórica no se cambia). No se reacquirieron parches históricos; SCL histórica y composición temporal permanecen pendientes.
+- 80c7840f: auditoría M1 de identidad y conflictos sin cambiar la cohorte; identificadores M2 estables por fuente y réplica, unidades explícitas y trazabilidad.
+- Este commit: traslado de seis tests experimentales a tests/scientific/experiments, actualización de asociaciones y ajuste de tamaño de preflight M1. Los tests no se ejecutaron.
+
+Políticas nuevas: las mediciones censuradas M2 se excluyen en preparación de nuevas muestras; unidades incompatibles se excluyen, unidades desconocidas permanecen marcadas como no verificadas. Conflictos sin réplica explícita se aíslan, no se resuelven por primera fila. Se preserva el DN en las imágenes nuevas con máscara SCL; el extractor versionado es responsable de aplicar escala/offset. La reconstrucción forzada de una cohorte no congelada reutiliza cachés compatibles y no sobrescribe automáticamente un caché corrupto; requiere recuperación explícita. No se cambia el release.
+
+| Diagnóstico | Total | Implementación principal | Parcial | Avance de implementación |
+|---|---:|---:|---:|---:|
+| M1 | 27 | 24 | 3 | 88,9 % |
+| M2 | 30 | 29 | 1 | 96,7 % |
+| ARQ | 109 | 74 | 35 | 67,9 % |
+| **Total** | **166** | **127** | **39** | **76,5 %** |
+
+Reclasificados M2-02/05/06 y ARQ-023/024. Aceptación todavía pendiente. M1-19 y M2-04 conservan estado parcial. Próximos: estabilidad y colas altas M1, incertidumbre y dominio multivariado, composición temporal y SCL histórica, arquitectura residual, recursos y concurrencia. No solicitar todavía 5 > 4 ni ejecutar entrenamientos.

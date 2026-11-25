@@ -36,7 +36,7 @@
     "M1-08": [
       "tests/model_1/test_preprocessing_contract.py",
       "tests/model_1/test_model_1_scientific_guards.py",
-      "tests/scientific/shared/test_paired_experiment_design.py"
+      "tests/scientific/experiments/test_paired_experiment_design.py"
     ],
     "M1-09": [
       "tests/model_1/test_feature_engineering.py",
@@ -54,7 +54,7 @@
     "M1-12": [
       "tests/scientific/shared/test_optuna_contract.py",
       "tests/training/test_optuna_resume_helpers.py",
-      "tests/scientific/shared/test_paired_experiment_design.py"
+      "tests/scientific/experiments/test_paired_experiment_design.py"
     ],
     "M1-13": [
       "tests/model_1/test_spatial_tabnet.py",
@@ -87,7 +87,8 @@
     "M1-19": [
       "tests/model_1/test_model_1_scientific_guards.py",
       "tests/model_1/test_coordinate_lineage.py",
-      "tests/scientific/shared/test_nested_protocol.py"
+      "tests/scientific/shared/test_nested_protocol.py",
+      "tests/model_1/test_observation_audit.py"
     ],
     "M1-20": [
       "tests/model_1/test_statistical_baselines.py",
@@ -106,12 +107,12 @@
     "M1-23": [
       "tests/model_1/test_physical_robustness.py",
       "tests/model_1/test_model_1_scientific_guards.py",
-      "tests/scientific/shared/test_paired_suite.py"
+      "tests/scientific/experiments/test_paired_suite.py"
     ],
     "M1-24": [
       "tests/model_1/test_high_lithium_diagnostics.py",
-      "tests/scientific/shared/test_learning_curves.py",
-      "tests/scientific/shared/test_curve_suite.py"
+      "tests/scientific/experiments/test_learning_curves.py",
+      "tests/scientific/experiments/test_curve_suite.py"
     ],
     "M1-25": [
       "tests/scientific/m1/test_m1_dual_release_diagnostics.py",
@@ -144,16 +145,19 @@
     "M2-04": [
       "tests/datasets/test_sentinel2_provider.py",
       "tests/scientific/shared/test_scientific_acquisition.py",
-      "tests/scientific/m2_spectral/test_m2_satellite_quality_radiometry.py"
+      "tests/scientific/m2_spectral/test_m2_satellite_quality_radiometry.py",
+      "tests/datasets/test_registered_sentinel_patch.py"
     ],
     "M2-05": [
       "tests/prediction/test_verified_patch_contract.py",
-      "tests/scientific/m2_spectral/test_m2_site_patch_phase_e.py"
+      "tests/scientific/m2_spectral/test_m2_site_patch_phase_e.py",
+      "tests/datasets/test_registered_sentinel_patch.py"
     ],
     "M2-06": [
       "tests/datasets/test_dataset_manifest.py",
       "tests/model_2/test_verified_feature_cache.py",
-      "tests/datasets/test_management_provenance_architecture.py"
+      "tests/datasets/test_management_provenance_architecture.py",
+      "tests/model_2/test_checkpoint_contract.py"
     ],
     "M2-07": [
       "tests/prediction/test_verified_patch_contract.py",
@@ -162,7 +166,7 @@
     "M2-08": [
       "tests/model_2/test_physical_v5.py",
       "tests/prediction/test_spectral_inference_contract.py",
-      "tests/scientific/shared/test_paired_suite.py"
+      "tests/scientific/experiments/test_paired_suite.py"
     ],
     "M2-09": [
       "tests/model_2/test_model_2_spectral_features.py",
@@ -213,13 +217,13 @@
       "tests/scientific/shared/test_optuna_contract.py",
       "tests/scientific/m2_training/test_m2_regularized_search_profile.py",
       "tests/scientific/shared/test_nested_protocol.py",
-      "tests/scientific/shared/test_paired_experiment_design.py"
+      "tests/scientific/experiments/test_paired_experiment_design.py"
     ],
     "M2-20": [
       "tests/model_2/test_model_2_svm.py",
       "tests/model_2/test_train_only_operating_policy.py",
       "tests/scientific/shared/test_nested_protocol.py",
-      "tests/scientific/shared/test_paired_experiment_design.py"
+      "tests/scientific/experiments/test_paired_experiment_design.py"
     ],
     "M2-21": [
       "tests/runtime/test_checkpoints.py",
@@ -231,7 +235,7 @@
     ],
     "M2-23": [
       "tests/scientific/m2_training/test_m2_historical_706_control.py",
-      "tests/scientific/shared/test_compare_vnext_trained_runs.py",
+      "tests/scientific/experiments/test_compare_vnext_trained_runs.py",
       "tests/scientific/m2_training/test_m2_release_closure_comparison.py"
     ],
     "M2-24": [
@@ -331,16 +335,16 @@
       "tests/model_1/test_high_lithium_diagnostics.py"
     ],
     "ARQ-015": [
-      "tests/scientific/shared/test_learning_curves.py",
+      "tests/scientific/experiments/test_learning_curves.py",
       "tests/model_1/test_physical_robustness.py",
-      "tests/scientific/shared/test_curve_suite.py"
+      "tests/scientific/experiments/test_curve_suite.py"
     ],
     "ARQ-016": [
       "tests/scientific/m1/test_vnext_m1.py",
       "tests/scientific/m1/test_vnext_m1_diagnostics.py",
-      "tests/scientific/shared/test_compare_vnext_trained_runs.py",
-      "tests/scientific/shared/test_paired_experiment_design.py",
-      "tests/scientific/shared/test_paired_suite.py"
+      "tests/scientific/experiments/test_compare_vnext_trained_runs.py",
+      "tests/scientific/experiments/test_paired_experiment_design.py",
+      "tests/scientific/experiments/test_paired_suite.py"
     ],
     "ARQ-017": [
       "tests/prediction/test_m1_input_provenance.py",
@@ -363,8 +367,8 @@
     ],
     "ARQ-021": [
       "tests/scientific/m1/test_m1_dual_release_diagnostics.py",
-      "tests/scientific/shared/test_compare_vnext_trained_runs.py",
-      "tests/scientific/shared/test_vnext_data_adequacy.py"
+      "tests/scientific/experiments/test_compare_vnext_trained_runs.py",
+      "tests/scientific/experiments/test_vnext_data_adequacy.py"
     ],
     "ARQ-022": [
       "tests/core/test_architecture.py",
@@ -373,12 +377,14 @@
     "ARQ-023": [
       "tests/datasets/test_sentinel2_provider.py",
       "tests/scientific/shared/test_scientific_acquisition.py",
-      "tests/prediction/test_verified_patch_contract.py"
+      "tests/prediction/test_verified_patch_contract.py",
+      "tests/datasets/test_registered_sentinel_patch.py"
     ],
     "ARQ-024": [
       "tests/model_2/test_model_2_sample_source.py",
       "tests/scientific/m2_spectral/test_m2_physical_label_audit.py",
-      "tests/datasets/test_dataset_manifest.py"
+      "tests/datasets/test_dataset_manifest.py",
+      "tests/model_2/test_checkpoint_contract.py"
     ],
     "ARQ-025": [
       "tests/model_2/test_physical_v5.py",
@@ -410,7 +416,7 @@
       "tests/model_2/test_model_2_svm.py",
       "tests/model_2/test_train_only_operating_policy.py",
       "tests/scientific/shared/test_nested_protocol.py",
-      "tests/scientific/shared/test_paired_experiment_design.py"
+      "tests/scientific/experiments/test_paired_experiment_design.py"
     ],
     "ARQ-032": [
       "tests/model_2/test_model_2_operating_threshold.py",
@@ -427,16 +433,16 @@
       "tests/scientific/m2_training/test_m2_full_competition_quality.py"
     ],
     "ARQ-035": [
-      "tests/scientific/shared/test_learning_curves.py",
+      "tests/scientific/experiments/test_learning_curves.py",
       "tests/scientific/m2_spectral/test_m2_spectral_overfit.py",
-      "tests/scientific/shared/test_curve_suite.py"
+      "tests/scientific/experiments/test_curve_suite.py"
     ],
     "ARQ-036": [
       "tests/scientific/m2_training/test_m2_historical_706_control.py",
       "tests/scientific/m2_spectral/test_m2_rededge_v4.py",
       "tests/scientific/m2_spectral/test_m2_vnext_expansion.py",
-      "tests/scientific/shared/test_paired_experiment_design.py",
-      "tests/scientific/shared/test_paired_suite.py",
+      "tests/scientific/experiments/test_paired_experiment_design.py",
+      "tests/scientific/experiments/test_paired_suite.py",
       "tests/model_2/test_texture_geographic_reference.py"
     ],
     "ARQ-037": [
@@ -541,13 +547,13 @@
     ],
     "ARQ-059": [
       "tests/scientific/shared/test_scientific_scenarios.py",
-      "tests/scientific/shared/test_compare_vnext_trained_runs.py",
+      "tests/scientific/experiments/test_compare_vnext_trained_runs.py",
       "tests/scientific/shared/test_experiment_architecture.py"
     ],
     "ARQ-060": [
       "tests/scientific/shared/test_scientific_scenarios.py",
       "tests/scientific/m1/test_vnext_m1.py",
-      "tests/scientific/shared/test_curve_suite.py"
+      "tests/scientific/experiments/test_curve_suite.py"
     ],
     "ARQ-061": [
       "tests/scientific/shared/test_scientific_scenarios.py",
@@ -563,15 +569,15 @@
       "tests/scientific/shared/test_integral_physical_inputs.py"
     ],
     "ARQ-064": [
-      "tests/scientific/shared/test_compare_vnext_trained_runs.py",
+      "tests/scientific/experiments/test_compare_vnext_trained_runs.py",
       "tests/prediction/test_integrated_prediction_analysis.py"
     ],
     "ARQ-065": [
       "tests/prediction/test_prospective_holdout.py",
       "tests/prediction/test_demo_promotion_guard.py",
       "tests/scientific/shared/test_experiment_architecture.py",
-      "tests/scientific/shared/test_paired_experiment_design.py",
-      "tests/scientific/shared/test_paired_suite.py"
+      "tests/scientific/experiments/test_paired_experiment_design.py",
+      "tests/scientific/experiments/test_paired_suite.py"
     ],
     "ARQ-066": [
       "tests/core/test_canonical_execution_packages.py",

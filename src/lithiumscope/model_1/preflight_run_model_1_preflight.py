@@ -17,11 +17,9 @@ def run_model_1_preflight(
     require_groups = prefer_spatial and not allow_random
     outer_folds = int(validation["outer_folds"])
     seed = int(validation["random_seed"])
-
     errors: list[str] = []
     warnings: list[str] = []
     features = [str(column) for column in prepared.x.columns]
-
     try:
         assert_no_target_leakage(
             prepared.target,
@@ -29,7 +27,6 @@ def run_model_1_preflight(
         )
     except ScientificValidationError as exc:
         errors.append(str(exc))
-
     normalized = {
         feature.strip().lower()
         for feature in features
@@ -42,7 +39,6 @@ def run_model_1_preflight(
             "Identifier/provenance columns are present in predictors: "
             + ", ".join(leaked_identifiers)
         )
-
     duplicated_feature_names = [
         str(name)
         for name in prepared.x.columns[
@@ -54,7 +50,6 @@ def run_model_1_preflight(
             "Duplicate predictor columns: "
             + ", ".join(duplicated_feature_names)
         )
-
     target_values = pd.to_numeric(
         prepared.y,
         errors="coerce",
@@ -66,11 +61,9 @@ def run_model_1_preflight(
         errors.append(
             f"Target contains {non_finite_target} non-finite values."
         )
-
     negative_target = int((np.isfinite(target_values) & (target_values < 0)).sum())
     if negative_target:
         errors.append(f"Target contains {negative_target} negative concentrations.")
-
     feature_manifest = _feature_manifest(prepared)
     all_missing = feature_manifest.loc[
         feature_manifest["missing_fraction"] >= 1.0,
@@ -81,7 +74,6 @@ def run_model_1_preflight(
             "Predictors entirely missing: "
             + ", ".join(all_missing)
         )
-
     constant = feature_manifest.loc[
         feature_manifest["unique_non_null"] <= 1,
         "feature",
@@ -91,13 +83,11 @@ def run_model_1_preflight(
             "Constant/nearly empty predictors detected: "
             + ", ".join(constant)
         )
-
     from lithiumscope.model_1.validation.coordinate_preflight import coordinate_preflight
     coordinate,spatial_groups,coordinate_errors,coordinate_warnings=coordinate_preflight(
         prepared,run_context,require_groups=require_groups,outer_folds=outer_folds)
     errors.extend(coordinate_errors)
     warnings.extend(coordinate_warnings)
-
     exact_duplicates = int(
         prepared.frame[
             [
@@ -111,7 +101,6 @@ def run_model_1_preflight(
         warnings.append(
             f"{exact_duplicates} exact predictor+target duplicate rows remain."
         )
-
     coordinate_duplicates = 0
     if {"Longitude", "Latitude"} <= set(prepared.frame.columns):
         coordinate_duplicates = int(
@@ -124,7 +113,6 @@ def run_model_1_preflight(
                 f"{coordinate_duplicates} repeated coordinate pairs remain; "
                 "spatial GroupKFold keeps identical cells together."
             )
-
     from lithiumscope.model_1.validation.observation_audit import audit_prepared_observations
     source_identity, source_summary = audit_prepared_observations(prepared)
     source_identity.to_csv(run_context.tables / "source_observation_audit.csv", index=False)
@@ -151,7 +139,6 @@ def run_model_1_preflight(
                     test_idx,
                     prepared.groups,
                 )
-
     if outer_splits is not None and strategy == "group_kfold_spatial":
         from lithiumscope.core.scientific.spatial_audit import audit_spatial_folds
         distance, nearest = audit_spatial_folds(prepared.frame, prepared.groups, outer_splits,
@@ -201,7 +188,6 @@ def run_model_1_preflight(
         "warnings": warnings,
         "errors": errors,
     }
-
     manifest_path = (
         run_context.manifests
         / "model_1_preflight.json"
@@ -219,7 +205,6 @@ def run_model_1_preflight(
         / "model_1_feature_manifest.csv",
         index=False,
     )
-
     if outer_splits is not None:
         fold_assignment = np.full(
             len(prepared.y),
@@ -259,7 +244,6 @@ def run_model_1_preflight(
         )
         prepared.outer_splits = outer_splits
         prepared.validation_strategy = strategy
-
     run_context.tracker.event(
         "model_1_preflight_completed",
         status=status,
@@ -277,7 +261,6 @@ def run_model_1_preflight(
         coordinate_missing_rows=coordinate.get("missing_rows"),
         coordinate_out_of_range_rows=coordinate.get("out_of_range_rows"),
     )
-
     logger.info(
         "Model 1 preflight status=%s samples=%d features=%d "
         "spatial_groups=%d strategy=%s warnings=%d errors=%d",
@@ -293,7 +276,6 @@ def run_model_1_preflight(
         logger.warning("M1_PREFLIGHT_WARNING %s", warning)
     for error in errors:
         logger.error("M1_PREFLIGHT_ERROR %s", error)
-
     if errors:
         raise ScientificValidationError(
             "Model 1 scientific preflight failed: "

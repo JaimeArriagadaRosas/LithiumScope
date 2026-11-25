@@ -1,13 +1,13 @@
 # Estado de implementación por criterio
 
-Corte de código: 03d98833c5d8639da71af70d95bffe9b0c1b0ccc. Conteo de implementación solicitado, **independiente de la ejecución de pruebas**. I = implementación principal incorporada al código (no necesariamente todos los detalles ni aceptación); P = implementación parcial con trabajo de código concreto pendiente. Cada criterio vale una unidad, incluidos requisitos superpuestos; P no suma como implementado. La clasificación es revisión documental y estática, no resultado de una suite. Los originales completos permanecen locales; se usan los extractos y matrices versionados. Consola adicional excluida del denominador textual de 166.
+Corte de código: 80c7840f21bea376bac2a19724ac3476320264f6. Conteo de implementación solicitado, **independiente de la ejecución de pruebas**. I = implementación principal incorporada al código (no necesariamente todos los detalles ni aceptación); P = implementación parcial con trabajo de código concreto pendiente. Cada criterio vale una unidad, incluidos requisitos superpuestos; P no suma como implementado. La clasificación es revisión documental y estática, no resultado de una suite. Los originales completos permanecen locales; se usan los extractos y matrices versionados. Consola adicional excluida del denominador textual de 166.
 
 | Diagnóstico | Total | Implementación principal | Parcial | Avance de implementación |
 |---|---:|---:|---:|---:|
 | M1 | 27 | 24 | 3 | 88,9 % |
-| M2 | 30 | 26 | 4 | 86,7 % |
-| ARQ | 109 | 72 | 37 | 66,1 % |
-| **Total** | **166** | **122** | **44** | **73,5 %** |
+| M2 | 30 | 29 | 1 | 96,7 % |
+| ARQ | 109 | 74 | 35 | 67,9 % |
+| **Total** | **166** | **127** | **39** | **76,5 %** |
 
 Los seis cierres acotados y la última suite histórica se conservan por separado en HANDOFF.md. Los experimentos son ejecutables pero no ejecutados; el rendimiento no está demostrado. La revisión podrá reclasificar criterios si surgen faltantes.
 
@@ -31,7 +31,7 @@ Los seis cierres acotados y la última suite histórica se conservan por separad
 | M1-16 | Principal incorporada | Adquisición y armonización; fuentes históricas protegidas. |
 | M1-17 | Principal incorporada | Pipeline común de preparación y auditoría. |
 | M1-18 | Principal incorporada | Validación geoespacial y reconciliación de coordenadas. |
-| M1-19 | Parcial | Preflight implementado; falta política completa de réplicas y conflictos por fuente. |
+| M1-19 | Parcial | Auditoría de identidad, réplicas y coincidencias entre fuentes integrada al preflight sin mutar cohorte; falta resolución documentada por procedencia y calidad de los conflictos reales y comparación controlada. |
 | M1-20 | Principal incorporada | Baselines estadísticos independientes. |
 | M1-21 | Principal incorporada | Competencia de seis familias. |
 | M1-22 | Parcial | Selección y gate implementados; falta incorporar explícitamente estabilidad y colas altas a la política del ganador. |
@@ -41,11 +41,11 @@ Los seis cierres acotados y la última suite histórica se conservan por separad
 | M1-26 | Parcial | Intervalos y perfil disponibles; falta ampliar calibración de incertidumbre y dominio multivariado. |
 | M1-27 | Principal incorporada | Persistencia, contratos y promoción explícita. |
 | M2-01 | Principal incorporada | Configuración validada y versionada. |
-| M2-02 | Parcial | Validación de concentración/coordenadas; falta reconciliación completa de réplicas y censura por fuente. |
+| M2-02 | Principal incorporada | Reconciliación por fuente, identidad original y réplica explícita; cuarentena de conflictos, censura excluida sin imputación, unidades y auditoría de inclusión. Cohorte congelada intacta. |
 | M2-03 | Principal incorporada | Seis protocolos predeclarados: rejillas, componentes por escena y embargo TRAIN, con preflight, cobertura y comparación por algoritmo. |
-| M2-04 | Parcial | STAC y adquisición centralizada; falta completar recuperación de QA local SCL. |
-| M2-05 | Parcial | Extracción y validación de parches; falta integrar control de corregistro y máscaras locales de extremo a extremo. |
-| M2-06 | Parcial | Manifiesto congelado e integridad; falta ampliar contrato para nuevas adquisiciones y conflictos. |
+| M2-04 | Parcial | QA local SCL, cobertura y selección determinista implementadas para adquisiciones nuevas; recuperación de SCL de cohortes archivadas y comparación controlada de composiciones temporales pendientes. |
+| M2-05 | Principal incorporada | Adquisición nueva en cuadrícula métrica común de 640m/32px, cobertura completa, CRS, alineación nativa, remuestreo y SCL con hash y trazabilidad. |
+| M2-06 | Principal incorporada | Manifiestos nuevos con firma fuente/configuración, verificación de patch y SCL, reconciliación de etiquetas, retiro de entradas obsoletas, historial de fallos y protección de cohorte congelada. |
 | M2-07 | Principal incorporada | Carga de imágenes y rechazo de entradas inválidas. |
 | M2-08 | Principal incorporada | Preprocesamiento físico v5 aislado, con comparación de representaciones. |
 | M2-09 | Principal incorporada | Extractores versionados v4/v5 y comparación emparejada. |
@@ -92,8 +92,8 @@ Los seis cierres acotados y la última suite histórica se conservan por separad
 | ARQ-020 | Principal incorporada | Infraestructura compartida y compatibilidad histórica. |
 | ARQ-021 | Parcial | Requisito global: depende de restantes diagnósticos M1. |
 | ARQ-022 | Parcial | Arquitectura M2 reorganizada; quedan diagnósticos y controles de adquisición. |
-| ARQ-023 | Parcial | Adquisición Sentinel-2 central; falta QA local y corregistro completo. |
-| ARQ-024 | Parcial | Preparación centralizada; faltan conflictos y reconciliación de nuevas muestras. |
+| ARQ-023 | Principal incorporada | Ruta científica de adquisición nueva registrada con SCL, corregistro y radiometría por asset; sin cambiar adquisición histórica. |
+| ARQ-024 | Principal incorporada | Preparación con contrato común de identidad, censura, réplicas, unidades y reconciliación de checkpoints. |
 | ARQ-025 | Principal incorporada | Extractores espectrales versionados y variantes físicas. |
 | ARQ-026 | Principal incorporada | Compatibilidad de caché, manifiestos y características. |
 | ARQ-027 | Principal incorporada | EDA con estadísticas, visualización y exportación separadas. |

@@ -1,0 +1,8 @@
+{
+  "tests/scientific/shared/test_curve_suite.py": "tests/scientific/experiments/test_curve_suite.py",
+  "tests/scientific/shared/test_learning_curves.py": "tests/scientific/experiments/test_learning_curves.py",
+  "tests/scientific/shared/test_paired_experiment_design.py": "tests/scientific/experiments/test_paired_experiment_design.py",
+  "tests/scientific/shared/test_paired_suite.py": "tests/scientific/experiments/test_paired_suite.py",
+  "tests/scientific/shared/test_compare_vnext_trained_runs.py": "tests/scientific/experiments/test_compare_vnext_trained_runs.py",
+  "tests/scientific/shared/test_vnext_data_adequacy.py": "tests/scientific/experiments/test_vnext_data_adequacy.py"
+}
