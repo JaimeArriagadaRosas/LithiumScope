@@ -1,13 +1,13 @@
 # Estado de implementación por criterio
 
-Corte de código: 482d97cf804127332fa144fb1a2f546b1f1e7f4d. Conteo de implementación solicitado, **independiente de la ejecución de pruebas**. I = implementación principal incorporada al código (no necesariamente todos los detalles ni aceptación); P = implementación parcial con trabajo de código concreto pendiente. Cada criterio vale una unidad, incluidos requisitos superpuestos; P no suma como implementado. La clasificación es revisión documental y estática, no resultado de una suite. Los originales completos permanecen locales; se usan los extractos y matrices versionados. Consola adicional excluida del denominador textual de 166.
+Corte de código: 38352a61d66bb380d679d9e840ae87d7c0f99711. Conteo de implementación solicitado, **independiente de la ejecución de pruebas**. I = implementación principal incorporada al código (no necesariamente todos los detalles ni aceptación); P = implementación parcial con trabajo de código concreto pendiente. Cada criterio vale una unidad, incluidos requisitos superpuestos; P no suma como implementado. La clasificación es revisión documental y estática, no resultado de una suite. Los originales completos permanecen locales; se usan los extractos y matrices versionados. Consola adicional excluida del denominador textual de 166.
 
 | Diagnóstico | Total | Implementación principal | Parcial | Avance de implementación |
 |---|---:|---:|---:|---:|
 | M1 | 27 | 27 | 0 | 100,0 % |
 | M2 | 30 | 30 | 0 | 100,0 % |
-| ARQ | 109 | 86 | 23 | 78,9 % |
-| **Total** | **166** | **143** | **23** | **86,1 %** |
+| ARQ | 109 | 90 | 19 | 82,6 % |
+| **Total** | **166** | **147** | **19** | **88,6 %** |
 
 Los seis cierres acotados y la última suite histórica se conservan por separado en HANDOFF.md. Los experimentos son ejecutables pero no ejecutados; el rendimiento no está demostrado. La revisión podrá reclasificar criterios si surgen faltantes.
 
@@ -85,9 +85,9 @@ Los seis cierres acotados y la última suite histórica se conservan por separad
 | ARQ-013 | Principal incorporada | Algoritmos, preprocesamiento, optimización y ejecución separados. |
 | ARQ-014 | Principal incorporada | Evaluación, OOF, métricas, baselines y diagnósticos de errores. |
 | ARQ-015 | Principal incorporada | Directorio diagnostics M1 con dominio, incertidumbre, concentraciones altas, robustez, métricas históricas y entradas de curvas; conserva compatibilidad de rutas antiguas y procedimientos compartidos. |
-| ARQ-016 | Parcial | Comparaciones históricas y nuevos ejecutores; falta completar consolidación de metodología. |
+| ARQ-016 | Principal incorporada | Definiciones comparativas de datasets, FeOT, protocolos QC y ablaciones de características bajo model_1/methodology; ejecutor compartido separado, rutas históricas compatibles; no cambia defaults. |
 | ARQ-017 | Principal incorporada | Entrada, procedencia de predictores, inferencia y aplicabilidad. |
-| ARQ-018 | Parcial | Menú delega entorno, fuente y competencia a pipeline M1; falta integrar holdout independiente y evidencias de evaluación al flujo completo. |
+| ARQ-018 | Principal incorporada | Pipeline M1 delega preparación automática de fuentes/entorno y competencia con EDA, baselines, validaciones y ajuste final; fases independientes de holdout expuestas separadamente sin promoción. |
 | ARQ-019 | Principal incorporada | Resultados EDA, runs y metodología diferenciados. |
 | ARQ-020 | Principal incorporada | Infraestructura compartida y compatibilidad histórica. |
 | ARQ-021 | Parcial | Requisito global: depende de restantes diagnósticos M1. |
@@ -99,7 +99,7 @@ Los seis cierres acotados y la última suite histórica se conservan por separad
 | ARQ-027 | Principal incorporada | EDA con estadísticas, visualización y exportación separadas. |
 | ARQ-028 | Principal incorporada | Reutilización de preparación y EDA compatible. |
 | ARQ-029 | Principal incorporada | Preflight y validación espacial anidada. |
-| ARQ-030 | Parcial | Familias y ejecución separadas; falta consolidar preprocessing específico en M2. |
+| ARQ-030 | Principal incorporada | Subdirectorio training/preprocessing M2, escalamiento dentro del estimador, etiquetas internas calculadas solo desde TRAIN, selección de posiciones QA y algoritmos/optimization/execution separados. |
 | ARQ-031 | Principal incorporada | Calibración interna y comparación por familia. |
 | ARQ-032 | Principal incorporada | Umbral geoquímico separado de umbral operativo. |
 | ARQ-033 | Principal incorporada | Métricas binarias/probabilísticas y OOF. |
@@ -107,7 +107,7 @@ Los seis cierres acotados y la última suite histórica se conservan por separad
 | ARQ-035 | Principal incorporada | Directorio diagnostics M2 con auditoría de competencia, sobreajuste espectral, dominio, independencia, calidad y estabilidad, incertidumbre y entradas de curvas; rutas anteriores compatibles. |
 | ARQ-036 | Principal incorporada | Estudios por representación, textura, presupuesto, calibración y sensibilidad de bloques, escenas y buffers con evaluación opt-in. |
 | ARQ-037 | Principal incorporada | Inferencia versionada y abstención por perfil inválido. |
-| ARQ-038 | Parcial | Menú delega entorno, fuente y competencia a pipeline M2 independiente; falta integración de validación independiente y adquisición prospectiva completa. |
+| ARQ-038 | Parcial | Pipeline M2 independiente con fuente/entorno/competencia, EDA y baselines, y despacho separado de holdout registro/scoring/evaluación. Falta reservar y evaluar cohorte externa real en el flujo integral; no abrir etiquetas automáticamente. |
 | ARQ-039 | Principal incorporada | Resultados EDA, runs y metodología separados. |
 | ARQ-040 | Principal incorporada | Componentes comunes y compatibilidad. |
 | ARQ-041 | Parcial | Requisito global: depende de restantes diagnósticos M2. |
@@ -132,8 +132,8 @@ Los seis cierres acotados y la última suite histórica se conservan por separad
 | ARQ-060 | Principal incorporada | Laboratorios específicos M1, M2, integrados y compartidos. |
 | ARQ-061 | Parcial | Redistribución avanzada; queda revisión de adquisición, análisis y reporting experimentales. |
 | ARQ-062 | Principal incorporada | Lectura HTTP de GeoTIFF, worker raster y timeout aislado trasladados a tools/acquisition/sentinel2; políticas de piloto permanecen en experiments. |
-| ARQ-063 | Parcial | Lectura y validación compartidas; quedan auxiliares antiguos en experiments. |
-| ARQ-064 | Parcial | Exportaciones y reporting experimentales todavía parcialmente duplicados. |
+| ARQ-063 | Parcial | Validación de evidencia geoquímica externa en datasets/validation, reutilizada por catálogo experimental; quedan auxiliares antiguos de adaptación y lectura por revisar. |
+| ARQ-064 | Parcial | Writers atómicos compartidos en results/ para JSON y CSV, utilizados por catálogo y reportes de simulaciones; falta eliminar duplicación residual en estudios históricos. |
 | ARQ-065 | Principal incorporada | Experimentos aislados de comportamiento predeterminado y promoción. |
 | ARQ-066 | Parcial | Métricas genéricas y curvas desacopladas de modelos; falta comprobar independencia de todo core. |
 | ARQ-067 | Principal incorporada | Paquete core/reproducibility para semilla, huella e integridad; configuración, execution, logging y scientific separados; recursos permanecen en resources por requisito específico. |
@@ -159,14 +159,14 @@ Los seis cierres acotados y la última suite histórica se conservan por separad
 | ARQ-087 | Principal incorporada | Gestión interna sin opciones obligatorias nuevas. |
 | ARQ-088 | Principal incorporada | Detección adaptable multiplataforma; validación física pendiente. |
 | ARQ-089 | Principal incorporada | Tests reorganizados por responsabilidades principales. |
-| ARQ-090 | Parcial | Faltan varios directorios específicos solicitados y revisión de rutas. |
+| ARQ-090 | Principal incorporada | Directorios requeridos de pruebas por componente y transversales, incluidos tools, experiments, distribution, persistence, integration, regression, end_to_end, performance, fixtures; reubicación sin duplicación y trazabilidad actualizada. |
 | ARQ-091 | Principal incorporada | Pruebas unitarias, integración, regresión y científicas ampliadas. |
 | ARQ-092 | Parcial | Se incorporan pruebas por etapa; ejecución diferida por restricción de CI y acceso local. |
 | ARQ-093 | Principal incorporada | Mapa de pruebas por los 166 criterios. |
 | ARQ-094 | Principal incorporada | Trazabilidad de requisitos, implementación, pruebas y evidencias. |
 | ARQ-095 | Parcial | Pruebas de aliases, contratos de métricas y detección de ciclos literales añadidas; falta ejecución y cierre de ciclos residuales. |
 | ARQ-096 | Principal incorporada | Casos científicos válidos, inválidos y límites. |
-| ARQ-097 | Parcial | Planificación adaptativa y benchmark sintético previo; falta comparar adquisición/fit/inferencia bajo políticas distintas. |
+| ARQ-097 | Parcial | Benchmark pareado opt-in de adquisición local NPY, preparación, búsqueda fija agrupada, fit e inferencia con presupuestos CPU alternados, predicciones equivalentes y monitorización. Faltan benchmark real de red/GPU y ejecución. |
 | ARQ-098 | Principal incorporada | CI ampliada y matriz existente; nuevas ejecuciones diferidas. |
 | ARQ-099 | Principal incorporada | Infraestructura de logging modular. |
 | ARQ-100 | Parcial | GEOROC usa directorios únicos bajo sesión/acquisition, workers bajo sesión padre; faltan rutas históricas de experimentos y comprobación general. |

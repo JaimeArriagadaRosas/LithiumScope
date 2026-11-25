@@ -152,3 +152,21 @@ Reclasificados ARQ-047/048/072. ARQ-042/045/066/073/095 continúan parciales. Si
 | **Total** | **166** | **143** | **23** | **86,1 %** |
 
 Reclasificados ARQ-003/008/055/062/104. No se ejecutaron tests, CI, descarga ni entrenamiento. Las estimaciones de RAM/VRAM no son límites del SO; el scheduler aún requiere integración y benchmark real. Las pruebas nuevas concurrentes se verificarán localmente. Próximos: preprocessing M2, metodología/experiments, independencia de core y renderer, orquestación holdout, benchmark, rutas de logs, organización de tests y regresión. No solicitar todavía 5 > 4.
+
+## Continuación: metodología, preprocessing, pruebas y benchmark
+
+- 00c9f411: contratos de escalamiento M2 dentro del estimador, etiquetas internas TRAIN-only y QA booleano estricto.
+- 69895b02: estudios M1 de datasets, FeOT, QC y ablaciones consolidados en methodology; aliases anteriores preservados.
+- a696f5c2: validación de evidencia geoqúimica externa reutilizable y escritores atómicos de results; reportes de simulaciones y catálogo reutilizan los escritores.
+- 2d15fa7d: traslado de siete pruebas por responsabilidad y creación de directorios transversales con trazabilidad; fixtures sintéticos separados. 
+- d2148fdb: fases de holdout explícitas en pipelines M1/M2 y despacho CLI, validación de identidad de modelo y prohibición de suministrar etiquetas durante registro/scoring. No se inicia evaluación automáticamente desde entrenamiento.
+- 38352a61: benchmark sintético pareado local de I/O, preparación, búsqueda agrupada fija, ajuste e inferencia; alterna orden de presupuestos de hilos, verifica equivalencia de predicciones y monitoriza recursos; no mide red real, GPU ni Optuna.
+
+| Diagnóstico | Total | Implementación principal | Parcial | Avance de implementación |
+|---|---:|---:|---:|---:|
+| M1 | 27 | 27 | 0 | 100,0 % |
+| M2 | 30 | 30 | 0 | 100,0 % |
+| ARQ | 109 | 90 | 19 | 82,6 % |
+| **Total** | **166** | **147** | **19** | **88,6 %** |
+
+Reclasificados ARQ-016/030/090/018. No se ejecutaron pruebas, CI, benchmarks ni entrenamientos. La evaluación prospectiva requiere evidencia local independiente y autorización; no se puede fabricar. ARQ-038/063/064/097 continúan parciales, así como requisitos globales y de regresión. Próximos: auditoría integral de imports, inventario de experimentos históricos, eliminación de duplicaciones, planificación real de competencias y evidencia de desarrollo. No solicitar todavía git pull ni 5 > 4.

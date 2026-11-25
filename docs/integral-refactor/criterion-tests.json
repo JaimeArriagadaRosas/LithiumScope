@@ -353,7 +353,8 @@
       "tests/scientific/experiments/test_compare_vnext_trained_runs.py",
       "tests/scientific/experiments/test_paired_experiment_design.py",
       "tests/experiments/test_paired_suite.py",
-      "tests/model_1/diagnostics/test_domain_group_intervals.py"
+      "tests/model_1/diagnostics/test_domain_group_intervals.py",
+      "tests/model_1/diagnostics/test_methodology_relocation.py"
     ],
     "ARQ-017": [
       "tests/prediction/test_m1_input_provenance.py",
@@ -364,7 +365,8 @@
     "ARQ-018": [
       "tests/integration/test_eda_training_integration.py",
       "tests/model_1/test_model_1_scientific_guards.py",
-      "tests/datasets/test_frozen_model_1_input.py"
+      "tests/datasets/test_frozen_model_1_input.py",
+      "tests/integration/test_holdout_pipeline_dispatch.py"
     ],
     "ARQ-019": [
       "tests/scientific/shared/test_integral_eda.py",
@@ -420,7 +422,8 @@
     ],
     "ARQ-030": [
       "tests/scientific/m2_training/test_m2_refactored_outer_cv_smoke.py",
-      "tests/scientific/shared/test_optuna_contract.py"
+      "tests/scientific/shared/test_optuna_contract.py",
+      "tests/model_2/test_preprocessing_contracts.py"
     ],
     "ARQ-031": [
       "tests/model_2/test_model_2_svm.py",
@@ -463,7 +466,8 @@
     ],
     "ARQ-038": [
       "tests/integration/test_eda_training_integration.py",
-      "tests/scientific/m2_training/test_m2_refactored_outer_cv_smoke.py"
+      "tests/scientific/m2_training/test_m2_refactored_outer_cv_smoke.py",
+      "tests/integration/test_holdout_pipeline_dispatch.py"
     ],
     "ARQ-039": [
       "tests/scientific/m2_training/test_m2_full_competition_diagnostics.py",
@@ -583,11 +587,13 @@
     ],
     "ARQ-063": [
       "tests/scientific/provenance/test_georoc_qc_protocols.py",
-      "tests/scientific/shared/test_integral_physical_inputs.py"
+      "tests/scientific/shared/test_integral_physical_inputs.py",
+      "tests/results/test_atomic_experimental_exports.py"
     ],
     "ARQ-064": [
       "tests/scientific/experiments/test_compare_vnext_trained_runs.py",
-      "tests/prediction/test_integrated_prediction_analysis.py"
+      "tests/prediction/test_integrated_prediction_analysis.py",
+      "tests/results/test_atomic_experimental_exports.py"
     ],
     "ARQ-065": [
       "tests/prediction/test_prospective_holdout.py",
@@ -703,7 +709,9 @@
       "tests/core/test_architecture.py"
     ],
     "ARQ-090": [
-      "tests/core/test_architecture.py"
+      "tests/core/test_architecture.py",
+      "tests/performance/test_resource_plan_invariants.py",
+      "tests/integration/test_holdout_pipeline_dispatch.py"
     ],
     "ARQ-091": [
       "tests/core/test_architecture.py",
@@ -734,7 +742,8 @@
     ],
     "ARQ-097": [
       "tests/resources/test_runtime_limits.py",
-      "tests/resources/test_resource_manager.py"
+      "tests/resources/test_resource_manager.py",
+      "tests/performance/test_pipeline_benchmark_contract.py"
     ],
     "ARQ-098": [
       "tests/development/test_validation.py",

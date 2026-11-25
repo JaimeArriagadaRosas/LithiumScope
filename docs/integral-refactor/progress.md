@@ -256,3 +256,7 @@ Commits 973c5f42 y 76169f7c: gate de desarrollo pareado y política multivariada
 ## Lote: adquisición, orquestación y concurrencia
 
 70a7968c, 7f3deab3, b350fdc8, d2f26c94, f8119798, 482d97cf: proveedores centralizados, delegación de pipelines, política EDA autorizada, worker logs y scheduler adaptativo. 143/166 (86,1 %) de implementación principal, 23 parciales; aceptación y ejecución pendientes.
+
+## Lote: metodología y arquitectura de pruebas
+
+00c9f411, 69895b02, a696f5c2, 2d15fa7d, d2148fdb, 38352a61: preprocessing M2, metodología M1, validación y exports compartidos, layout de tests, despacho de holdout, benchmark local sintético. 147/166 (88,6 %) de implementación principal; 19 parciales. No se ejecutaron pruebas ni benchmarks.
