@@ -1,25 +1,33 @@
-import hashlib
+"""Historical published-partition experiment: acquisition requires --acquire."""
 from pathlib import Path
-import requests
+import argparse
+from lithiumscope.core.paths import RESULTS_DIR
+from lithiumscope.tools.acquisition.georoc.dataverse import fetch_partition
+from lithiumscope.results.atomic_exports import write_json
+
+PARTITIONS=(219128,219105,219094)
+
+
+def run(output,*,acquire=False):
+    output=Path(output)
+    plan=[{"identifier":ident,"destination":f"2026-09-PVFZCE_ANDEAN_ARC_part{i+1}.csv"} for i,ident in enumerate(PARTITIONS)]
+    if not acquire:
+        return {"state":"preflight","partitions":plan}
+    output.mkdir(parents=True,exist_ok=True)
+    records=[]
+    for item in plan:
+        records.append(fetch_partition(item["identifier"],output/item["destination"]))
+        write_json(output/"download_manifest.json",{"scope":"published historical experiment","partitions":records})
+    return {"state":"complete","partitions":records}
 
 
 def main():
-    out=Path("results/scientific_simulations/external_geochemistry_audit/georoc_andean_raw")
-    out.mkdir(parents=True,exist_ok=True)
-    for ident in (219128,219105,219094):
-        dest=out/f"2026-09-PVFZCE_ANDEAN_ARC_part{(219128,219105,219094).index(ident)+1}.csv"
-        if not dest.exists() or dest.stat().st_size<1000:
-            with requests.get(f"https://data.goettingen-research-online.de/api/access/datafile/{ident}",stream=True,timeout=75) as resp:
-                resp.raise_for_status()
-                with dest.open("wb") as fh:
-                    for chunk in resp.iter_content(1024*1024):
-                        if chunk:fh.write(chunk)
-        print("DOWNLOADED",ident,dest.stat().st_size,hashlib.sha256(dest.read_bytes()).hexdigest(),flush=True)
-        if ident==219128:
-            with dest.open("r",encoding="utf-8-sig",errors="replace") as f:
-                for i in range(3):
-                    print("HEAD",i,f.readline()[:1000],flush=True)
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--output",type=Path,default=RESULTS_DIR/"scientific_simulations/external_geochemistry_audit/georoc_andean_raw")
+    parser.add_argument("--acquire",action="store_true")
+    args=parser.parse_args()
+    print(run(args.output,acquire=args.acquire))
 
 
-if __name__ == "__main__":
+if __name__=="__main__":
     main()

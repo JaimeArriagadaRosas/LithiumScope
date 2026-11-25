@@ -1,41 +1,54 @@
+"""Historical GEOROC candidate screening; distance alone is not independence."""
 from pathlib import Path
-import pandas as pd,numpy as np,json,hashlib
+import argparse
+import numpy as np
+import pandas as pd
 from sklearn.neighbors import BallTree
+from lithiumscope.core.paths import PROJECT_ROOT,RESULTS_DIR
+from lithiumscope.core.hashing import file_sha256
+from lithiumscope.datasets.adapters.georoc_dataverse import whole_rock_candidates
+from lithiumscope.results.atomic_exports import write_json,write_table
+
+
+def run(root,training_manifest):
+    root=Path(root)
+    paths=sorted((root/"georoc_andean_raw").glob("*.csv"))
+    if not paths:
+        raise FileNotFoundError("No local GEOROC partitions")
+    training=pd.read_csv(training_manifest)
+    coordinates=training[["latitude","longitude"]].to_numpy(float)
+    if not len(coordinates) or not np.isfinite(coordinates).all() or (np.abs(coordinates)>[90,180]).any():
+        raise ValueError("Invalid training coordinates")
+    tree=BallTree(np.deg2rad(coordinates),metric="haversine")
+    rows,stats=[],[]
+    for path in paths:
+        candidates,audit=whole_rock_candidates(pd.read_csv(path,low_memory=False,encoding="latin1"),path.name)
+        if len(candidates):
+            distance,_=tree.query(np.deg2rad(candidates[["latitude","longitude"]].to_numpy()),k=1)
+            candidates["nearest_training_km"]=np.round(distance[:,0]*6371,3)
+        else:
+            candidates["nearest_training_km"]=pd.Series(dtype=float)
+        rows.append(candidates)
+        stats.append({"file":path.name,**audit,"sha256":file_sha256(path)})
+    all_=pd.concat(rows,ignore_index=True).drop_duplicates(subset=["sample_name","latitude","longitude","li_ppm"])
+    all_["possible_overlap_50km"]=all_.nearest_training_km.le(50)
+    all_["audit_status"]="CANDIDATE_PROVENANCE_AND_METHOD_UNVERIFIED"
+    write_table(root/"georoc_andean_candidates.csv",all_)
+    summary={"source":"https://doi.org/10.25625/PVFZCE","partitions":stats,
+        "training_manifest_sha256":file_sha256(training_manifest),"candidate_count":len(all_),
+        "within_50km":int(all_.possible_overlap_50km.sum()),"at_least_50km":int((~all_.possible_overlap_50km).sum()),
+        "independent_accepted":0,"exclusion_note":"Method, reference and sample overlap audit incomplete."}
+    write_json(root/"georoc_andean_audit.json",summary)
+    return summary
 
 
 def main():
-    root=Path("results/scientific_simulations/external_geochemistry_audit")
-    paths=sorted((root/"georoc_andean_raw").glob("*.csv"))
-    training=pd.read_csv(r"D:\Descargas\LithiumScope\data\processed\model_2\training_manifest.csv")
-    tree=BallTree(np.deg2rad(training[["latitude","longitude"]].to_numpy()),metric="haversine")
-    rows=[];stats=[]
-    for path in paths:
-        df=pd.read_csv(path,low_memory=False,encoding="latin1")
-        lat=pd.to_numeric(df["LATITUDE MIN"],errors="coerce")
-        lon=pd.to_numeric(df["LONGITUDE MIN"],errors="coerce")
-        li=pd.to_numeric(df["LI(PPM)"],errors="coerce")
-        material=df["MATERIAL"].fillna("").astype(str)
-        mask=li.notna()&li.ge(0)&lat.between(-90,90)&lon.between(-180,180)&material.str.contains(r"\bWR\b|WHOLE ROCK",case=False,regex=True)
-        selected=df.loc[mask].copy()
-        distance,_=tree.query(np.deg2rad(np.column_stack([lat[mask],lon[mask]])),k=1)
-        output=pd.DataFrame({"source_file":path.name,"sample_name":selected["SAMPLE NAME"].astype(str),
-            "latitude":lat[mask].to_numpy(),"longitude":lon[mask].to_numpy(),"li_ppm":li[mask].to_numpy(),
-            "material":selected["MATERIAL"].astype(str),"citation_ids":selected["CITATIONS"].astype(str),
-            "location":selected["LOCATION"].astype(str),
-            "nearest_training_km":np.round(distance[:,0]*6371,3)})
-        rows.append(output)
-        stats.append({"file":path.name,"all_rows":len(df),"li_numeric":int(li.notna().sum()),"candidate_whole_rock":len(output),"sha256":hashlib.sha256(path.read_bytes()).hexdigest()})
-    all_=pd.concat(rows,ignore_index=True)
-    all_=all_.drop_duplicates(subset=["sample_name","latitude","longitude","li_ppm"])
-    all_["possible_overlap_50km"]=all_.nearest_training_km.le(50)
-    all_["audit_status"]="CANDIDATE_PROVENANCE_AND_METHOD_UNVERIFIED"
-    all_.to_csv(root/"georoc_andean_candidates.csv",index=False)
-    summary={"source":"https://doi.org/10.25625/PVFZCE","dataset":"GEOROC Compilation Convergent Margins 2026-09","partitions":stats,
-    "candidate_count":len(all_),"within_50km":int(all_.possible_overlap_50km.sum()),"at_least_50km":int((~all_.possible_overlap_50km).sum()),
-    "independent_accepted":0,"exclusion_note":"Method, reference and sample overlap audit incomplete; geographic distance alone does not prove independence."}
-    (root/"georoc_andean_audit.json").write_text(json.dumps(summary,indent=2),encoding="utf8")
-    print("STATS",summary,flush=True);print("EXAMPLE",all_.head(4).to_string(index=False,max_cols=8),flush=True)
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--root",type=Path,default=RESULTS_DIR/"scientific_simulations/external_geochemistry_audit")
+    parser.add_argument("--training-manifest",type=Path,default=PROJECT_ROOT/"data/processed/model_2/training_manifest.csv")
+    args=parser.parse_args()
+    print(run(args.root,args.training_manifest))
 
 
-if __name__ == "__main__":
+if __name__=="__main__":
     main()
