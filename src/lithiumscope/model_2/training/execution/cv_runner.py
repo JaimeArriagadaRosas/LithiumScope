@@ -96,6 +96,9 @@ def run_classification_cv(
         raise ValueError('Train-only operating policy requires scientific spatial folds')
     parameter_space = parameter_space_for(algorithm, spec, optimization)
     optimize = bool(optimization.get("enabled", False))
+    if optimization.get("treatment_search_profile","legacy")!="legacy" and (
+            not optimize or scientific_folds is None or x.shape[1]!=170):
+        raise ValueError("Spectral treatment search requires Optuna and verified spatial V4 data")
     trials = int(
         optimization.get("per_algorithm_trials", {}).get(
             algorithm,

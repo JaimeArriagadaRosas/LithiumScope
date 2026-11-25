@@ -78,6 +78,17 @@ def create_model(
 ):
     params = dict(params or {})
     spec = get_algorithm(name)
+    spectral = params.pop("spectral_treatment", None)
+    if spectral is not None:
+        from lithiumscope.model_2.training.preprocessing.spectral_treatment import spectral_pipeline
+        base=create_model(name,device,seed,params,calibrated=False)
+        estimator=spectral_pipeline(base,name,spectral,seed)
+        # Preprocessing is inside each calibration split, not fitted beforehand.
+        if name=="svm_rbf" and calibrated:
+            if calibration_cv is None:
+                raise ValueError("Spectral SVM requires explicit grouped calibration folds")
+            return CalibratedClassifierCV(estimator=estimator,method="sigmoid",cv=calibration_cv,ensemble=False)
+        return estimator
 
     if name == "xgboost":
         return xgboost.create_model(

@@ -137,6 +137,7 @@ def _finalize_scientific_winner(
         "eligible_for_individual_release": False,
         "random_forest_search_profile": cfg.get("optimization", {}).get("random_forest_search_profile", "legacy"),
         "calibration_policy": selected_calibration,
+        "spectral_treatment":winner_result.final_params.get("spectral_treatment","legacy"),
         "provisional_georoc_sample_count": max(0, len(frame) - 706),
         "threshold_ppm": threshold,
         "target_quantile": (None if fixed_threshold is not None else q),
@@ -202,6 +203,7 @@ def _finalize_scientific_winner(
             float(quality_cfg.get("minimum_joint_valid_fraction", 0.95)) if quality_mask is not None else None
         ),
         "spectral_representation": representation,
+        "spectral_treatment":winner_result.final_params.get("spectral_treatment","legacy"),
     }
     model_path, metadata_path = save_model_bundle(
         "model_2",

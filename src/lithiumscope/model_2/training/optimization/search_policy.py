@@ -15,6 +15,15 @@ def parameter_space_for(algorithm: str, spec, optimization: dict):
         raise ValueError(f"Unknown model_2 random forest search profile: {rf_profile}")
     if et_profile not in {"legacy", "regularized_v2"}:
         raise ValueError(f"Unknown model_2 extra trees search profile: {et_profile}")
+    profile=optimization.get("treatment_search_profile","legacy")
+    if profile!="legacy":
+        from lithiumscope.model_2.training.preprocessing.spectral_treatment import PROFILE, refinement_search_space
+        if profile!=PROFILE:
+            raise ValueError("Unknown M2 treatment search profile")
+        # Preserve the proven regularized tree ranges with class-balance choice.
+        base=(random_forest.optuna_space_regularized_v3 if algorithm=="random_forest" else
+              extra_trees.optuna_space_regularized_v2 if algorithm=="extra_trees" else spec.module.optuna_space)
+        return refinement_search_space(algorithm,base)
     if algorithm == "random_forest":
         if rf_profile == "regularized_v3":
             return random_forest.optuna_space_regularized_v3

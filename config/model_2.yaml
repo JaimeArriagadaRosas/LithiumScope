@@ -100,6 +100,8 @@ quality_training:
 
 optimization:
   enabled: true
+  # Inner spatial search includes data representation and regularization.
+  treatment_search_profile: spectral_refinement_v1
   # Versioned spatial-overfit experiment. Keeps legacy Optuna studies intact.
   # This setting participates in build_training_signature via model_2.yaml.
   random_forest_search_profile: regularized_v3
