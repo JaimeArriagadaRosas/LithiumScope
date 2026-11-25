@@ -68,3 +68,25 @@ def test_relocation_inventory_does_not_hide_retired_imports(tmp_path):
     assert report["unresolved_local_imports"][0]["target"]=="lithiumscope.old"
     assert report["relocations"]["stale_references"][0]["canonical_destination"]=="lithiumscope.new"
     assert report["relocations"]["state"]=="review_required"
+
+
+def test_cli_guard_does_not_create_eager_import_cycle(tmp_path):
+    create(tmp_path,"a.py",'if __name__=="__main__":\n    from lithiumscope import b\n')
+    create(tmp_path,"b.py","from lithiumscope import a\n")
+    assert audit_imports(tmp_path)["eager_cycles"]==[]
+
+
+def test_retired_from_import_and_script_reference_detected(tmp_path):
+    import json
+    create(tmp_path,"core/__init__.py","")
+    create(tmp_path,"core/new.py","pass")
+    create(tmp_path,"caller.py","from lithiumscope.core import old\n")
+    docs=tmp_path/"docs/integral-refactor"
+    docs.mkdir(parents=True)
+    (docs/"module-relocation.json").write_text(json.dumps({"lithiumscope.core.old":"lithiumscope.core.new"}))
+    (docs/"scientific-script-relocation.json").write_text(json.dumps({"scripts/scientific/old.py":"scripts/scientific/audits/old.py"}))
+    (tmp_path/"scripts").mkdir()
+    (tmp_path/"scripts/check.py").write_text('path="scripts/scientific/old.py"\n')
+    report=audit_imports(tmp_path)
+    assert report["unresolved_local_imports"][0]["target"]=="lithiumscope.core.old"
+    assert report["retired_external_references"][0]["target"]=="scripts/scientific/old.py"

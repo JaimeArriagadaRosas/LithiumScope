@@ -114,7 +114,7 @@ def _architecture(root):
     from lithiumscope.tools.inspection.dependencies import audit_imports
     imports = audit_imports(root)
     unresolved = any(imports[key] for key in ("eager_cycles", "cross_model_edges",
-                    "core_to_model_edges", "reporting_to_science_edges", "syntax_errors","unresolved_local_imports"))
+                    "core_to_model_edges", "reporting_to_science_edges", "syntax_errors","unresolved_local_imports","retired_external_references"))
     return {"state": "WARNING" if data["files_over_300"] or data["directories_over_20"] or unresolved else "OK",
             **data, "imports": imports}
 

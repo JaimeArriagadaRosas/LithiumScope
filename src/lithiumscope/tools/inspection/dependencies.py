@@ -25,6 +25,16 @@ def _imports(node, scope="eager"):
             for child in node.orelse:
                 yield from _imports(child, scope)
             return
+    if isinstance(node, ast.If) and isinstance(node.test, ast.Compare):
+        test=node.test
+        if (isinstance(test.left,ast.Name) and test.left.id=="__name__"
+                and len(test.ops)==len(test.comparators)==1 and isinstance(test.ops[0],ast.Eq)
+                and isinstance(test.comparators[0],ast.Constant) and test.comparators[0].value=="__main__"):
+            for child in node.body:
+                yield from _imports(child,"entrypoint")
+            for child in node.orelse:
+                yield from _imports(child,scope)
+            return
     if isinstance(node, (ast.Import, ast.ImportFrom, ast.Call)):
         yield node, scope
     for child in ast.iter_child_nodes(node):
@@ -110,6 +120,8 @@ def audit_imports(root: Path) -> dict:
     paths = {_module_name(source, path): path for path in source.rglob("*.py")
              if "__pycache__" not in path.parts}
     graph = {name: set() for name in paths}
+    relocation_file=root/"docs/integral-refactor/module-relocation.json"
+    retired=set(json.loads(relocation_file.read_text(encoding="utf-8")))-set(paths) if relocation_file.is_file() else set()
     compatibility_edges = []
     unresolved_local_imports = []
     edges, syntax_errors = [], []
@@ -150,6 +162,7 @@ def audit_imports(root: Path) -> dict:
                     except ImportError:
                         base=""
                 declared=[base]
+                declared.extend(f"{base}.{alias.name}" for alias in node.names if f"{base}.{alias.name}" in retired)
             for target in declared:
                 if target.startswith("lithiumscope.") and target not in paths:
                     unresolved_local_imports.append({"source":module,"target":target,"scope":scope,"line":node.lineno})
@@ -157,6 +170,31 @@ def audit_imports(root: Path) -> dict:
                 edges.append({"source":module,"target":target,"scope":scope,"line":node.lineno})
                 if scope=="eager":
                     graph[module].add(target)
+    external_references=[]
+    script_catalog=root/"docs/integral-refactor/scientific-script-relocation.json"
+    scripts=json.loads(script_catalog.read_text(encoding="utf-8")) if script_catalog.is_file() else {}
+    # Scripts and tests are not runtime dependency-graph vertices, but references to
+    # explicitly retired paths must be detected there as well.
+    outside=[root/"main.py",*(root/"scripts").rglob("*.py"),*(root/"tests").rglob("*.py")]
+    for path in sorted(set(outside)):
+        if not path.is_file() or "__pycache__" in path.parts:
+            continue
+        try:
+            tree=ast.parse(path.read_bytes())
+        except (SyntaxError,OSError):
+            continue  # the separate tracked syntax audit records these
+        for node in ast.walk(tree):
+            names=[]
+            if isinstance(node,ast.Import):
+                names=[a.name for a in node.names]
+            elif isinstance(node,ast.ImportFrom) and node.module:
+                names=[node.module,*[f"{node.module}.{a.name}" for a in node.names]]
+            elif isinstance(node,ast.Constant) and isinstance(node.value,str):
+                names=[node.value.replace("\\\\","/")]
+            for name in names:
+                if name in retired or name in scripts:
+                    external_references.append({"path":path.relative_to(root).as_posix(),
+                        "line":node.lineno,"target":name,"destination":scripts.get(name)})
     def under(name, layer):
         return name == f"lithiumscope.{layer}" or name.startswith(f"lithiumscope.{layer}.")
     cross_model = [e for e in edges if e["scope"] != "type_only" and (
@@ -173,6 +211,7 @@ def audit_imports(root: Path) -> dict:
             "unresolved_literal_imports": unresolved_local_imports,
             "unresolved_local_imports": unresolved_local_imports,
             "relocations": _relocation_inventory(root,paths,unresolved_local_imports),
+            "retired_external_references": external_references,
             "deferred_edges": sum(e["scope"] == "deferred" for e in edges),
             "type_only_edges": sum(e["scope"] == "type_only" for e in edges),
             "scope": "static imports and literal import_module/run_module targets; computed imports and execution not proven"}

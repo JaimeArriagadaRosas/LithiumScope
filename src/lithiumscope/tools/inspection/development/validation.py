@@ -149,7 +149,7 @@ def _check_dependencies(root):
     from lithiumscope.tools.inspection.dependencies import audit_imports
     report=audit_imports(root)
     blockers=("syntax_errors","eager_cycles","cross_model_edges","core_to_model_edges",
-              "reporting_to_science_edges","unresolved_local_imports")
+              "reporting_to_science_edges","unresolved_local_imports","retired_external_references")
     return {"state":"ERROR" if any(report[k] for k in blockers) else "OK",**report}
 
 

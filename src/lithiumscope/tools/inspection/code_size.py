@@ -15,7 +15,7 @@ ALLOWED = {".py", ".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs",
 SKIP = {"node_modules", ".venv", "venv", ".git", "__pycache__",
         "dist", "build", "results", "logs", "data", "models",
         ".cache", ".next", ".pytest_cache", ".ruff_cache"}
-ROOTS = ("src", "tests")
+ROOTS = ("src", "tests", "scripts")
 
 
 def scan(root: Path, *, maximum: int = 300) -> list[dict]:

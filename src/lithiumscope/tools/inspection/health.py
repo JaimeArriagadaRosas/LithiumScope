@@ -23,7 +23,7 @@ from lithiumscope.results.evidence import read_record
 
 def architecture_audit(root: Path) -> dict:
     folders = Counter()
-    for name in ("src", "tests"):
+    for name in ("src", "tests", "scripts"):
         for folder, dirs, files in os.walk(root / name):
             dirs[:] = [d for d in dirs if d not in SKIP]
             folders[Path(folder).relative_to(root).as_posix()] = sum(Path(f).suffix.lower() in ALLOWED for f in files)
