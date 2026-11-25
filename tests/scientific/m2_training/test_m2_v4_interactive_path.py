@@ -208,7 +208,8 @@ def test_menu_option_two_routes_normal_competition_without_fit(monkeypatch, caps
     train_command._run_impl()
     displayed = capsys.readouterr().out
     assert calls == [(manifest, "cpu")]
-    assert "Modelo 2 v4" in displayed and "170 características" in displayed
+    assert "Modelo 2: 170 características" in displayed
+    assert "Modelo 2 v4" not in displayed
     assert "2. Modelo 2 " in displayed and "Competencia de prospectividad espacial" in displayed
     assert "Modelo 2: RF, Extra Trees, HGB, XGBoost, CatBoost y SVM-RBF." in displayed
 
