@@ -22,7 +22,9 @@ def test_lab_menu_has_exact_dispatch_and_cancel(monkeypatch, capsys):
     assert "3. Salud y diagnóstico del entorno" in out
 
 
-def test_eda_both_preserves_partial_results(monkeypatch, capsys):
+def test_eda_both_preserves_partial_results(monkeypatch, capsys, tmp_path):
+    from lithiumscope.cli import eda_verification
+    monkeypatch.setattr(eda_verification,"RESULTS_DIR",tmp_path)
     calls = []
     monkeypatch.setattr(lab, "choose", lambda *_: "3")
     def first():

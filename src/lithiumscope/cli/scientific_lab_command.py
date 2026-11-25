@@ -18,7 +18,8 @@ def _prepare_eda(group):
     snapshot, evidence = prepare_version(group, _eda_source(group))
     directory, manifest = prepare_treatments(group, snapshot, load_config(group))
     show_treatments(directory, manifest)
-    return evidence, manifest["state"]
+    from lithiumscope.cli.eda_verification import collect
+    return evidence, manifest["state"], collect(snapshot, evidence, directory, manifest)
 
 
 def _run_eda_m1():
@@ -52,27 +53,33 @@ def _eda_menu() -> bool | None:
     jobs = [("M1", _run_eda_m1), ("M2", _run_eda_m2)]
     selected = jobs if choice == "3" else [jobs[int(choice) - 1]]
     states = []
+    records = {}
     for label, job in selected:
         try:
             from lithiumscope.core.logging.session import run_log
             with run_log("eda",label):
                 outcome = job()
-                path, prepared_state = outcome if isinstance(outcome, tuple) else (outcome, "complete")
+                path, prepared_state, record = outcome if isinstance(outcome, tuple) else (outcome, "complete", {})
                 from lithiumscope.cli.eda_console import show_eda_summary
                 displayed = show_eda_summary(path)
             status = {"complete": "COMPLETADO", "partial": "PARCIAL", "blocked": "BLOQUEADO"}[prepared_state]
             if not displayed and status == "COMPLETADO":
                 status = "PARCIAL"
             states.append(status)
+            records[label] = {"state":status,"console_summary_ok":displayed,**record}
             print(f"[{status}] {label}: {path}")
         except FileNotFoundError as exc:
             states.append("BLOQUEADO")
+            records[label] = {"state":"BLOQUEADO","reason":str(exc)}
             print(f"[BLOQUEADO] {label}: {exc}")
         except Exception as exc:
             states.append("ERROR")
+            records[label] = {"state":"ERROR","reason":str(exc)}
             print(f"[ERROR] {label}: {exc}")
     state = "COMPLETADO" if all(s == "COMPLETADO" for s in states) else "PARCIAL" if any(s in {"COMPLETADO","PARCIAL"} for s in states) else "ERROR" if "ERROR" in states else "BLOQUEADO"
     print(f"Estado: {state}. Diagnóstico y preparación experimental SOLO TRAIN; no se entrenaron modelos.")
+    from lithiumscope.cli.eda_verification import write_verification
+    print(f"Informe único para revisión: {write_verification(state, records)}")
 
 
 def _run_tests() -> bool:

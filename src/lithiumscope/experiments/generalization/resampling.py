@@ -118,20 +118,25 @@ def regression_smoter(x, y, groups, sources, seed, numeric, categorical):
     rare = np.flatnonzero(y.to_numpy() >= y.quantile(.90))
     categories = x[categorical].astype("string").fillna("<missing>").to_numpy()
     missing = np.isnan(values)
-    scale = np.nanstd(values, axis=0)
+    scale = pd.DataFrame(values).std(ddof=0).to_numpy(float)
     scale = np.where(np.isfinite(scale) & (scale > 0), scale, 1.)
-    neighbors = {}
+    # Build compatibility buckets once instead of comparing every pair.
+    buckets = {}
+    group_values, source_values = groups.to_numpy(), sources.to_numpy()
     for i in rare:
-        pool = [j for j in rare if j != i and groups.iloc[j] == groups.iloc[i]
-                and sources.iloc[j] == sources.iloc[i] and np.array_equal(coordinates[j],coordinates[i])
-                and np.array_equal(categories[j],categories[i]) and np.array_equal(missing[j],missing[i])]
-        if not pool:
+        key = (group_values[i], source_values[i], tuple(coordinates[i]),
+               tuple(categories[i]), tuple(missing[i]))
+        buckets.setdefault(key, []).append(i)
+    neighbors = {}
+    for bucket in buckets.values():
+        if len(bucket) < 2:
             continue
-        pool = np.asarray(pool)
-        distance = np.nansum(((values[pool]-values[i])/scale)**2,axis=1)
-        valid = distance > 0
-        if valid.any():
-            neighbors[i] = pool[valid][np.argsort(distance[valid])[:5]]
+        for i in bucket:
+            pool = np.asarray([j for j in bucket if j != i])
+            distance = np.nansum(((values[pool]-values[i])/scale)**2,axis=1)
+            valid = distance > 0
+            if valid.any():
+                neighbors[i] = pool[valid][np.argsort(distance[valid])[:5]]
     if not neighbors:
         raise ValueError("SMOTER blocked: no compatible distinct rare parents")
     rng = np.random.default_rng(seed)
