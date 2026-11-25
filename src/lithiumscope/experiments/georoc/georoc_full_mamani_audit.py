@@ -6,13 +6,14 @@ surface correspondence before any sample can become labelled external validation
 from __future__ import annotations
 import hashlib,json
 from pathlib import Path
+from lithiumscope.core.paths import PROJECT_ROOT
 import numpy as np
 import pandas as pd
 from sklearn.neighbors import BallTree
 
 BASE=Path("results/scientific_simulations/external_geochemistry_audit")
-MAMANI=Path(r"D:\Descargas\LithiumScope\data\raw\model_1\Mamani09_Table_DR2.csv")
-TRAIN=Path(r"D:\Descargas\LithiumScope\data\processed\model_2\training_manifest.csv")
+MAMANI=(PROJECT_ROOT/"data/raw/model_1/Mamani09_Table_DR2.csv")
+TRAIN=(PROJECT_ROOT/"data/processed/model_2/training_manifest.csv")
 EARTH_KM=6371.0088
 
 

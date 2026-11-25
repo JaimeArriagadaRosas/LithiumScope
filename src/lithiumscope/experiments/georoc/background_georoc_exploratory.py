@@ -15,7 +15,6 @@ from lithiumscope.persistence.load_model import load_latest_model
 
 ROOT=Path("results/scientific_simulations/external_geochemistry_audit")
 OUT=ROOT/"background_georoc_exploratory"
-OUT.mkdir(parents=True,exist_ok=True)
 STOP=OUT/"STOP"
 STATUS=OUT/"status.json"
 
@@ -40,6 +39,7 @@ def make_plan():
     return coords
 
 def main():
+    OUT.mkdir(parents=True,exist_ok=True)
     coords=make_plan()
     total=len(coords)
     model,_=load_latest_model("model_2")
@@ -91,7 +91,15 @@ def main():
         failed=sum(v.get("status") in ("ERROR","NO_ACCEPTED_SCENE") for v in records.values()),
         scored=len(list((OUT/"scores").glob("*/image_scenario_metrics.csv"))))
 if __name__=="__main__":
-    try: main()
-    except BaseException as err:
-        snapshot(state="FATAL",error=str(err),traceback=traceback.format_exc()[-2000:])
-        raise
+    import argparse
+    from lithiumscope.core.logging.session import run_log
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--acquire",action="store_true")
+    if not parser.parse_args().acquire:
+        print("Preflight: use --acquire to authorize exploratory acquisition.")
+        raise SystemExit(0)
+    with run_log("simulations","georoc_background"):
+        try: main()
+        except BaseException as err:
+            snapshot(state="FATAL",error=str(err),traceback=traceback.format_exc()[-2000:])
+            raise

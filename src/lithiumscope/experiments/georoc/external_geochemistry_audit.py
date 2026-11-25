@@ -1,5 +1,6 @@
-﻿"""One verifiable geochemistry candidate, NOT eligible without full independence/method audit."""
+"""One verifiable geochemistry candidate, NOT eligible without full independence/method audit."""
 from pathlib import Path
+from lithiumscope.core.paths import PROJECT_ROOT
 from datetime import datetime,timezone
 from math import radians, sin, cos, asin, sqrt
 import hashlib,html,json,re
@@ -8,7 +9,7 @@ import requests
 
 
 URL="https://georoc.mpch-mainz.gwdg.de/georoc/navdat_sampleinfo.asp?unique_id=302366"
-TRAIN=Path(r"D:\Descargas\LithiumScope\data\processed\model_2\training_manifest.csv")
+TRAIN=(PROJECT_ROOT/"data/processed/model_2/training_manifest.csv")
 OUT=Path("results/scientific_simulations/external_geochemistry_audit")
 
 

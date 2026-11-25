@@ -5,9 +5,10 @@ A bibliographic screen is a risk signal; it cannot prove independence.
 from __future__ import annotations
 import re,json
 from pathlib import Path
+from lithiumscope.core.paths import PROJECT_ROOT
 import pandas as pd
 BASE=Path("results/scientific_simulations/external_geochemistry_audit")
-SRC=Path(r"D:\Descargas\LithiumScope\data\raw\model_1\Mamani09_Table_DR2.csv")
+SRC=(PROJECT_ROOT/"data/raw/model_1/Mamani09_Table_DR2.csv")
 def norm(s):
     return re.sub(r"[^a-z0-9]+"," ",str(s).casefold()).strip()
 def main():
