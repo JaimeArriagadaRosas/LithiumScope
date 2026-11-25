@@ -138,3 +138,24 @@ def test_python_directories_are_focused():
     oversized={str(p.relative_to(root)):len(list(p.glob("*.py"))) for p in directories
                if len(list(p.glob("*.py")))>20}
     assert not oversized,oversized
+
+
+def test_core_and_renderer_do_not_depend_on_model_execution():
+    from lithiumscope.tools.inspection.dependencies import audit_imports
+    root=Path(__file__).resolve().parents[2]
+    report=audit_imports(root)
+    assert not report["syntax_errors"],report["syntax_errors"]
+    assert not report["core_to_model_edges"],report["core_to_model_edges"]
+    assert not report["reporting_to_science_edges"],report["reporting_to_science_edges"]
+
+
+def test_canonical_relocation_destinations_exist():
+    import json
+    root=Path(__file__).resolve().parents[2]
+    reloc=json.loads((root/"docs/integral-refactor/module-relocation.json").read_text(encoding="utf-8"))
+    missing=[]
+    for old,new in reloc.items():
+        path=root/"src"/new.replace(".","/")
+        if not path.with_suffix(".py").is_file() and not (path/"__init__.py").is_file():
+            missing.append((old,new))
+    assert not missing,missing
