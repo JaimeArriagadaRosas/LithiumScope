@@ -18,7 +18,7 @@ Al cierre retirar la opción temporal y ejecutar CI normal; no modificar main, r
 Consola L39-1261: especificación adicional abierta, no incluida en el total textual.
 57/57 científicos tienen implementación principal incorporada; la aceptación científica continúa abierta (documentos, datos, pruebas, experimentos y evaluación independiente). No equivale a una aprobación científica.
 La arquitectura no tenía numeración original: IDs ARQ-001..109 introducidos para controlar el cierre.
-Los requisitos se superponen, pero a solicitud del usuario se cuentan por unidad para medir implementación principal: 161/166 (97,0 %), 5 parciales. Véase implementation-status.md. No confundir con cierre científico ni con cobertura.
+Los requisitos se superponen, pero a solicitud del usuario se cuentan por unidad para medir implementación principal: 162/166 (97,6 %), 4 parciales. Véase implementation-status.md. No confundir con cierre científico ni con cobertura.
 E1/E2 está vacío (0 bytes) y el checklist general del seminario contiene otras tareas académicas fuera de este alcance.
 Última suite local en b0c3857: 647 aprobadas, 7 omitidas, 8 warnings, 0 fallos, 57% cobertura de líneas, 670 archivos <=300, sin directorios Python >20.
 No se atribuye CI aprobada a commits posteriores omitidos por [skip ci]. Los 166 criterios cuentan ahora con módulos de pruebas relevantes asociados en criterion-tests.json; no implica cobertura exhaustiva ni cierre.
@@ -63,3 +63,7 @@ El recolector 5 > 4 está incorporado desde a5036ee y ampliado en 46a21ea: sinta
 
 Los archivos locales ignorados por Git (datasets históricos, parches, releases, auditorías y logs) no se trasladan por git push. Las rutas relativas y hashes en progress.md son referencias a evidencia local, no archivos que el conector pueda recuperar automáticamente. Los originales completos permanecen en la carpeta local de seminario; se incorporaron únicamente sus secciones de requisitos relevantes, con redacciones, y anclas de consola. No se publicaron gráficos base64, datos, binarios ni consola cruda. Los 57 criterios científicos conservan el estado parcial hasta verificar aceptación individual.
 No escribir en el clon histórico LithiumScope-Scientific-Lab. No usar conexión remota salvo necesidad específica del usuario. No ejecutar entrenamientos definitivos, promoción, publicación, ni render final sin autorización. No presentar el desempeño histórico como nueva evaluación. No inventar evidencia ausente.
+
+## Siguiente paso autorizado por el flujo acordado
+
+162/166 (97,6 %) implementados; cuatro criterios de cierre dependientes de ejecución. Actualizar rama local y ejecutar exclusivamente opción temporal 5 > 4. Compartir JSON revisado. Las rutas de scripts movidas se documentan en scripts/scientific/README.md. No ejecutar entrenamiento definitivo ni activar modelos. No atribuir aprobación de pruebas a este commit.

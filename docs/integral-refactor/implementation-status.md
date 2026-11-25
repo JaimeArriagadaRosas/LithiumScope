@@ -1,13 +1,13 @@
 # Estado de implementación por criterio
 
-Corte de código: b1491d11005359f7bb2e820157f0c0addbc79f10. Conteo de implementación solicitado, **independiente de la ejecución de pruebas**. I = implementación principal incorporada al código (no necesariamente todos los detalles ni aceptación); P = implementación parcial con trabajo de código concreto pendiente. Cada criterio vale una unidad, incluidos requisitos superpuestos; P no suma como implementado. La clasificación es revisión documental y estática, no resultado de una suite. Los originales completos permanecen locales; se usan los extractos y matrices versionados. Consola adicional excluida del denominador textual de 166.
+Corte de código: b3c677f9f56ff4f434e67f4a33d0dde4c3d8011b. Conteo de implementación solicitado, **independiente de la ejecución de pruebas**. I = implementación principal incorporada al código (no necesariamente todos los detalles ni aceptación); P = implementación parcial con trabajo de código concreto pendiente. Cada criterio vale una unidad, incluidos requisitos superpuestos; P no suma como implementado. La clasificación es revisión documental y estática, no resultado de una suite. Los originales completos permanecen locales; se usan los extractos y matrices versionados. Consola adicional excluida del denominador textual de 166.
 
 | Diagnóstico | Total | Implementación principal | Parcial | Avance de implementación |
 |---|---:|---:|---:|---:|
 | M1 | 27 | 27 | 0 | 100,0 % |
 | M2 | 30 | 30 | 0 | 100,0 % |
-| ARQ | 109 | 104 | 5 | 95,4 % |
-| **Total** | **166** | **161** | **5** | **97,0 %** |
+| ARQ | 109 | 105 | 4 | 96,3 % |
+| **Total** | **166** | **162** | **4** | **97,6 %** |
 
 Los seis cierres acotados y la última suite histórica se conservan por separado en HANDOFF.md. Los experimentos son ejecutables pero no ejecutados; el rendimiento no está demostrado. La revisión podrá reclasificar criterios si surgen faltantes.
 
@@ -90,7 +90,7 @@ Los seis cierres acotados y la última suite histórica se conservan por separad
 | ARQ-018 | Principal incorporada | Pipeline M1 delega preparación automática de fuentes/entorno y competencia con EDA, baselines, validaciones y ajuste final; fases independientes de holdout expuestas separadamente sin promoción. |
 | ARQ-019 | Principal incorporada | Resultados EDA, runs y metodología diferenciados. |
 | ARQ-020 | Principal incorporada | Infraestructura compartida y compatibilidad histórica. |
-| ARQ-021 | Parcial | Cierre científico M1: requiere regresión local y evidencia empírica; no declarado aprobado. |
+| ARQ-021 | Parcial | Código de los 27 diagnósticos M1 incorporado; cierre global sujeto a regresión del commit, evaluación histórica, estudios controlados y evidencia científica real. No queda una implementación principal específica identificada sin resultados locales. |
 | ARQ-022 | Principal incorporada | M2 separado por data, preparación/espectral, EDA, validación, entrenamiento/preprocessing, evaluación, diagnóstico, metodología e inferencia, con 30/30 criterios científicos de implementación principal. Integración prospectiva real y regresión pendientes. |
 | ARQ-023 | Principal incorporada | Ruta científica de adquisición nueva registrada con SCL, corregistro y radiometría por asset; sin cambiar adquisición histórica. |
 | ARQ-024 | Principal incorporada | Preparación con contrato común de identidad, censura, réplicas, unidades y reconciliación de checkpoints. |
@@ -110,7 +110,7 @@ Los seis cierres acotados y la última suite histórica se conservan por separad
 | ARQ-038 | Principal incorporada | Reserva prospectiva opt-in previa al entrenamiento, identidades y hashes, vinculación y scoring ciego del candidato; revelación independiente separada. Datos externos auténticos y ejecución pendientes. |
 | ARQ-039 | Principal incorporada | Resultados EDA, runs y metodología separados. |
 | ARQ-040 | Principal incorporada | Componentes comunes y compatibilidad. |
-| ARQ-041 | Parcial | Cierre científico M2: requiere regresión local y evidencia empírica; no declarado aprobado. |
+| ARQ-041 | Parcial | Código de los 30 diagnósticos M2 incorporado; cierre global sujeto a regresión del commit, comparación controlada, calidad espacial e independencia externa real. No se certifica superioridad. |
 | ARQ-042 | Principal incorporada | Renderer recibe casos, métricas, clasificación y deltas preparados; funciones históricas de escalares reexportadas desde core sin dependencia de prediction; prueba de frontera estática añadida. |
 | ARQ-043 | Principal incorporada | Reporting movido a raíz. |
 | ARQ-044 | Principal incorporada | Predicción centrada en entradas, cálculos y resultados. |
@@ -142,7 +142,7 @@ Los seis cierres acotados y la última suite histórica se conservan por separad
 | ARQ-070 | Principal incorporada | Retención consolidada. |
 | ARQ-071 | Principal incorporada | Parámetros específicos separados de detección de hardware. |
 | ARQ-072 | Principal incorporada | Contratos genéricos de métricas de regresión y clasificación centralizados en core/scientific; curvas y comparaciones comparten esas implementaciones, rutas de modelos compatibles. |
-| ARQ-073 | Parcial | Auditoría AST de límites, ciclos y referencias inexistentes; inventario de rutas retiradas y destinos canónicos, dos ciclos de fachada corregidos. Falta ejecución global y resolver las referencias reales que se detecten. 36 nombres históricos no tienen shim físico; no se certifica compatibilidad de esos nombres. |
+| ARQ-073 | Principal incorporada | Arquitectura core independiente, referencias y rutas retiradas auditadas incluyendo scripts/tests, límites de carpetas y prueba de paridad histórica con hashes conocidos en 5.4. 36 rutas retiradas no poseen shim físico; verificar referencias y serialización en regresión. No se certifica ausencia de ciclos sin ejecutar la auditoría. |
 | ARQ-074 | Principal incorporada | Familias en archivos por algoritmo. |
 | ARQ-075 | Principal incorporada | Implementaciones separadas de preprocesamiento y ejecución. |
 | ARQ-076 | Principal incorporada | Algoritmos M1/M2 independientes. |
@@ -161,7 +161,7 @@ Los seis cierres acotados y la última suite histórica se conservan por separad
 | ARQ-089 | Principal incorporada | Tests reorganizados por responsabilidades principales. |
 | ARQ-090 | Principal incorporada | Directorios requeridos de pruebas por componente y transversales, incluidos tools, experiments, distribution, persistence, integration, regression, end_to_end, performance, fixtures; reubicación sin duplicación y trazabilidad actualizada. |
 | ARQ-091 | Principal incorporada | Pruebas unitarias, integración, regresión y científicas ampliadas. |
-| ARQ-092 | Parcial | Política de regresión por criterio y pruebas incorporadas; ejecución pospuesta por instrucción del usuario. No existe evidencia red/green retrospectiva. |
+| ARQ-092 | Parcial | Política de regresión, pruebas por criterio, JUnit/cobertura y ubicaciones acotadas de fallo incorporadas. La ejecución real por etapa se difirió; no puede acreditarse retrospectivamente. |
 | ARQ-093 | Principal incorporada | Mapa de pruebas por los 166 criterios. |
 | ARQ-094 | Principal incorporada | Trazabilidad de requisitos, implementación, pruebas y evidencias. |
 | ARQ-095 | Principal incorporada | Pruebas de límites de capas, destinos de reubicación y auditoría de imports integrada en diagnóstico 5.4; ejecución y hallazgos pendientes. |
@@ -178,4 +178,4 @@ Los seis cierres acotados y la última suite histórica se conservan por separad
 | ARQ-106 | Principal incorporada | Resultados de tests con run ID, JUnit y cobertura. |
 | ARQ-107 | Principal incorporada | Aislamiento y comprobación de hashes antes/después; auditoría real pendiente. |
 | ARQ-108 | Principal incorporada | Logging interno sin saturar consola. |
-| ARQ-109 | Parcial | Requisito global: falta evidencia de regresión y cierre de los criterios restantes. |
+| ARQ-109 | Parcial | Procedimientos de cierre y evidencia local incorporados, incluida paridad histórica y benchmark sintético; requiere resultados de 5.4, corrección de hallazgos, evidencia científica auténtica y CI final. Sin promoción ni entrenamiento definitivo. |

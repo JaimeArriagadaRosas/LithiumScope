@@ -276,3 +276,12 @@ Implementación principal: 160/166 (96,4 %). Pendientes ARQ-021/041/061/073/092/
 ## Aislamiento histórico y auditoría de reubicaciones
 
 578678d6, 545cf74f, cbc6ea94, b1491d11: recuperación y síntesis sin I/O al importar, helpers de M2 y auditoría explícita de rutas retiradas. 161/166 (97,0 %) implementación principal, 5 parciales. Sin ejecución de regresión ni certificación de resultados científicos.
+
+## Cierre de implementación remota — b3c677f
+
+- 94a4031: 15 scripts científicos agrupados en audits/ y benchmarks/, contenidos preservados; mapa de rutas y prueba de estructura. Las llamadas directas antiguas requieren la ruta nueva.
+- 79e06cd: verificación de inferencia histórica de ambos modelos, 10 casos por grupo, únicamente bytes con SHA256 conocidos, sin descarga/entrenamiento/activación. Si faltan archivos, registra bloqueo.
+- f0d09ce: auditoría de referencias retiradas en src/tests/scripts, entradas CLI y límites de scripts.
+- b3c677f: ubicaciones de código y clases de excepción de fallos JUnit en reporte compartible, sin traceback bruto ni datos de muestras.
+
+Implementación principal 162/166 (97,6 %). Pendientes ARQ-021/041/092/109 por ejecución y aceptación; no se han ejecutado tests, CI, auditoría AST global, benchmark ni entrenamiento en esta rama. Los 6 cierres históricos acotados permanecen sin cambio. No se identificó otra implementación principal concreta que deba preceder a la primera regresión local; no equivale a 100 % funcional. El siguiente paso es actualizar la rama local mediante fast-forward y ejecutar menú 5 > 4, compartir development_report.json revisado. Si faltan artefactos históricos, se registra bloqueo; no reconstruirlos o adquirir datos automáticamente. Resolver los hallazgos antes de reentrenar; no activar modelos nuevos. Mantener opción temporal hasta finalizar reparación y validación.

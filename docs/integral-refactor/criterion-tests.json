@@ -381,7 +381,8 @@
     "ARQ-021": [
       "tests/scientific/m1/test_m1_dual_release_diagnostics.py",
       "tests/scientific/experiments/test_compare_vnext_trained_runs.py",
-      "tests/scientific/experiments/test_vnext_data_adequacy.py"
+      "tests/scientific/experiments/test_vnext_data_adequacy.py",
+      "tests/core/test_historical_parity_preflight.py"
     ],
     "ARQ-022": [
       "tests/core/test_architecture.py",
@@ -483,7 +484,8 @@
     "ARQ-041": [
       "tests/scientific/m2_training/test_m2_release_closure_comparison.py",
       "tests/scientific/m2_training/test_m2_generalization_protocol.py",
-      "tests/integration/test_pretraining_holdout_reservation.py"
+      "tests/integration/test_pretraining_holdout_reservation.py",
+      "tests/core/test_historical_parity_preflight.py"
     ],
     "ARQ-042": [
       "tests/reporting/test_prediction_pdf_contract.py",
@@ -653,7 +655,9 @@
       "tests/core/test_architecture.py",
       "tests/core/test_dependency_audit.py",
       "tests/regression/test_spawn_and_scientific_identity.py",
-      "tests/experiments/test_historical_report_import_safety.py"
+      "tests/experiments/test_historical_report_import_safety.py",
+      "tests/core/test_scientific_script_layout.py",
+      "tests/core/test_historical_parity_preflight.py"
     ],
     "ARQ-074": [
       "tests/core/test_architecture.py",
@@ -740,7 +744,8 @@
     "ARQ-092": [
       "tests/development/test_validation.py",
       "tests/core/test_pipeline_audit_transaction.py",
-      "tests/development/test_criteria.py"
+      "tests/development/test_criteria.py",
+      "tests/development/test_failure_context.py"
     ],
     "ARQ-093": [
       "tests/results/test_eda_protocol.py",
@@ -754,7 +759,8 @@
       "tests/core/test_architecture.py",
       "tests/core/test_canonical_execution_packages.py",
       "tests/core/test_dependency_audit.py",
-      "tests/regression/test_spawn_and_scientific_identity.py"
+      "tests/regression/test_spawn_and_scientific_identity.py",
+      "tests/core/test_scientific_script_layout.py"
     ],
     "ARQ-096": [
       "tests/scientific/shared/test_scientific_checks.py",
@@ -828,7 +834,10 @@
       "tests/resources/test_optimization_parallel_policy.py",
       "tests/scientific/shared/test_batched_optuna_contract.py",
       "tests/performance/test_acceleration_benchmark.py",
-      "tests/runtime/test_operation_log_layout.py"
+      "tests/runtime/test_operation_log_layout.py",
+      "tests/core/test_historical_parity_preflight.py",
+      "tests/development/test_failure_context.py",
+      "tests/core/test_scientific_script_layout.py"
     ]
   }
 }
