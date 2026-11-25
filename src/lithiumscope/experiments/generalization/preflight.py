@@ -23,7 +23,7 @@ def _json(path, payload):
 
 def _identity(directory, cfg):
     from importlib.metadata import version
-    names = ("preflight.py", "partitions.py", "arms.py", "resampling.py")
+    names = ("preflight.py", "partitions.py", "arms.py", "resampling.py", "signature_policy.py", "domain.py")
     return canonical_json_hash({"snapshot": file_sha256(directory/"manifest.json"), "config": cfg,
         "code": {n: file_sha256(Path(__file__).with_name(n)) for n in names},
         "versions": {p: version(p) for p in ("numpy","pandas","scikit-learn")}})
@@ -52,13 +52,21 @@ def _prepare_one(group, arm, data, cfg, train, test, seed):
         features = schema.numeric + schema.categorical
         # No imputer fitted here: canonical M1 estimator owns it, including
         # TabNet's own spatial early-stopping split.
-        fit_digest = canonical_json_hash({"rows": pd.util.hash_pandas_object(matrix,index=False).astype(str).tolist(),
+        if arm == "knn_imputation":
+            from lithiumscope.model_1.training.preprocessing.tabular import build_preprocessor
+            transformed = build_preprocessor(schema,"random_forest").fit_transform(matrix,target)
+            if not np.isfinite(transformed).all():
+                raise ValueError("KNN imputation produced nonfinite TRAIN")
+            imputed_digest = canonical_json_hash({"matrix":transformed.tolist()})
+        else:
+            imputed_digest = None
+        fit_digest = canonical_json_hash({"imputed":imputed_digest,"rows": pd.util.hash_pandas_object(matrix,index=False).astype(str).tolist(),
                                            "target": np.asarray(target,float).tolist(), "features": features})
     else:
-        matrix,target,_,_,features,trace = prepare_classification_arm(arm,seed,xx,labels,gg)
+        matrix,target,_,_,features,trace,weights = prepare_classification_arm(arm,seed,xx,labels,gg,return_weights=True)
         if not np.isfinite(matrix).all() or set(np.unique(target)) != {0,1}:
             raise ValueError("Invalid prepared classification matrix")
-        fit_digest = canonical_json_hash({"rows": np.asarray(matrix).tolist(),"target": np.asarray(target).tolist(),"features": features})
+        fit_digest = canonical_json_hash({"rows": np.asarray(matrix).tolist(),"target": np.asarray(target).tolist(),"features": features,"weights":None if weights is None else weights.tolist()})
     fit_ids = set(xx.index.astype(str))
     for entry in trace:
         for name in ("row","parent_a","parent_b"):
@@ -72,7 +80,9 @@ def _prepare_one(group, arm, data, cfg, train, test, seed):
     if group == "model_1":
         result.update(target_min=float(np.min(target)),target_max=float(np.max(target)))
     else:
-        result.update(positive_before=int(labels.sum()),positive_after=int(np.sum(target)))
+        result.update(positive_before=int(labels.sum()),positive_after=int(np.sum(target)),
+            effective_fit_weight=float(len(target) if weights is None else weights.sum()),
+            effective_positive_weight=float(np.sum(target) if weights is None else np.dot(target,weights)))
     return result,trace
 
 
@@ -96,7 +106,18 @@ def prepare_treatments(group, snapshot, cfg):
                 "inner":[{"train":a.tolist(),"validation":b.tolist()} for a,b in inner]})
             for inner_number,(train,test) in enumerate([(tr,te),*inner]):
                 seed=42+outer if inner_number==0 else 42+outer*10+inner_number
-                fold_rows.append({"outer_fold":outer,"inner_fold":inner_number,
+                from lithiumscope.experiments.generalization.domain import support_summary
+                fit_indices = train[eligible[train]]
+                diagnostic = support_summary(x.iloc[fit_indices],x.iloc[test],data[5],data[6])
+                diagnostic["reserved_target_max"] = float(y.iloc[test].max())
+                diagnostic["reserved_above_train_target_max"] = int((y.iloc[test] > y.iloc[fit_indices].max()).sum())
+                if group == "model_2":
+                    from lithiumscope.experiments.generalization.signature_policy import signature_summary, signature_overlap
+                    _, labels, threshold = training_target(group,data,cfg,train)
+                    diagnostic.update({"train_"+k:v for k,v in signature_summary(x.iloc[fit_indices],labels).items()})
+                    diagnostic.update({"reserved_"+k:v for k,v in signature_summary(x.iloc[test],(y.iloc[test]>=threshold).astype(int)).items()})
+                    diagnostic["exact_signature_overlap_rows"] = signature_overlap(x.iloc[fit_indices],x.iloc[test])
+                fold_rows.append({**diagnostic,"outer_fold":outer,"inner_fold":inner_number,
                     "train_rows":len(train),"qa_eligible_train":int(eligible[train].sum()),
                     "reserved_rows":len(test),"train_groups":int(groups.iloc[train].nunique()),
                     "reserved_groups":int(groups.iloc[test].nunique()),
@@ -117,7 +138,7 @@ def prepare_treatments(group, snapshot, cfg):
                "complete" if table.state.eq("ready").all() else "partial")
         _json(staging/"partitions.json",split_rows)
         table.to_csv(staging/"treatments.csv",index=False)
-        pd.DataFrame(traces,columns=["outer_fold","inner_fold","arm","seed","row","action","parent_a","parent_b","lambda","group","source"]).to_csv(staging/"augmentation.csv",index=False)
+        pd.DataFrame(traces,columns=["outer_fold","inner_fold","arm","seed","row","action","parent_a","parent_b","lambda","group","source","weight","signature"]).to_csv(staging/"augmentation.csv",index=False)
         pd.DataFrame(fold_rows).to_csv(staging/"fold_summary.csv",index=False)
         summary=table.groupby(["arm","state"]).size().unstack(fill_value=0).to_dict(orient="index")
         manifest={"identity":key,"state":state,"model_group":group,"prepared_identity":snapshot.name,
@@ -148,6 +169,13 @@ def show_treatments(path, manifest):
         if len(good)!=len(subset):
             for reason,count in subset.loc[subset.state.ne("ready"),"reason"].value_counts().items():
                 print(f"    BLOQUEADO ({count}): {reason}")
+    folds = pd.read_csv(path/"fold_summary.csv")
+    outer = folds.loc[folds.inner_fold.eq(0)]
+    print("\nDiagnóstico descriptivo exterior (no utilizado para seleccionar tratamientos):")
+    columns = ["outer_fold","train_target_max","reserved_target_max","reserved_above_train_target_max",
+               "outside_numeric_range_rows","unseen_categories_rows","exact_signature_overlap_rows",
+               "train_conflicting_rows","reserved_conflicting_rows","reserved_unavoidable_errors_same_signature"]
+    print(outer[[c for c in columns if c in outer]].to_string(index=False))
     print("Ninguna fila sintética se agrega al dataset original ni a TEST.")
     print("La eficacia predictiva requiere evaluación posterior; las matrices aprendidas se ajustan por TRAIN.")
     print(f"Manifiesto de tratamientos: {path/'manifest.json'}")

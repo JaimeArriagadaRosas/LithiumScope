@@ -20,15 +20,22 @@ def regression_resample(x, y, groups, sources, method, seed):
     if method == "deduplicate":
         keys = x.assign(__target=y, __group=groups, __source=sources)
         keep = np.flatnonzero(~keys.duplicated())
-    elif method in {"rare_bootstrap", "group_bootstrap"}:
-        if method == "rare_bootstrap":
+    elif method in {"rare_bootstrap", "group_bootstrap", "rare_group_bootstrap"}:
+        if method == "rare_group_bootstrap":
+            rare = np.flatnonzero(y.to_numpy() >= y.quantile(.90))
+            pool = np.repeat(rare, 4)  # no parent copied more than four times
+            weights = 1 / groups.iloc[pool].map(groups.iloc[rare].value_counts()).to_numpy(float)
+            weights /= weights.sum()
+        elif method == "rare_bootstrap":
             pool = np.flatnonzero(y.to_numpy() >= y.quantile(.90))
             weights = None
         else:
             pool = keep
             weights = (1 / groups.map(groups.value_counts()).to_numpy(float))
             weights /= weights.sum()
-        extra = rng.choice(pool, size=max(1, len(x)//4), replace=True, p=weights)
+        bounded = method == "rare_group_bootstrap"
+        size = min(len(pool), max(1, len(x)//4)) if bounded else max(1, len(x)//4)
+        extra = rng.choice(pool, size=size, replace=not bounded, p=weights)
         keep = np.concatenate([keep, extra])
     elif method != "none":
         raise ValueError("Unknown regression resampling")
@@ -141,8 +148,20 @@ def regression_smoter(x, y, groups, sources, seed, numeric, categorical):
         raise ValueError("SMOTER blocked: no compatible distinct rare parents")
     rng = np.random.default_rng(seed)
     rows, targets, fit_groups, trace = [], [], [], []
-    for i in rng.choice(list(neighbors), size=max(1,len(x)//4),replace=True):
-        j = int(rng.choice(neighbors[i]))
+    # Cap reuse across both parent roles; rotate through spatial groups.
+    # If capacity is exhausted, return fewer rows, never relax the cap.
+    from collections import Counter
+    parent_uses, pair_uses, group_uses = Counter(), Counter(), Counter()
+    pairs = sorted({tuple(sorted((int(i), int(j)))) for i, js in neighbors.items() for j in js})
+    while len(rows) < max(1,len(x)//4):
+        available = [(i,j) for i,j in pairs if parent_uses[i] < 8 and parent_uses[j] < 8
+                     and pair_uses[(i,j)] < 4]
+        if not available:
+            break
+        least = min(group_uses[group_values[i]] for i,j in available)
+        balanced = [(i,j) for i,j in available if group_uses[group_values[i]] == least]
+        i,j = balanced[int(rng.integers(len(balanced)))]
+        pair_uses[(i,j)] += 1
         alpha = float(rng.uniform(0,1))
         row = x.iloc[i].copy()
         row.loc[measured] = values[i] + alpha*(values[j]-values[i])
@@ -151,6 +170,9 @@ def regression_smoter(x, y, groups, sources, seed, numeric, categorical):
         oxides = [name for name in OXIDES if name in measured]
         if oxides and (row[oxides].dropna().astype(float) > 100).any():
             continue
+        parent_uses[i] += 1
+        parent_uses[j] += 1
+        group_uses[group_values[i]] += 1
         rows.append(row)
         targets.append(float(y.iloc[i] + alpha*(y.iloc[j]-y.iloc[i])))
         fit_groups.append(groups.iloc[i])

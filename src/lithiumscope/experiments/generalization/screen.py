@@ -50,6 +50,12 @@ def evaluate(group, algorithm, arm, device, seed, data, train, test, cfg):
         pred, train_pred, provenance = classification_fit(algorithm, arm, device, seed, x.iloc[train], fit_y,
                                                         groups.iloc[train], x.iloc[test])
         provenance["threshold_ppm"] = threshold
+        from lithiumscope.experiments.generalization.signature_policy import signature_weights
+        weights = signature_weights(x.iloc[test])
+        provenance["signature_weighted_auc"] = float(roc_auc_score(test_y,pred,sample_weight=weights))
+        provenance["signature_weighted_ap"] = float(average_precision_score(test_y,pred,sample_weight=weights))
+    from lithiumscope.experiments.generalization.domain import support_summary
+    provenance.update(support_summary(x.iloc[train],x.iloc[test],numeric,categorical))
     test_metrics = metrics(group, test_y, pred)
     train_metrics = metrics(group, fit_y, train_pred)
     return {**test_metrics, **{"train_"+k: v for k, v in train_metrics.items()},

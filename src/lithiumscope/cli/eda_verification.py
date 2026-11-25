@@ -27,7 +27,15 @@ def collect(snapshot, evidence, treatments, treatment_manifest):
     table=records(treatments/"treatments.csv", ("feature_names",))
     fold_data=records(treatments/"fold_summary.csv")
     source_table=evidence/"tables"/"cohort_summary.csv"
-    return {"prepared_path":str(snapshot), "eda_path":str(evidence), "treatments_path":str(treatments),
+    batch_report = None
+    if prepared["model_group"] == "model_1":
+        from lithiumscope.experiments.generalization.batch_audit import summarize_batches
+        payload = json.loads((snapshot/"prepared.json").read_text(encoding="utf-8"))
+        batch_report = summarize_batches(Path(eda["source_path"]),payload)
+        print("\nAuditoría de lotes M1 (descriptiva, no se excluyen muestras):")
+        for batch in batch_report["batches"][:5]:
+            print(f"  Lote {batch[\'batch\']} | {batch[\'prepared_rows\']} filas | max Li={batch[\'maximum\']} ppm")
+    return {"batch_audit":batch_report,"prepared_path":str(snapshot), "eda_path":str(evidence), "treatments_path":str(treatments),
         "prepared_manifest":prepared, "treatment_manifest":treatment_manifest,
         "eda_manifest":eda, "source_unchanged":True,
         "fold_summary":fold_data,"treatments":table,

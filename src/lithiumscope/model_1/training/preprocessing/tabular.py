@@ -4,9 +4,9 @@ from dataclasses import dataclass
 
 import pandas as pd
 from sklearn.compose import ColumnTransformer
-from sklearn.impute import SimpleImputer
+from sklearn.impute import KNNImputer, SimpleImputer
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.preprocessing import OneHotEncoder, RobustScaler, StandardScaler
 
 from lithiumscope.core.logging.session import get_logger
 
@@ -55,13 +55,17 @@ def select_feature_schema(frame: pd.DataFrame, include_age: bool = True, *, prep
 def build_preprocessor(schema: FeatureSchema, model_family: str) -> ColumnTransformer:
     family = model_family.lower()
     policy=getattr(schema,"preprocessing_policy","legacy")
-    if policy not in {"legacy","stable_v1","tabnet_mask_v1"}:
+    if policy not in {"legacy","stable_v1","tabnet_mask_v1","knn_v1"}:
         raise ValueError("Unknown preprocessing policy")
     if policy=="tabnet_mask_v1" and family!="tabnet":
         raise ValueError("TabNet mask variant is only valid for TabNet")
     stable=policy!="legacy"
 
-    if family == "xgboost":
+    if policy == "knn_v1":
+        # Scale before neighbor distances; fit within each estimator TRAIN.
+        numeric_transformer = Pipeline([("scale", RobustScaler()),
+            ("imputer", KNNImputer(n_neighbors=5, weights="distance", keep_empty_features=True))])
+    elif family == "xgboost":
         numeric_transformer = "passthrough"
     elif family == "tabnet":
         numeric_transformer = Pipeline(
