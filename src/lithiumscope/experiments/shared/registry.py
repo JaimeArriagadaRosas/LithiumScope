@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-import json
 from pathlib import Path
 from uuid import uuid4
 
@@ -73,6 +72,7 @@ def run_registered_simulations(output_root: Path | None = None) -> Path:
     if available:
         record("M2: verificación de matriz espectral común",common)
     descriptor_outputs={}
+    raw_outputs={}
     pilot=RESULTS_DIR/"scientific_simulations"/"sentinel2_real"/"manifest.csv"
     # Existing seasonal/shifted catalogs only: no automatic external acquisition.
     catalogs={"pilot":pilot}
@@ -96,9 +96,10 @@ def run_registered_simulations(output_root: Path | None = None) -> Path:
                 table=pd.read_csv(output)
                 if table.empty:
                     raise FileNotFoundError("No hay parches aceptados")
+                raw_outputs[(role,name)]=output
                 report=summarize(output,output.parent)
                 scored=int(table.status.eq("SCORED").sum())
-                return {"state":"COMPLETADO" if scored==len(table) else "PARCIAL" if scored else "BLOQUEADO",
+                return {"state":"COMPLETADO" if table.loc[table.scenario.eq("baseline"),"status"].eq("SCORED").all() and scored else "PARCIAL" if scored else "BLOQUEADO",
                         "artifact":str(output),"summary":str(report),"scored":scored,"abstentions":len(table)-scored,
                         "geography":str(compare_geographies(output,output.parent)[1])}
             record(f"M2 {role}: espectral/geográfico/temporal {name}",raw)
@@ -113,6 +114,16 @@ def run_registered_simulations(output_root: Path | None = None) -> Path:
             return {"artifact":str(write_table(destination/"model_2"/"paired_descriptor_summary.csv",summary)),
                     "paired_rows":len(paired),"scope":"not independent accuracy"}
         record("M2: comparación pareada de descriptores",pair_m2)
+    for name in catalogs:
+        if all((role,name) in raw_outputs for role in ("release","candidate")):
+            def pair_raw():
+                a,b=(pd.read_csv(raw_outputs[(role,name)]) for role in ("release","candidate"))
+                paired=a.merge(b,on=["image_id","scene_id","year","scenario"],suffixes=("_release","_candidate"),validate="one_to_one")
+                paired["both_scored"]=paired.status_release.eq("SCORED")&paired.status_candidate.eq("SCORED")
+                paired["score_delta"]=paired.score_candidate-paired.score_release
+                return {"artifact":str(write_table(destination/"model_2"/f"paired_{name}.csv",paired)),
+                        "paired_rows":len(paired),"both_scored":int(paired.both_scored.sum())}
+            record("M2: comparación pareada de imágenes "+name,pair_raw)
     states={p["state"] for p in protocols}
     state="COMPLETADO" if states=={"COMPLETADO"} else "PARCIAL" if states&{"COMPLETADO","PARCIAL"} else "ERROR" if "ERROR" in states else "BLOQUEADO"
     return write_json(destination/"manifest.json",{"run_id":destination.name,"state":state,

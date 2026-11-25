@@ -7,7 +7,6 @@ import pandas as pd
 from lithiumscope.core.config import load_config
 from lithiumscope.datasets.management.diagnostic_provisioning import prepare_diagnostic_source
 from lithiumscope.model_2.preparation.features.v4_inputs import load_spectral_v4_training_frame
-from lithiumscope.model_2.schema import out_of_range_fraction
 from lithiumscope.results.atomic_exports import write_table
 
 
@@ -23,6 +22,8 @@ def descriptor_stress(bundle,frame,ids,destination):
     expected=list(bundle["features"])
     if not set(expected)<=set(frame.columns):
         raise ValueError("Frozen descriptor matrix lacks expected features")
+    # Common column order and draws ensure identical noise on shared features.
+    feature_columns=[c for c in frame.columns if c not in {"Li_icpms","spatial_group"}]
     x=frame[expected].astype(float)
     if not np.isfinite(x.to_numpy()).all():
         raise ValueError("Nonfinite frozen descriptors")
@@ -33,7 +34,9 @@ def descriptor_stress(bundle,frame,ids,destination):
         for intensity in (0.,.01,.05,.10,.25):
             sample=x.copy()
             if intensity:
-                sample=sample*(1+rng.normal(0,intensity,size=sample.shape))
+                noise=pd.DataFrame(rng.normal(0,intensity,size=(len(x),len(feature_columns))),
+                                   index=x.index,columns=feature_columns)
+                sample=sample*(1+noise[expected])
             scores=bundle["estimator"].predict_proba(sample)[:,1]
             if not np.isfinite(scores).all() or ((scores<0)|(scores>1)).any():
                 raise ValueError("Invalid spectral descriptor scores")

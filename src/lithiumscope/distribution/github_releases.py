@@ -57,7 +57,7 @@ def parse_model_releases(
     releases: list[ModelRelease] = []
     for release in payload:
         tag_name = str(release.get("tag_name", ""))
-        if release.get("draft") or not tag_name.startswith(tag_prefix):
+        if release.get("draft") or release.get("prerelease") or not tag_name.startswith(tag_prefix):
             continue
 
         assets = [
@@ -65,6 +65,8 @@ def parse_model_releases(
             for asset in release.get("assets", [])
             if str(asset.get("name", "")).endswith(asset_suffix)
             and asset.get("browser_download_url")
+            and Path(str(asset.get("name",""))).name == asset.get("name")
+            and not any(c in str(asset.get("name","")) for c in ("/","\\",":",".."))
         ]
         if not assets:
             continue
@@ -187,6 +189,8 @@ def download_release_asset(
     destination.parent.mkdir(parents=True, exist_ok=True)
     temporary = destination.with_name(f".{destination.name}.{uuid4().hex}.part")
 
+    if Path(release.asset_name).name!=release.asset_name or any(c in release.asset_name for c in ("/","\\",":","..")):
+        raise ValueError("Nombre de asset inseguro")
     parsed=urlsplit(release.asset_url)
     if parsed.scheme!="https" or parsed.hostname!="github.com" or parsed.username or parsed.password:
         raise ValueError("URL de descarga no pertenece a GitHub HTTPS")

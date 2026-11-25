@@ -90,7 +90,7 @@ def _run_tests() -> bool:
     print("[OK] Suite descubierta en tests/. Ejecutando; el resumen se obtiene de JUnit.")
     from lithiumscope.core.logging.session import current_session_directory
     env={**os.environ,"LITHIUMSCOPE_SESSION_DIR":str(current_session_directory())}
-    completed = subprocess.run([sys.executable, str(runner), "--", "-q"], cwd=PROJECT_ROOT, check=False,env=env)
+    completed = subprocess.run([sys.executable, str(runner), "--coverage", "--", "-q", "tests"], cwd=PROJECT_ROOT, check=False,env=env)
     print(f"Estado: {'COMPLETADO' if completed.returncode == 0 else 'ERROR'}; código={completed.returncode}")
     return completed.returncode == 0
 
@@ -106,7 +106,7 @@ def _run_simulations() -> bool:
     return record["state"] == "COMPLETADO"
 
 
-def _treatment_experiments() -> bool:
+def _treatment_experiments(*, all_families=None) -> bool:
     from lithiumscope.experiments.generalization.screen import run_screen
     from lithiumscope.core.logging.session import run_log
     from lithiumscope.results.atomic_exports import write_json
@@ -114,14 +114,23 @@ def _treatment_experiments() -> bool:
     from uuid import uuid4
     print("Evaluación espacial anidada: ajustes diagnósticos, no entrenamiento definitivo ni promoción.")
     print("Por defecto piloto Random Forest; alcance completo incluye las doce familias.")
-    all_families=choose("¿Evaluar todas las familias? [s/n]: ",{"s","n"})=="s"
+    if all_families is None:
+        selection=choose("¿Evaluar todas las familias? [s/n/0 cancelar]: ",{"s","n","0"})
+        if selection=="0":
+            return False
+        all_families=selection=="s"
     records=[]
     for group in ("model_1","model_2"):
         try:
             with run_log("simulations",group+"_treatments"):
                 path=run_screen(group,_eda_source(group),all_families=all_families)
             manifest=json.loads((path/"manifest.json").read_text(encoding="utf-8"))
-            records.append({"model":group,"path":str(path),**manifest})
+            import pandas as pd
+            summary=path/"summary.csv"
+            outer=path/"outer.csv"
+            records.append({"model":group,"path":str(path),**manifest,
+                "summary":json.loads(pd.read_csv(summary).to_json(orient="records")) if summary.is_file() else [],
+                "outer":json.loads(pd.read_csv(outer).drop(columns=["features","feature_names"],errors="ignore").to_json(orient="records")) if outer.is_file() else []})
         except Exception as exc:
             records.append({"model":group,"state":"blocked" if isinstance(exc,FileNotFoundError) else "error","reason":str(exc)})
             print(f"[{records[-1]['state']}] {group}: {exc}")
@@ -143,7 +152,11 @@ def _validation_menu() -> bool | None:
     if choice=="0":
         return False
     operations=[_run_tests,_run_simulations,_treatment_experiments]
-    selected=operations if choice=="4" else [operations[int(choice)-1]]
+    if choice=="4":
+        print("Modo integral: incluye ajustes diagnósticos de las doce familias. Puede ser costoso.")
+        selected=[_run_tests,_run_simulations,lambda:_treatment_experiments(all_families=True)]
+    else:
+        selected=[operations[int(choice)-1]]
     outcomes=[]
     for operation in selected:
         try:

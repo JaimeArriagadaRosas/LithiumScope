@@ -17,7 +17,11 @@ def evaluate_verified_image(bundle,path,destination,seed=42):
     rows=[]
     try:
         baseline,_=prepare_spectral_input(path,bundle,allow_acquisition=False)
-        raw=load_imagery(path)
+        if bundle.get("patch_input_contract") is not None:
+            from lithiumscope.model_2.preparation.patch_contract import load_verified_patch
+            raw,_,_=load_verified_patch(path,bundle["patch_input_contract"])
+        else:
+            raw=load_imagery(path)
     except SpectralAbstention as exc:
         rows=[{"scenario":s.name,"kind":s.kind,"intensity":s.intensity,"status":exc.status,
                "reason":str(exc),"score":np.nan,"ood_fraction":np.nan} for s in scenarios]

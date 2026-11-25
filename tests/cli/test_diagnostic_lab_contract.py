@@ -64,6 +64,6 @@ def test_validation_menu_integral_dispatch(monkeypatch):
     calls=[]
     monkeypatch.setattr(lab,"choose",lambda *_:"4")
     for name in ("_run_tests","_run_simulations","_treatment_experiments"):
-        monkeypatch.setattr(lab,name,lambda n=name:calls.append(n) or True)
+        monkeypatch.setattr(lab,name,lambda n=name,**kwargs:calls.append(n) or True)
     lab._validation_menu()
     assert calls==["_run_tests","_run_simulations","_treatment_experiments"]
