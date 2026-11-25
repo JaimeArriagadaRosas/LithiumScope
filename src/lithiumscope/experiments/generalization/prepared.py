@@ -23,8 +23,10 @@ def identity(group, source, cfg):
         upstream = build_scientific_training_signature(source, cfg)
     else:
         raise ValueError("Unknown model group")
+    from importlib.metadata import version
     return canonical_json_hash({"upstream": upstream, "config": cfg,
-                                "snapshot_code": file_sha256(Path(__file__))})
+                                "snapshot_code": file_sha256(Path(__file__)),
+                                "versions": {p: version(p) for p in ("numpy","pandas","scikit-learn")}})
 
 
 def _write_json(path, data):
@@ -96,7 +98,7 @@ def save_snapshot(root, key, group, source, x, y, groups, sources, eligible, num
 def load_snapshot(directory, expected):
     directory = Path(directory)
     manifest = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
-    if (directory.is_symlink() or manifest.get("identity") != expected or manifest.get("state") != "complete"
+    if (directory.is_symlink() or (directory/"manifest.json").is_symlink() or manifest.get("identity") != expected or manifest.get("state") != "complete"
             or manifest.get("scope") != "deterministic_preparation_only"
             or set(manifest.get("artifacts", {})) != {"prepared.json", "row_audit.csv"}):
         raise ValueError("Incompatible prepared snapshot")
@@ -122,10 +124,22 @@ def prepare_version(group, source, *, run_eda=True, root=None):
     key = identity(group, source, cfg)
     root = Path(root) if root is not None else DATA_DIR / "processed" / group / "prepared_versions"
     destination = root / key
-    if destination.exists() and not run_eda:
+    if destination.exists():
         load_snapshot(destination, key)
-        print(f"[OK] Versión preparada reutilizada: {destination}")
-        return destination, None
+        record = json.loads((destination/"manifest.json").read_text(encoding="utf-8"))
+        if not run_eda:
+            print(f"[OK] Versión preparada reutilizada: {destination}")
+            return destination, None
+        if record.get("eda_path"):
+            from lithiumscope.results.eda_artifacts import verify_eda
+            evidence = Path(record["eda_path"])
+            try:
+                eda_record = json.loads((evidence/"manifest.json").read_text(encoding="utf-8"))
+                if verify_eda(evidence, eda_record["signature"]):
+                    print(f"[OK] Versión preparada y EDA reutilizados: {destination}")
+                    return destination, evidence
+            except (OSError, ValueError, KeyError, TypeError):
+                pass
     if group == "model_1":
         from lithiumscope.model_1.pipeline import prepare_training_data
         from lithiumscope.model_1.eda.pipeline import run_eda as eda
@@ -153,6 +167,9 @@ def prepare_version(group, source, *, run_eda=True, root=None):
         eligible = qa["train_eligible"].to_numpy(bool) if "train_eligible" in qa else np.ones(len(x), dtype=bool)
         sources = source_series(manifest)
         evidence = eda(source, frame=frame, config=cfg) if run_eda else None
+        if "sample_id" in manifest:
+            index = pd.Index(manifest["sample_id"].astype(str))
+            x, y, groups, sources = [v.set_axis(index) for v in (x,y,groups,sources)]
     if identity(group, source, cfg) != key:
         raise ValueError("Prepared source changed during processing")
     destination = save_snapshot(root, key, group, source, x, y, groups, sources, eligible,

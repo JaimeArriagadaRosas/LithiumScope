@@ -59,7 +59,11 @@ def classification_resample(x, y, groups, method, seed, ratio=.75):
     if method == "undersample":
         chosen = rng.choice(major, size=min(len(major), int(np.floor(len(minor)/ratio))), replace=False)
         keep = np.sort(np.concatenate([minor, chosen]))
-        return values[keep], labels[keep], []
+        return values[keep], labels[keep], [
+            {"row": str(x.index[i]), "action": "removed_train_majority"}
+            for i in np.setdiff1d(np.arange(len(x)), keep)]
+    if method not in {"none", "oversample", "smote_group"}:
+        raise ValueError("Unknown classification resampling")
     if method == "none" or not needed:
         return values, labels, []
     if method == "oversample":

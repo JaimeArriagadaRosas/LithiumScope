@@ -16,7 +16,7 @@ Menú 5 > 5 > 3 > 1: piloto de ambos modelos; opción 2 de alcance para las seis
 Alternativamente, desde raíz: python -m lithiumscope.experiments.generalization.screen --model both
 Por defecto RF en cada modelo; --all habilita las doce familias.
 Se recomienda configurar PYTHONPATH=src si no está instalado el paquete.
-Por cada fold exterior se elige un tratamiento por tres folds interiores, sin mirar el TEST exterior.
+Por cada fold exterior se elige un tratamiento usando los folds interiores configurados, sin mirar el TEST exterior.
 Se compara contra la misma familia con parámetros por defecto, no contra el Optuna histórico.
 Se conservan las filas de TEST, las etiquetas por cuantil TRAIN, y QA95 solo para ajuste.
 Se guardan resultados, predicciones y procedencia sintética en results/generalization.
@@ -40,3 +40,9 @@ perturbaciones radiométricas físicamente justificadas y evaluación externa in
 Integración de tratamientos validados y caché en competencia oficial, ajuste de Optuna,
 curvas de aprendizaje y evaluación de calibración/umbral, recuperación de informes M2.
 No afirmar mejora predictiva sin resultados locales.
+
+## EDA ampliado (5 > 1 > 3)
+
+Además del snapshot canónico, genera un plan verificable de tratamientos para cada TRAIN exterior e interior, con QA, semillas, matrices de resampling, selección de variables M2, hashes de matrices preparadas y procedencia. Se guardan las particiones, estadísticas antes/después y trazas, no las matrices completas de cada combinación. El screening comparte las mismas funciones y particiones; recalcula transformaciones por fit. No se ajusta ningún predictor. Los tratamientos no viables se marcan BLOQUEADO sin sustituirlos por otra técnica. Estado PARCIAL si algún tratamiento no es viable; BLOQUEADO si la referencia no puede prepararse. La selección predictiva sigue pendiente. La expansión anclada M2 no está habilitada en este protocolo; se conserva la cohorte histórica.
+
+Enviar la salida de consola y los dos manifiestos de snapshot y tratamiento (con paths impresos) para verificar localmente. No iniciar entrenamiento completo.

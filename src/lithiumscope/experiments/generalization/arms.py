@@ -45,10 +45,8 @@ def correlation_columns(x, threshold=.98):
     return keep
 
 
-def regression_fit(algorithm, arm, device, seed, x, y, groups, sources, numeric, categorical, validation):
-    from lithiumscope.model_1.training.factory import build_pipeline
+def prepare_regression_arm(arm, seed, x, y, groups, sources, numeric, categorical):
     from lithiumscope.model_1.training.preprocessing.tabular import FeatureSchema
-    from lithiumscope.model_1.training.preprocessing.spatial_tabnet import fit_regression_estimator
     method = arm if arm in {"deduplicate", "rare_bootstrap", "group_bootstrap"} else "none"
     cols = list(x.columns)
     if arm == "without_coordinates":
@@ -62,6 +60,14 @@ def regression_fit(algorithm, arm, device, seed, x, y, groups, sources, numeric,
         fit_x, fit_y, fit_groups, provenance = regression_smoter(x[cols], y, groups, sources, seed, schema.numeric, schema.categorical)
     else:
         fit_x, fit_y, fit_groups, provenance = regression_resample(x[cols], y, groups, sources, method, seed)
+    return fit_x, fit_y, fit_groups, schema, provenance
+
+
+def regression_fit(algorithm, arm, device, seed, x, y, groups, sources, numeric, categorical, validation):
+    from lithiumscope.model_1.training.factory import build_pipeline
+    from lithiumscope.model_1.training.preprocessing.spatial_tabnet import fit_regression_estimator
+    fit_x, fit_y, fit_groups, schema, provenance = prepare_regression_arm(arm, seed, x, y, groups, sources, numeric, categorical)
+    cols = schema.numeric + schema.categorical
     params = M1_REGULAR.get(algorithm, {}) if arm == "regularized" else {}
     if arm == "regularized" and algorithm not in M1_REGULAR:
         raise ValueError("Regularized arm not yet configured for this family")
@@ -75,14 +81,12 @@ def regression_fit(algorithm, arm, device, seed, x, y, groups, sources, numeric,
     return pred, train_pred, {"features": cols, "fit_rows": len(fit_x), "generated": provenance}
 
 
-def classification_fit(algorithm, arm, device, seed, x, y, groups, validation):
-    from lithiumscope.model_2.training.factory import create_model
-    from lithiumscope.resources.manager import estimator_thread_scope
+def prepare_classification_arm(arm, seed, x, y, groups, validation=None):
     columns = correlation_columns(x) if arm == "correlation_filter" else list(x.columns)
     pre = Pipeline([("impute", SimpleImputer(strategy="median", keep_empty_features=True)),
                     ("variance", VarianceThreshold()), ("scale", StandardScaler())])
     fit = pre.fit_transform(x[columns])
-    test = pre.transform(validation[columns])
+    test = pre.transform(validation[columns]) if validation is not None else None
     selector = None
     k = min(48, fit.shape[1], len(fit)-1)
     if arm == "pca48":
@@ -91,7 +95,22 @@ def classification_fit(algorithm, arm, device, seed, x, y, groups, validation):
         selector = SelectKBest(partial(mutual_info_classif, random_state=seed), k=k)
     if selector is not None:
         fit = selector.fit_transform(fit, y)
-        test = selector.transform(test)
+        if test is not None:
+            test = selector.transform(test)
+    method = arm if arm in {"oversample", "undersample", "smote_group"} else "none"
+    xx, yy, provenance = classification_resample(pd.DataFrame(fit, index=x.index), y, groups, method, seed)
+    names = np.asarray(columns)[pre.named_steps["variance"].get_support()].tolist()
+    if arm == "pca48":
+        names = [f"PC{i+1}" for i in range(fit.shape[1])]
+    elif arm == "kbest48":
+        names = np.asarray(names)[selector.get_support()].tolist()
+    return xx, yy, fit, test, names, provenance
+
+
+def classification_fit(algorithm, arm, device, seed, x, y, groups, validation):
+    from lithiumscope.model_2.training.factory import create_model
+    from lithiumscope.resources.manager import estimator_thread_scope
+    xx, yy, fit, test, names, provenance = prepare_classification_arm(arm, seed, x, y, groups, validation)
     params = dict(M2_REGULAR.get(algorithm, {})) if arm == "regularized" else {}
     if algorithm in {"random_forest", "extra_trees", "svm_rbf", "hist_gradient_boosting"}:
         params["class_weight"] = None
@@ -104,8 +123,6 @@ def classification_fit(algorithm, arm, device, seed, x, y, groups, validation):
             params["scale_pos_weight"] = float((y == 0).sum() / (y == 1).sum())
     if arm in {"oversample", "undersample", "smote_group"} and algorithm in {"random_forest", "extra_trees", "svm_rbf"}:
         params["class_weight"] = None
-    method = arm if arm in {"oversample", "undersample", "smote_group"} else "none"
-    xx, yy, provenance = classification_resample(pd.DataFrame(fit, index=x.index), y, groups, method, seed)
     model = create_model(algorithm, device, seed, params, calibrated=False)
     with estimator_thread_scope():
         model.fit(xx, yy)
@@ -114,5 +131,5 @@ def classification_fit(algorithm, arm, device, seed, x, y, groups, validation):
             return model.predict_proba(matrix)[:, 1]
         return model.decision_function(matrix)
     # Raw SVM margins are ranked, never interpreted as probabilities.
-    return scores(test), scores(fit), {"features": int(fit.shape[1]), "fit_rows": len(xx),
+    return scores(test), scores(fit), {"features": int(fit.shape[1]), "feature_names": names, "fit_rows": len(xx),
             "generated": provenance, "score_kind": "probability" if hasattr(model, "predict_proba") else "margin"}

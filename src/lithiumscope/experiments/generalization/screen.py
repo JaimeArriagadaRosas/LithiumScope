@@ -9,12 +9,12 @@ from uuid import uuid4
 import numpy as np
 import pandas as pd
 from sklearn.metrics import average_precision_score, mean_absolute_error, mean_squared_error, r2_score, roc_auc_score
-from sklearn.model_selection import GroupKFold
 
 from lithiumscope.core.config import load_config
 from lithiumscope.core.paths import RESULTS_DIR
 from lithiumscope.experiments.generalization.arms import M1_ARMS, M2_ARMS, classification_fit, regression_fit
 from lithiumscope.experiments.generalization.prepared import load_snapshot, prepare_version
+from lithiumscope.experiments.generalization.partitions import partitions
 from lithiumscope.resources.detection.device import detect_device
 
 
@@ -62,10 +62,8 @@ def run_screen(group, source, *, all_families=False, output_root=None, device=No
     data = load_snapshot(directory, directory.name)
     x, y, groups, _, _, _, _ = data
     device = device or detect_device(prefer_gpu=False)
-    outer_count = cfg["validation"].get("outer_folds", cfg["validation"].get("folds", 5))
-    # Three inner folds for screening only; definitive competition retains configured protocol.
-    inner_count = 3
-    outer = list(GroupKFold(n_splits=outer_count).split(x, groups=groups))
+    outer = partitions(group, data, cfg)
+    outer_count, inner_count = len(outer), len(outer[0][2])
     arms = M1_ARMS if group == "model_1" else M2_ARMS
     algorithms = cfg["model"]["algorithms"] if all_families else ["random_forest"]
     from pathlib import Path
@@ -75,14 +73,13 @@ def run_screen(group, source, *, all_families=False, output_root=None, device=No
     results, inner_results, predictions, provenance = [], [], [], []
     metric = "rmse" if group == "model_1" else "roc_auc"
     for algorithm in algorithms:
-        for fold, (tr, te) in enumerate(outer, 1):
+        for fold, (tr, te, inner) in enumerate(outer, 1):
             candidates = []
-            inner = list(GroupKFold(n_splits=inner_count).split(x.iloc[tr], groups=groups.iloc[tr]))
             for arm in arms:
                 scores = []
                 for i, (a, b) in enumerate(inner, 1):
                     try:
-                        result, _, _ = evaluate(group, algorithm, arm, device, 42+fold*10+i, data, tr[a], tr[b], cfg)
+                        result, _, _ = evaluate(group, algorithm, arm, device, 42+fold*10+i, data, a, b, cfg)
                         scores.append(result[metric])
                         provenance.extend({"algorithm": algorithm, "fold": fold, "inner_fold": i, "arm": arm, "stage": "inner", **p} for p in result["generated"])
                         inner_results.append({"algorithm": algorithm, "outer_fold": fold, "inner_fold": i,

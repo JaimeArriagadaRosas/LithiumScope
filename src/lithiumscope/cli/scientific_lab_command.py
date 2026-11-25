@@ -11,16 +11,22 @@ from lithiumscope.cli.prompts import choose
 from lithiumscope.core.paths import PROJECT_ROOT
 
 
-def _run_eda_m1():
+def _prepare_eda(group):
+    from lithiumscope.core.config import load_config
     from lithiumscope.experiments.generalization.prepared import prepare_version
-    _, evidence = prepare_version("model_1", _eda_source("model_1"))
-    return evidence
+    from lithiumscope.experiments.generalization.preflight import prepare_treatments, show_treatments
+    snapshot, evidence = prepare_version(group, _eda_source(group))
+    directory, manifest = prepare_treatments(group, snapshot, load_config(group))
+    show_treatments(directory, manifest)
+    return evidence, manifest["state"]
+
+
+def _run_eda_m1():
+    return _prepare_eda("model_1")
 
 
 def _run_eda_m2():
-    from lithiumscope.experiments.generalization.prepared import prepare_version
-    _, evidence = prepare_version("model_2", _eda_source("model_2"))
-    return evidence
+    return _prepare_eda("model_2")
 
 
 def _eda_source(model_group):
@@ -50,19 +56,23 @@ def _eda_menu() -> bool | None:
         try:
             from lithiumscope.core.logging.session import run_log
             with run_log("eda",label):
-                path = job()
-            states.append("COMPLETADO")
-            print(f"[OK] {label}: {path}")
-            from lithiumscope.cli.eda_console import show_eda_summary
-            show_eda_summary(path)
+                outcome = job()
+                path, prepared_state = outcome if isinstance(outcome, tuple) else (outcome, "complete")
+                from lithiumscope.cli.eda_console import show_eda_summary
+                displayed = show_eda_summary(path)
+            status = {"complete": "COMPLETADO", "partial": "PARCIAL", "blocked": "BLOQUEADO"}[prepared_state]
+            if not displayed and status == "COMPLETADO":
+                status = "PARCIAL"
+            states.append(status)
+            print(f"[{status}] {label}: {path}")
         except FileNotFoundError as exc:
             states.append("BLOQUEADO")
             print(f"[BLOQUEADO] {label}: {exc}")
         except Exception as exc:
             states.append("ERROR")
             print(f"[ERROR] {label}: {exc}")
-    state = "COMPLETADO" if all(s == "COMPLETADO" for s in states) else "PARCIAL" if "COMPLETADO" in states else "ERROR" if "ERROR" in states else "BLOQUEADO"
-    print(f"Estado: {state}. Alcance descriptivo; no se entrenaron modelos.")
+    state = "COMPLETADO" if all(s == "COMPLETADO" for s in states) else "PARCIAL" if any(s in {"COMPLETADO","PARCIAL"} for s in states) else "ERROR" if "ERROR" in states else "BLOQUEADO"
+    print(f"Estado: {state}. Diagnóstico y preparación experimental SOLO TRAIN; no se entrenaron modelos.")
 
 
 def _run_tests() -> bool:
