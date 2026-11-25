@@ -133,6 +133,32 @@ def _development_snapshot() -> None:
     run_interactive()
 
 
+def _generalization_menu() -> bool | None:
+    from lithiumscope.experiments.generalization.screen import run_screen
+
+    print("\nOPTIMIZACIÓN CIENTÍFICA DE DATOS (desarrollo, sin promoción)")
+    print("1. Modelo 1")
+    print("2. Modelo 2")
+    print("3. Ambos modelos")
+    print("0. Volver")
+    choice = choose("Seleccione una opción [0-3]: ", set("0123"))
+    if choice == "0":
+        return False
+    print("1. Piloto Random Forest (recomendado primero)")
+    print("2. Competencia experimental: seis familias por modelo")
+    print("0. Volver")
+    mode = choose("Seleccione alcance [0-2]: ", set("012"))
+    if mode == "0":
+        return False
+    groups = ("model_1", "model_2") if choice == "3" else ("model_" + choice,)
+    for group in groups:
+        try:
+            path = run_screen(group, _eda_source(group), all_families=mode == "2")
+            print(f"Evidencia experimental: {path}")
+        except Exception as exc:
+            print(f"[ERROR] {group}: {exc}")
+
+
 def run() -> None:
     while True:
         clear_screen()
@@ -141,11 +167,12 @@ def run() -> None:
         print("2. Ejecución de tests y simulaciones")
         print("3. Salud y diagnóstico del entorno")
         print("4. Evidencias de desarrollo (temporal)")
+        print("5. Optimización científica de datos (experimental)")
         print("0. Volver")
-        choice = choose("Seleccione una opción [0-4]: ", set("01234"))
+        choice = choose("Seleccione una opción [0-5]: ", set("012345"))
         if choice == "0":
             return
         clear_screen()
-        actions = {"1": _eda_menu, "2": _validation_menu, "3": _health, "4": _development_snapshot}
+        actions = {"1": _eda_menu, "2": _validation_menu, "3": _health, "4": _development_snapshot, "5": _generalization_menu}
         if actions[choice]() is not False:
             pause()

@@ -12,7 +12,8 @@ El cache se reutiliza en el nuevo protocolo experimental, no todavía en la comp
 
 ## Screening espacial experimental
 
-Desde raíz: python -m lithiumscope.experiments.generalization.screen --model both
+Menú 5 > 5 > 3 > 1: piloto de ambos modelos; opción 2 de alcance para las seis familias.
+Alternativamente, desde raíz: python -m lithiumscope.experiments.generalization.screen --model both
 Por defecto RF en cada modelo; --all habilita las doce familias.
 Se recomienda configurar PYTHONPATH=src si no está instalado el paquete.
 Por cada fold exterior se elige un tratamiento por tres folds interiores, sin mirar el TEST exterior.
