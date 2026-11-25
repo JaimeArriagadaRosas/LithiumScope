@@ -1,0 +1,710 @@
+{
+  "schema_version": 1,
+  "scope": "Relevant regression modules; not proof of complete criterion acceptance. Several criteria require real data, manual review, or independent scientific evidence.",
+  "criteria": {
+    "M1-01": [
+      "tests/datasets/test_tabular_contract.py",
+      "tests/datasets/test_csv_encoding.py"
+    ],
+    "M1-02": [
+      "tests/scientific/shared/test_integral_eda.py",
+      "tests/results/test_eda_training_integration.py",
+      "tests/results/test_eda_protocol.py"
+    ],
+    "M1-03": [
+      "tests/model_1/test_censoring_contract.py",
+      "tests/model_1/test_detection_limits.py"
+    ],
+    "M1-04": [
+      "tests/model_1/test_preprocessing_contract.py",
+      "tests/model_1/test_censoring_contract.py"
+    ],
+    "M1-05": [
+      "tests/model_1/test_target_and_qc.py",
+      "tests/model_1/test_geochemical_contract.py"
+    ],
+    "M1-06": [
+      "tests/model_1/test_target_and_qc.py",
+      "tests/model_1/test_geochemical_contract.py",
+      "tests/scientific/m1/test_validate_feot_expansion_m1.py"
+    ],
+    "M1-07": [
+      "tests/model_1/test_model_1_category_cleaning.py",
+      "tests/model_1/test_preprocessing_contract.py"
+    ],
+    "M1-08": [
+      "tests/model_1/test_preprocessing_contract.py",
+      "tests/model_1/test_model_1_scientific_guards.py"
+    ],
+    "M1-09": [
+      "tests/model_1/test_feature_engineering.py",
+      "tests/model_1/test_geochemical_contract.py"
+    ],
+    "M1-10": [
+      "tests/model_1/test_model_1_spatial_validation.py",
+      "tests/scientific/shared/test_spatial_audit_contract.py",
+      "tests/scientific/shared/test_scientific_checks.py"
+    ],
+    "M1-11": [
+      "tests/model_1/test_preprocessing_contract.py",
+      "tests/model_1/test_model_1_target_transform.py"
+    ],
+    "M1-12": [
+      "tests/scientific/shared/test_optuna_contract.py",
+      "tests/training/test_optuna_resume_helpers.py"
+    ],
+    "M1-13": [
+      "tests/model_1/test_spatial_tabnet.py",
+      "tests/model_1/test_tabnet_adapter.py"
+    ],
+    "M1-14": [
+      "tests/model_1/test_high_lithium_diagnostics.py",
+      "tests/runtime/test_candidate_evidence.py",
+      "tests/model_1/test_model_1_scientific_guards.py"
+    ],
+    "M1-15": [
+      "tests/release/test_final_fit_contract.py",
+      "tests/release/test_versioned_model_release.py"
+    ],
+    "M1-16": [
+      "tests/datasets/test_georoc_provenance_contract.py",
+      "tests/model_1/test_source_reconciliation.py",
+      "tests/datasets/test_training_georoc_auto_acquisition.py"
+    ],
+    "M1-17": [
+      "tests/model_1/test_coordinate_lineage.py",
+      "tests/core/test_pipeline_audit_transaction.py",
+      "tests/scientific/shared/test_integral_eda.py"
+    ],
+    "M1-18": [
+      "tests/model_1/test_coordinate_lineage.py",
+      "tests/model_1/test_model_1_spatial_validation.py",
+      "tests/scientific/shared/test_spatial_audit_contract.py"
+    ],
+    "M1-19": [
+      "tests/model_1/test_model_1_scientific_guards.py",
+      "tests/model_1/test_coordinate_lineage.py"
+    ],
+    "M1-20": [
+      "tests/model_1/test_statistical_baselines.py",
+      "tests/training/test_baselines.py"
+    ],
+    "M1-21": [
+      "tests/model_1/test_model_1_scientific_guards.py",
+      "tests/runtime/test_candidate_evidence.py",
+      "tests/scientific/m1/test_vnext_m1.py"
+    ],
+    "M1-22": [
+      "tests/runtime/test_candidate_evidence.py",
+      "tests/model_1/test_statistical_baselines.py",
+      "tests/prediction/test_demo_promotion_guard.py"
+    ],
+    "M1-23": [
+      "tests/model_1/test_physical_robustness.py",
+      "tests/model_1/test_model_1_scientific_guards.py"
+    ],
+    "M1-24": [
+      "tests/model_1/test_high_lithium_diagnostics.py",
+      "tests/scientific/shared/test_learning_curves.py",
+      "tests/scientific/m1/test_m1_dual_release_diagnostics.py"
+    ],
+    "M1-25": [
+      "tests/scientific/m1/test_m1_dual_release_diagnostics.py",
+      "tests/model_1/test_source_reconciliation.py",
+      "tests/model_1/test_physical_robustness.py"
+    ],
+    "M1-26": [
+      "tests/prediction/test_applicability.py",
+      "tests/prediction/test_m1_input_provenance.py",
+      "tests/model_1/test_model_1_prediction_diagnostics.py"
+    ],
+    "M1-27": [
+      "tests/release/test_final_fit_contract.py",
+      "tests/release/test_versioned_model_release.py",
+      "tests/release/test_candidate_model_lifecycle.py"
+    ],
+    "M2-01": [
+      "tests/model_2/test_configuration_contract.py"
+    ],
+    "M2-02": [
+      "tests/model_2/test_model_2_sample_source.py",
+      "tests/scientific/m2_spectral/test_m2_physical_label_audit.py",
+      "tests/scientific/m2_spectral/test_m2_georoc_coordinate_audit.py"
+    ],
+    "M2-03": [
+      "tests/model_2/test_scientific_training_protocol.py",
+      "tests/scientific/shared/test_spatial_audit_contract.py"
+    ],
+    "M2-04": [
+      "tests/datasets/test_sentinel2_provider.py",
+      "tests/scientific/shared/test_scientific_acquisition.py",
+      "tests/scientific/m2_spectral/test_m2_satellite_quality_radiometry.py"
+    ],
+    "M2-05": [
+      "tests/prediction/test_verified_patch_contract.py",
+      "tests/scientific/m2_spectral/test_m2_site_patch_phase_e.py"
+    ],
+    "M2-06": [
+      "tests/datasets/test_dataset_manifest.py",
+      "tests/model_2/test_verified_feature_cache.py",
+      "tests/datasets/test_management_provenance_architecture.py"
+    ],
+    "M2-07": [
+      "tests/prediction/test_verified_patch_contract.py",
+      "tests/prediction/test_spectral_inference_contract.py"
+    ],
+    "M2-08": [
+      "tests/model_2/test_physical_v5.py",
+      "tests/prediction/test_spectral_inference_contract.py"
+    ],
+    "M2-09": [
+      "tests/model_2/test_model_2_spectral_features.py",
+      "tests/scientific/m2_spectral/test_m2_rededge_v4.py",
+      "tests/model_2/test_physical_v5.py"
+    ],
+    "M2-10": [
+      "tests/model_2/test_physical_v5.py",
+      "tests/model_2/test_model_2_spectral_features.py"
+    ],
+    "M2-11": [
+      "tests/model_2/test_physical_v5.py",
+      "tests/model_2/test_model_2_spectral_features.py"
+    ],
+    "M2-12": [
+      "tests/model_2/test_physical_v5.py",
+      "tests/model_2/test_model_2_spectral_features.py"
+    ],
+    "M2-13": [
+      "tests/model_2/test_verified_feature_cache.py",
+      "tests/scientific/m2_spectral/test_v4_local_integrity_contract.py"
+    ],
+    "M2-14": [
+      "tests/model_2/test_verified_feature_cache.py",
+      "tests/scientific/m2_spectral/test_v4_local_integrity_contract.py"
+    ],
+    "M2-15": [
+      "tests/model_2/test_scientific_training_protocol.py",
+      "tests/scientific/m2_training/test_m2_canonical_protocol.py"
+    ],
+    "M2-16": [
+      "tests/model_2/test_scientific_training_protocol.py",
+      "tests/scientific/shared/test_spatial_audit_contract.py",
+      "tests/scientific/m2_training/test_m2_canonical_protocol.py"
+    ],
+    "M2-17": [
+      "tests/training/test_baselines.py",
+      "tests/model_2/test_scientific_training_protocol.py"
+    ],
+    "M2-18": [
+      "tests/scientific/m2_training/test_m2_full_competition_quality.py",
+      "tests/scientific/m2_training/test_m2_refactored_outer_cv_smoke.py",
+      "tests/scientific/m2_training/test_m2_canonical_protocol.py"
+    ],
+    "M2-19": [
+      "tests/scientific/shared/test_optuna_contract.py",
+      "tests/scientific/m2_training/test_m2_regularized_search_profile.py"
+    ],
+    "M2-20": [
+      "tests/model_2/test_model_2_svm.py",
+      "tests/model_2/test_train_only_operating_policy.py"
+    ],
+    "M2-21": [
+      "tests/runtime/test_checkpoints.py",
+      "tests/scientific/m2_training/test_m2_refactored_outer_cv_smoke.py",
+      "tests/runtime/test_run_resume.py"
+    ],
+    "M2-22": [
+      "tests/model_2/test_binary_metrics_contract.py"
+    ],
+    "M2-23": [
+      "tests/scientific/m2_training/test_m2_historical_706_control.py",
+      "tests/scientific/shared/test_compare_vnext_trained_runs.py",
+      "tests/scientific/m2_training/test_m2_release_closure_comparison.py"
+    ],
+    "M2-24": [
+      "tests/runtime/test_candidate_evidence.py",
+      "tests/prediction/test_demo_promotion_guard.py",
+      "tests/scientific/m2_training/test_m2_full_competition_quality.py"
+    ],
+    "M2-25": [
+      "tests/model_2/test_model_2_operating_threshold.py",
+      "tests/model_2/test_train_only_operating_policy.py"
+    ],
+    "M2-26": [
+      "tests/prediction/test_candidate_evaluation_gates.py",
+      "tests/prediction/test_prospective_holdout.py",
+      "tests/release/test_release_gate_catalog.py"
+    ],
+    "M2-27": [
+      "tests/release/test_final_fit_contract.py",
+      "tests/scientific/m2_training/test_m2_manual_closure.py"
+    ],
+    "M2-28": [
+      "tests/prediction/test_applicability.py",
+      "tests/prediction/test_spectral_inference_contract.py",
+      "tests/prediction/test_verified_patch_contract.py"
+    ],
+    "M2-29": [
+      "tests/scientific/m2_training/test_m2_full_competition_diagnostics.py",
+      "tests/model_2/test_spatial_maps.py"
+    ],
+    "M2-30": [
+      "tests/runtime/test_checkpoints.py",
+      "tests/model_2/test_verified_feature_cache.py",
+      "tests/datasets/test_dataset_manifest.py"
+    ],
+    "ARQ-001": [
+      "tests/cli/test_readonly_results.py",
+      "tests/cli/test_pipeline_inspection_reporting.py"
+    ],
+    "ARQ-002": [
+      "tests/cli/test_readonly_results.py",
+      "tests/cli/test_report_viewer.py"
+    ],
+    "ARQ-003": [
+      "tests/cli/test_diagnostic_lab_contract.py",
+      "tests/scientific/shared/test_integral_eda.py"
+    ],
+    "ARQ-004": [
+      "tests/runtime/test_training_logging_session.py",
+      "tests/cli/test_refactor_menu_contract.py"
+    ],
+    "ARQ-005": [
+      "tests/prediction/test_prediction_menu.py",
+      "tests/cli/test_refactor_menu_contract.py"
+    ],
+    "ARQ-006": [
+      "tests/prediction/test_m1_input_provenance.py",
+      "tests/prediction/test_spectral_inference_contract.py"
+    ],
+    "ARQ-007": [
+      "tests/core/test_architecture.py",
+      "tests/model_1/test_model_1_scientific_guards.py"
+    ],
+    "ARQ-008": [
+      "tests/datasets/test_acquisition_architecture.py",
+      "tests/datasets/test_georoc_acquisition.py",
+      "tests/datasets/test_training_georoc_auto_acquisition.py"
+    ],
+    "ARQ-009": [
+      "tests/model_1/test_censoring_contract.py",
+      "tests/model_1/test_preprocessing_contract.py",
+      "tests/model_1/test_coordinate_lineage.py"
+    ],
+    "ARQ-010": [
+      "tests/scientific/shared/test_integral_eda.py",
+      "tests/results/test_eda_protocol.py"
+    ],
+    "ARQ-011": [
+      "tests/results/test_eda_training_integration.py",
+      "tests/results/test_eda_protocol.py"
+    ],
+    "ARQ-012": [
+      "tests/model_1/test_model_1_spatial_validation.py",
+      "tests/scientific/shared/test_scientific_checks.py",
+      "tests/scientific/shared/test_spatial_audit_contract.py"
+    ],
+    "ARQ-013": [
+      "tests/model_1/test_preprocessing_contract.py",
+      "tests/model_1/test_spatial_tabnet.py",
+      "tests/scientific/shared/test_optuna_contract.py"
+    ],
+    "ARQ-014": [
+      "tests/model_1/test_statistical_baselines.py",
+      "tests/runtime/test_candidate_evidence.py",
+      "tests/model_1/test_high_lithium_diagnostics.py"
+    ],
+    "ARQ-015": [
+      "tests/scientific/shared/test_learning_curves.py",
+      "tests/model_1/test_physical_robustness.py",
+      "tests/scientific/m1/test_m1_dual_release_diagnostics.py"
+    ],
+    "ARQ-016": [
+      "tests/scientific/m1/test_vnext_m1.py",
+      "tests/scientific/m1/test_vnext_m1_diagnostics.py",
+      "tests/scientific/shared/test_compare_vnext_trained_runs.py"
+    ],
+    "ARQ-017": [
+      "tests/prediction/test_m1_input_provenance.py",
+      "tests/model_1/test_model_1_prediction_diagnostics.py",
+      "tests/prediction/test_applicability.py"
+    ],
+    "ARQ-018": [
+      "tests/results/test_eda_training_integration.py",
+      "tests/model_1/test_model_1_scientific_guards.py",
+      "tests/datasets/test_training_georoc_auto_acquisition.py"
+    ],
+    "ARQ-019": [
+      "tests/scientific/shared/test_integral_eda.py",
+      "tests/runtime/test_candidate_evidence.py",
+      "tests/cli/test_readonly_results.py"
+    ],
+    "ARQ-020": [
+      "tests/core/test_canonical_execution_packages.py",
+      "tests/datasets/test_acquisition_architecture.py"
+    ],
+    "ARQ-021": [
+      "tests/scientific/m1/test_m1_dual_release_diagnostics.py",
+      "tests/scientific/shared/test_compare_vnext_trained_runs.py",
+      "tests/scientific/shared/test_vnext_data_adequacy.py"
+    ],
+    "ARQ-022": [
+      "tests/core/test_architecture.py",
+      "tests/model_2/test_scientific_training_protocol.py"
+    ],
+    "ARQ-023": [
+      "tests/datasets/test_sentinel2_provider.py",
+      "tests/scientific/shared/test_scientific_acquisition.py",
+      "tests/prediction/test_verified_patch_contract.py"
+    ],
+    "ARQ-024": [
+      "tests/model_2/test_model_2_sample_source.py",
+      "tests/scientific/m2_spectral/test_m2_physical_label_audit.py",
+      "tests/datasets/test_dataset_manifest.py"
+    ],
+    "ARQ-025": [
+      "tests/model_2/test_physical_v5.py",
+      "tests/model_2/test_model_2_spectral_features.py"
+    ],
+    "ARQ-026": [
+      "tests/model_2/test_verified_feature_cache.py",
+      "tests/scientific/m2_spectral/test_v4_local_integrity_contract.py"
+    ],
+    "ARQ-027": [
+      "tests/scientific/shared/test_integral_eda.py",
+      "tests/scientific/shared/test_fold_eda_profiles.py"
+    ],
+    "ARQ-028": [
+      "tests/results/test_eda_training_integration.py",
+      "tests/results/test_eda_protocol.py"
+    ],
+    "ARQ-029": [
+      "tests/model_2/test_scientific_training_protocol.py",
+      "tests/scientific/shared/test_spatial_audit_contract.py"
+    ],
+    "ARQ-030": [
+      "tests/scientific/m2_training/test_m2_refactored_outer_cv_smoke.py",
+      "tests/scientific/shared/test_optuna_contract.py"
+    ],
+    "ARQ-031": [
+      "tests/model_2/test_model_2_svm.py",
+      "tests/model_2/test_train_only_operating_policy.py"
+    ],
+    "ARQ-032": [
+      "tests/model_2/test_model_2_operating_threshold.py",
+      "tests/model_2/test_train_only_operating_policy.py"
+    ],
+    "ARQ-033": [
+      "tests/model_2/test_binary_metrics_contract.py",
+      "tests/runtime/test_candidate_evidence.py"
+    ],
+    "ARQ-034": [
+      "tests/prediction/test_candidate_evaluation_gates.py",
+      "tests/release/test_release_gate_catalog.py",
+      "tests/scientific/m2_training/test_m2_full_competition_quality.py"
+    ],
+    "ARQ-035": [
+      "tests/scientific/shared/test_learning_curves.py",
+      "tests/scientific/m2_spectral/test_m2_spectral_overfit.py",
+      "tests/scientific/m2_training/test_m2_full_competition_diagnostics.py"
+    ],
+    "ARQ-036": [
+      "tests/scientific/m2_training/test_m2_historical_706_control.py",
+      "tests/scientific/m2_spectral/test_m2_rededge_v4.py",
+      "tests/scientific/m2_spectral/test_m2_vnext_expansion.py"
+    ],
+    "ARQ-037": [
+      "tests/prediction/test_spectral_inference_contract.py",
+      "tests/prediction/test_verified_patch_contract.py",
+      "tests/prediction/test_applicability.py"
+    ],
+    "ARQ-038": [
+      "tests/results/test_eda_training_integration.py",
+      "tests/scientific/m2_training/test_m2_refactored_outer_cv_smoke.py"
+    ],
+    "ARQ-039": [
+      "tests/scientific/m2_training/test_m2_full_competition_diagnostics.py",
+      "tests/runtime/test_candidate_evidence.py"
+    ],
+    "ARQ-040": [
+      "tests/core/test_canonical_execution_packages.py",
+      "tests/model_2/test_verified_feature_cache.py"
+    ],
+    "ARQ-041": [
+      "tests/scientific/m2_training/test_m2_release_closure_comparison.py",
+      "tests/scientific/m2_training/test_m2_generalization_protocol.py"
+    ],
+    "ARQ-042": [
+      "tests/reporting/test_prediction_pdf_contract.py",
+      "tests/prediction/test_integrated_prediction_analysis.py"
+    ],
+    "ARQ-043": [
+      "tests/core/test_architecture.py",
+      "tests/reporting/test_prediction_pdf_report.py"
+    ],
+    "ARQ-044": [
+      "tests/prediction/test_integrated_prediction_analysis.py",
+      "tests/prediction/test_prediction_manifest_paths.py"
+    ],
+    "ARQ-045": [
+      "tests/core/test_architecture.py",
+      "tests/prediction/test_integrated_prediction_analysis.py"
+    ],
+    "ARQ-046": [
+      "tests/prediction/test_integrated_demo_fixture.py",
+      "tests/prediction/test_prediction_manifest_paths.py"
+    ],
+    "ARQ-047": [
+      "tests/prediction/test_integrated_prediction_analysis.py",
+      "tests/reporting/test_integrated_decision_page.py"
+    ],
+    "ARQ-048": [
+      "tests/prediction/test_candidate_evaluation_gates.py",
+      "tests/prediction/test_demo_promotion_guard.py",
+      "tests/release/test_release_bundle_builder.py"
+    ],
+    "ARQ-049": [
+      "tests/prediction/test_prediction_release_demo.py",
+      "tests/prediction/test_model_selection_release_pdf.py"
+    ],
+    "ARQ-050": [
+      "tests/reporting/test_excel_exporter.py",
+      "tests/prediction/test_prediction_manifest_paths.py"
+    ],
+    "ARQ-051": [
+      "tests/core/test_architecture.py"
+    ],
+    "ARQ-052": [
+      "tests/core/test_architecture.py"
+    ],
+    "ARQ-053": [
+      "tests/datasets/test_management_provenance_architecture.py",
+      "tests/datasets/test_acquisition_architecture.py"
+    ],
+    "ARQ-054": [
+      "tests/datasets/test_management_provenance_architecture.py",
+      "tests/datasets/test_dataset_harmonization.py"
+    ],
+    "ARQ-055": [
+      "tests/datasets/test_acquisition_architecture.py",
+      "tests/scientific/shared/test_scientific_acquisition.py"
+    ],
+    "ARQ-056": [
+      "tests/datasets/test_georoc_ingestion.py",
+      "tests/datasets/test_acquisition_architecture.py"
+    ],
+    "ARQ-057": [
+      "tests/datasets/test_management_provenance_architecture.py",
+      "tests/model_2/test_model_2_sample_source.py"
+    ],
+    "ARQ-058": [
+      "tests/datasets/test_historical_relocation.py",
+      "tests/datasets/test_management_provenance_architecture.py"
+    ],
+    "ARQ-059": [
+      "tests/scientific/shared/test_scientific_scenarios.py",
+      "tests/scientific/shared/test_compare_vnext_trained_runs.py"
+    ],
+    "ARQ-060": [
+      "tests/scientific/shared/test_scientific_scenarios.py",
+      "tests/scientific/m1/test_vnext_m1.py",
+      "tests/scientific/m2_training/test_m2_generalization_protocol.py"
+    ],
+    "ARQ-061": [
+      "tests/scientific/shared/test_scientific_scenarios.py",
+      "tests/core/test_architecture.py"
+    ],
+    "ARQ-062": [
+      "tests/scientific/shared/test_scientific_acquisition.py",
+      "tests/scientific/shared/test_scientific_http_tiles.py"
+    ],
+    "ARQ-063": [
+      "tests/scientific/provenance/test_georoc_qc_protocols.py",
+      "tests/scientific/shared/test_integral_physical_inputs.py"
+    ],
+    "ARQ-064": [
+      "tests/scientific/shared/test_compare_vnext_trained_runs.py",
+      "tests/prediction/test_integrated_prediction_analysis.py"
+    ],
+    "ARQ-065": [
+      "tests/prediction/test_prospective_holdout.py",
+      "tests/prediction/test_demo_promotion_guard.py"
+    ],
+    "ARQ-066": [
+      "tests/core/test_canonical_execution_packages.py",
+      "tests/core/test_architecture.py"
+    ],
+    "ARQ-067": [
+      "tests/core/test_canonical_execution_packages.py",
+      "tests/scientific/shared/test_scientific_fingerprint.py"
+    ],
+    "ARQ-068": [
+      "tests/core/test_architecture.py",
+      "tests/core/test_visualization_backend.py"
+    ],
+    "ARQ-069": [
+      "tests/core/test_canonical_execution_packages.py",
+      "tests/core/test_architecture.py"
+    ],
+    "ARQ-070": [
+      "tests/runtime/test_logging_retention.py",
+      "tests/runtime/test_logging_lifecycle.py"
+    ],
+    "ARQ-071": [
+      "tests/resources/test_resource_manager.py",
+      "tests/resources/test_runtime_limits.py"
+    ],
+    "ARQ-072": [
+      "tests/scientific/shared/test_scientific_checks.py",
+      "tests/core/test_training_diagnostics.py"
+    ],
+    "ARQ-073": [
+      "tests/core/test_canonical_execution_packages.py",
+      "tests/core/test_architecture.py"
+    ],
+    "ARQ-074": [
+      "tests/core/test_architecture.py",
+      "tests/scientific/m2_training/test_m2_canonical_protocol.py"
+    ],
+    "ARQ-075": [
+      "tests/model_1/test_preprocessing_contract.py",
+      "tests/scientific/shared/test_optuna_contract.py"
+    ],
+    "ARQ-076": [
+      "tests/model_2/test_model_2_svm.py",
+      "tests/model_1/test_model_1_target_transform.py"
+    ],
+    "ARQ-077": [
+      "tests/resources/test_resource_manager.py",
+      "tests/resources/test_runtime_limits.py"
+    ],
+    "ARQ-078": [
+      "tests/resources/test_resource_manager.py",
+      "tests/core/test_architecture.py"
+    ],
+    "ARQ-079": [
+      "tests/resources/test_resource_manager.py",
+      "tests/resources/test_runtime_limits.py"
+    ],
+    "ARQ-080": [
+      "tests/core/test_resources.py",
+      "tests/resources/test_resource_manager.py"
+    ],
+    "ARQ-081": [
+      "tests/model_2/test_configuration_contract.py",
+      "tests/resources/test_resource_manager.py"
+    ],
+    "ARQ-082": [
+      "tests/resources/test_resource_manager.py",
+      "tests/resources/test_runtime_limits.py"
+    ],
+    "ARQ-083": [
+      "tests/resources/test_runtime_limits.py",
+      "tests/scientific/shared/test_optuna_contract.py"
+    ],
+    "ARQ-084": [
+      "tests/resources/test_resource_manager.py",
+      "tests/runtime/test_session_structured_logs.py"
+    ],
+    "ARQ-085": [
+      "tests/scientific/shared/test_scientific_fingerprint.py",
+      "tests/runtime/test_checkpoints.py",
+      "tests/resources/test_runtime_limits.py"
+    ],
+    "ARQ-086": [
+      "tests/runtime/test_runtime.py",
+      "tests/runtime/test_preboot_dataset_status.py"
+    ],
+    "ARQ-087": [
+      "tests/runtime/test_console_status.py",
+      "tests/cli/test_refactor_menu_contract.py"
+    ],
+    "ARQ-088": [
+      "tests/core/test_resources.py",
+      "tests/resources/test_runtime_limits.py"
+    ],
+    "ARQ-089": [
+      "tests/core/test_architecture.py"
+    ],
+    "ARQ-090": [
+      "tests/core/test_architecture.py"
+    ],
+    "ARQ-091": [
+      "tests/core/test_architecture.py",
+      "tests/development/test_validation.py"
+    ],
+    "ARQ-092": [
+      "tests/development/test_validation.py",
+      "tests/core/test_pipeline_audit_transaction.py"
+    ],
+    "ARQ-093": [
+      "tests/results/test_eda_protocol.py",
+      "tests/scientific/shared/test_scientific_checks.py"
+    ],
+    "ARQ-094": [
+      "tests/development/test_validation.py",
+      "tests/runtime/test_candidate_evidence.py"
+    ],
+    "ARQ-095": [
+      "tests/core/test_architecture.py",
+      "tests/core/test_canonical_execution_packages.py"
+    ],
+    "ARQ-096": [
+      "tests/scientific/shared/test_scientific_checks.py",
+      "tests/datasets/test_dataset_manifest.py",
+      "tests/scientific/shared/test_spatial_audit_contract.py"
+    ],
+    "ARQ-097": [
+      "tests/resources/test_runtime_limits.py",
+      "tests/resources/test_resource_manager.py"
+    ],
+    "ARQ-098": [
+      "tests/development/test_validation.py",
+      "tests/core/test_architecture.py"
+    ],
+    "ARQ-099": [
+      "tests/runtime/test_logging_lifecycle.py",
+      "tests/runtime/test_session_structured_logs.py"
+    ],
+    "ARQ-100": [
+      "tests/runtime/test_logging_lifecycle.py",
+      "tests/runtime/test_training_logging_session.py"
+    ],
+    "ARQ-101": [
+      "tests/runtime/test_session_structured_logs.py",
+      "tests/core/test_experiment_tracker.py"
+    ],
+    "ARQ-102": [
+      "tests/runtime/test_session_structured_logs.py",
+      "tests/runtime/test_warning_capture.py"
+    ],
+    "ARQ-103": [
+      "tests/resources/test_resource_manager.py",
+      "tests/runtime/test_session_structured_logs.py"
+    ],
+    "ARQ-104": [
+      "tests/runtime/test_session_structured_logs.py",
+      "tests/runtime/test_training_logging_session.py"
+    ],
+    "ARQ-105": [
+      "tests/runtime/test_logging_retention.py",
+      "tests/runtime/test_run_recovery.py"
+    ],
+    "ARQ-106": [
+      "tests/development/test_validation.py",
+      "tests/development/test_snapshot.py"
+    ],
+    "ARQ-107": [
+      "tests/development/test_validation.py",
+      "tests/datasets/test_historical_relocation.py"
+    ],
+    "ARQ-108": [
+      "tests/runtime/test_console_status.py",
+      "tests/cli/test_refactor_menu_contract.py"
+    ],
+    "ARQ-109": [
+      "tests/development/test_validation.py",
+      "tests/scientific/shared/test_scientific_checks.py"
+    ]
+  }
+}

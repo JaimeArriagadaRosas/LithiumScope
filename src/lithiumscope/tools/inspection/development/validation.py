@@ -1,7 +1,6 @@
 """Local, temporary validation: syntax, lint, architecture and full pytest evidence."""
 from __future__ import annotations
 
-import ast
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 import json
@@ -25,8 +24,7 @@ def tracked_python(root: Path) -> list[Path]:
     for name in result.stdout.decode("utf-8").split("\0"):
         if name.endswith(".py"):
             path = local_path(root, name)
-            if path.is_file():
-                paths.append(path)
+            paths.append(path)
     return sorted(set(paths))
 
 
@@ -36,7 +34,7 @@ def syntax_check(root: Path, paths: list[Path]) -> dict:
         try:
             # compile bytes handles source encodings without writing pyc or importing.
             compile(path.read_bytes(), path.relative_to(root).as_posix(), "exec",
-                    flags=ast.PyCF_ONLY_AST, dont_inherit=True)
+                    dont_inherit=True)
         except (SyntaxError, UnicodeError, OSError) as exc:
             failures.append({"file": path.relative_to(root).as_posix(),
                              "line": getattr(exc, "lineno", None),
@@ -59,10 +57,11 @@ def command_check(root: Path, logs: Path, name: str, args: list[str]) -> dict:
 
 def junit_breakdown(path: Path) -> dict:
     if not path.is_file():
-        return {"state": "MISSING", "groups": {}, "nonpassing": []}
+        return {"state": "MISSING", "groups": {}, "nonpassing": [], "cases": []}
     tree = ET.parse(path)
     groups = defaultdict(Counter)
     nonpassing = []
+    cases = []
     for case in tree.iter("testcase"):
         module = case.get("classname", "unknown")
         parts = module.split(".")
@@ -70,12 +69,13 @@ def junit_breakdown(path: Path) -> dict:
         outcome = next((tag for tag in ("error", "failure", "skipped")
                         if case.find(tag) is not None), "passed")
         groups[group][outcome] += 1
+        record = {"module": module, "test": case.get("name", ""), "outcome": outcome}
+        cases.append(record)
         if outcome != "passed":
-            nonpassing.append({"module": module, "test": case.get("name", ""),
-                               "outcome": outcome})
+            nonpassing.append(record)
     return {"state": "OK" if groups else "MISSING",
             "groups": {key: dict(value) for key, value in sorted(groups.items())},
-            "nonpassing": nonpassing}
+            "nonpassing": nonpassing, "cases": cases}
 
 
 def run_pytest(root: Path, logs: Path, current_commit: str | None) -> dict:
@@ -100,6 +100,11 @@ def run_pytest(root: Path, logs: Path, current_commit: str | None) -> dict:
                            and report["breakdown"]["state"] == "OK"
                            and report["matches_current_clean_commit"] is True
                            else "ERROR" if result.returncode else "WARNING")
+        from lithiumscope.tools.inspection.development.criteria import evaluate_catalog, load_catalog
+        report["criterion_evidence"] = evaluate_catalog(
+            load_catalog(root), report["breakdown"].pop("cases"),
+            trusted_run=report["matches_current_clean_commit"] is True,
+        )
         return report
     except (ValueError, OSError, KeyError, TypeError, ET.ParseError):
         return {"state": "ERROR", "exit_code": result.returncode,
@@ -113,11 +118,13 @@ def print_validation(sections: dict) -> None:
         print(f"  {key:<16} {value['state']}")
     pytest = sections.get("pytest", {})
     counts = pytest.get("counts") or {}
-    if counts:
+    if all(isinstance(counts.get(key), int) for key in ("tests", "errors", "failures", "skipped")):
         passed = (counts["tests"] - counts["errors"] - counts["failures"] - counts["skipped"])
         print(f"  Total: {counts['tests']} | aprobados: {passed} | fallos: {counts['failures']} "
               f"| errores: {counts['errors']} | omitidos: {counts['skipped']}")
         print(f"  Cobertura de líneas: {pytest.get('line_coverage_pct')}%")
+    for state, total in pytest.get("criterion_evidence", {}).get("summary", {}).items():
+        print(f"  Criterios asociados: {state}: {total}")
     breakdown = pytest.get("breakdown", {})
     for group, values in breakdown.get("groups", {}).items():
         print(f"  {group}: {values}")
