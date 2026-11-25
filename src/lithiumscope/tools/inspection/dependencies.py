@@ -80,6 +80,8 @@ def audit_imports(root: Path) -> dict:
     paths = {_module_name(source, path): path for path in source.rglob("*.py")
              if "__pycache__" not in path.parts}
     graph = {name: set() for name in paths}
+    compatibility_edges = []
+    unresolved_local_imports = []
     edges, syntax_errors = [], []
     for module, path in sorted(paths.items()):
         package = module if path.name == "__init__.py" else module.rpartition(".")[0]
@@ -88,6 +90,23 @@ def audit_imports(root: Path) -> dict:
         except (SyntaxError, OSError) as exc:
             syntax_errors.append({"path": path.relative_to(root).as_posix(), "type": type(exc).__name__})
             continue
+        # Explicit compatibility shims use import_module with a literal target.
+        # Include these as real dependency edges; do not conceal them from cycles.
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call) or not node.args:
+                continue
+            function = node.func
+            name = function.id if isinstance(function, ast.Name) else function.attr if isinstance(function, ast.Attribute) else ""
+            target = node.args[0]
+            if name == "import_module" and isinstance(target, ast.Constant) and isinstance(target.value, str) and target.value.startswith("lithiumscope."):
+                record = {"source": module, "target": target.value, "line": node.lineno}
+                if target.value not in paths:
+                    unresolved_local_imports.append(record)
+                elif target.value != module:
+                    compatibility_edges.append(record)
+                    # Only literal shims in the top level or __main__ branch
+                    # are treated as potential eager edges; conservative audit.
+                    graph[module].add(target.value)
         for node, scope in _imports(tree):
             for target in sorted(_targets(node, module, package, paths)):
                 edges.append({"source": module, "target": target, "scope": scope, "line": node.lineno})
@@ -105,6 +124,8 @@ def audit_imports(root: Path) -> dict:
     return {"modules": len(paths), "eager_cycles": _strong_components(graph),
             "cross_model_edges": cross_model, "core_to_model_edges": core_to_models,
             "reporting_to_science_edges": reporting_to_science, "syntax_errors": syntax_errors,
+            "compatibility_edges": compatibility_edges,
+            "unresolved_literal_imports": unresolved_local_imports,
             "deferred_edges": sum(e["scope"] == "deferred" for e in edges),
             "type_only_edges": sum(e["scope"] == "type_only" for e in edges),
-            "scope": "static imports only; potential cycles are not confirmed runtime failures"}
+            "scope": "static imports and literal import_module targets; computed imports and execution not proven"}

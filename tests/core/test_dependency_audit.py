@@ -36,3 +36,13 @@ def test_relative_import_and_syntax_failure_are_visible(tmp_path):
     report = audit_imports(tmp_path)
     assert any({"lithiumscope.a.x", "lithiumscope.a.y"} <= set(c) for c in report["eager_cycles"])
     assert report["syntax_errors"][0]["type"] == "SyntaxError"
+
+
+def test_literal_compatibility_imports_do_not_hide_cycles_or_missing_targets(tmp_path):
+    create(tmp_path,"old.py",'from importlib import import_module\nimport_module("lithiumscope.new")\n')
+    create(tmp_path,"new.py","from lithiumscope import old\n")
+    create(tmp_path,"gone.py",'from importlib import import_module\nimport_module("lithiumscope.missing")\n')
+    report=audit_imports(tmp_path)
+    assert ["lithiumscope.new","lithiumscope.old"] in report["eager_cycles"]
+    assert report["compatibility_edges"][0]["target"]=="lithiumscope.new"
+    assert report["unresolved_literal_imports"][0]["target"]=="lithiumscope.missing"
