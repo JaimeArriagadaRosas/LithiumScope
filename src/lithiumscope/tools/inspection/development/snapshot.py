@@ -129,6 +129,27 @@ def _inventory(root):
             "files": files, "configs": configs, "directories": dirs}
 
 
+def _document_evidence(root):
+    from lithiumscope.results.evidence import latest_document
+    from lithiumscope.tools.inspection.pdf_integrity import inspect_pdf
+
+    results = {}
+    for extension in (".pdf", ".xlsx"):
+        path = latest_document(root / "results", extension)
+        key = extension.lstrip(".")
+        if path is None:
+            results[key] = {"state": "MISSING"}
+            continue
+        record = file_record(root, path)
+        if extension == ".pdf":
+            record["structure"] = inspect_pdf(path)
+        results[key] = record
+    full = (results["pdf"].get("structure", {}).get("state") == "VERIFIED_STRUCTURE"
+            and results["xlsx"]["state"] == "OK")
+    return {"state": "OK" if full else "WARNING", "documents": results,
+            "visual_review": False, "rebuilt_documents": False}
+
+
 def collect_snapshot(root: Path = PROJECT_ROOT, *, validation=None) -> dict:
     from lithiumscope.tools.inspection.development.scientific import inspect_m1, inspect_m2
     root = root.resolve()
@@ -143,6 +164,7 @@ def collect_snapshot(root: Path = PROJECT_ROOT, *, validation=None) -> dict:
         "architecture": _section("Arquitectura", lambda: _architecture(root)),
         "inventory": _section("Inventario de artefactos", lambda: _inventory(root)),
         "models": _section("Modelos activos", lambda: active_models(root)),
+        "documents": _section("Integridad documental", lambda: _document_evidence(root)),
         "tests": _section("Ultima regresion", lambda: latest_test_report(root, git.get("commit"))),
         "model_1": _section("Preflight M1", lambda: inspect_m1(root)),
         "model_2": _section("Preflight M2", lambda: inspect_m2(root)),

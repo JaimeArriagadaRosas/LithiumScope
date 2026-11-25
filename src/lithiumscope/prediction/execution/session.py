@@ -118,5 +118,5 @@ def load_model_with_identity(model_group: str, *, candidate_run_id: str | None =
         bands = bundle.get("bands", bundle.get("band_names"))
         identity["bands"] = list(bands) if isinstance(bands, (list, tuple)) else None
         identity["feature_extractor_version"] = bundle.get("feature_extractor_version")
-        identity["feature_count"] = len(bundle.get("feature_columns", [])) or None
+        identity["feature_count"] = len(bundle.get("features", [])) or None
     return bundle, model_path, identity

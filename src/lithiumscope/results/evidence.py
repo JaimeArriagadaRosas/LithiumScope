@@ -56,13 +56,8 @@ def latest_record(root: Path, name: str) -> tuple[Path, dict] | None:
 def _document_valid(path: Path) -> bool:
     try:
         if path.suffix.lower() == ".pdf":
-            # Structural screening, not a full PDF integrity certification.
-            with path.open("rb") as stream:
-                if not stream.read(8).startswith(b"%PDF-"):
-                    return False
-                stream.seek(max(0, path.stat().st_size - 2048))
-                tail = stream.read()
-            return b"startxref" in tail and tail.rstrip().endswith(b"%%EOF")
+            from lithiumscope.tools.inspection.pdf_integrity import inspect_pdf
+            return inspect_pdf(path)["state"] in {"SCREENED", "VERIFIED_STRUCTURE"}
         if path.suffix.lower() == ".xlsx":
             with ZipFile(path) as archive:
                 if archive.testzip() is not None:

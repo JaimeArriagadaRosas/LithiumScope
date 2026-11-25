@@ -25,7 +25,8 @@ def pdf_text(value) -> str:
 
 def number(value, digits: int = 3) -> str:
     try:
-        return f"{float(value):.{digits}f}"
+        numeric = float(value)
+        return f"{numeric:.{digits}f}" if math.isfinite(numeric) else "N/D"
     except (TypeError, ValueError):
         return "N/D"
 
@@ -35,7 +36,7 @@ def fraction(value) -> str:
         numeric = float(value)
     except (TypeError, ValueError):
         return "N/D"
-    return f"{numeric:.3f} ({numeric * 100:.1f}%)"
+    return f"{numeric:.3f} ({numeric * 100:.1f}%)" if 0 <= numeric <= 1 else "N/D"
 
 
 
@@ -52,6 +53,7 @@ def nonnegative_interval(
     if not (
         math.isfinite(low_value)
         and math.isfinite(high_value)
+        and high_value >= max(0.0, low_value)
     ):
         return "N/D"
     return (
@@ -72,6 +74,8 @@ def operating_classification(
     if not (
         math.isfinite(score_value)
         and math.isfinite(threshold_value)
+        and 0 <= score_value <= 1
+        and 0 <= threshold_value <= 1
     ):
         return "N/D"
     return (

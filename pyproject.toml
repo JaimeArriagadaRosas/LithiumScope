@@ -57,6 +57,7 @@ dev = [
   "imagecodecs>=2024.12",
   "pytest>=8.3",
   "pytest-cov>=6.0",
+  "pypdf>=5.0",
   "ruff>=0.6"
 ]
 
