@@ -92,8 +92,8 @@ def evaluate_curve(x,y,groups,plan,*,kind,algorithm,fit,predict):
     if not x.index.equals(y.index) or not x.index.equals(groups.index):
         raise ValueError("Curve inputs must align")
     records=[]
-    from lithiumscope.model_1.evaluation.metrics import regression_metrics
-    from lithiumscope.model_2.evaluation.metrics import classification_metrics
+    from lithiumscope.core.scientific.regression_metrics import regression_metrics
+    from lithiumscope.core.scientific.classification_metrics import classification_metrics
     for p in plan:
         row={"algorithm":algorithm,"fold":p.fold,"fraction_of_eligible_groups":p.fraction,"seed":p.seed,
              "n_train":len(p.train),"n_test":len(p.test),"train_groups":p.train_groups,

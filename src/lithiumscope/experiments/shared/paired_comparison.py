@@ -34,7 +34,7 @@ def paired_group_intervals(reference, alternative, *, kind, repeats=500, seed=42
                     "mae": np.mean(np.abs(e2))-np.mean(np.abs(e1))}
     elif kind == "classification":
         from sklearn.metrics import roc_auc_score, average_precision_score
-        from lithiumscope.model_2.evaluation.metrics import validate_binary_inputs
+        from lithiumscope.core.scientific.classification_metrics import validate_binary_inputs
         validate_binary_inputs(y, a)
         validate_binary_inputs(y, b)
         def metric(ix):

@@ -15,7 +15,7 @@ from lithiumscope.evaluation.holdout.registry import (
 
 
 def _regression(y,p):
-    from lithiumscope.model_1.evaluation.metrics import regression_metrics
+    from lithiumscope.core.scientific.regression_metrics import regression_metrics
     if np.unique(y).size<2:
         raise ValueError("Constant Li truth cannot support a comparative regression gate")
     return regression_metrics(y,p).to_dict()
@@ -107,7 +107,7 @@ def evaluate_registered(root,labels_path):
                             provisional_numeric_gate=passed,numeric_gate_reasons=reasons,
                             paired_uncertainty=_paired_regression(data,**registration["bootstrap"]))
     else:
-        from lithiumscope.model_2.evaluation.metrics import classification_metrics
+        from lithiumscope.core.scientific.classification_metrics import classification_metrics
         from lithiumscope.model_2.evaluation.paired_uncertainty import bootstrap_paired_groups
         from lithiumscope.model_2.evaluation.release_gate import assess_release, ExternalGatePolicy
         label=(y>=registration["label_cutoff_ppm"]).astype(int)

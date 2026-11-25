@@ -72,9 +72,9 @@ def validate_arms(arms, y, groups, splits, kind, endpoints):
 
 def _metrics(kind, truth, prediction):
     if kind == "regression":
-        from lithiumscope.model_1.evaluation.metrics import regression_metrics
+        from lithiumscope.core.scientific.regression_metrics import regression_metrics
         return regression_metrics(truth, prediction).to_dict()
-    from lithiumscope.model_2.evaluation.metrics import classification_metrics
+    from lithiumscope.core.scientific.classification_metrics import classification_metrics
     return classification_metrics(truth, prediction)
 
 
