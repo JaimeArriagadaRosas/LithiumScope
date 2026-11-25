@@ -46,3 +46,25 @@ def test_regression_bootstrap_copies_real_values_and_groups():
     assert len(xx) == 10 and len(trace) == 2
     assert yy.iloc[-2:].tolist() == [7.,7.]
     assert gg.iloc[-2:].tolist() == ["D","D"]
+
+def test_smoter_uses_same_source_and_recomputes_ratios():
+    from lithiumscope.experiments.generalization.resampling import regression_smoter
+    n = 30
+    x = pd.DataFrame({"Latitude": [-20.]*n,"Longitude": [-70.]*n,
+        "MgO": np.linspace(1,3,n),"Fe2O3": np.linspace(2,4,n),
+        "Mg_Number": [-999.]*n,"Rock_type": ["A"]*n})
+    y = pd.Series(np.arange(n,dtype=float))
+    groups = pd.Series(["g"]*n)
+    sources = pd.Series(["source"]*n)
+    xx, yy, gg, trace = regression_smoter(x,y,groups,sources,42,
+        ["Latitude","Longitude","MgO","Fe2O3","Mg_Number"],["Rock_type"])
+    assert len(trace) == n//4
+    assert len(xx) == n+len(trace)
+    assert (yy.iloc[n:] >= y.quantile(.90)).all()
+    assert (yy.iloc[n:] <= y.max()).all()
+    assert gg.iloc[n:].eq("g").all()
+    assert np.allclose(xx.iloc[n:].Mg_Number,xx.iloc[n:].MgO/(xx.iloc[n:].MgO+xx.iloc[n:].Fe2O3))
+    assert xx.iloc[:n].Mg_Number.eq(-999).all()
+    with pytest.raises(ValueError,match="no compatible"):
+        regression_smoter(x,y,groups,pd.Series([str(i) for i in range(n)]),42,
+            ["Latitude","Longitude","MgO","Fe2O3","Mg_Number"],["Rock_type"])

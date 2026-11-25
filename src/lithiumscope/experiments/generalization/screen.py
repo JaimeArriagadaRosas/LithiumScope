@@ -40,8 +40,6 @@ def evaluate(group, algorithm, arm, device, seed, data, train, test, cfg):
         fit_y, test_y = y.iloc[train], y.iloc[test]
         pred, train_pred, provenance = regression_fit(algorithm, arm, device, seed, x.iloc[train], fit_y,
             groups.iloc[train], sources.iloc[train], numeric, categorical, x.iloc[test])
-        if arm == "reference":
-            pass
     else:
         model = cfg["model"]
         fixed = model.get("fixed_threshold_ppm")
@@ -70,7 +68,8 @@ def run_screen(group, source, *, all_families=False, output_root=None, device=No
     outer = list(GroupKFold(n_splits=outer_count).split(x, groups=groups))
     arms = M1_ARMS if group == "model_1" else M2_ARMS
     algorithms = cfg["model"]["algorithms"] if all_families else ["random_forest"]
-    root = output_root or RESULTS_DIR / "generalization"
+    from pathlib import Path
+    root = Path(output_root) if output_root is not None else RESULTS_DIR / "generalization"
     destination = root / group / (datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S") + "_" + uuid4().hex[:8])
     destination.mkdir(parents=True)
     results, inner_results, predictions, provenance = [], [], [], []
@@ -85,6 +84,7 @@ def run_screen(group, source, *, all_families=False, output_root=None, device=No
                     try:
                         result, _, _ = evaluate(group, algorithm, arm, device, 42+fold*10+i, data, tr[a], tr[b], cfg)
                         scores.append(result[metric])
+                        provenance.extend({"algorithm": algorithm, "fold": fold, "inner_fold": i, "arm": arm, "stage": "inner", **p} for p in result["generated"])
                         inner_results.append({"algorithm": algorithm, "outer_fold": fold, "inner_fold": i,
                             "arm": arm, "state": "ok", **{k:v for k,v in result.items() if k != "generated"}})
                     except Exception as exc:
@@ -98,7 +98,7 @@ def run_screen(group, source, *, all_families=False, output_root=None, device=No
                     if arm is None:
                         raise ValueError("No complete inner arm")
                     result, pred, truth = evaluate(group, algorithm, arm, device, 42+fold, data, tr, te, cfg)
-                    provenance.extend({"algorithm": algorithm, "fold": fold, "arm": arm, **p} for p in result.pop("generated"))
+                    provenance.extend({"algorithm": algorithm, "fold": fold, "arm": arm, "stage": "outer", **p} for p in result.pop("generated"))
                     results.append({"algorithm": algorithm, "fold": fold, "mode": label, "arm": arm, "state": "ok", **result})
                     predictions.extend({"algorithm": algorithm, "fold": fold, "mode": label, "row_id": str(x.index[j]),
                                         "actual": float(v), "score": float(p)} for j,v,p in zip(te,truth,pred,strict=True))

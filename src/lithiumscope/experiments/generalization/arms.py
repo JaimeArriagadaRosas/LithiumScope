@@ -11,10 +11,10 @@ from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from lithiumscope.experiments.generalization.resampling import classification_resample, regression_resample
+from lithiumscope.experiments.generalization.resampling import classification_resample, regression_resample, regression_smoter
 
 M1_ARMS = ("reference", "nonnegative", "log1p", "deduplicate", "rare_bootstrap",
-           "group_bootstrap", "without_coordinates", "coverage_filter", "regularized")
+           "group_bootstrap", "smoter", "without_coordinates", "coverage_filter", "regularized")
 M2_ARMS = ("reference", "regularized", "weighted", "oversample", "undersample", "smote_group",
            "pca48", "kbest48", "correlation_filter")
 
@@ -24,6 +24,7 @@ M1_REGULAR = {
     "hist_gradient_boosting": {"max_leaf_nodes": 12, "min_samples_leaf": 30, "l2_regularization": 5},
     "catboost": {"depth": 4, "l2_leaf_reg": 10},
     "svm": {"C": 10., "epsilon": .1, "gamma": "scale"},
+    "tabnet": {"max_epochs": 60, "patience": 10},
 }
 M2_REGULAR = {
     "random_forest": {"max_depth": 8, "min_samples_leaf": 10},
@@ -57,7 +58,10 @@ def regression_fit(algorithm, arm, device, seed, x, y, groups, sources, numeric,
     if not cols:
         raise ValueError("No TRAIN features remain")
     schema = FeatureSchema([c for c in numeric if c in cols], [c for c in categorical if c in cols], 2, "stable_v1")
-    fit_x, fit_y, fit_groups, provenance = regression_resample(x[cols], y, groups, sources, method, seed)
+    if arm == "smoter":
+        fit_x, fit_y, fit_groups, provenance = regression_smoter(x[cols], y, groups, sources, seed, schema.numeric, schema.categorical)
+    else:
+        fit_x, fit_y, fit_groups, provenance = regression_resample(x[cols], y, groups, sources, method, seed)
     params = M1_REGULAR.get(algorithm, {}) if arm == "regularized" else {}
     if arm == "regularized" and algorithm not in M1_REGULAR:
         raise ValueError("Regularized arm not yet configured for this family")
@@ -89,6 +93,8 @@ def classification_fit(algorithm, arm, device, seed, x, y, groups, validation):
         fit = selector.fit_transform(fit, y)
         test = selector.transform(test)
     params = dict(M2_REGULAR.get(algorithm, {})) if arm == "regularized" else {}
+    if algorithm in {"random_forest", "extra_trees", "svm_rbf", "hist_gradient_boosting"}:
+        params["class_weight"] = None
     if arm == "weighted":
         if algorithm in {"random_forest", "extra_trees", "svm_rbf", "hist_gradient_boosting"}:
             params["class_weight"] = "balanced"

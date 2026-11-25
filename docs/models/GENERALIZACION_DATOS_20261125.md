@@ -23,7 +23,7 @@ Los folds históricos ya fueron inspeccionados: esta es evaluación de desarroll
 
 M1: referencia, salida no negativa, log1p, deduplicación TRAIN por fuente/grupo,
 bootstrap de concentraciones altas, bootstrap espacial, ablación de coordenadas,
-filtro de cobertura y regularización inicial (TabNet pendiente de brazo específico).
+filtro de cobertura, regularización inicial (TabNet mediante límite de épocas), e interpolación SMOTER restringida a fuente, coordenadas, grupo, categorías y patrón de faltantes idénticos. Las relaciones derivadas se recalculan.
 M2: referencia, regularización, ponderación de clases, over/undersampling,
 SMOTE restringido al mismo grupo (interpolación de descriptores, no mediciones satelitales),
 PCA48, información mutua K48 y filtro de correlación.
@@ -34,7 +34,7 @@ No se activa ningún modelo, no se ejecuta Optuna y no se altera la competencia 
 ## Pendientes de la fase
 
 Auditoría documental de unidades y conflictos, nuevas observaciones reales,
-SMOGN/SMOTER geoquímico con restricciones físicas y validación composicional,
+validación composicional y evaluación empírica de SMOTER; SMOGN completo con ruido calibrado,
 perturbaciones radiométricas físicamente justificadas y evaluación externa independiente.
 Integración de tratamientos validados y caché en competencia oficial, ajuste de Optuna,
 curvas de aprendizaje y evaluación de calibración/umbral, recuperación de informes M2.
