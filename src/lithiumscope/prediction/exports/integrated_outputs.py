@@ -76,7 +76,7 @@ def _write_outputs(
     report_path = write_pdf_report(
         session.root / "report.pdf",
         title=(
-            "LithiumScope - Demostración integrada automática"
+            ("LithiumScope - Demostración integrada experimental" if any(identity.get("selection") == "experimental_demonstration" for identity in (model_1_identity, model_2_identity)) else "LithiumScope - Demostración integrada automática")
             if session.mode == "demonstration"
             else "LithiumScope - Predicción completa"
         ),

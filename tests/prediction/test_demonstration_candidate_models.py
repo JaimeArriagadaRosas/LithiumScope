@@ -162,3 +162,42 @@ def test_pdf_is_required_and_legacy_pdf_renderer_remains_used():
     assert integrated.write_pdf_report.__module__.startswith(
         "lithiumscope.prediction"
     )
+
+
+def test_latest_local_candidate_is_integrity_verified_without_activation(monkeypatch, tmp_path):
+    from lithiumscope.persistence import save_model
+    root = tmp_path / "models"
+    monkeypatch.setattr(session, "MODELS_DIR", root)
+    monkeypatch.setattr(save_model, "MODELS_DIR", root)
+    monkeypatch.setattr(session, "load_latest_model",
+                        lambda group: pytest.fail("No active model needed"))
+    old, _ = save_model.save_model_bundle("model_1", "old", {"algorithm": "old"}, {},
+                                       run_id="training_old")
+    new, _ = save_model.save_model_bundle("model_1", "new", {"algorithm": "new"}, {},
+                                       run_id="training_new")
+    from lithiumscope.core.hashing import file_sha256
+    for path, date in ((old, "2026-01-01T00:00:00+00:00"), (new, "2026-01-02T00:00:00+00:00")):
+        metadata = path.with_name("metadata.json")
+        value = json.loads(metadata.read_text())
+        value["saved_at_utc"] = date
+        metadata.write_text(json.dumps(value), encoding="utf-8")
+        integrity = path.with_name("artifact_integrity.json")
+        value = json.loads(integrity.read_text())
+        value["files"]["metadata.json"] = file_sha256(metadata)
+        integrity.write_text(json.dumps(value), encoding="utf-8")
+    before = new.with_name("candidate_status.json").read_bytes()
+    bundle, path, info = session.load_model_with_identity("model_1", candidate_run_id="latest_local_candidate")
+    assert path == new and bundle["algorithm"] == "new"
+    assert info["selection"] == "experimental_demonstration"
+    assert new.with_name("candidate_status.json").read_bytes() == before
+    assert not (root / "active_models.json").exists()
+    new.write_bytes(b"corrupted")
+    with pytest.raises(ValueError, match="Integridad"):
+        session.load_model_with_identity("model_1", candidate_run_id="latest_local_candidate")
+
+
+def test_latest_local_candidate_does_not_fallback_to_release(monkeypatch, tmp_path):
+    monkeypatch.setattr(session, "MODELS_DIR", tmp_path)
+    monkeypatch.setattr(session, "load_latest_model", lambda group: pytest.fail("No fallback"))
+    with pytest.raises(FileNotFoundError, match="entrene primero"):
+        session.load_model_with_identity("model_2", candidate_run_id="latest_local_candidate")

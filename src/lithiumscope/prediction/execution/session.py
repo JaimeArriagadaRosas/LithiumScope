@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
+from hashlib import sha256
+from io import BytesIO
 import json
 from pathlib import Path
 from uuid import uuid4
@@ -59,6 +61,39 @@ class PredictionSession:
         )
 
 
+def _latest_local_candidate(model_group: str) -> tuple[str, bytes]:
+    """Newest saved pending candidate, not an assertion of scientific superiority."""
+    candidates = []
+    directory = MODELS_DIR / model_group / "trained"
+    for path in directory.glob("training_*/model.joblib"):
+        status = read_candidate_status(path)
+        if status.get("status") != "pending":
+            continue
+        metadata = json.loads(path.with_name("metadata.json").read_text(encoding="utf-8"))
+        if (metadata.get("run_id") != path.parent.name
+                or status.get("run_id") != path.parent.name
+                or status.get("model_group") != model_group
+                or metadata.get("activation_at_save") != "candidate"):
+            raise ValueError("Identidad del candidato local no verificada")
+        saved = datetime.fromisoformat(metadata["saved_at_utc"])
+        if saved.tzinfo is None:
+            raise ValueError("Fecha del candidato local sin zona horaria")
+        candidates.append((saved, path.parent.name, path, metadata))
+    if not candidates:
+        raise FileNotFoundError(f"No hay candidato local pendiente de {model_group}; entrene primero.")
+    _, run_id, path, metadata = max(candidates, key=lambda item: (item[0], item[1]))
+    integrity = json.loads(path.with_name("artifact_integrity.json").read_text(encoding="utf-8"))
+    files = integrity.get("files", {})
+    if (not isinstance(files, dict) or not {"model.joblib", "metadata.json"} <= set(files)
+            or any(Path(name).name != name or not (path.parent / name).is_file()
+                   or file_sha256(path.parent / name) != digest for name, digest in files.items())):
+        raise ValueError("Integridad del candidato local no verificada")
+    payload = path.read_bytes()
+    if sha256(payload).hexdigest() != metadata.get("model_sha256") or files["model.joblib"] != metadata.get("model_sha256"):
+        raise ValueError("Hash del candidato local no coincide")
+    return run_id, payload
+
+
 def load_model_with_identity(model_group: str, *, candidate_run_id: str | None = None):
     """Select an explicit candidate or published release for a *single demo*.
 
@@ -72,6 +107,9 @@ def load_model_with_identity(model_group: str, *, candidate_run_id: str | None =
         selected_for = "active_release"
         candidate_status = None
     else:
+        local_payload = None
+        if candidate_run_id == "latest_local_candidate":
+            candidate_run_id, local_payload = _latest_local_candidate(model_group)
         run_id = str(candidate_run_id)
         if not run_id.startswith("training_") or Path(run_id).name != run_id or any(
             value in run_id for value in ("..", "/", "\\", ":")
@@ -86,7 +124,9 @@ def load_model_with_identity(model_group: str, *, candidate_run_id: str | None =
                 f"El modelo {model_group}/{run_id} no es un candidato pendiente "
                 f"ni un release publicado (estado: {candidate_status!r})."
             )
-        bundle = joblib.load(model_path)
+        if local_payload is not None and candidate_status != "pending":
+            raise ValueError("El candidato local ya no está pendiente")
+        bundle = joblib.load(BytesIO(local_payload)) if local_payload is not None else joblib.load(model_path)
         selected_for = (
             "pinned_published_release_for_demonstration"
             if candidate_status == "promoted"

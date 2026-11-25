@@ -143,7 +143,8 @@ def run_pytest(root: Path, logs: Path, current_commit: str | None) -> dict:
 def print_validation(sections: dict) -> None:
     print("\nRESULTADOS DE VALIDACIÓN DE DESARROLLO")
     for key, value in sections.items():
-        print(f"  {key:<16} {value['state']}")
+        suffix = " (evidencia histórica opcional)" if value.get("optional_evidence") else ""
+        print(f"  {key:<16} {value['state']}{suffix}")
     pytest = sections.get("pytest", {})
     if pytest.get("coverage_state") == "missing_pytest_cov":
         print("  [PENDIENTE] pytest-cov ausente; regresión ejecutada sin cobertura.")

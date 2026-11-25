@@ -35,10 +35,10 @@ requires_local_release = pytest.mark.skipif(
 )
 
 
-def test_demonstration_pins_proposed_release_pair_without_activation():
+def test_demonstration_defaults_to_new_local_candidates_without_activation():
     cfg = load_config("prediction")["demonstration"]["candidate_models"]
-    assert cfg["model_1"] == "training_20261106_111653_m0300"
-    assert cfg["model_2"] == "training_20260920_195933_m0300"
+    assert cfg["model_1"] == "latest_local_candidate"
+    assert cfg["model_2"] == "latest_local_candidate"
 
 
 @requires_local_release
@@ -56,9 +56,8 @@ def test_current_promoted_release_is_accepted_as_explicit_demo_pin():
 
 @requires_local_release
 def test_selected_proposal_has_three_m1_and_all_eight_m2_runs():
-    cfg = load_config("prediction")["demonstration"]["candidate_models"]
-    id1 = load_model_with_identity("model_1",candidate_run_id=cfg["model_1"])[2]
-    id2 = load_model_with_identity("model_2",candidate_run_id=cfg["model_2"])[2]
+    id1 = load_model_with_identity("model_1",candidate_run_id="training_20261106_111653_m0300")[2]
+    id2 = load_model_with_identity("model_2",candidate_run_id="training_20260920_195933_m0300")[2]
     report = gather_selection_evidence(id1,id2)
     assert len(report["model_1_runs"]) == 3
     assert len(report["model_2_runs"]) == 8
@@ -72,9 +71,8 @@ def test_selected_proposal_has_three_m1_and_all_eight_m2_runs():
 
 @requires_local_release
 def test_pdf_section_is_only_added_to_integrated_demonstration():
-    cfg = load_config("prediction")["demonstration"]["candidate_models"]
-    id1 = load_model_with_identity("model_1",candidate_run_id=cfg["model_1"])[2]
-    id2 = load_model_with_identity("model_2",candidate_run_id=cfg["model_2"])[2]
+    id1 = load_model_with_identity("model_1",candidate_run_id="training_20261106_111653_m0300")[2]
+    id2 = load_model_with_identity("model_2",candidate_run_id="training_20260920_195933_m0300")[2]
     data = gather_selection_evidence(id1,id2)
     from types import SimpleNamespace
     context = SimpleNamespace(
