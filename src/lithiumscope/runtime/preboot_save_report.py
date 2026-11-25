@@ -10,15 +10,15 @@ def _save_report(
     report: PrebootReport,
 ) -> Path:
     from lithiumscope.runtime.preboot import LOGS_DIR, Path, PrebootReport, asdict, current_error_log_path, current_session_log_path, datetime, json, timezone
-    directory = LOGS_DIR / "preboot"
+    from lithiumscope.core.logging.session import current_session_directory
+    from lithiumscope.core.logging.context import unique_id
+    from lithiumscope.results.atomic_exports import write_json
+    directory = current_session_directory() / "initialization"
     directory.mkdir(
         parents=True,
         exist_ok=True,
     )
-    stamp = datetime.now(
-        timezone.utc
-    ).strftime("%Y%m%dT%H%M%SZ")
-    path = directory / f"preboot_{stamp}.json"
+    path = directory / f"{unique_id('preboot')}.json"
     report.report_path = str(path)
     payload = asdict(report)
     payload["core_ready"] = report.core_ready
@@ -34,12 +34,5 @@ def _save_report(
     payload["error_log"] = str(
         current_error_log_path()
     )
-    path.write_text(
-        json.dumps(
-            payload,
-            indent=2,
-            ensure_ascii=False,
-        ),
-        encoding="utf-8",
-    )
+    write_json(path,payload)
     return path

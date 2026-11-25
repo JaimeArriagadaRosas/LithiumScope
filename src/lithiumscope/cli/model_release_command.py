@@ -102,71 +102,75 @@ def run() -> None:
         exist_ok=True,
     )
 
-    with tempfile.TemporaryDirectory(
-        prefix=".release_download_",
-        dir=MODELS_DIR,
-    ) as temporary:
-        destination = (
-            Path(temporary)
-            / release.asset_name
-        )
-        download_spinner = Spinner(
-            f"Descargando {release.asset_name}"
-        ).start()
+    from lithiumscope.core.logging.session import run_log,get_logger
+    with run_log("installation","versioned_model"):
+        get_logger("distribution.installation").info("Authorized release installation: %s",release.tag_name)
+        with tempfile.TemporaryDirectory(
+            prefix=".release_download_",
+            dir=MODELS_DIR,
+        ) as temporary:
+            destination = (
+                Path(temporary)
+                / release.asset_name
+            )
+            download_spinner = Spinner(
+                f"Descargando {release.asset_name}"
+            ).start()
 
-        def progress(
-            downloaded: int,
-            total: int,
-        ) -> None:
-            if total > 0:
-                download_spinner.update(
-                    f"Descargando {release.asset_name}: "
-                    f"{downloaded / 1048576:.1f}/"
-                    f"{total / 1048576:.1f} MiB"
-                )
-            else:
-                download_spinner.update(
-                    f"Descargando {release.asset_name}: "
-                    f"{downloaded / 1048576:.1f} MiB"
-                )
+            def progress(
+                downloaded: int,
+                total: int,
+            ) -> None:
+                if total > 0:
+                    download_spinner.update(
+                        f"Descargando {release.asset_name}: "
+                        f"{downloaded / 1048576:.1f}/"
+                        f"{total / 1048576:.1f} MiB"
+                    )
+                else:
+                    download_spinner.update(
+                        f"Descargando {release.asset_name}: "
+                        f"{downloaded / 1048576:.1f} MiB"
+                    )
 
-        try:
-            archive, asset_sha256 = (
-                download_release_asset(
+            try:
+                archive, asset_sha256 = (
+                    download_release_asset(
+                        release,
+                        destination,
+                        progress_callback=progress,
+                    )
+                )
+                download_spinner.succeed(
+                    "Descarga verificada: "
+                    f"{release.asset_name}"
+                )
+            except Exception:
+                download_spinner.fail(
+                    "Falló la descarga: "
+                    f"{release.asset_name}"
+                )
+                raise
+
+            install_spinner = Spinner(
+                "Validando e instalando Modelos 1 y 2..."
+            ).start()
+            try:
+                result = install_release_bundle(
+                    archive,
                     release,
-                    destination,
-                    progress_callback=progress,
+                    asset_sha256=asset_sha256,
                 )
-            )
-            download_spinner.succeed(
-                "Descarga verificada: "
-                f"{release.asset_name}"
-            )
-        except Exception:
-            download_spinner.fail(
-                "Falló la descarga: "
-                f"{release.asset_name}"
-            )
-            raise
+                install_spinner.succeed(
+                    "Modelo versionado instalado: "
+                    f"{result.release_tag}"
+                )
+            except Exception:
+                install_spinner.fail(
+                    "El bundle no pudo instalarse"
+                )
+                raise
 
-        install_spinner = Spinner(
-            "Validando e instalando Modelos 1 y 2..."
-        ).start()
-        try:
-            result = install_release_bundle(
-                archive,
-                release,
-                asset_sha256=asset_sha256,
-            )
-            install_spinner.succeed(
-                "Modelo versionado instalado: "
-                f"{result.release_tag}"
-            )
-        except Exception:
-            install_spinner.fail(
-                "El bundle no pudo instalarse"
-            )
-            raise
 
     print(
         f"\nModelo cargado: "

@@ -97,8 +97,6 @@ def _run_integrated(
     fallback_probability_threshold = float(
         prediction_cfg["model_2_classification_threshold"]
     )
-    local_log_path = session.root / "prediction.log"
-
     with run_log("prediction", session.run_id) as log_path:
         logger.info(
             "Integrated prediction started run=%s mode=%s",
@@ -253,7 +251,7 @@ def _run_integrated(
             input_info=input_info,
             overlap_audit=overlap_audit,
             interpretation=interpretation,
-            run_log_path=local_log_path,
+            run_log_path=log_path,
             lithium_threshold=lithium_threshold,
             probability_threshold=probability_threshold,
             model_2_predicted_positive_count=model_2_predicted_positive_count,
@@ -264,8 +262,6 @@ def _run_integrated(
             report_path,
             workbook_path,
         )
-
-    shutil.copy2(log_path, local_log_path)
 
     return IntegratedPredictionResult(
         session=session,

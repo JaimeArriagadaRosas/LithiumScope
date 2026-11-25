@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 
@@ -45,7 +46,9 @@ def _eda_menu() -> bool | None:
     states = []
     for label, job in selected:
         try:
-            path = job()
+            from lithiumscope.core.logging.session import run_log
+            with run_log("eda",label):
+                path = job()
             states.append("COMPLETADO")
             print(f"[OK] {label}: {path}")
         except FileNotFoundError as exc:
@@ -64,7 +67,9 @@ def _run_tests() -> bool:
         print("[BLOQUEADO] Suite local no disponible.")
         return False
     print("[OK] Suite descubierta en tests/. Ejecutando; el resumen se obtiene de JUnit.")
-    completed = subprocess.run([sys.executable, str(runner), "--", "-q"], cwd=PROJECT_ROOT, check=False)
+    from lithiumscope.core.logging.session import current_session_directory
+    env={**os.environ,"LITHIUMSCOPE_SESSION_DIR":str(current_session_directory())}
+    completed = subprocess.run([sys.executable, str(runner), "--", "-q"], cwd=PROJECT_ROOT, check=False,env=env)
     print(f"Estado: {'COMPLETADO' if completed.returncode == 0 else 'ERROR'}; código={completed.returncode}")
     return completed.returncode == 0
 
@@ -72,7 +77,9 @@ def _run_tests() -> bool:
 def _run_simulations() -> bool:
     from lithiumscope.experiments.registry import run_registered_simulations
 
-    manifest = run_registered_simulations()
+    from lithiumscope.core.logging.session import run_log
+    with run_log("simulations","registered"):
+        manifest = run_registered_simulations()
     record = json.loads(manifest.read_text(encoding="utf-8"))
     print(f"Estado: {record['state']}\nEvidencias: {manifest}")
     return record["state"] == "COMPLETADO"
@@ -103,7 +110,9 @@ def _validation_menu() -> bool | None:
 def _health() -> None:
     from lithiumscope.tools.inspection.health import write_health_report
 
-    path = write_health_report()
+    from lithiumscope.core.logging.session import run_log
+    with run_log("diagnostics","health"):
+        path = write_health_report()
     report = json.loads(path.read_text(encoding="utf-8"))
     print("\nSALUD Y DIAGNÓSTICO DEL ENTORNO\nModo: SOLO LECTURA")
     for area, result in report["areas"].items():
