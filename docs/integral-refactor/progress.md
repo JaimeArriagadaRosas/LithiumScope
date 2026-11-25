@@ -248,3 +248,7 @@ Commits 973c5f42 y 76169f7c: gate de desarrollo pareado y política multivariada
 ## Lote: cierre de implementación científica principal y arquitectura
 
 25a498c0, abbd0d4f, 75025a7b, 17029a6c, c9400d84, 6076047a: recuperación SCL, comparación temporal, revisión documental M1, organización diagnóstica de M1/M2, reproducibilidad, visualización y pruebas de regresión añadidas. Conteo 135/166 (81,3 %), 31 parciales, 57/57 científicos con código principal, sin certificación. No se ejecutaron pruebas, workflows ni operaciones sobre los datos.
+
+## Lote: renderer y evaluación
+
+60ecd0c4, 2f913f0d, d179654f, edda1848, 0c1ad5ce: precomputación científica para PDF, separación de evaluación prospectiva y métricas genéricas, auditoría ampliada de imports. 138/166 (83,1 %) implementación principal, 28 parciales. Sin ejecución ni modificación de releases.

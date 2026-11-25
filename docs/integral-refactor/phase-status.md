@@ -119,3 +119,19 @@ Siguiente: recuperar SCL histórica y diseñar composición temporal controlada 
 | **Total** | **166** | **135** | **31** | **81,3 %** |
 
 Reclasificados M1-19, M2-04, ARQ-015/035/067/068 por incorporar código principal. El estado de aceptación sigue abierto; no se realizaron revisiones de documentos reales, recuperación online, adquisiciones, pruebas, ajuste ni CI. La reconstrucción SCL utiliza la ventana histórica; no certifica su corregistro independiente. El experimento temporal requiere disponibilidad de la cohorte completa, puede resultar no evaluable. Los aliases de módulos mantienen compatibilidad prevista pero requieren prueba de ejecución. Se conservan 6 cierres acotados, 160 abiertos para aceptación. Siguiente: arquitectura, dependencias, adquisición centralizada, renderer, planificación y logging multiproceso, pruebas de regresión y benchmark. No solicitar aún git pull ni 5 > 4.
+
+## Continuación: renderer, evaluación y métricas compartidas
+
+- 60ecd0c4 y 2f913f0d: preparación de errores absolutos, clases operativas, intervalos físicos y deltas del anexo histórico fuera del renderer. Ganancias relativas con referencia cero no definidas. Se conserva el contrato del facade de PDF y las funciones históricas de formato como compatibilidad; queda verificar su separación total.
+- d179654f: evaluación comparativa de candidatos y holdout prospectivo trasladados a evaluation/candidates y evaluation/holdout; scoring de candidatos en prediction/execution. Imports anteriores y CLI preservados. No promoción.
+- edda1848: métricas numéricas genéricas centralizadas en core/scientific, y referencias de curvas y experimentos actualizadas. Imports previos conservados.
+- 0c1ad5ce: auditoría de dependencias incluye destinos literales de import_module, potenciales ciclos y referencias inexistentes. Los destinos calculados y ciclos de ejecución no quedan demostrados.
+
+| Diagnóstico | Total | Implementación principal | Parcial | Avance de implementación |
+|---|---:|---:|---:|---:|
+| M1 | 27 | 27 | 0 | 100,0 % |
+| M2 | 30 | 30 | 0 | 100,0 % |
+| ARQ | 109 | 81 | 28 | 74,3 % |
+| **Total** | **166** | **138** | **28** | **83,1 %** |
+
+Reclasificados ARQ-047/048/072. ARQ-042/045/066/073/095 continúan parciales. Sin ejecución de tests, PDF, CI, entrenamiento o promoción; 6 cierres acotados históricos. No solicitar todavía git pull ni 5 > 4. Próximos: adquisición, pipelines, dependencias, planificación, logging multiproceso, pruebas y benchmark.

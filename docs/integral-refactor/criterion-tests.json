@@ -478,7 +478,8 @@
     "ARQ-042": [
       "tests/reporting/test_prediction_pdf_contract.py",
       "tests/prediction/test_integrated_prediction_analysis.py",
-      "tests/reporting/test_rendering_boundary.py"
+      "tests/reporting/test_rendering_boundary.py",
+      "tests/reporting/test_precomputed_report_inputs.py"
     ],
     "ARQ-043": [
       "tests/core/test_architecture.py",
@@ -492,7 +493,8 @@
     "ARQ-045": [
       "tests/core/test_architecture.py",
       "tests/prediction/test_integrated_prediction_analysis.py",
-      "tests/core/test_dependency_audit.py"
+      "tests/core/test_dependency_audit.py",
+      "tests/release/test_evaluation_relocation.py"
     ],
     "ARQ-046": [
       "tests/prediction/test_integrated_demo_fixture.py",
@@ -501,12 +503,14 @@
     ],
     "ARQ-047": [
       "tests/prediction/test_integrated_prediction_analysis.py",
-      "tests/reporting/test_integrated_decision_page.py"
+      "tests/reporting/test_integrated_decision_page.py",
+      "tests/reporting/test_precomputed_report_inputs.py"
     ],
     "ARQ-048": [
       "tests/prediction/test_candidate_evaluation_gates.py",
       "tests/prediction/test_demo_promotion_guard.py",
-      "tests/prediction/test_canonical_prediction_architecture.py"
+      "tests/prediction/test_canonical_prediction_architecture.py",
+      "tests/release/test_evaluation_relocation.py"
     ],
     "ARQ-049": [
       "tests/prediction/test_prediction_release_demo.py",
@@ -591,7 +595,8 @@
     "ARQ-066": [
       "tests/core/test_canonical_execution_packages.py",
       "tests/core/test_architecture.py",
-      "tests/core/test_dependency_audit.py"
+      "tests/core/test_dependency_audit.py",
+      "tests/core/test_shared_metrics_contract.py"
     ],
     "ARQ-067": [
       "tests/core/test_canonical_execution_packages.py",
@@ -617,7 +622,8 @@
     ],
     "ARQ-072": [
       "tests/scientific/shared/test_scientific_checks.py",
-      "tests/core/test_training_diagnostics.py"
+      "tests/core/test_training_diagnostics.py",
+      "tests/core/test_shared_metrics_contract.py"
     ],
     "ARQ-073": [
       "tests/core/test_canonical_execution_packages.py",
@@ -713,7 +719,8 @@
     ],
     "ARQ-095": [
       "tests/core/test_architecture.py",
-      "tests/core/test_canonical_execution_packages.py"
+      "tests/core/test_canonical_execution_packages.py",
+      "tests/core/test_dependency_audit.py"
     ],
     "ARQ-096": [
       "tests/scientific/shared/test_scientific_checks.py",

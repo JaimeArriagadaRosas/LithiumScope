@@ -1,13 +1,13 @@
 # Estado de implementación por criterio
 
-Corte de código: 6076047aa10091396a1c30dd6dfea3aa129d4b57. Conteo de implementación solicitado, **independiente de la ejecución de pruebas**. I = implementación principal incorporada al código (no necesariamente todos los detalles ni aceptación); P = implementación parcial con trabajo de código concreto pendiente. Cada criterio vale una unidad, incluidos requisitos superpuestos; P no suma como implementado. La clasificación es revisión documental y estática, no resultado de una suite. Los originales completos permanecen locales; se usan los extractos y matrices versionados. Consola adicional excluida del denominador textual de 166.
+Corte de código: 0c1ad5ce3c3d412bea80f20f32374bca2a6663ad. Conteo de implementación solicitado, **independiente de la ejecución de pruebas**. I = implementación principal incorporada al código (no necesariamente todos los detalles ni aceptación); P = implementación parcial con trabajo de código concreto pendiente. Cada criterio vale una unidad, incluidos requisitos superpuestos; P no suma como implementado. La clasificación es revisión documental y estática, no resultado de una suite. Los originales completos permanecen locales; se usan los extractos y matrices versionados. Consola adicional excluida del denominador textual de 166.
 
 | Diagnóstico | Total | Implementación principal | Parcial | Avance de implementación |
 |---|---:|---:|---:|---:|
 | M1 | 27 | 27 | 0 | 100,0 % |
 | M2 | 30 | 30 | 0 | 100,0 % |
-| ARQ | 109 | 78 | 31 | 71,6 % |
-| **Total** | **166** | **135** | **31** | **81,3 %** |
+| ARQ | 109 | 81 | 28 | 74,3 % |
+| **Total** | **166** | **138** | **28** | **83,1 %** |
 
 Los seis cierres acotados y la última suite histórica se conservan por separado en HANDOFF.md. Los experimentos son ejecutables pero no ejecutados; el rendimiento no está demostrado. La revisión podrá reclasificar criterios si surgen faltantes.
 
@@ -111,13 +111,13 @@ Los seis cierres acotados y la última suite histórica se conservan por separad
 | ARQ-039 | Principal incorporada | Resultados EDA, runs y metodología separados. |
 | ARQ-040 | Principal incorporada | Componentes comunes y compatibilidad. |
 | ARQ-041 | Parcial | Requisito global: depende de restantes diagnósticos M2. |
-| ARQ-042 | Parcial | Renderer separado; faltan cálculos residuales por trasladar. |
+| ARQ-042 | Parcial | Cálculos de casos y deltas trasladados y preparados fuera del renderer; falta retirar o delimitar compatibilidad histórica de helpers de formato y verificar límite completo. |
 | ARQ-043 | Principal incorporada | Reporting movido a raíz. |
 | ARQ-044 | Principal incorporada | Predicción centrada en entradas, cálculos y resultados. |
-| ARQ-045 | Parcial | Reorganización amplia; quedan componentes candidatos y responsabilidades antiguas. |
+| ARQ-045 | Parcial | Evaluación y holdout separados, scoring de candidatos en ejecución; restantes componentes de prediction pendientes de auditoría completa. |
 | ARQ-046 | Principal incorporada | Subdirectorios principales de predicción. |
-| ARQ-047 | Parcial | Parte de cálculos ya trasladada; falta auditoría residual del renderer. |
-| ARQ-048 | Parcial | Distribución separada; falta trasladar evaluación/promoción restante desde prediction/candidates. |
+| ARQ-047 | Principal incorporada | Preparación de errores absolutos, clases operativas, intervalos físicos y deltas históricos en prediction/analysis/report_inputs.py; renderer consume valores calculados, conserva presentación. |
+| ARQ-048 | Principal incorporada | Evaluación comparativa de candidatos y holdout prospectivo trasladados a evaluation/candidates y evaluation/holdout; persistencia conserva activación y distribución empaquetado, scoring de casos en prediction/execution, compatibilidad antigua. |
 | ARQ-049 | Principal incorporada | Inferencia compartida con modelos y compatibilidad. |
 | ARQ-050 | Principal incorporada | Exportaciones separadas de inferencia. |
 | ARQ-051 | Principal incorporada | Control de 300 líneas y separación de archivos. |
@@ -135,14 +135,14 @@ Los seis cierres acotados y la última suite histórica se conservan por separad
 | ARQ-063 | Parcial | Lectura y validación compartidas; quedan auxiliares antiguos en experiments. |
 | ARQ-064 | Parcial | Exportaciones y reporting experimentales todavía parcialmente duplicados. |
 | ARQ-065 | Principal incorporada | Experimentos aislados de comportamiento predeterminado y promoción. |
-| ARQ-066 | Parcial | Core reorganizado; quedan dependencias específicas de modelos. |
+| ARQ-066 | Parcial | Métricas genéricas y curvas desacopladas de modelos; falta comprobar independencia de todo core. |
 | ARQ-067 | Principal incorporada | Paquete core/reproducibility para semilla, huella e integridad; configuración, execution, logging y scientific separados; recursos permanecen en resources por requisito específico. |
 | ARQ-068 | Principal incorporada | visualization.py restaurado a raíz de core junto a exceptions.py, paths.py y states.py; ruta anterior en presentation preservada mediante alias. |
 | ARQ-069 | Principal incorporada | Auditoría de tamaño trasladada a tools/inspection. |
 | ARQ-070 | Principal incorporada | Retención consolidada. |
 | ARQ-071 | Principal incorporada | Parámetros específicos separados de detección de hardware. |
-| ARQ-072 | Parcial | Controles científicos comunes centralizados; quedan acoplamientos de diagnósticos a métricas particulares. |
-| ARQ-073 | Parcial | Auditoría AST disponible; falta resolver dependencias residuales. |
+| ARQ-072 | Principal incorporada | Contratos genéricos de métricas de regresión y clasificación centralizados en core/scientific; curvas y comparaciones comparten esas implementaciones, rutas de modelos compatibles. |
+| ARQ-073 | Parcial | Auditoría AST ampliada a import_module literal, ciclos y destinos inexistentes; falta inventario y corrección integral de dependencias. |
 | ARQ-074 | Principal incorporada | Familias en archivos por algoritmo. |
 | ARQ-075 | Principal incorporada | Implementaciones separadas de preprocesamiento y ejecución. |
 | ARQ-076 | Principal incorporada | Algoritmos M1/M2 independientes. |
@@ -164,7 +164,7 @@ Los seis cierres acotados y la última suite histórica se conservan por separad
 | ARQ-092 | Parcial | Se incorporan pruebas por etapa; ejecución diferida por restricción de CI y acceso local. |
 | ARQ-093 | Principal incorporada | Mapa de pruebas por los 166 criterios. |
 | ARQ-094 | Principal incorporada | Trazabilidad de requisitos, implementación, pruebas y evidencias. |
-| ARQ-095 | Parcial | Auditoría y límites implementados; falta completar control de ciclos y separación de responsabilidades. |
+| ARQ-095 | Parcial | Pruebas de aliases, contratos de métricas y detección de ciclos literales añadidas; falta ejecución y cierre de ciclos residuales. |
 | ARQ-096 | Principal incorporada | Casos científicos válidos, inválidos y límites. |
 | ARQ-097 | Parcial | Benchmark sintético disponible; faltan comparaciones completas de adquisición, entrenamiento e inferencia. |
 | ARQ-098 | Principal incorporada | CI ampliada y matriz existente; nuevas ejecuciones diferidas. |
