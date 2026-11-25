@@ -77,6 +77,14 @@ competition:
     - mae
     - r2
   winner_rule: lowest_mean_outer_cv_rmse
+  # Conservative research policy fixed before evaluation; not geological tolerances.
+  # Relative to paired TRAIN-only mean/median references; no promotion without holdout.
+  development_gate:
+    max_worst_fold_rmse_ratio: 1.0
+    min_fold_win_fraction: 0.6
+    max_high_mae_ratio: 1.0
+    max_high_abs_bias_ratio: 1.0
+    max_source_abs_bias_ratio: 1.0
 
 baseline:
   enabled: true

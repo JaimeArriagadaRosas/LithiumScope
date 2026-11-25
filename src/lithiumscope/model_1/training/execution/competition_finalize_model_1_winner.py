@@ -9,6 +9,10 @@ def _finalize_model_1_winner(baseline, config, context, dataset_manifest, device
     from lithiumscope.model_1.evaluation.selection import baseline_eligibility
     ranking = baseline_eligibility(_rank(rows), preflight_ok=preflight.get("status") == "pass",
         minimum_gain=float(config.get("baseline",{}).get("minimum_rmse_gain_ppm",0.0)))
+    policy = config.get("competition", {}).get("development_gate")
+    if policy is not None:
+        from lithiumscope.model_1.evaluation.development_gate import apply_development_gate
+        ranking = apply_development_gate(ranking, prepared, results, baseline[2], policy)
     ranking.to_csv(context.tables / "competition_ranking.csv", index=False)
     successful = ranking[
         eligible_rows(ranking)
@@ -26,7 +30,7 @@ def _finalize_model_1_winner(baseline, config, context, dataset_manifest, device
         context.tracker.set_state(
             RunState.PARTIAL if relative_winner else RunState.FAILED,
             relative_winner=relative_winner,
-            failure="No candidate satisfies predeclared baseline and preflight criteria.",
+            failure="No candidate satisfies predeclared development eligibility criteria.",
         )
         return CompetitionOutcome(context.root, ranking, None, successful.algorithm.astype(str).tolist(), failed)
 
@@ -109,6 +113,8 @@ def _finalize_model_1_winner(baseline, config, context, dataset_manifest, device
         "baseline_policy": str(eligible.iloc[0]["baseline_policy"]),
         "rmse_gain_over_best_baseline":float(eligible.iloc[0]["rmse_gain_over_best_baseline"]),
         "experimental_only":True,
+        "development_gate_policy": policy,
+        "development_gate_pass": bool(eligible.iloc[0].get("development_gate_pass", False)),
         "final_fit_contract_sha256":fit_contract["identity_sha256"],
         "release_gate":{"pass":False,"reason":"no_independent_external_holdout"},
         "winner_rule": (
