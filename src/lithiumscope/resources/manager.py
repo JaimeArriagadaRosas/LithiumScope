@@ -57,6 +57,12 @@ def fit_workload_scope(demand, *, evidence_path=None):
     parent=_active_threads.get()
     threads=min(plan.threads_per_task,parent) if parent is not None else plan.threads_per_task
     from dataclasses import replace
+    inherited=_active_plan.get()
+    if inherited is not None:
+        ram=plan.ram_budget_bytes
+        if inherited.ram_budget_bytes is not None:
+            ram=min(ram,inherited.ram_budget_bytes) if ram is not None else inherited.ram_budget_bytes
+        plan=replace(plan,ram_budget_bytes=ram,parallel_tasks=1)
     plan=replace(plan,threads_per_task=threads)
     token=_active_threads.set(threads)
     plan_token=_active_plan.set(plan)
@@ -115,7 +121,10 @@ def worker_plan_scope(plan):
     threads=min(plan.threads_per_task,previous) if previous is not None else plan.threads_per_task
     from dataclasses import replace
     token=_active_threads.set(threads)
-    plan_token=_active_plan.set(replace(plan,threads_per_task=threads))
+    ram=plan.ram_budget_bytes
+    if ram is not None:
+        ram=ram//plan.parallel_tasks
+    plan_token=_active_plan.set(replace(plan,threads_per_task=threads,ram_budget_bytes=ram,parallel_tasks=1))
     try:
         with estimator_thread_scope():
             yield

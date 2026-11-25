@@ -4,6 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 from uuid import uuid4
 import joblib
+import re
 
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.resources.allocation.scheduler import Task,run_tasks
@@ -52,15 +53,18 @@ def schedule_candidates(model_group,requests,root,device,*,policy=None):
     root.mkdir(parents=True,exist_ok=False)
     tasks=[]
     files={}
+    keys=[key for key,_,_ in requests]
+    if not keys or len(set(keys))!=len(keys) or any(not re.fullmatch(r"[A-Za-z0-9_-]+",key) for key in keys):
+        raise ValueError("Unique safe candidate identifiers required")
     try:
         for key,arguments,memory in requests:
             source=root/f"{key}.input.joblib"
             target=root/f"{key}.result.joblib"
+            files[key]=(source,target)
             task=Task(key,"lithiumscope.resources.allocation.competition_workers:evaluate_job",
                       {"input_path":str(source),"output_path":str(target),"expected_sha":_publish(source,arguments),
                        "model_group":model_group},memory)
             tasks.append(task)
-            files[key]=(source,target)
         report=run_tasks(tasks,root/"execution",policy=policy,execute=True)
         records={r["task_id"]:r for wave in report["waves"] for r in wave["results"]}
         output={}

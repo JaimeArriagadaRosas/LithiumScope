@@ -38,7 +38,7 @@ def wave_plan(tasks,host,policy):
         raise ValueError("No tasks")
     first=tasks[0]
     candidates=[first]
-    if not first.require_gpu:
+    if not first.require_gpu and policy.max_parallel_tasks>1:
         for task in tasks[1:]:
             if task.require_gpu:
                 break

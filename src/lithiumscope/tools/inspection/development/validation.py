@@ -84,6 +84,8 @@ def run_pytest(root: Path, logs: Path, current_commit: str | None) -> dict:
     env["PYTHONIOENCODING"] = "utf-8"
     env.pop("PYTEST_ADDOPTS", None)
     env["LITHIUMSCOPE_DISABLE_AUTO_INSTALL"] = "1"
+    from lithiumscope.core.logging.session import current_session_directory
+    env["LITHIUMSCOPE_SESSION_DIR"] = str(current_session_directory())
     # This uses the same isolated runner as the canonical test menu.
     result = subprocess.run([sys.executable, str(runner), "--coverage", "--", "-q"],
                             cwd=root, env=env, capture_output=True, check=False)
@@ -143,11 +145,20 @@ def print_validation(sections: dict) -> None:
         print("  Consulte el JSON para los demás casos no aprobados.")
 
 
+def _check_dependencies(root):
+    from lithiumscope.tools.inspection.dependencies import audit_imports
+    report=audit_imports(root)
+    blockers=("syntax_errors","eager_cycles","cross_model_edges","core_to_model_edges",
+              "reporting_to_science_edges","unresolved_local_imports")
+    return {"state":"ERROR" if any(report[k] for k in blockers) else "OK",**report}
+
+
 def run_development_validation(root: Path) -> dict:
     root = root.resolve()
     identity = git_identity(root)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S_%fZ")
-    logs = local_path(root, f"logs/sessions/development_{stamp}_{uuid4().hex[:8]}/validation")
+    from lithiumscope.core.logging.session import current_session_directory
+    logs = current_session_directory() / "validation" / f"development_{stamp}_{uuid4().hex[:8]}"
     logs.mkdir(parents=True, exist_ok=False)
     sections = {}
     from lithiumscope.tools.inspection.development.protected import protected_inventory, compare_protected
@@ -156,6 +167,7 @@ def run_development_validation(root: Path) -> dict:
         ("syntax", lambda: syntax_check(root, tracked_python(root))),
         ("lint", lambda: command_check(root, logs, "ruff", ["-m", "ruff", "check", "--no-cache", "src", "tests", "scripts"])),
         ("architecture", lambda: command_check(root, logs, "architecture", ["scripts/check_code_size.py", "--check"])),
+        ("imports", lambda: _check_dependencies(root)),
         ("pytest", lambda: run_pytest(root, logs, identity.get("commit"))),
     )
     for name, check in checks:

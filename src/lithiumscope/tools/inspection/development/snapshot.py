@@ -114,9 +114,28 @@ def _architecture(root):
     from lithiumscope.tools.inspection.dependencies import audit_imports
     imports = audit_imports(root)
     unresolved = any(imports[key] for key in ("eager_cycles", "cross_model_edges",
-                    "core_to_model_edges", "reporting_to_science_edges", "syntax_errors"))
+                    "core_to_model_edges", "reporting_to_science_edges", "syntax_errors","unresolved_local_imports"))
     return {"state": "WARNING" if data["files_over_300"] or data["directories_over_20"] or unresolved else "OK",
             **data, "imports": imports}
+
+
+def _implementation(root):
+    import re
+    from collections import Counter
+    path=local_path(root,"docs/integral-refactor/implementation-status.md")
+    rows=[]
+    for line in path.read_text(encoding="utf-8").splitlines():
+        match=re.match(r"^\| ((?:M1|M2|ARQ)-\d+) \| (Principal incorporada|Parcial) \|",line)
+        if match:
+            rows.append(match.groups())
+    if len(rows)!=166 or len({key for key,_ in rows})!=166:
+        raise ValueError("Implementation catalog is incomplete or duplicated")
+    groups={}
+    for group in ("M1","M2","ARQ"):
+        counts=Counter(state for key,state in rows if key.startswith(group+"-"))
+        groups[group]={"total":sum(counts.values()),"principal":counts["Principal incorporada"],"partial":counts["Parcial"]}
+    return {"state":"OK","groups":groups,"partial_ids":[key for key,state in rows if state=="Parcial"],
+            "source":file_record(root,path),"scope":"documented implementation; not functional acceptance"}
 
 
 def _inventory(root):
@@ -167,6 +186,7 @@ def collect_snapshot(root: Path = PROJECT_ROOT, *, validation=None) -> dict:
         "environment": _section("Entorno", _environment),
         "resources": _section("Recursos", _resources),
         "architecture": _section("Arquitectura", lambda: _architecture(root)),
+        "implementation": _section("Trazabilidad de implementación", lambda: _implementation(root)),
         "inventory": _section("Inventario de artefactos", lambda: _inventory(root)),
         "models": _section("Modelos activos", lambda: active_models(root)),
         "documents": _section("Integridad documental", lambda: _document_evidence(root)),
