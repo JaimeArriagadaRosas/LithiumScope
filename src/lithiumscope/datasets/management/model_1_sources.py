@@ -57,7 +57,9 @@ def prepare_model_1_training_source(
 
     existing = _project_path(str(georoc.get('combined_path', 'data/processed/model_1/training_combined.csv')))
     expected = georoc.get('frozen_combined_sha256')
-    if existing.is_file() and expected:
+    if expected:
+        if not existing.is_file():
+            raise FileNotFoundError('Frozen M1 dataset unavailable; restore verified bytes or explicitly select a separate unfrozen candidate configuration')
         if file_sha256(existing) != expected:
             raise ValueError('Frozen combined M1 dataset hash mismatch; no automatic overwrite')
         logger.info('Reusing verified frozen M1 dataset: %s', existing)

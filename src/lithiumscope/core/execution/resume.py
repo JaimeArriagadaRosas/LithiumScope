@@ -148,6 +148,7 @@ def _scientific_code_files(model_group: str) -> list[Path]:
         source_root / "results" / "eda_artifacts.py",
         source_root / "results" / "eda_protocol.py",
         source_root / "datasets" / "harmonization.py",
+        source_root / "datasets" / "harmonization_deduplication.py",
         source_root / "persistence" / "save_model.py",
         source_root / "persistence" / "final_fit_contract.py",
     ):

@@ -22,7 +22,13 @@ def local_training_source(model_group: str) -> Path:
         sources = config["data_sources"]
         georoc = sources.get("georoc", {})
         if georoc.get("enabled", False):
-            return _existing_local(georoc["combined_path"])
+            path = _existing_local(georoc["combined_path"])
+            expected = georoc.get("frozen_combined_sha256")
+            if expected:
+                from lithiumscope.core.hashing import file_sha256
+                if file_sha256(path) != expected:
+                    raise ValueError("Frozen combined M1 dataset hash mismatch")
+            return path
         spec = get_dataset_spec(sources["base"]["key"])
         return _existing_local(DATA_DIR / "raw" / spec.model / spec.destination_name)
     if model_group == "model_2":

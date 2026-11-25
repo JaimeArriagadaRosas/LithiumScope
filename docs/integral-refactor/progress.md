@@ -215,3 +215,20 @@
 - Recursos: muestreador persistente de proceso/arbol con CPU por intervalo, RSS, conteo de procesos, maximos acotados y metadata de politica. Limites de hilos nativos con restauracion y RLock local, caps en estimadores y cache SVM, plan CPU sin sondeos GPU repetidos, HGB sin early stopping aleatorio, contador de errores con lock separado. No es un scheduler multiproceso ni hard cap de RAM/VRAM; RSS de arbol puede contar paginas compartidas. Benchmark sintetico results/diagnostics/resource_policy_benchmark: host 4 nucleos/8 hilos, presupuesto 6, RAM 16980832256 bytes, GTX1650 4 GiB; probes GPU XGBoost y CatBoost exitosos; Torch ausente. RF/HGB/SVM 300 predicciones finitas cada uno, OpenMP/OpenBLAS maximo 6, dos muestras de recursos por ajuste; no benchmark comparativo de rendimiento real.
 - Regresion arquitectura inicial 641 passed, 7 skipped; final integral 647 passed, 7 skipped, 8 warnings, 0 errores/fallos, 654 casos, 57% cobertura. Runner 186.422 s, pytest 184.70 s. results/tests/20261124T233024Z_b103ebe73a2d42349dcd5e7313a34bf1 y logs/sessions/20261124T233024Z_335b8330b8814b1bbfe2d534257ab024/tests/pytest.log. Paridad real post reorganizacion results/diagnostics/historical_inference_parity_reorganization: 10/10 M1 y 10/10 M2, delta 0.0, advertencias/OOD identicos, decision PROVISIONAL A1015-22. Sin ajuste definitivo, adquisicion, activacion, promocion, render PDF, push ni workflows remotos.
 - Lectura textual completa complementos 03 M1 Release (1833 lineas) y 04 M2 Release (2021 lineas), excluidas cuatro imagenes base64 por documento (verificacion de prefijos); no se certifica revision visual de graficos embebidos. Restan tramos de consola de Diagnostico de Repositorio no contrastados linea a linea, diagnostico E1/E2 vacio, auditoria binaria/visual PDF, evaluacion real controlada de familias y holdout independiente. Trazabilidad sigue 57/57 parcialmente verificados, 0 cerrados integralmente.
+
+## Desarrollo exclusivo mediante GitHub (posterior al handoff)
+
+Sin Desktop Commander, CI omitida explícitamente; no se ejecutaron tests ni entrenamientos en este bloque. La última evidencia ejecutada es b0c3857, con CI 7/7 y 647 tests aprobados localmente.
+
+- a5036ee: opción temporal 5 > 4; ejecutar sintaxis, lint, arquitectura y suite completa con cobertura, JUnit, identidad Git, inventario y preflight; JSON compartible y logs locales.
+- af8c5db: transacción de preparación, verificación de artefactos EDA, contrato de folds y QA.
+- 9166a1c: EDA de competencia M1/M2 asociado a los folds de desarrollo reales; pruebas de integración sintéticas.
+- d0710e1: configuración, ejecución y auditoría de código en ubicaciones canónicas; compatibilidad de importaciones.
+- 2dd4c51 y c4fae22: adquisición, adaptadores, gestión y procedencia; validación M2 congelado y hash de imágenes vinculadas.
+- 46a21ea: catálogo de los 166 criterios (1–3 módulos relevantes por criterio); reporte JUnit con estados observados, no cierre automático.
+- 15e372e: deduplicación conservadora, auditoría de conflictos e identidad incompleta; protección de archivo M1 histórico.
+- b92f098: predicción separada en inputs, execution, analysis, demonstration, exports; empaquetado en distribution.
+- fa777f9: primer traslado de protocolos experimentales a model_1, model_2, integrated y shared; faltan scripts individuales por revisar.
+- Este commit: protección M1 también si el archivo congelado falta, comprobación en diagnóstico local, pruebas de conservación de bytes, huella de código y actualización de catálogo y handoff.
+
+Los cambios requieren regresión local en el commit actual. No se han cerrado criterios nuevos; 160 abiertos, 6 verificaciones acotadas previas. Revisar especialmente compatibilidad de aliases, límites físicos y directorios, preparación con datos reales, EDA M2 y generación de PDF. El hash congelado M1 está en config; si no coincide con el artefacto local, no sobrescribir ni cambiarlo para ocultar el problema. Configuración independiente sin congelación para experimentos nuevos, no sustitución del histórico. No instalar ni adquirir automáticamente durante 5 > 4.

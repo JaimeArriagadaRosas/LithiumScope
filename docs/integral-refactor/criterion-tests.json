@@ -69,7 +69,7 @@
     "M1-16": [
       "tests/datasets/test_georoc_provenance_contract.py",
       "tests/model_1/test_source_reconciliation.py",
-      "tests/datasets/test_harmonization_conflicts.py"
+      "tests/datasets/test_frozen_model_1_input.py"
     ],
     "M1-17": [
       "tests/model_1/test_coordinate_lineage.py",
@@ -284,7 +284,7 @@
     "ARQ-008": [
       "tests/datasets/test_acquisition_architecture.py",
       "tests/datasets/test_georoc_acquisition.py",
-      "tests/datasets/test_training_georoc_auto_acquisition.py"
+      "tests/datasets/test_frozen_model_1_input.py"
     ],
     "ARQ-009": [
       "tests/model_1/test_censoring_contract.py",
@@ -332,7 +332,7 @@
     "ARQ-018": [
       "tests/results/test_eda_training_integration.py",
       "tests/model_1/test_model_1_scientific_guards.py",
-      "tests/datasets/test_training_georoc_auto_acquisition.py"
+      "tests/datasets/test_frozen_model_1_input.py"
     ],
     "ARQ-019": [
       "tests/scientific/shared/test_integral_eda.py",
@@ -444,15 +444,18 @@
     ],
     "ARQ-044": [
       "tests/prediction/test_integrated_prediction_analysis.py",
-      "tests/prediction/test_prediction_manifest_paths.py"
+      "tests/prediction/test_prediction_manifest_paths.py",
+      "tests/prediction/test_canonical_prediction_architecture.py"
     ],
     "ARQ-045": [
       "tests/core/test_architecture.py",
-      "tests/prediction/test_integrated_prediction_analysis.py"
+      "tests/prediction/test_integrated_prediction_analysis.py",
+      "tests/prediction/test_canonical_prediction_architecture.py"
     ],
     "ARQ-046": [
       "tests/prediction/test_integrated_demo_fixture.py",
-      "tests/prediction/test_prediction_manifest_paths.py"
+      "tests/prediction/test_prediction_manifest_paths.py",
+      "tests/prediction/test_canonical_prediction_architecture.py"
     ],
     "ARQ-047": [
       "tests/prediction/test_integrated_prediction_analysis.py",
@@ -461,11 +464,12 @@
     "ARQ-048": [
       "tests/prediction/test_candidate_evaluation_gates.py",
       "tests/prediction/test_demo_promotion_guard.py",
-      "tests/release/test_release_bundle_builder.py"
+      "tests/prediction/test_canonical_prediction_architecture.py"
     ],
     "ARQ-049": [
       "tests/prediction/test_prediction_release_demo.py",
-      "tests/prediction/test_model_selection_release_pdf.py"
+      "tests/prediction/test_model_selection_release_pdf.py",
+      "tests/prediction/test_canonical_prediction_architecture.py"
     ],
     "ARQ-050": [
       "tests/reporting/test_excel_exporter.py",
@@ -505,16 +509,18 @@
     ],
     "ARQ-059": [
       "tests/scientific/shared/test_scientific_scenarios.py",
-      "tests/scientific/shared/test_compare_vnext_trained_runs.py"
+      "tests/scientific/shared/test_compare_vnext_trained_runs.py",
+      "tests/scientific/shared/test_experiment_architecture.py"
     ],
     "ARQ-060": [
       "tests/scientific/shared/test_scientific_scenarios.py",
       "tests/scientific/m1/test_vnext_m1.py",
-      "tests/scientific/m2_training/test_m2_generalization_protocol.py"
+      "tests/scientific/shared/test_experiment_architecture.py"
     ],
     "ARQ-061": [
       "tests/scientific/shared/test_scientific_scenarios.py",
-      "tests/core/test_architecture.py"
+      "tests/core/test_architecture.py",
+      "tests/scientific/shared/test_experiment_architecture.py"
     ],
     "ARQ-062": [
       "tests/scientific/shared/test_scientific_acquisition.py",
@@ -530,7 +536,8 @@
     ],
     "ARQ-065": [
       "tests/prediction/test_prospective_holdout.py",
-      "tests/prediction/test_demo_promotion_guard.py"
+      "tests/prediction/test_demo_promotion_guard.py",
+      "tests/scientific/shared/test_experiment_architecture.py"
     ],
     "ARQ-066": [
       "tests/core/test_canonical_execution_packages.py",

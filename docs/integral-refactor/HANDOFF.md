@@ -21,7 +21,7 @@ La arquitectura no tenía numeración original: IDs ARQ-001..109 introducidos pa
 No sumar los totales como tareas independientes ni interpretar como porcentaje de avance.
 E1/E2 está vacío (0 bytes) y el checklist general del seminario contiene otras tareas académicas fuera de este alcance.
 Última suite local en b0c3857: 647 aprobadas, 7 omitidas, 8 warnings, 0 fallos, 57% cobertura de líneas, 670 archivos <=300, sin directorios Python >20.
-No se atribuye CI aprobada a commits posteriores omitidos por [skip ci].
+No se atribuye CI aprobada a commits posteriores omitidos por [skip ci]. Los 166 criterios cuentan ahora con 1–3 módulos de pruebas relevantes asociados en criterion-tests.json; no implica cobertura exhaustiva ni cierre.
 
 ## Lectura inicial en un chat nuevo
 
@@ -57,7 +57,7 @@ No se atribuye CI aprobada a commits posteriores omitidos por [skip ci].
 
 ## Diagnóstico temporal y trabajo sin Desktop Commander
 
-La primera versión del recolector 5 > 4 fue preparada como commit e3286fd17ad84f36ec7c1f6a1069ea3bce9aa9f7, no incorporado al HEAD de esta rama al crear este documento. Es un borrador pendiente de revisión y ejecución de sus tests. Integrarlo sobre el HEAD actual sin sobrescribir la documentación nueva, con [skip ci], cuando corresponda. El usuario ejecutará git pull y 5 > 4 y compartirá development_report.json revisado. El informe debe recopilar estado/hashes, versiones, QA, preflight, recursos, cobertura y artefactos faltantes; no transmitir secretos, datos crudos, rutas personales, logs completos, modelos, ni ajustar/activar modelos. Si hace falta, pedir logs específicos o prueba nueva. Quitar opción temporal y paquete de desarrollo al terminar.
+El recolector 5 > 4 está incorporado desde a5036ee y ampliado en 46a21ea: sintaxis completa, Ruff, arquitectura, pytest aislado con cobertura y JUnit, evidencia asociada por los 166 criterios, inventario y preflight. Todavía no se ejecutó sobre esta rama con los cambios nuevos. El usuario ejecutará git pull y 5 > 4 y compartirá development_report.json revisado. El informe debe recopilar estado/hashes, versiones, QA, preflight, recursos, cobertura y artefactos faltantes; no transmitir secretos, datos crudos, rutas personales, logs completos, modelos, ni ajustar/activar modelos. Si hace falta, pedir logs específicos o prueba nueva. Quitar opción temporal y paquete de desarrollo al terminar.
 
 ## Restricciones y bloqueos
 
