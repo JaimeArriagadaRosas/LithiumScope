@@ -121,6 +121,7 @@ def run(base: Path = BASE) -> tuple[Path, Path]:
     print(json.dumps(payload, indent=2), flush=True)
     return outfile, report
 
-
-if __name__ == "__main__":
-    run()
+if __name__=="__main__":
+    from lithiumscope.core.logging.session import run_log
+    with run_log("simulations","georoc_sample_method_audit"):
+        run()

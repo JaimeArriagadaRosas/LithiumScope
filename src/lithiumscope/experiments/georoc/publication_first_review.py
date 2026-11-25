@@ -42,4 +42,8 @@ def main():
  (BASE/"publication_first_review_manifest.json").write_text(json.dumps(details,indent=2),encoding="utf8")
  print("PUBLICATION_REVIEW",json.dumps(details),flush=True)
  print(target[["citation_number","samples","total","away_full_mamani","chile","DOI","TITLE"]].to_string(index=False,max_colwidth=80),flush=True)
-if __name__=="__main__":main()
+
+if __name__=="__main__":
+    from lithiumscope.core.logging.session import run_log
+    with run_log("simulations","publication_first_review"):
+        main()

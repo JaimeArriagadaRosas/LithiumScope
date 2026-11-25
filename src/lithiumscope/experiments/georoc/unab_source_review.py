@@ -46,7 +46,13 @@ def audit(destination: Path) -> Path:
     print(json.dumps(result, indent=2, ensure_ascii=False), flush=True)
     return target
 
-
-if __name__ == "__main__":
-    audit(Path("results/scientific_simulations/external_geochemistry_audit"))
-
+if __name__=="__main__":
+    from lithiumscope.core.logging.session import run_log
+    import argparse
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--acquire",action="store_true")
+    if not parser.parse_args().acquire:
+        print("Preflight: use --acquire to authorize network requests.")
+        raise SystemExit(0)
+    with run_log("simulations","unab_source_review"):
+        audit(Path("results/scientific_simulations/external_geochemistry_audit"))

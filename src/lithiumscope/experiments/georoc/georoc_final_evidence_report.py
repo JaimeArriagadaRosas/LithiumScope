@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 
 BASE=Path("results/scientific_simulations/external_geochemistry_audit")
-DOC=Path("docs/scientific/georoc/GEOCHEMICAL_EXTERNAL_VALIDATION_FINAL.md")
+DOC=BASE/"GEOCHEMICAL_EXTERNAL_VALIDATION_FINAL.md"
 def main():
     d=pd.read_csv(BASE/"georoc_extended_evidence_screen.csv",low_memory=False)
     ref=pd.read_csv(BASE/"georoc_citations_2024.tab",sep="\t",encoding="latin1",low_memory=False)
@@ -90,4 +90,7 @@ def main():
     DOC.write_text("\n".join(lines)+"\n",encoding="utf8")
     print("FINAL",json.dumps(summary,ensure_ascii=False),flush=True)
 
-if __name__=="__main__": main()
+if __name__=="__main__":
+    from lithiumscope.core.logging.session import run_log
+    with run_log("simulations","georoc_final_evidence_report"):
+        main()
