@@ -179,8 +179,8 @@ def test_query_diagnostics_exposes_http_status_url_and_body(
 
     monkeypatch.setattr(
         diag,
-        "LOGS_DIR",
-        tmp_path,
+        "current_session_directory",
+        lambda: tmp_path,
     )
     failure = diagnose_query_exception(exc)
 
@@ -252,3 +252,17 @@ def test_resolve_postpage_action_supports_two_arguments():
 
     assert target == "ChemCompTxt.asp"
     assert track == ""
+
+
+def test_error_evidence_paths_are_unique(tmp_path,monkeypatch):
+    import requests
+    from lithiumscope.tools.acquisition.georoc import georoc_query_diagnostics as diag
+    monkeypatch.setattr(diag,"current_session_directory",lambda:tmp_path)
+    response=requests.Response()
+    response._content=b"error"
+    response.status_code=500
+    exc=requests.HTTPError("error",response=response)
+    one=diag.diagnose_query_exception(exc)
+    two=diag.diagnose_query_exception(exc)
+    assert one.evidence_path!=two.evidence_path
+    assert one.evidence_path.read_bytes()==two.evidence_path.read_bytes()==b"error"

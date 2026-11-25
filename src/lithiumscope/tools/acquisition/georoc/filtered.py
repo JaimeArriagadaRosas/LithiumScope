@@ -5,6 +5,8 @@ from pathlib import Path
 import requests
 
 from lithiumscope.core.paths import DATA_DIR, LOGS_DIR
+from lithiumscope.core.logging.session import current_session_directory
+from lithiumscope.core.logging.context import unique_id
 from lithiumscope.tools.acquisition.georoc.query_contract import (
     CHEMISTRY,
     GEOROC_FILTERED_NAME,
@@ -51,12 +53,8 @@ from lithiumscope.tools.acquisition.georoc.georoc_query_payload import (
 def _save_debug(
     step: int,
     response: requests.Response,
+    directory: Path,
 ) -> Path:
-    directory = (
-        LOGS_DIR
-        / "lab"
-        / "georoc_query"
-    )
     directory.mkdir(
         parents=True,
         exist_ok=True,
@@ -102,12 +100,8 @@ def acquire_filtered_georoc(
     spinner = Spinner(
         "Descargando GEOROC filtrado"
     ).start()
-    run_log = BoundedRunLog(
-        LOGS_DIR
-        / "lab"
-        / "georoc_query"
-        / "run.log"
-    )
+    directory = current_session_directory() / "acquisition" / unique_id("georoc")
+    run_log = BoundedRunLog(directory / "run.log")
     run_log.event(
         "acquisition",
         "inicio",
@@ -130,15 +124,12 @@ def acquire_filtered_georoc(
             response = initial_query(
                 session,
                 timeout,
-                capture_initial=lambda page: _save_debug(
-                    0,
-                    page,
-                ),
+                capture_initial=lambda page: _save_debug(0, page, directory),
             )
         except Exception as exc:
             failure = diagnose_query_exception(
                 exc,
-                filename="error_initial.html",
+                filename="error_initial.html", directory=directory,
             )
             raise RuntimeError(
                 "Falló la consulta inicial de GEOROC: "
@@ -162,10 +153,7 @@ def acquire_filtered_georoc(
                     run_log,
                 )
 
-            last_debug = _save_debug(
-                step,
-                response,
-            )
+            last_debug = _save_debug(step, response, directory)
             parser = parse(response.text)
             run_log.event(
                 "step",

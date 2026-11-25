@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
+from threading import RLock
+from uuid import uuid4
 
 
 class BoundedRunLog:
@@ -15,6 +17,7 @@ class BoundedRunLog:
         max_chars: int = 48_000,
     ) -> None:
         self.path = path
+        self._lock = RLock()
         self.max_lines = max(20, int(max_lines))
         self.max_chars = max(4_000, int(max_chars))
         self.path.parent.mkdir(
@@ -59,12 +62,15 @@ class BoundedRunLog:
             parts.append(
                 f"{self._clean(key)}={self._clean(value)}"
             )
-        self._lines.append(" | ".join(parts))
-        self._trim()
-        self.path.write_text(
-            "\n".join(self._lines) + "\n",
-            encoding="utf-8",
-        )
+        with self._lock:
+            self._lines.append(" | ".join(parts))
+            self._trim()
+            temporary = self.path.with_name(f".{self.path.name}.{uuid4().hex}.tmp")
+            try:
+                temporary.write_text("\n".join(self._lines) + "\n", encoding="utf-8")
+                temporary.replace(self.path)
+            finally:
+                temporary.unlink(missing_ok=True)
 
     def _trim(self) -> None:
         self._lines = self._lines[-self.max_lines :]

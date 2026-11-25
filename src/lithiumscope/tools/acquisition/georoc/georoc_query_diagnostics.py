@@ -6,6 +6,8 @@ from pathlib import Path
 import requests
 
 from lithiumscope.core.paths import LOGS_DIR
+from lithiumscope.core.logging.context import unique_id
+from lithiumscope.core.logging.session import current_session_directory
 
 
 @dataclass(frozen=True)
@@ -35,15 +37,12 @@ def _request_url(
 def _save_response_body(
     response: requests.Response | None,
     filename: str,
+    directory: Path | None = None,
 ) -> Path | None:
     if response is None:
         return None
 
-    directory = (
-        LOGS_DIR
-        / "lab"
-        / "georoc_query"
-    )
+    directory = directory or (current_session_directory() / "acquisition" / unique_id("georoc_error"))
     directory.mkdir(
         parents=True,
         exist_ok=True,
@@ -61,6 +60,7 @@ def diagnose_query_exception(
     exc: BaseException,
     *,
     filename: str = "error_initial.html",
+    directory: Path | None = None,
 ) -> QueryFailure:
     response = getattr(exc, "response", None)
     if response is not None:
@@ -72,6 +72,7 @@ def diagnose_query_exception(
         evidence = _save_response_body(
             response,
             filename,
+            directory,
         )
     else:
         status_code = None
