@@ -1,6 +1,6 @@
 """Batch simulations and aggregate diagnostics; all models are read-only."""
 from pathlib import Path
-import json
+from lithiumscope.results.atomic_exports import write_json, write_table
 import numpy as np
 import pandas as pd
 
@@ -30,7 +30,7 @@ def run_m1_batch(bundle: dict, frame: pd.DataFrame, destination: Path,
                 "prediction_shift_ppm":float(np.mean(np.abs(predictions-baseline))),
                 "ood_rate":diagnostics["out_of_domain_rows"]/max(len(frame),1)})
     path = destination / "batch_m1.csv"
-    pd.DataFrame(records).to_csv(path,index=False)
+    write_table(path,pd.DataFrame(records))
     return path
 
 
@@ -54,9 +54,9 @@ def run_m2_batch(bundle: dict, manifest: Path, destination: Path,
         outputs.append(rows)
     output = destination / "batch_m2.csv"
     if outputs:
-        pd.concat(outputs,ignore_index=True).to_csv(output,index=False)
+        write_table(output,pd.concat(outputs,ignore_index=True))
     else:
-        pd.DataFrame(columns=["image_id","scene_id","year","scenario","status","score"]).to_csv(output,index=False)
+        write_table(output,pd.DataFrame(columns=["image_id","scene_id","year","scenario","status","score"]))
     return output
 
 
@@ -72,9 +72,10 @@ def summarize(output: Path, destination: Path) -> Path:
             "notes":"Stress/robustness metrics only; cannot infer independent predictive accuracy."}
         for key in ("rmse_ppm","mae_ppm","ood_rate","absolute_score_shift"):
             if key in table:
-                summary[f"mean_{key}"]=float(table[key].mean())
+                value=float(table[key].mean())
+                summary[f"mean_{key}"]=value if np.isfinite(value) else None
         if "status" in table:
             summary["status_counts"]=table["status"].value_counts().to_dict()
     target=destination/"summary.json"
-    target.write_text(json.dumps(summary,indent=2,ensure_ascii=False),encoding="utf-8")
+    write_json(target,summary)
     return target
