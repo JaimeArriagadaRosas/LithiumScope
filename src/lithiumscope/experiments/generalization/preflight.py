@@ -50,8 +50,8 @@ def _prepare_one(group, arm, data, cfg, train, test, seed):
     if group == "model_1":
         matrix, target, _, schema, trace = prepare_regression_arm(arm,seed,xx,labels,gg,sources.iloc[fit],numeric,categorical)
         features = schema.numeric + schema.categorical
-        # No imputer fitted here: canonical M1 estimator owns it, including
-        # TabNet's own spatial early-stopping split.
+        # KNN feasibility only: no learned transform is reused for fitting.
+        # The estimator owns the actual fit, including TabNet early stopping.
         if arm == "knn_imputation":
             from lithiumscope.model_1.training.preprocessing.tabular import build_preprocessor
             transformed = build_preprocessor(schema,"random_forest").fit_transform(matrix,target)
@@ -79,10 +79,30 @@ def _prepare_one(group, arm, data, cfg, train, test, seed):
         "generated_rows":max(0,len(target)-len(fit)),"removed_rows":max(0,len(fit)-len(target))}
     if group == "model_1":
         result.update(target_min=float(np.min(target)),target_max=float(np.max(target)))
+        from collections import Counter
+        if arm == "smoter":
+            counts = Counter(str(entry[name]) for entry in trace for name in ("parent_a","parent_b"))
+            pairs = Counter(tuple(sorted((entry["parent_a"],entry["parent_b"]))) for entry in trace)
+            groups_used = Counter(entry["group"] for entry in trace)
+            result.update(unique_synthetic_parents=len(counts),max_parent_uses=max(counts.values(),default=0),
+                max_pair_uses=max(pairs.values(),default=0),synthetic_groups=len(groups_used),
+                synthetic_max_group_share=max(groups_used.values(),default=0)/max(len(trace),1))
+            if result["max_parent_uses"] > 8 or result["max_pair_uses"] > 4:
+                raise ValueError("SMOTER parent cap exceeded")
+        elif arm == "rare_group_bootstrap":
+            counts = Counter(entry["row"] for entry in trace)
+            result.update(unique_bootstrap_parents=len(counts),max_parent_uses=max(counts.values(),default=0))
+            if result["max_parent_uses"] > 4:
+                raise ValueError("Rare group bootstrap cap exceeded")
     else:
         result.update(positive_before=int(labels.sum()),positive_after=int(np.sum(target)),
             effective_fit_weight=float(len(target) if weights is None else weights.sum()),
             effective_positive_weight=float(np.sum(target) if weights is None else np.dot(target,weights)))
+        if weights is not None:
+            from lithiumscope.experiments.generalization.signature_policy import signature_summary, signature_weights
+            expected = signature_summary(xx,labels)["unique_signatures"]
+            if not np.isclose(weights.sum(), expected) or not np.isclose(np.dot(target,weights),np.dot(labels,signature_weights(xx))):
+                raise ValueError("Signature treatment changed empirical class mass")
     return result,trace
 
 
@@ -166,6 +186,10 @@ def show_treatments(path, manifest):
         if not good.empty:
             detail=f" | filas de ajuste: {int(good.fit_after.min())}-{int(good.fit_after.max())} | variables: {int(good.features_after.min())}-{int(good.features_after.max())}"
         print(f"  {arm:24} listas {len(good):2}/{len(subset):2}{detail}")
+        if not good.empty and "max_parent_uses" in good and good.max_parent_uses.notna().any():
+            print(f"    Máxima reutilización por padre: {int(good.max_parent_uses.max())}")
+        if not good.empty and arm.startswith("signature_"):
+            print(f"    Masa efectiva por firma: {good.effective_fit_weight.min():.0f}-{good.effective_fit_weight.max():.0f}")
         if len(good)!=len(subset):
             for reason,count in subset.loc[subset.state.ne("ready"),"reason"].value_counts().items():
                 print(f"    BLOQUEADO ({count}): {reason}")

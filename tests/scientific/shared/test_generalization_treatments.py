@@ -68,3 +68,29 @@ def test_smoter_uses_same_source_and_recomputes_ratios():
     with pytest.raises(ValueError,match="no compatible"):
         regression_smoter(x,y,groups,pd.Series([str(i) for i in range(n)]),42,
             ["Latitude","Longitude","MgO","Fe2O3","Mg_Number"],["Rock_type"])
+
+
+def test_rare_group_bootstrap_parent_limit():
+    from collections import Counter
+    n=100
+    x=pd.DataFrame({"a":np.arange(n,dtype=float)})
+    y=pd.Series(np.arange(n,dtype=float))
+    g=pd.Series(["A"]*95+["B"]*5)
+    xx, yy, gg, trace=regression_resample(x,y,g,g,"rare_group_bootstrap",42)
+    assert len(xx)==125 and len(yy)==len(gg)==len(xx)
+    assert max(Counter(t["row"] for t in trace).values())<=4
+    assert (yy.iloc[n:]>=y.quantile(.9)).all()
+
+
+def test_smoter_stops_at_pair_cap():
+    from lithiumscope.experiments.generalization.resampling import regression_smoter
+    n=100
+    x=pd.DataFrame({"Latitude":[-20.]*n,"Longitude":[-70.]*n,
+        "MgO":np.linspace(1,3,n),"Fe2O3":np.linspace(2,4,n),
+        "Rock_type":[str(i) for i in range(n-2)]+["compatible","compatible"]})
+    y=pd.Series(np.arange(n,dtype=float))
+    g=pd.Series(["g"]*n)
+    xx, yy, gg, trace=regression_smoter(x,y,g,g,42,list(x.columns[:-1]),["Rock_type"])
+    assert len(xx)==104 and len(trace)==4
+    assert len(yy)==len(gg)==len(xx)
+    assert all({t["parent_a"],t["parent_b"]}=={"98","99"} for t in trace)

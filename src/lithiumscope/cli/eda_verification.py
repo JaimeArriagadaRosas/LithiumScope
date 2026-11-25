@@ -32,9 +32,19 @@ def collect(snapshot, evidence, treatments, treatment_manifest):
         from lithiumscope.experiments.generalization.batch_audit import summarize_batches
         payload = json.loads((snapshot/"prepared.json").read_text(encoding="utf-8"))
         batch_report = summarize_batches(Path(eda["source_path"]),payload)
+        if file_sha256(Path(eda["source_path"])) != prepared["source_sha256"]:
+            raise ValueError("Source changed during batch audit")
+        # Positions in treatment plans refer to the ordered snapshot rows.
+        partitions = json.loads((treatments/"partitions.json").read_text(encoding="utf-8"))
+        ids = payload["row_ids"]
+        for batch in batch_report["batches"]:
+            members = set(batch["row_ids"])
+            batch["outer_partition_counts"] = [{"fold":p["fold"],
+                "train":sum(ids[i] in members for i in p["train"]),
+                "test":sum(ids[i] in members for i in p["test"])} for p in partitions]
         print("\nAuditoría de lotes M1 (descriptiva, no se excluyen muestras):")
         for batch in batch_report["batches"][:5]:
-            print(f"  Lote {batch[\'batch\']} | {batch[\'prepared_rows\']} filas | max Li={batch[\'maximum\']} ppm")
+            print(f"  Lote {batch['batch']} | {batch['prepared_rows']} filas | max Li={batch['maximum']} ppm")
     return {"batch_audit":batch_report,"prepared_path":str(snapshot), "eda_path":str(evidence), "treatments_path":str(treatments),
         "prepared_manifest":prepared, "treatment_manifest":treatment_manifest,
         "eda_manifest":eda, "source_unchanged":True,
