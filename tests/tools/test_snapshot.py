@@ -53,14 +53,23 @@ def test_write_snapshot_is_unique_and_only_writes_report(tmp_path, monkeypatch):
     assert len(list(tmp_path.rglob("*.json"))) == 2
 
 
-def test_temporary_option_dispatch(monkeypatch, capsys):
+def test_retired_snapshot_option_is_not_exposed(monkeypatch, capsys):
     from lithiumscope.cli import scientific_lab_command as lab
-    choices = iter(["4", "0"])
     calls = []
-    monkeypatch.setattr(lab, "choose", lambda *_: next(choices))
+    choices = iter(["2", "0"])
+
+    def select(prompt, allowed):
+        assert allowed == set("0123")
+        assert "4" not in allowed and "5" not in allowed
+        return next(choices)
+
+    monkeypatch.setattr(lab, "choose", select)
     monkeypatch.setattr(lab, "clear_screen", lambda: None)
     monkeypatch.setattr(lab, "pause", lambda: None)
-    monkeypatch.setattr(lab, "_development_snapshot", lambda: calls.append("snapshot"))
+    monkeypatch.setattr(lab, "_validation_menu", lambda: calls.append("validation"))
     lab.run()
-    assert calls == ["snapshot"]
-    assert "4. Evidencias de desarrollo (temporal)" in capsys.readouterr().out
+    assert calls == ["validation"]
+    output = capsys.readouterr().out
+    assert "2. Ejecución de tests y simulaciones" in output
+    assert "4. Evidencias de desarrollo" not in output
+    assert "5. Optimización científica" not in output

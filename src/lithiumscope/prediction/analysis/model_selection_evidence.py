@@ -64,11 +64,38 @@ def _selection_row(group: str, run_id: str, root: Path) -> dict:
     return record
 
 
+def required_historical_paths() -> tuple[Path, ...]:
+    """Metadata and tables required for the historical annex, not for inference."""
+    paths = [
+        Path("models") / group / "trained" / run / filename
+        for group, runs in (("model_1", M1_RUNS), ("model_2", M2_RUNS))
+        for run in runs
+        for filename in ("metadata.json", "candidate_status.json")
+    ]
+    v4 = Path("results/model_2/runs") / M2_RUNS[-1] / "tables"
+    paths.extend([
+        Path("results/scientific_simulations/vnext_20261106/stage5_training_comparison/m1_paired_comparison.json"),
+        v4 / "old_release_protocol_comparison_706.csv",
+        v4 / "old_release_protocol_intervals_706.csv",
+        v4 / "competition_ranking.csv",
+        Path("results/scientific_simulations/m2_rededge_v4_20261113/cohort_706/spectral_identity_summary.json"),
+    ])
+    return tuple(paths)
+
+
 def gather_selection_evidence(m1_identity: dict, m2_identity: dict,
                               *, root: Path = PROJECT_ROOT) -> dict:
     """Historical annex is optional evidence, never a prerequisite for inference."""
     if (m1_identity.get("run_id"), m2_identity.get("run_id")) != (M1_RUNS[2], M2_RUNS[0]):
         return {"state": "NOT_APPLICABLE_TO_SELECTED_PAIR",
+                "model_1_selected_run": m1_identity.get("run_id"),
+                "model_2_selected_run": m2_identity.get("run_id"),
+                "model_2_external_independent_holdout": False,
+                "user_release_approval_required": True}
+    missing = [path.as_posix() for path in required_historical_paths() if not (root / path).is_file()]
+    if missing:
+        return {"state": "HISTORICAL_EVIDENCE_UNAVAILABLE", "error_type": "FileNotFoundError",
+                "missing_files": missing,
                 "model_1_selected_run": m1_identity.get("run_id"),
                 "model_2_selected_run": m2_identity.get("run_id"),
                 "model_2_external_independent_holdout": False,

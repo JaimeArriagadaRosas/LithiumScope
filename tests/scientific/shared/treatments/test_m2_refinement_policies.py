@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.experiments.model_2.refinement_policies import POLICIES, LEGACY, REFERENCE, feature_columns
-from lithiumscope.experiments.model_2.refinement_metrics import ranking
+from lithiumscope.experiments.model_2.refinement_support.refinement_policies import POLICIES, LEGACY, REFERENCE, feature_columns
+from lithiumscope.experiments.model_2.refinement_support.refinement_metrics import ranking
 
 
 def test_shortlist_and_legacy_feature_contract():

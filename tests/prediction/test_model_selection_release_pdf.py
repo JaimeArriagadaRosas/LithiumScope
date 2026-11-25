@@ -10,7 +10,7 @@ import pytest
 from lithiumscope.core.config import load_config
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.prediction.analysis.model_selection_evidence import (
-    gather_selection_evidence,
+    gather_selection_evidence, required_historical_paths, M1_RUNS, M2_RUNS,
 )
 from lithiumscope.reporting.sections.model_selection import (
     build_model_selection,
@@ -54,11 +54,8 @@ def test_current_promoted_release_is_accepted_as_explicit_demo_pin():
     assert ident["release_promoted_by_demonstration"] is False
 
 
-@requires_local_release
-def test_selected_proposal_has_three_m1_and_all_eight_m2_runs():
-    id1 = load_model_with_identity("model_1",candidate_run_id="training_20261106_111653_m0300")[2]
-    id2 = load_model_with_identity("model_2",candidate_run_id="training_20260920_195933_m0300")[2]
-    report = gather_selection_evidence(id1,id2)
+def _assert_complete_history(report, id2):
+    assert report["state"] == "HISTORICAL_COMPARISON"
     assert len(report["model_1_runs"]) == 3
     assert len(report["model_2_runs"]) == 8
     assert len(report["model_2_170_six_algorithms"]) == 6
@@ -66,25 +63,107 @@ def test_selected_proposal_has_three_m1_and_all_eight_m2_runs():
     assert report["model_2_selected_run"] == id2["run_id"]
     assert report["model_2_reference_is_retrained_protocol_not_deployed_artifact"]
     assert not report["model_2_external_independent_holdout"]
-    json.dumps(report,allow_nan=False)
+    json.dumps(report, allow_nan=False)
+
+
+def _assert_missing_history(report, missing):
+    assert report["state"] == "HISTORICAL_EVIDENCE_UNAVAILABLE"
+    assert report["error_type"] == "FileNotFoundError"
+    assert set(report["missing_files"]) == set(missing)
+    assert "model_1_runs" not in report and "model_2_runs" not in report
+    assert not report["model_2_external_independent_holdout"]
+    assert report["user_release_approval_required"]
+
+
+@requires_local_release
+def test_selected_proposal_has_three_m1_and_all_eight_m2_runs():
+    id1 = load_model_with_identity("model_1",candidate_run_id=M1_RUNS[2])[2]
+    id2 = load_model_with_identity("model_2",candidate_run_id=M2_RUNS[0])[2]
+    report = gather_selection_evidence(id1,id2)
+    missing = [p.as_posix() for p in required_historical_paths() if not (PROJECT_ROOT/p).is_file()]
+    if missing:
+        _assert_missing_history(report,missing)
+    else:
+        _assert_complete_history(report,id2)
+
+
+def _assert_renderer(data, *, complete):
+    from types import SimpleNamespace
+    context = SimpleNamespace(mode="demonstration",runtime={"model_selection_evidence":data})
+    story = build_model_selection(context,build_styles())
+    if complete:
+        assert len(story) > 20
+    else:
+        assert len(story) == 3
+        assert "no disponible" in story[1].getPlainText()
+    assert build_model_selection(SimpleNamespace(mode="complete",runtime=context.runtime),
+                                 build_styles()) == []
 
 
 @requires_local_release
 def test_pdf_section_is_only_added_to_integrated_demonstration():
-    id1 = load_model_with_identity("model_1",candidate_run_id="training_20261106_111653_m0300")[2]
-    id2 = load_model_with_identity("model_2",candidate_run_id="training_20260920_195933_m0300")[2]
+    id1 = load_model_with_identity("model_1",candidate_run_id=M1_RUNS[2])[2]
+    id2 = load_model_with_identity("model_2",candidate_run_id=M2_RUNS[0])[2]
     data = gather_selection_evidence(id1,id2)
-    from types import SimpleNamespace
-    context = SimpleNamespace(
-        mode="demonstration",
-        runtime={"model_selection_evidence":data},
-    )
-    story = build_model_selection(context,build_styles())
-    assert len(story) > 20
-    assert build_model_selection(
-        SimpleNamespace(mode="complete",runtime=context.runtime),
-        build_styles(),
-    ) == []
+    missing = [p.as_posix() for p in required_historical_paths() if not (PROJECT_ROOT/p).is_file()]
+    if missing:
+        _assert_missing_history(data,missing)
+    else:
+        _assert_complete_history(data,id2)
+    _assert_renderer(data,complete=not missing)
+
+
+@pytest.fixture
+def synthetic_history(tmp_path):
+    """Synthetic test-only archive. Never write or invent actual project evidence."""
+    import pandas as pd
+
+    def write(relative, value):
+        path=tmp_path/relative
+        path.parent.mkdir(parents=True,exist_ok=True)
+        path.write_text(json.dumps(value),encoding="utf-8")
+
+    for group,runs in (("model_1",M1_RUNS),("model_2",M2_RUNS)):
+        for run in runs:
+            folder=Path("models")/group/"trained"/run
+            write(folder/"metadata.json",{"algorithm":"svm" if group=="model_1" else "random_forest",
+                "samples":42,"metrics":{"rmse":2.,"mae":1.}})
+            write(folder/"candidate_status.json",{"status":"pending"})
+    errors={"old":{"rmse":4.,"mae":2.},"new":{"rmse":3.,"mae":1.}}
+    write("results/scientific_simulations/vnext_20261106/stage5_training_comparison/m1_paired_comparison.json",
+          {"comparison":{"matched":1004,"different_outer_fold":3},
+           "by_subset":{"all_shared":errors,"high_lithium_q75_common":errors},
+           "cluster_bootstrap":{},"development_improvement_gate":{"release_certified":False}})
+    write("results/scientific_simulations/m2_rededge_v4_20261113/cohort_706/spectral_identity_summary.json",
+          {"distinct_exact_signatures_170":20,"excess_redundant_rows":2,
+           "mixed_fixed_class_signatures":1,"minimum_classification_errors_due_only_to_identical_X":1})
+    tables=tmp_path/"results/model_2/runs"/M2_RUNS[-1]/"tables"
+    tables.mkdir(parents=True)
+    pd.DataFrame([{"algorithm":alg,"roc_auc":auc,"average_precision":.3,"brier":.2}
+                  for alg,auc in [("original_release_protocol_retrained",.5),("random_forest",.6)]
+                 ]).to_csv(tables/"old_release_protocol_comparison_706.csv",index=False)
+    pd.DataFrame([{"algorithm":"random_forest","auc_delta_ci95_low":-.1,"auc_delta_ci95_high":.2,
+                   "ap_delta_ci95_low":-.1,"ap_delta_ci95_high":.1}
+                 ]).to_csv(tables/"old_release_protocol_intervals_706.csv",index=False)
+    pd.DataFrame([{"algorithm":alg,"status":"ok","roc_auc_mean":.6,"average_precision_mean":.3}
+                  for alg in ("random_forest","extra_trees","hist_gradient_boosting","xgboost","catboost","svm_rbf")
+                 ]).to_csv(tables/"competition_ranking.csv",index=False)
+    return tmp_path
+
+
+def test_complete_historical_annex_without_local_release(synthetic_history):
+    id1,id2={"run_id":M1_RUNS[2]},{"run_id":M2_RUNS[0]}
+    report=gather_selection_evidence(id1,id2,root=synthetic_history)
+    _assert_complete_history(report,id2)
+    _assert_renderer(report,complete=True)
+
+
+def test_partial_historical_annex_never_invents_metrics(synthetic_history):
+    missing=required_historical_paths()[-1]
+    (synthetic_history/missing).unlink()
+    data=gather_selection_evidence({"run_id":M1_RUNS[2]},{"run_id":M2_RUNS[0]},root=synthetic_history)
+    _assert_missing_history(data,[missing.as_posix()])
+    _assert_renderer(data,complete=False)
 
 
 def test_integrated_renderer_stays_original_and_has_selection_section():
