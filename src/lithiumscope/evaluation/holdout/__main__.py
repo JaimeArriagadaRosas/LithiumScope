@@ -5,9 +5,7 @@ import argparse
 import json
 from pathlib import Path
 
-from lithiumscope.evaluation.holdout.registry import register
-from lithiumscope.evaluation.holdout.scoring import score_registered
-from lithiumscope.evaluation.holdout.evaluation import evaluate_registered
+from lithiumscope.evaluation.holdout.registry import verified_registration
 
 
 def main():
@@ -31,12 +29,15 @@ def main():
     evaluate.add_argument("--labels-path",type=Path,required=True)
     args=vars(parser.parse_args())
     operation=args.pop("operation")
-    if operation=="register":
-        result=register(**args)
-    elif operation=="score":
-        result=score_registered(**args)
+    root=args.pop("root")
+    group=args.pop("model_group") if operation=="register" else verified_registration(root)[0]["model_group"]
+    if group=="model_1":
+        from lithiumscope.model_1.pipeline import run_independent_evaluation
+    elif group=="model_2":
+        from lithiumscope.model_2.pipeline import run_independent_evaluation
     else:
-        result=evaluate_registered(**args)
+        raise ValueError("Unknown registered model")
+    result=run_independent_evaluation(operation,root,**args)
     print(json.dumps(result,indent=2,ensure_ascii=False))
 
 

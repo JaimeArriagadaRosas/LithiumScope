@@ -56,3 +56,9 @@ def run_training(device, *, manifest=None):
     require_full_training_environment("model_2")
     source = manifest if manifest is not None else require_model_2_expanded_manifest()
     return run_model_2_competition(source, device)
+
+
+def run_independent_evaluation(phase, root, **kwargs):
+    """Separate registered holdout phases; no automatic activation."""
+    from lithiumscope.evaluation.holdout.workflow import run_holdout_phase
+    return run_holdout_phase("model_2",phase,root,**kwargs)
