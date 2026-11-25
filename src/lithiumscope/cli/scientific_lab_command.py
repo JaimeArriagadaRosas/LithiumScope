@@ -152,7 +152,7 @@ def _validation_menu() -> bool | None:
     print("3. Evaluación experimental de tratamiento de datos")
     print("4. Ejecutar todo")
     print("0. Volver")
-    choice=choose("\nSeleccione una opción [0-4]: ",set("01234"))
+    choice=choose("Seleccione una opción [0-4]: ",set("01234"))
     if choice=="0":
         return False
     print("\n")
