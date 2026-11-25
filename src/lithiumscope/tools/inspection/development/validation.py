@@ -55,6 +55,22 @@ def command_check(root: Path, logs: Path, name: str, args: list[str]) -> dict:
         return {"state": "ERROR", "exit_code": None, "log": file_record(root, log)}
 
 
+def _failure_context(element):
+    """Extract only repository-relative code locations and exception class names."""
+    raw=element.text or ""
+    normalized=raw.replace(chr(92),"/")
+    locations=[]
+    for match in re.finditer(r"(?<![\w])((?:src/lithiumscope|tests|scripts)/[A-Za-z0-9_./-]+\.py):(\d+)(?::|\b)",normalized):
+        path=match.group(1)
+        if ".." not in Path(path).parts:
+            entry={"file":path,"line":int(match.group(2))}
+            if entry not in locations:
+                locations.append(entry)
+    types=re.findall(r"\b([A-Za-z_][A-Za-z0-9_]*(?:Error|Exception|Failure))\b",element.get("message","")+"\n"+raw)
+    return {"locations":locations[-12:],"exception_types":list(dict.fromkeys(types))[-8:],
+            "raw_traceback_in_local_junit_only":True}
+
+
 def junit_breakdown(path: Path) -> dict:
     if not path.is_file():
         return {"state": "MISSING", "groups": {}, "nonpassing": [], "cases": []}
@@ -72,7 +88,8 @@ def junit_breakdown(path: Path) -> dict:
         record = {"module": module, "test": case.get("name", ""), "outcome": outcome}
         cases.append(record)
         if outcome != "passed":
-            nonpassing.append(record)
+            detail=case.find(outcome)
+            nonpassing.append({**record,"context":_failure_context(detail)})
     return {"state": "OK" if groups else "MISSING",
             "groups": {key: dict(value) for key, value in sorted(groups.items())},
             "nonpassing": nonpassing, "cases": cases}
@@ -197,6 +214,8 @@ def run_development_validation(root: Path, *, include_benchmark=False) -> dict:
         try:
             sections[name] = check()
         except Exception as exc:
+            from lithiumscope.core.logging.session import get_logger
+            get_logger("development.validation").exception("Development check failed: %s",name)
             sections[name] = {"state": "ERROR", "error_type": type(exc).__name__}
     sections["protected_artifacts"] = compare_protected(before, protected_inventory(root))
     if sections["protected_artifacts"]["state"] != "OK":

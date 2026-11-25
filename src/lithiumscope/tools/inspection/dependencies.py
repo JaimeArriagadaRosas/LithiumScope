@@ -190,7 +190,7 @@ def audit_imports(root: Path) -> dict:
             elif isinstance(node,ast.ImportFrom) and node.module:
                 names=[node.module,*[f"{node.module}.{a.name}" for a in node.names]]
             elif isinstance(node,ast.Constant) and isinstance(node.value,str):
-                names=[node.value.replace("\\\\","/")]
+                names=[node.value.replace(chr(92),"/")]
             for name in names:
                 if name in retired or name in scripts:
                     external_references.append({"path":path.relative_to(root).as_posix(),
