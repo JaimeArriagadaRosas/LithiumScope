@@ -1,8 +1,8 @@
-"""Compatibility entrypoint; canonical experiment is lithiumscope.experiments.model_2.spatial_control."""
+"""Compatibility entrypoint; canonical experiment is lithiumscope.experiments.model_2.historical.spatial_control."""
 from importlib import import_module
 import sys
 if __name__=="__main__":
     from runpy import run_module
-    run_module("lithiumscope.experiments.model_2.spatial_control",run_name="__main__")
+    run_module("lithiumscope.experiments.model_2.historical.spatial_control",run_name="__main__")
 else:
-    sys.modules[__name__]=import_module("lithiumscope.experiments.model_2.spatial_control")
+    sys.modules[__name__]=import_module("lithiumscope.experiments.model_2.historical.spatial_control")

@@ -205,3 +205,5 @@ Reclasificados ARQ-042/059/063/064; quedan auditorías de rutas históricas, dep
 | **Total** | **166** | **155** | **11** | **93,4 %** |
 
 Reclasificados ARQ-007/022/045/066 por arquitectura principal incorporada; criterios de cierre global y aceptación siguen abiertos. ARQ-083 sigue parcial: política predeterminada serial y folds/trials seriales, paralelismo de candidatos CPU opt-in, no benchmark real. ARQ-038 permanece parcial por holdout externo real, ARQ-061 por módulos históricos restantes, ARQ-073/095 por auditoría global y regresión, ARQ-100 por rutas/logging residual. No se ejecutaron pruebas, CI, descargas, benchmarks, entrenamiento ni generación final de PDF. No solicitar todavía git pull ni 5 > 4.
+
+- Corrección estructural: las cuatro campañas históricas M2 se agrupan en model_2/historical; las rutas originales experiments/validation permanecen compatibles. Las rutas intermedias introducidas en este lote no son API histórica y se retiran para no exceder veinte archivos.
