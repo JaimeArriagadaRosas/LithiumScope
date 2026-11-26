@@ -82,7 +82,7 @@ Si no mejora o degrada dominio, mantener actual; no iniciar otra búsqueda
 indefinida. No declarar superioridad estadística por escoger el mejor
 resultado en los mismos folds. Si no hay holdout independiente, declararlo.
 
-## Fase 4. Entrenamiento final de M1 y publicación condicionada
+## Fase 4. Decisión y entrenamiento condicionado de M1
 
 Solo si un tratamiento supera criterios: integrar contrato determinista de
 balanceo/selección (no copiar modelo de un fold), ajustar dentro de cada

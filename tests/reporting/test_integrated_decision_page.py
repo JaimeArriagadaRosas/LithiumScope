@@ -123,6 +123,16 @@ def test_rendered_page_is_dynamic_and_exactly_page_two(tmp_path):
     assert "site-3 - PRIORIDAD" in second
     assert first != second
 
+    exploratory = _cases()
+    exploratory["model_1_applicability_warning"] = "OUT_OF_DOMAIN"
+    exploratory["model_2_applicability_warning"] = "OUT_OF_DOMAIN"
+    exploratory.loc[exploratory.case_id == "site-3", "model_2_applicability_warning"] = "OK"
+    third = render(exploratory, tmp_path / "exploratory.pdf")
+    assert "Etapa 2 - Comparación espectral" in third
+    assert "site-8 - PRIORIDAD" in third
+    assert "Prioridad exploratoria: site-8" in third
+    assert "Único M2 aplicable: site-3" in third
+
 
 def test_all_m1_outside_domain_keeps_q90_and_compares_m2():
     source = _cases()

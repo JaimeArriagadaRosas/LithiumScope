@@ -63,13 +63,14 @@
   },
   "next": [
     "restore_verified_evidence",
-    "fix_identity_comparison",
-    "restore_m2_postprocessing",
-    "validate_console",
-    "audit_candidate_domain",
+    "run_full_software_tests",
+    "run_saved_version_comparison_and_m2_recovery",
+    "run_candidate_audit_from_existing_eda",
+    "verify_candidate_provenance_and_domain",
     "conditional_m1_experiment",
     "conditional_final_fit",
-    "verify_pdf_and_release"
+    "render_and_verify_integrated_pdf",
+    "final_software_validation"
   ],
   "independent_external_holdout": false,
   "main_merge_authorized": false,
@@ -122,5 +123,13 @@
     "phase_5": "decision_and_annex_implemented_local_render_pending",
     "phase_6": "tests_pending",
     "release_authorized": false
+  },
+  "release_authorized": false,
+  "verifications_on_supplied_files": {
+    "archive_critical_files_matching_sha256": 14,
+    "m1_historical_and_candidate_manifest_rows": 3420,
+    "m1_manifests_identical": true,
+    "m2_reconstructed_row_ids_groups_folds_li_and_coordinates_matching": 706,
+    "notes": "Checks of supplied data; not execution of the updated repository suite."
   }
 }

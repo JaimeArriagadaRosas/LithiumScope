@@ -88,3 +88,22 @@ y merge no autorizados. Experimentos y fit final siguen condicionados a evidenci
   desde predicciones, sujeto a identidad.
 - Sin reentrenamiento, merge o release. Queda probar el código y recuperar
   posprocesamiento M2 en el entorno local. No se ha ejecutado en ese equipo.
+
+## Ejecución local pendiente (sin entrenamiento)
+
+1. Actualizar la rama con git pull --ff-only cuando no haya ejecución activa.
+2. Restaurar evidencia desde ZIP privado con scripts/restore_scientific_evidence.py,
+   primero en vista previa y luego con --apply si no hay conflictos.
+3. Menú 5 > 3 > 1: suite completa.
+4. Menú 5 > 3 > 5: comparación histórica y recuperación M2.
+5. python -m lithiumscope.experiments.data_lab.candidate_audit:
+   reproducir auditoría de fuentes desde EDA existente, sin descargar.
+6. Menú 1 > 2: regenerar demostración con evidencia disponible y comprobar página 2.
+   No reentrena. No usar los diez casos de demo para seleccionar modelos.
+7. Decidir fase 3 según revisión de procedencia; fase 4 solo si hay mejora justificada.
+   No preparar ni publicar release automáticamente.
+
+Verificación de los adjuntos: 14 hashes críticos coincidentes; los dos manifiestos
+M1 son idénticos, 3420 filas. En M2 coinciden los 706 IDs, posiciones, grupos,
+folds, Li y coordenadas de la referencia reconstruida y el candidato.
+No equivalen a ejecutar los nuevos tests de Python ni a renderizar un PDF real.
