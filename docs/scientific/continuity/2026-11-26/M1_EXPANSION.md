@@ -33,3 +33,17 @@ Se reserva por hash determinista hasta 20% (redondeado hacia abajo, mínimo uno 
 
 ## Estado
 Código de preparación y tests sintéticos incorporados; falta ejecución local de pruebas y EDA sobre datos reales. Revisión bibliográfica todavía no efectuada. No ejecutar entrenamiento antes de evaluar salidas y completar la elegibilidad. No repetir las pruebas históricas de comparación ni regenerar PDF M2 para este avance. Las fases 3–5 no están implementadas todavía en esta nueva línea de expansión.
+
+
+## Validación real del EDA y siguiente auditoría (26/11)
+Run 20261126T145129_ee7f5431, commit a23a627. Seis pruebas focalizadas aprobadas, 12.37 s. RAR entregado con nueve hashes de salida coincidentes. Nueve particiones originales verificadas según inventario local; ninguna con columna inequívoca de método Li ni CRS, todas con CITATIONS. El manifiesto no registra publicaciones en las 3420 filas históricas bajo el campo source_publication; no afirmar separación bibliográfica demostrada.
+- 319 convergentes: 264 con soporte vecinal, 249 también con OOD marginal <=.25.
+- 6393 otros dominios: 3357 con soporte vecinal, 3185 también con OOD marginal <=.25 (Li 0–307 ppm). Estos conteos son descriptivos sobre la referencia completa y no determinan elegibilidad.
+- 69 altas intraplaca: ninguna con soporte vecinal. Evaluar exclusivamente transferencia si se acredita procedencia; no mezclar con compatibles.
+- 4230 excluidas, 221 copias exactas. 2990/2998 candidatas andinas con alerta coordenada/Li; 2988 con alerta aproximada. Las 14 andinas >696 ppm tienen ambas alertas, todas referencia [30009], nueve superan QC. No inferir duplicación confirmada contra la cohorte preparada hasta distinguir coincidencias dentro de candidatos y con base. Las 48 altas félsicas excluidas no superan QC.
+- Geologycal_age, Arc y Domain faltan en todas las candidatas preparadas. No inventar categorías.
+- Los métodos y CRS desconocidos no se deducen del nombre interno Li_icpms. GEOROC documenta prioridad de métodos en compilados (https://georoc.mpch-mainz.gwdg.de/georoc/CompRules.html), pero no certifica que cada Li sea ICP-MS. Referencias de originales: https://georoc.eu/georoc/cite.asp; inventario de metadata/citas: https://doi.org/10.25625/4EZ7ID.
+
+Nuevo comando, sin descarga ni fit:
+`python -m lithiumscope.experiments.model_1.expansion.provenance --run results/model_1/expansion/20261126T145129_ee7f5431`
+Recupera secciones bibliográficas locales si existen; registra coincidencias exactas de coordenada/Li con base bruta y pertenencia a base preparada, concordancia química y nombres de muestra; conserva todas las coincidencias para revisión. No autoriza automáticamente ninguna muestra. Implementación pendiente de prueba real. Los resultados permitirán concentrar revisión en publicaciones y muestras nuevas, sin repetir EDA ni descargar datos. Antes de fit, decidir explícitamente si procede un brazo de sensibilidad con metadatos no certificados separado de los estrictamente verificados, sin confundir evidencia exploratoria con validación de release. M2 congelado.
