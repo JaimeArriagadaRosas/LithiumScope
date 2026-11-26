@@ -47,7 +47,40 @@ def _publish(path, payload):
         temp.unlink(missing_ok=True)
 
 
-def acquire(spec, root, *, downloader=fetch_partition):
+def _reuse_archived(partition, path, roots):
+    """Reuse only a previously recorded and verified historical download."""
+    import shutil
+    import os
+
+    for root in map(Path, roots):
+        old = root / partition.filename
+        receipt = root / "download_manifest.json"
+        if not old.is_file() or not receipt.is_file():
+            continue
+        try:
+            entries = json.loads(receipt.read_text(encoding="utf-8"))["partitions"]
+            digest = file_sha256(old)
+            if not any(
+                str(e.get("path", "")).replace(chr(92), "/").split("/")[-1] == partition.filename
+                and e.get("sha256") == digest for e in entries
+            ):
+                continue
+        except (OSError, ValueError, KeyError, TypeError):
+            continue
+        temp = path.with_name(path.name + "." + uuid4().hex + ".tmp")
+        try:
+            shutil.copyfile(old, temp)
+            if file_sha256(temp) != digest:
+                raise ValueError("Historical partition changed during copy")
+            os.link(temp, path)
+        finally:
+            temp.unlink(missing_ok=True)
+        print(f"[OK] Descarga histórica reutilizada: {path.name}", flush=True)
+        return digest
+    return None
+
+
+def acquire(spec, root, *, downloader=fetch_partition, reuse_roots=()):
     root = Path(root)/spec.key
     root.mkdir(parents=True,exist_ok=True)
     receipt = root/"acquisition.json"
@@ -77,6 +110,8 @@ def acquire(spec, root, *, downloader=fetch_partition):
         expected = known.get(partition.identifier,{}).get("sha256")
         if path.is_file() and expected and file_sha256(path) != expected:
             raise ValueError("Cached research partition changed")
+        if not path.is_file() and not expected:
+            expected = _reuse_archived(partition, path, reuse_roots)
         if not path.is_file():
             print(f"Descargando {spec.key}: {name}",flush=True)
         result = downloader(partition.identifier,path,expected_sha256=expected)

@@ -3,6 +3,9 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from tempfile import TemporaryDirectory
+
+from lithiumscope.datasets.readers.georoc_raw_reader import detect_georoc_encoding
 
 import numpy as np
 import pandas as pd
@@ -64,11 +67,13 @@ def profile(spec, paths, receipt, base_path, *, output_root=None):
     cfg=load_config("model_1")
     digests={p.name:file_sha256(p) for p in paths}
     base_digest=file_sha256(base_path)
-    from lithiumscope.datasets.adapters import georoc_ingestion_schema, georoc_ingestion_transform
+    from lithiumscope.datasets.adapters import georoc_ingestion_schema, georoc_ingestion_transform, georoc_ingestion
+    from lithiumscope.datasets.readers import georoc_raw_reader
     from importlib.metadata import version
     key=canonical_json_hash({"source":spec.key,"files":digests,"base":base_digest,"cfg":cfg["data_sources"]["georoc"],
         "code":[file_sha256(Path(__file__)),file_sha256(Path(georoc_ingestion_schema.__file__)),
-                file_sha256(Path(georoc_ingestion_transform.__file__))],
+                file_sha256(Path(georoc_ingestion_transform.__file__)),file_sha256(Path(georoc_ingestion.__file__)),
+                file_sha256(Path(georoc_raw_reader.__file__))],
         "versions":{p:version(p) for p in ("pandas","numpy","matplotlib")}})
     root=Path(output_root) if output_root else RESULTS_DIR/"model_1"/"candidate_eda"/spec.key
     cached=find_compatible(root,key)
@@ -80,11 +85,24 @@ def profile(spec, paths, receipt, base_path, *, output_root=None):
         # Harmonized view is an analysis artifact, not a training source.
         tables=directory/"tables"
         settings=cfg["data_sources"]["georoc"]
-        harmonized=ingest_georoc_files(paths,tables/"candidate_view.csv",
-            audit_path=tables/"ingestion_audit.json",source_name=spec.key,
-            minimum_predictors=int(settings["minimum_predictors"]),
-            allowed_material_types=tuple(settings["allowed_material_types"]),
-            iron_total_mode=settings["iron_total_mode"])
+        # Normalize encoding in a temporary view; original downloads remain immutable.
+        with TemporaryDirectory() as temp:
+            normalized=[]
+            encodings={}
+            for path in paths:
+                encoding=detect_georoc_encoding(path)
+                encodings[path.name]=encoding
+                target=Path(temp)/path.name
+                with path.open("r",encoding=encoding,newline="") as source, target.open("w",encoding="utf-8",newline="") as dest:
+                    for chunk in iter(lambda:source.read(1024*1024),""):
+                        dest.write(chunk)
+                normalized.append(target)
+            harmonized=ingest_georoc_files(normalized,tables/"candidate_view.csv",
+                audit_path=tables/"ingestion_audit.json",source_name=spec.key,
+                minimum_predictors=int(settings["minimum_predictors"]),
+                allowed_material_types=tuple(settings["allowed_material_types"]),
+                iron_total_mode=settings["iron_total_mode"])
+        (tables/"raw_source_identity.json").write_text(json.dumps({"sha256":digests,"encodings":encodings},indent=2),encoding="utf-8")
         frame=pd.read_csv(harmonized.path,low_memory=False)
         base=pd.read_csv(base_path,low_memory=False)
         flags=overlap_flags(frame,base)
@@ -103,7 +121,14 @@ def profile(spec, paths, receipt, base_path, *, output_root=None):
         distribution.index=distribution.index.astype(str)
         distribution.to_csv(tables/"lithium_bands.csv")
         frame.isna().sum().rename("missing").to_csv(tables/"missingness.csv")
-        frame.groupby("Rock_type",dropna=False).Li_icpms.agg(["size","min","median","max"]).to_csv(tables/"lithology.csv")
+        if "Rock_type" in frame:
+            frame.groupby("Rock_type",dropna=False).Li_icpms.agg(["size","min","median","max"]).to_csv(tables/"lithology.csv")
+        coverage=pd.DataFrame({"longitude_cell":np.floor(frame.Longitude),
+            "latitude_cell":np.floor(frame.Latitude),"li":y,"screened":qc&unique,
+            "high_screened":qc&unique&y.gt(696)})
+        coverage.groupby(["longitude_cell","latitude_cell"]).agg(
+            rows=("li","size"),screened=("screened","sum"),
+            high_screened=("high_screened","sum")).to_csv(tables/"spatial_coverage.csv")
         _plots(frame,directory/"figures")
         if file_sha256(base_path)!=base_digest or any(file_sha256(p)!=digests[p.name] for p in paths):
             raise ValueError("Input changed during candidate EDA")
@@ -124,7 +149,8 @@ def run_candidates(base_path):
     records=[]
     for spec in M1_RESEARCH_SOURCES:
         try:
-            paths,receipt=acquire(spec,DATA_DIR/"raw"/"model_1"/"research")
+            paths,receipt=acquire(spec,DATA_DIR/"raw"/"model_1"/"research",
+                reuse_roots=(RESULTS_DIR/"scientific_simulations"/"external_geochemistry_audit"/"georoc_andean_raw",))
             result=profile(spec,paths,receipt,base_path)
             record=json.loads((result/"manifest.json").read_text(encoding="utf-8"))
             records.append({"source":spec.key,"state":"complete","eda_path":str(result),**record["summary"]})
@@ -132,4 +158,7 @@ def run_candidates(base_path):
         except Exception as exc:
             records.append({"source":spec.key,"state":"blocked","reason":str(exc)})
             print(f"[BLOQUEADO] {spec.key}: {exc}")
+    inventory=RESULTS_DIR/"model_1"/"candidate_eda"/"source_inventory.csv"
+    inventory.parent.mkdir(parents=True,exist_ok=True)
+    pd.DataFrame(records).to_csv(inventory,index=False)
     return records
