@@ -340,7 +340,7 @@
       }
     },
     "integral_optimization": {
-      "state": "approved_pending_training_audit",
+      "state": "training_audit_recorded_first_loss_comparison_implemented",
       "plan": "M1_PLAN_OPTIMIZACION_INTEGRAL.md",
       "approval": {
         "date": "2026-11-26",
@@ -350,14 +350,14 @@
       },
       "phases": {
         "1_pretraining": "operationally_closed",
-        "2_training": "audit_pending",
+        "2_training": "audit_documented_first_experiment_pending",
         "3_posttraining": "pending",
         "4_integration": "pending",
         "5_reference_candidate": "conditional_pending",
         "6_fine_tuning": "conditional_pending_reference_candidate",
         "7_final_validation": "pending"
       },
-      "current_phase": "2A_training_audit",
+      "current_phase": "2B_native_hgb_losses_pending_execution",
       "next_document": "M1_AUDITORIA_ENTRENAMIENTO.md",
       "baseline": {
         "academic_control": "A_historical",
@@ -389,8 +389,49 @@
         "main_merge_authorized": false
       },
       "documentation_commit": "39948bf4ff7e9c5756089b2bbfb685e1a61ade58",
-      "local_command_pending": false,
-      "new_fits": 0
+      "local_command_pending": true,
+      "new_fits": 0,
+      "training_audit": {
+        "document": "M1_AUDITORIA_ENTRENAMIENTO.md",
+        "audit_commit": "3c50ecfa43a4e564099e8cb5ca6bb3f46c31ce60",
+        "registered_families": 6,
+        "code_and_historical_docs_reviewed": true,
+        "all_local_checkpoints_reverified": false,
+        "first_gap": "native_loss_function_fixed_in_reviewed_HGB_search",
+        "further_gaps": [
+          "xgboost_loss_regularization",
+          "catboost_loss",
+          "other_family_specific_training_methods_if_justified"
+        ],
+        "posttraining_audit_pending": true
+      },
+      "training_losses": {
+        "state": "implemented_pending_local_validation",
+        "module": "lithiumscope.experiments.model_1.integral.training_losses",
+        "code_commit": "2293e181aeaff6c8fb361b195b0015766343d07b",
+        "tests_commit": "3365ca92e64b8bdfb7809edfbc89f3ef1311828f",
+        "policies": [
+          "squared_error",
+          "absolute_error",
+          "gamma",
+          "poisson",
+          "quantile_060",
+          "inner_selected"
+        ],
+        "inner_fits": 75,
+        "outer_new_fits": 20,
+        "max_new_fits": 95,
+        "archived_outer_controls": 5,
+        "expected_focused_tests": 94,
+        "previous_passed": 85,
+        "expected_oof_rows": 19578,
+        "new_fits_executed": 0,
+        "allow_unverified_metadata_explicit": true,
+        "new_predictors": false,
+        "new_training_rows": 0,
+        "independent_holdout": false,
+        "models_saved": false
+      }
     }
   },
   "m2": {
@@ -415,11 +456,10 @@
     "frozen_for_current_branch": true
   },
   "next": [
-    "audit_training_registry_pipelines_search_spaces_experiments_and_evidence",
-    "write_M1_AUDITORIA_ENTRENAMIENTO.md_and_prioritized_bounded_gaps",
-    "optimize_training_then_audit_posttraining",
-    "integrate_validated_methods_then_reference_fit_if_eligible",
-    "fine_tune_reference_candidate_then_final_validation"
+    "run_integral_training_losses_once_and_94_focused_tests",
+    "verify_loss_campaign_hashes_partitions_metrics_and_inner_selection",
+    "decide_remaining_training_gaps_without_repeating_prior_campaigns",
+    "audit_and_optimize_posttraining_then_integrate"
   ],
   "independent_external_holdout": false,
   "main_merge_authorized": false,
