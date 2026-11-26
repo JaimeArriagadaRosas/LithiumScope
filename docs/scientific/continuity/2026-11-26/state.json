@@ -107,6 +107,23 @@
         "target_assisted_linkage": true
       },
       "historical_experiment_repetition_authorized": false
+    },
+    "augmentation": {
+      "state": "approved_implementation_pending_local_validation",
+      "plan": "M1_AUGMENTATION.md",
+      "phase_1": "code_audit_complete",
+      "phase_2": "enriched_augmentation_implemented",
+      "phase_3": "local_execution_pending",
+      "phase_4": "preliminary_source_metadata_review_complete",
+      "phase_5": "acquisition_and_eda_pending",
+      "phase_6": "real_synthetic_comparison_pending",
+      "phase_7": "conditional_final_training_pending",
+      "arms": 6,
+      "max_new_fits": 115,
+      "synthetic_test_rows": 0,
+      "expected_focused_tests": 55,
+      "new_real_rows_approved": 0,
+      "release_authorized": false
     }
   },
   "m2": {
@@ -131,11 +148,12 @@
     "frozen_for_current_branch": true
   },
   "next": [
-    "review_targeted_independent_data_acquisition_feasibility",
-    "freeze_new_evaluation_population_and_holdout_before_training",
-    "validate_target_independent_linkage_and_measurement_metadata",
-    "evaluate_spatial_and_academic_protocols_only_if_new_evidence_supports_it",
-    "final_release_decision_separate_from_development"
+    "run_focused_m1_tests_and_enriched_augmentation",
+    "verify_augmentation_lineage_and_results",
+    "inspect_prospective_original_source_tables_and_overlap",
+    "acquire_and_audit_eligible_new_real_data",
+    "compare_real_synthetic_and_combined",
+    "conditional_final_training"
   ],
   "independent_external_holdout": false,
   "main_merge_authorized": false,
@@ -151,7 +169,7 @@
     "phase_5": "two_stage_exploratory_decision_concise_status",
     "release_authorized": false,
     "phase_3_and_4_conditional": false,
-    "experimental_closure": "M1_historical_expansion_closed_no_release_M2_frozen"
+    "experimental_closure": "historical_algorithm_refinement_closed_enriched_data_treatments_approved_M2_frozen"
   },
   "phase_5": {
     "implementation": "decision_logic_and_page_two_updated",
