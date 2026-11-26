@@ -112,3 +112,27 @@ Siguiente comparación fija: CatBoost e HistGradientBoosting, cada familia B (hi
 `python -m lithiumscope.experiments.model_1.expansion.sensitivity --run results/model_1/expansion/20261126T145129_ee7f5431 --allow-unverified-metadata --algorithm hist_gradient_boosting`
 
 Salida results/generalization/model_1_expansion_families/<algorithm>/<run>. Después: comparar familias, ejecutar puente académico sobre población y protocolo de piloto OASIS congelados (no equiparar RMSE espacial global), decidir si procede optimización interna acotada o finalizar investigación. No guardar ni promover modelos; M2 congelado. Criterio académico 5.629 ppm es provisional y no equivale a 5% de error relativo individual.
+
+
+## Comparación de familias finalizada y objetivo académico confirmado
+Commit de ejecución 6f0ad0f. 23 pruebas focalizadas aprobadas (3.36 s). CatBoost run 20261126T152757_7ad534c0: 15 fits, 15 hashes verificados, ZIP SHA256 75b21460573cf71a7a570694f0feb946c19e83b733bbea6d600bf1f5ad885564, manifest 1dca4d376dd665f34261c49ead11ee2f9436f74425e9ebd62c8e73567e814787. HGB run 20261126T153320_8ee569e5: 15 fits, 15 hashes verificados, RAR SHA256 37301edfcf28aaf7347dcfe8bed1f0e2b79d098820de9d06004c9ffdac4a95ac, manifest 59cdd3826d6ff5060b90a3ad56e42e145b6e2b6b75adcee3ec2c5b6f7f3d7b08. Sin errores; 10260 predicciones históricas por familia. HGB identidades emparejadas y métricas recalculadas.
+
+| Familia/brazo | RMSE global | MAE global | R² global | RMSE medio fold | RMSE reserva | R² reserva |
+|---|---:|---:|---:|---:|---:|---:|
+| CatBoost B |144.328269|16.079038|.219778|80.800935|189.298338|-.287421|
+| CatBoost H |111.579554|14.910078|.533679|68.506516|162.662352|.049393|
+| CatBoost I |119.933031|15.534761|.461243|74.518678|162.701469|.048936|
+| HGB B |150.039667|15.455950|.156805|82.476928|291.686034|-2.056737|
+| HGB H |129.832405|14.554447|.368633|74.593312|168.114315|-.015398|
+| HGB I |133.256904|15.364124|.334888|81.296095|165.073248|.021006|
+
+CatBoost H lidera RMSE y R² global espacial; HGB H lidera MAE global entre brazos de expansión; HGB I obtiene MAE reserva 47.565051. HGB H fold 3 RMSE 52.298, fold 5 284.796. IC95 delta RMSE H-B CatBoost [-59.994947,8.432960], HGB [-37.473596,7.794419]; no afirmar superioridad concluyente. Mantener ambos candidatos exploratorios; no guardar ni promover.
+
+El usuario precisa que basta superar las métricas publicadas en la memoria de referencia, no reproducir el trabajo ajeno. Consultada directamente Memoria Litio (2)(5).pdf, biblioteca, sección 9.1.1 tabla 15 (p. 112 del PDF): RF, RMSE medio 5.361 ± .595 ppm, R² medio .499 ± .086. Criterio académico vigente: RMSE medio <5.361 y R² medio >.499. La tolerancia previa de 5% no es necesaria para demostrar superación numérica. No confundir RMSE global con media de folds ni afirmar superioridad científica directa sobre datos distintos.
+
+Puente académico implementado: conserva las 3263 filas del piloto 20261126T123613_24ef3f6c, su rango congelado (recorte previo QC 4.2439–126.12 ppm), seed 42 y KFold aleatorio 5; verifica manifiesto e identidades OOF del piloto y sus métricas. Tres familias con hiperparámetros fijos predeclarados, dos brazos (histórico completo del TRAIN académico y expansión compatible en rango, sin altas intraplaca), 30 fits. No usar hiperparámetros archivados de CV espacial, pues pueden haber visto los TEST aleatorios. No hay ajuste ni búsqueda interna en esta campaña fija. Preservar reserva y cuarentena de datos nuevos, bloqueos de grupo y referencia respecto a candidatos en TRAIN. El KFold histórico permite solapamiento espacial, documentado. No volver a recortar evaluación para favorecer resultados. Si ambos umbrales se superan, registrar cumplimiento numérico académico sobre esta población separada; todavía no es evidencia independiente ni aprobación de release de dominio completo. Si no, valorar optimización interna acotada orientada al RMSE académico. Tres pruebas nuevas pendientes de ejecución local.
+
+`python -m pytest tests/scientific/m1_expansion -q`
+`python -m lithiumscope.experiments.model_1.expansion.academic_bridge --run results/model_1/expansion/20261126T145129_ee7f5431 --allow-unverified-metadata`
+
+Salida results/generalization/model_1_expansion_academic. No repetir campañas previas. M2 congelado.
