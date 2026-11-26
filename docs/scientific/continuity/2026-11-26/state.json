@@ -340,7 +340,7 @@
       }
     },
     "integral_optimization": {
-      "state": "training_methods_operationally_closed_posttraining_implemented",
+      "state": "point_calibration_validated_stacking_implemented",
       "plan": "M1_PLAN_OPTIMIZACION_INTEGRAL.md",
       "approval": {
         "date": "2026-11-26",
@@ -351,13 +351,13 @@
       "phases": {
         "1_pretraining": "operationally_closed",
         "2_training": "operationally_closed_hgb_squared_retained",
-        "3_posttraining": "audit_documented_point_calibration_pending",
+        "3_posttraining": "point_calibration_validated_stacking_pending",
         "4_integration": "pending",
         "5_reference_candidate": "conditional_pending",
         "6_fine_tuning": "conditional_pending_reference_candidate",
         "7_final_validation": "pending"
       },
-      "current_phase": "3A_point_calibration_pending_execution",
+      "current_phase": "3B_stacking_pending_execution",
       "next_document": "M1_AUDITORIA_POSTENTRENAMIENTO.md",
       "baseline": {
         "academic_control": "A_historical",
@@ -390,7 +390,7 @@
       },
       "documentation_commit": "39948bf4ff7e9c5756089b2bbfb685e1a61ade58",
       "local_command_pending": true,
-      "new_fits": 195,
+      "new_fits": 315,
       "training_audit": {
         "document": "M1_AUDITORIA_ENTRENAMIENTO.md",
         "audit_commit": "3c50ecfa43a4e564099e8cb5ca6bb3f46c31ce60",
@@ -501,7 +501,7 @@
         "alternative_development_improvement": false
       },
       "posttraining": {
-        "state": "implemented_pending_local_validation",
+        "state": "complete_validated_marginal_selected_improvement",
         "document": "M1_AUDITORIA_POSTENTRENAMIENTO.md",
         "module": "lithiumscope.experiments.model_1.integral.posttraining",
         "calibration_commit": "d03b6dfa92dc6b53e99532ba5b6caa824fe6f452",
@@ -522,9 +522,60 @@
         "archived_outer_base_fits": 5,
         "expected_focused_tests": 110,
         "expected_oof_rows": 19578,
-        "executed": false,
+        "executed": true,
         "independent_holdout": false,
-        "models_saved": false
+        "models_saved": false,
+        "run_id": "20261126T223705_0c698520",
+        "manifest_sha256": "e3c94c67492c219925b8e9ccc355d9e75d2dcd99c4f677f94ce38c95da31c852",
+        "rar_sha256": "9f2b1e33ec110292e2d584cb3574af280d477d4a57f692761d80b2c51cc85122",
+        "verified_output_hashes": 9,
+        "oof_rows": 19578,
+        "calibration_oof_rows": 39156,
+        "selected": [
+          "isotonic_shrunk",
+          "identity",
+          "residual_ridge",
+          "identity",
+          "identity"
+        ],
+        "selected_rmse_mean": 7.071948235287027,
+        "selected_r2_mean": 0.6313207500235383,
+        "selected_mae_mean": 3.9048148584478,
+        "selected_tail_rmse": 24.83034147574929,
+        "descriptive_guard_pass": true,
+        "paired_group_bootstrap_global_rmse_delta_ci95": [
+          -0.06323878,
+          0.03141189
+        ],
+        "independent_improvement_certified": false,
+        "selection_recomputed": true,
+        "trace_isolation_verified": true
+      },
+      "stacking": {
+        "state": "implemented_pending_local_validation",
+        "module": "lithiumscope.experiments.model_1.integral.stacking_study",
+        "meta_commit": "9d79d2307eab848b79dddf9d7a0ad1dcf0791c46",
+        "runner_commit": "06c25bf35a7c3922dbaf969ee3e7647692a84f1c",
+        "tests_commit": "98923735d89bc3396d4668b5a323feee8f772e45",
+        "policies": [
+          "identity",
+          "equal_blend",
+          "convex_stack",
+          "ridge_stack",
+          "nonlinear_residual",
+          "xgb_regularized",
+          "prior_calibration_selected",
+          "inner_selected"
+        ],
+        "new_xgb_fits": 60,
+        "new_meta_estimators": 40,
+        "convex_weight_fits": 20,
+        "archived_hgb_crossfit_rows": 39156,
+        "expected_focused_tests": 115,
+        "expected_oof_rows": 26104,
+        "executed": false,
+        "models_saved": false,
+        "independent_holdout": false
       }
     }
   },
@@ -550,10 +601,10 @@
     "frozen_for_current_branch": true
   },
   "next": [
-    "run_posttraining_once_and_110_focused_tests",
-    "verify_crossfit_lineage_and_calibration_metrics",
-    "decide_remaining_posttraining_methods_if_justified",
-    "integrate_validated_methods_then_reference_fit_if_eligible",
+    "run_stacking_study_once_and_115_focused_tests",
+    "verify_stacking_metrics_and_crossfit_lineage",
+    "close_point_posttraining_and_audit_uncertainty_evidence",
+    "integrate_validated_methods_resolve_inference_contract_then_reference_fit_if_eligible",
     "fine_tune_reference_candidate_then_final_validation"
   ],
   "independent_external_holdout": false,
@@ -667,11 +718,11 @@
     "comparison_state": "complete"
   },
   "latest_focused_m1_validation": {
-    "commit": "9ac65b4b8724e35d51814b96e6f4de83a6d69637",
-    "passed": 104,
-    "total": 104,
+    "commit": "80205aa432d05519a7e5679c6aa8c978f18ce2fc",
+    "passed": 110,
+    "total": 110,
     "failed": 0,
-    "duration_seconds": 80.53,
+    "duration_seconds": 28.45,
     "scope": "tests/scientific/m1_expansion",
     "full_suite_after_expansion": false
   }
