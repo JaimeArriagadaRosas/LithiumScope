@@ -41,3 +41,6 @@ PDF previo a recuperación, run `demonstration_20261126_105426_m0300_c04bd5968e2
 5. Fase 6 se cierra con evidencias de operación y reconstrucción. Release es decisión posterior separada.
 
 Para ejecutar la auditoría desde CMD sin usar una instalación anterior: `set "PYTHONPATH=%CD%\src"`, luego `python -m lithiumscope.experiments.data_lab.candidate_audit`. Ya fue ejecutada; no repetir sin motivo.
+
+## Validación del PDF posterior a recuperación
+Run `demonstration_20261126_112915_m0300_b46807c2fcda`, commit b6d3aa9, 38 páginas, SHA-256 `424a010b43f50cbc92abdde0d09f3a0b5d8c5ba7a6e8f663eef0128b4c71dc3d`. Ambas etapas, identidades, métricas y comparaciones emparejadas (p. 11–13) verificadas en PDF. OASIS y campañas visibles. El anexo omitía los diagnósticos históricos SCL recuperados; corregido en commits 4006307, 03ad7fa y b766f0e: snapshot vinculado a run, hash de modelo/dataset y estado de recuperación, render y regresión. No cambia inferencia ni entrenamiento. Pendiente ejecución local de tests, nueva demo y reconstrucción con `python -m lithiumscope.prediction.rebuild_pdf --run ID_DE_EJECUCION` (guardar PDF original antes, el comando sobrescribe report.pdf). La nueva prueba aún no está ejecutada. No declarar fase 6 cerrada ni release aprobada.
