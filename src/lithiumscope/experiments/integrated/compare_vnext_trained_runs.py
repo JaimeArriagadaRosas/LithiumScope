@@ -52,6 +52,7 @@ def regression_metrics(y: np.ndarray, pred: np.ndarray) -> dict:
     return {
         "n": int(len(y)),
         "rmse": float(np.sqrt(np.mean(error**2))),
+        "r2": float(1 - np.sum(error**2) / np.sum((y-y.mean())**2)) if np.var(y)>0 else None,
         "mae": float(np.mean(np.abs(error))),
         "median_ae": float(np.median(np.abs(error))),
         "p90_ae": float(np.quantile(np.abs(error), .9)),
@@ -110,6 +111,9 @@ def group_bootstrap_gain(
             )
         if metric == "mae":
             return float(np.mean(np.abs(target-o))-np.mean(np.abs(target-n)))
+        if metric == "r2":
+            denominator = np.sum((target-target.mean())**2)
+            return float((np.sum((target-o)**2)-np.sum((target-n)**2))/denominator) if denominator>0 else np.nan
         if metric == "brier":
             return float(np.mean((target-o)**2)-np.mean((target-n)**2))
         if len(np.unique(target)) != 2:
@@ -160,14 +164,10 @@ def load_m1_oof(run: Path, model: str = "svm__identity") -> pd.DataFrame:
     if pred.row_index.duplicated().any():
         raise ValueError("M1 predictions have duplicate row indexes")
     joined = manifest[[
-        "source_dataset", "spatial_group", "outer_fold", "Longitude", "Latitude"
+        "row_position", "row_index", "source_dataset", "spatial_group", "outer_fold", "Longitude", "Latitude"
     ]].copy()
     joined["y_true"] = pred.Li_icpms_real.to_numpy()
     joined["prediction"] = pred.Li_icpms_predicted.to_numpy()
-    joined[["Longitude", "Latitude"]] = joined[[
-        "Longitude", "Latitude"
-    ]].round(5)
-    joined["y_true"] = joined.y_true.round(6)
     return joined
 
 
@@ -176,6 +176,10 @@ def pair_shared_m1(
 ) -> tuple[pd.DataFrame, dict]:
     """Match only unambiguous same-source same-site same-Li test records."""
     keys = ["source_dataset", "Longitude", "Latitude", "y_true"]
+    old, new = old.copy(), new.copy()
+    for frame in (old, new):
+        frame[["Longitude", "Latitude"]] = frame[["Longitude", "Latitude"]].round(5)
+        frame["y_true"] = frame.y_true.round(6)
     old_ambiguous = old.duplicated(keys, keep=False)
     new_ambiguous = new.duplicated(keys, keep=False)
     old_unique = old.loc[~old_ambiguous]

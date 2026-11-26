@@ -69,6 +69,8 @@ def test_m2_tie_or_insufficient_data_abstains():
     source.loc[source.case_id == "site-8", "prospectivity_score"] = .8
     assert calculate_decision(source).winner_id is None
     source.loc[source.case_id.isin(["site-2", "site-3"]), "model_2_applicability_warning"] = "OUT_OF_DOMAIN"
+    assert calculate_decision(source).status == "ABSTAIN"
+    source.loc[source.case_id == "site-8", "prospectivity_score"] = .9
     assert calculate_decision(source).status == "EXPLORATORY"
 
 

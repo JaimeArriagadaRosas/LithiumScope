@@ -1,0 +1,58 @@
+{
+  "run(2).json": {
+    "sha256": "b026afe3ef4e7a48b29639ba3fafe39b7fb52d1c4eab5da728b8e6b48b04b30a",
+    "destination": "results/model_1/runs/training_20261106_111653_m0300/run.json"
+  },
+  "run(3).json": {
+    "sha256": "2a9dd819941651a11e46281161e3216b28576a63fa86a81f65b3f741a4ee920c",
+    "destination": "results/model_2/runs/training_20260920_195933_m0300/run.json"
+  },
+  "oof_predictions_svm__identity.csv": {
+    "sha256": "9573fdd444696be16439debb0cd9b7b2f955ee004fe8af74d5cff46f6a6842c3",
+    "destination": "results/model_1/runs/training_20261106_111653_m0300/tables/oof_predictions_svm__identity.csv"
+  },
+  "outer_fold_manifest.csv": {
+    "sha256": "b4d2af7501933169e69ecc99073266a6479fa3fdfb4efc7e978113460f5fe977",
+    "destination": "results/model_1/runs/training_20261106_111653_m0300/tables/outer_fold_manifest.csv"
+  },
+  "fold_metrics_svm__identity.csv": {
+    "sha256": "d9afec621d66e5bde5443f8163d2bcabc5421947024dc3c82f0f3154afd7e7b9",
+    "destination": "results/model_1/runs/training_20261106_111653_m0300/tables/fold_metrics_svm__identity.csv"
+  },
+  "oof_predictions_catboost.csv": {
+    "sha256": "78209dbd7e7d26703dd71ee134781a050d2af968a5ddc44802eac0965986ecd4",
+    "destination": "results/model_2/runs/training_20260920_195933_m0300/tables/oof_predictions_catboost.csv"
+  },
+  "fold_metrics_catboost.csv": {
+    "sha256": "91042d3b9b684f5d6635eece18022ee4dba88eca83826cf0cefbcc405c80949b",
+    "destination": "results/model_2/runs/training_20260920_195933_m0300/tables/fold_metrics_catboost.csv"
+  },
+  "dataset_manifest.json": {
+    "sha256": "b38b78e0855fd1de155859809378b6bb3d63526826bee4bbbae5d4d472dd3164",
+    "destination": "results/model_2/runs/training_20260920_195933_m0300/manifests/dataset_manifest.json"
+  },
+  "all_reference_paired_oof.csv": {
+    "sha256": "e71c72196cf56c345ab70b864c66d24b7a5e4b7d82bc2b8f3385366848dcb4dd",
+    "destination": "results/model_2/runs/training_20261112_112450_m0300/all_reference_paired_oof.csv"
+  },
+  "per_sample_scl_quality_783.csv": {
+    "sha256": "ebaceb56235dc536f808d79a70de9946cd11b1fa38c49292a385fff10711a58c",
+    "destination": "results/scientific_simulations/sentinel_methodology_20261112/local_scl/per_sample_scl_quality_783.csv"
+  },
+  "manifest(20261126-131226).json": {
+    "sha256": "8cd8724bac3a7ebe93b3441b4042a75b9588c57d79437a04eb539231d860181f",
+    "destination": "results/generalization/model_1_oasis_like/20261126T123613_24ef3f6c/manifest.json"
+  },
+  "predictions(6).csv": {
+    "sha256": "2b9ade8199f3ed9317ccfcb23cbd38119f592890264ba790ac3915ce074b157a",
+    "destination": "results/generalization/model_1_oasis_like/20261126T123613_24ef3f6c/predictions.csv"
+  },
+  "fold_metrics(4).csv": {
+    "sha256": "1f7562ae71c530f63fc6f788512eabb7cab060ebcfa53d5822437ad5d45355b3",
+    "destination": "results/generalization/model_1_oasis_like/20261126T123613_24ef3f6c/fold_metrics.csv"
+  },
+  "trials.csv": {
+    "sha256": "e184daf2bd90e7d0c67705d05d2a7075a04ad3cf416c66da9ba496a86b0e958b",
+    "destination": "results/generalization/model_1_oasis_like/20261126T123613_24ef3f6c/trials.csv"
+  }
+}

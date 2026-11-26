@@ -56,3 +56,14 @@ una versión diferente antes de escribir. Registrar los conflictos para
 revisión manual. No modificar modelos activos ni metadata del release.
 El ZIP contiene adjuntos, no backup completo de todo el disco. No usarlo
 para sustituir datasets, modelos o manifiestos que no fueron entregados.
+
+## Restauración automatizada
+
+Desde el repositorio actualizado:
+```powershell
+python scripts/restore_scientific_evidence.py "RUTA_AL_ZIP"
+python scripts/restore_scientific_evidence.py "RUTA_AL_ZIP" --apply
+```
+Se validan los 14 archivos críticos contra hashes versionados antes de copiar.
+Las colisiones se registran como conflicto sin sobrescribir. No se extrae todo
+el ZIP ni se modifican modelos. Pendiente de ejecución en el PC del usuario.
