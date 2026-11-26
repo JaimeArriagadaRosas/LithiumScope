@@ -18,3 +18,9 @@ Para consumidores que necesitan el JSON por stdout:
 Los dos contratos de regresión se alinean al nuevo menú y al anexo dinámico,
 conservando la prohibición de exponer las opciones retiradas y de inventar
 evidencias científicas cuando faltan archivos.
+
+En una terminal interactiva (CMD/PowerShell) el progreso sobrescribe una sola
+línea mediante retorno de carro y se limpia antes del resumen. Se limita al
+ancho de la terminal para evitar saltos de línea. Si stdout está redirigido
+a un archivo o capturado por otro proceso, se mantiene el progreso por líneas
+para facilitar su lectura. Los eventos y el resumen final no cambian.

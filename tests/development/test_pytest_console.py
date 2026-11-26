@@ -62,3 +62,18 @@ def test_observer_subprocess_preserves_junit_and_log(tmp_path,capsys):
     assert '"kind": "finish"' in progress.read_text(encoding="utf-8")
     assert "2/2" in capsys.readouterr().out
     assert report_details(junit,tmp_path/"absent.xml")["nonpassing"][0]["state"]=="failure"
+
+
+def test_live_line_rewrites_clears_and_never_wraps():
+    from io import StringIO
+    from scripts.pytest_console import LiveLine
+    stream = StringIO()
+    live = LiveLine(stream, columns=lambda: 20)
+    live.update("12345678901234567890123456789", flush=True)
+    live.update("OK", flush=True)
+    live.clear()
+    assert stream.getvalue() == "\r1234567890123456789\rOK" + " "*17 + "\r  \r"
+    assert "\n" not in stream.getvalue()
+    assert not live.active
+    live.clear()
+    assert stream.getvalue().endswith("\r  \r")

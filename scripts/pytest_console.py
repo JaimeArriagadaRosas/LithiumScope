@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from collections import Counter
 import json
+import shutil
+import sys
 from pathlib import Path
 import subprocess
 import time
@@ -17,6 +19,32 @@ def elapsed(seconds):
 def group_of(nodeid):
     path = nodeid.split("::", 1)[0].replace(chr(92), "/").split("/")
     return path[1] if len(path) >= 3 and path[0] == "tests" else path[0]
+
+
+class LiveLine:
+    """Replace one physical terminal line, including when the new text is shorter."""
+    def __init__(self, stream, *, columns=None):
+        self.stream = stream
+        self.columns = columns or (lambda: shutil.get_terminal_size(fallback=(100, 24)).columns)
+        self.active = False
+        self.width = 0
+
+    def update(self, line, **kwargs):
+        # Reserve the final column so Windows CMD never wraps the progress line.
+        limit = max(1, self.columns() - 1)
+        line = line[:limit]
+        padding = min(max(0, self.width - len(line)), max(0, limit - len(line)))
+        self.stream.write("\r" + line + " " * padding)
+        self.stream.flush()
+        self.active = True
+        self.width = len(line)
+
+    def clear(self):
+        if self.active:
+            self.stream.write("\r" + " " * min(self.width, max(1, self.columns() - 1)) + "\r")
+            self.stream.flush()
+            self.active = False
+            self.width = 0
 
 
 class Progress:
@@ -97,7 +125,8 @@ class Progress:
 
 def monitor(command, *, cwd, env, log, progress_file, show=True):
     """Poll a separate flushed event stream, avoiding pipe buffering/deadlocks."""
-    progress = Progress(time.monotonic())
+    live = LiveLine(sys.stdout) if show and sys.stdout.isatty() else None
+    progress = Progress(time.monotonic(), output=live.update if live else print)
     if show:
         progress.line("Iniciando pytest; recopilando pruebas...", progress.start)
     progress_file.touch()
@@ -139,6 +168,9 @@ def monitor(command, *, cwd, env, log, progress_file, show=True):
                     process.kill()
                     process.wait()
             raise
+        finally:
+            if live:
+                live.clear()
 
 
 def report_details(junit, coverage):
