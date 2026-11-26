@@ -6,7 +6,7 @@ import pandas as pd
 
 from lithiumscope.model_1.training.factory import build_pipeline
 from lithiumscope.model_1.training.preprocessing.tabular import FeatureSchema
-from lithiumscope.model_1.training.preprocessing.treatment_policy import POLICIES, encode, decode, rare_group_positions
+from lithiumscope.model_1.training.preprocessing.treatment_policy import OPTIONS, POLICIES, encode, decode, rare_group_positions
 from lithiumscope.resources.manager import estimator_thread_scope
 
 
@@ -23,17 +23,18 @@ def weighted_positions(y, groups, high, policy, seed, weight):
     return positions,weights
 
 
-def fit_weighted(device,seed,params,x,y,groups,numeric,categorical,high,weight):
+def fit_weighted(device,seed,params,x,y,groups,numeric,categorical,high,weight,*,algorithm="random_forest"):
     if not (x.index.is_unique and x.index.equals(y.index) and x.index.equals(groups.index)):
         raise ValueError("Invalid indexed TRAIN data")
     policy_name=params["treatment_policy"]
-    if policy_name not in ("nonnegative","rare_group_sqrt"):
-        raise ValueError("Unexpected archived RF treatment")
+    if algorithm not in ("random_forest","catboost","hist_gradient_boosting") or policy_name not in OPTIONS[algorithm]:
+        raise ValueError("Unexpected archived transfer treatment")
     policy=POLICIES[policy_name]
     positions,weights=weighted_positions(y,groups,high,policy,seed,weight)
     schema=FeatureSchema(list(numeric),list(categorical),2,"stable_v1")
-    model=build_pipeline("random_forest",device,seed,schema,
-                         {k:v for k,v in params.items() if k!="treatment_policy"})
+    # Reuse the canonical policy-built preprocessor (including coordinate exclusion).
+    # Apply its exact resampling and transform ourselves so every copy receives weight.
+    model=build_pipeline(algorithm,device,seed,schema,params).regressor
     fit_x=x.iloc[positions].reset_index(drop=True)
     target=encode(y.iloc[positions],policy.target)
     with estimator_thread_scope():
@@ -41,7 +42,8 @@ def fit_weighted(device,seed,params,x,y,groups,numeric,categorical,high,weight):
     def predict(frame):
         return decode(model.predict(frame),policy,float(y.max()))[0]
     return predict,{"fit_rows":len(positions),"real_train_rows":len(x),
-                    "target_transform":policy.target,"policy":policy_name,
+                    "target_transform":policy.target,"policy":policy_name,"algorithm":algorithm,
+                    "coordinates":policy.coordinates,"bounded":policy.bounded,
                     "transfer_weight":weight,"transfer_fit_rows":int(high.iloc[positions].sum()),
                     "effective_transfer_weight":float(weights[high.iloc[positions].to_numpy(bool)].sum()),
                     "trace":[{"row":str(x.index[i]),"action":"bootstrap_copy"} for i in positions[len(x):]]}
