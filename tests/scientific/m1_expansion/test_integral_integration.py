@@ -111,3 +111,44 @@ def test_reference_guard_retains_hgb_if_stack_worsens_tail():
     result=it.decision(report)
     assert result[0]["reference_review_eligible"]
     assert not result[1]["reference_review_eligible"]
+
+
+def legacy_reference_fixture():
+    x=pd.DataFrame({"Longitude":[-70.,-71.,-72.],"Latitude":[-25.,-26.,-27.]},index=[10,40,90])
+    y=pd.Series([20.,40.,60.],index=x.index)
+    groups=pd.Series(["g1","g2","g3"],index=x.index)
+    folds=np.array([1,2,3])
+    manifest=pd.DataFrame({"row_position":[0,1,2],"row_index":["10","40","90"],
+                           "outer_fold":folds,"spatial_group":groups.to_numpy(),
+                           "Longitude":x.Longitude.to_numpy(),"Latitude":x.Latitude.to_numpy()})
+    pred=pd.DataFrame({"row_index":["10","40","90"],"Li_icpms_real":y.to_numpy(),
+                       "Li_icpms_predicted":[19.,38.,57.]})
+    return pred,manifest,x,y,groups,folds
+
+
+def test_legacy_reference_recovers_identity_without_row_position():
+    p,m,x,y,g,f=legacy_reference_fixture()
+    np.testing.assert_array_equal(it.align_spatial_reference(p.iloc[::-1],m.iloc[::-1],x,y,g,f),
+                                  [19.,38.,57.])
+
+
+def test_modern_reference_verifies_redundant_identity():
+    p,m,x,y,g,f=legacy_reference_fixture()
+    modern=p.merge(m,on="row_index",validate="one_to_one")
+    np.testing.assert_array_equal(it.align_spatial_reference(modern,m,x,y,g,f),[19.,38.,57.])
+    modern.loc[0,"outer_fold"]=3
+    with pytest.raises(ValueError,match="redundant identity"):
+        it.align_spatial_reference(modern,m,x,y,g,f)
+
+
+def test_reference_rejects_invalid_ids_truth_and_manifest():
+    p,m,x,y,g,f=legacy_reference_fixture()
+    for key,value in (("row_index","missing"),("row_index","40"),("Li_icpms_real",21.)):
+        invalid=p.copy()
+        invalid.loc[0,key]=value
+        with pytest.raises(ValueError):
+            it.align_spatial_reference(invalid,m,x,y,g,f)
+    invalid=m.copy()
+    invalid.loc[0,"Longitude"]=-71.
+    with pytest.raises(ValueError,match="manifest identity"):
+        it.align_spatial_reference(p,invalid,x,y,g,f)
