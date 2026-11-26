@@ -17,7 +17,7 @@ from sklearn.model_selection import KFold
 
 from lithiumscope.core.config import load_config
 from lithiumscope.core.hashing import file_sha256
-from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR
+from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR, DATA_DIR
 from lithiumscope.core.scientific.eda_statistics import source_series
 from lithiumscope.datasets.adapters.georoc_ingestion_schema import infer_georoc_column_map, MAJOR_OXIDES
 from lithiumscope.datasets.adapters.georoc_ingestion_transform import harmonize_chunk
@@ -32,6 +32,8 @@ from lithiumscope.results.atomic_exports import write_table, write_legacy_eviden
 
 AUDIT="20261126T162414_9f0900a7"
 AUDIT_SHA="3c4ff8ddb1e9dc5004c951ae9cdeb1e10cad1bed11c311c47166831f04bc91d6"
+EXPANSION="20261126T145129_ee7f5431"
+EXPANSION_SHA="0817aac5e5d869e9be0ec9356c8eea189278cf8ec1f896d19e025384affac6b2"
 IDENTITY=["Latitude","Longitude","Li_icpms"]
 CHEM=[c for c in MAJOR_OXIDES if c!="Fe2O3"]+[
     "Th_icpms","U_icpms","Rb_icpms","Cs_icpms","Nb_icpms","Ta_icpms",
@@ -181,6 +183,80 @@ def run():
             recovered.loc[good.row_id,field]=values.to_numpy()
         if file_sha256(path)!=sha:
             raise ValueError("Raw partition changed during recovery")
+    # Historical filtered query may omit extra elements at acquisition. Reuse
+    # verified Andean precompiled partitions, but never equate rounded coords
+    # and Li alone with sample identity. Require the same exact match contract.
+    research=RESULTS_DIR/"model_1/expansion"/EXPANSION
+    mp=research/"manifest.json"
+    research_matches=[]
+    research_values=[]
+    if mp.is_file():
+        if file_sha256(mp)!=EXPANSION_SHA:
+            raise ValueError("Expansion manifest differs")
+        em=read(mp)
+        ip=research/"raw_metadata_inventory.json"
+        if em.get("source_sha256")!=digest or file_sha256(ip)!=em["outputs"][ip.name]:
+            raise ValueError("Research inventory differs")
+        for item in read(ip):
+            if item["source"]!="georoc_andean_202609":
+                continue
+            name=item["file"]
+            if Path(name).name!=name:
+                raise ValueError("Invalid research partition name")
+            path=DATA_DIR/"raw/model_1/research"/item["source"]/name
+            inv={"file":name,"state":"research_missing","historical_rows":len(external),"matched":0}
+            inventory.append(inv)
+            if not path.is_file():
+                continue
+            sha=file_sha256(path)
+            if sha!=item["sha256"] or item["raw_state"]!="verified":
+                inv.update(state="research_hash_unverified",sha256=sha)
+                continue
+            encoding=detect_georoc_encoding(path)
+            header=list(pd.read_csv(path,nrows=0,encoding=encoding).columns)
+            extras=measurement_map(header)
+            mapping=infer_georoc_column_map(header)
+            inv.update(state="research_verified",sha256=sha,extra_headers=extras,header=header)
+            raw=pd.read_csv(path,usecols=list(dict.fromkeys([*mapping,*[v[0] for v in extras.values()]])),
+                            encoding=encoding,dtype=str,low_memory=False)
+            harmonized,_=harmonize_chunk(raw[list(mapping)],column_map=mapping,source_name=item["source"],
+                source_file=name,allowed_material_types=tuple(cfg["allowed_material_types"]),
+                minimum_predictors=int(cfg["minimum_predictors"]),iron_total_mode="original")
+            matches=unique_matches(external,harmonized)
+            matches["file"]=name
+            matches["raw_sha256"]=sha
+            matches["match_origin"]="research"
+            research_matches.append(matches)
+            good=matches.loc[matches.state.eq("matched")]
+            inv["matched"]=len(good)
+            part=pd.DataFrame({"row_id":good.row_id.to_numpy(),"file":name})
+            for element,(column,unit) in extras.items():
+                part["georoc_"+element+"_ppm"]=numeric_ppm(raw[column].loc[good.raw_position.astype(int)],unit).to_numpy()
+            research_values.append(part)
+            if file_sha256(path)!=sha:
+                raise ValueError("Research partition changed during recovery")
+    if research_matches:
+        all_matches=pd.concat(research_matches,ignore_index=True)
+        # A raw ambiguity in any partition also precludes assignment.
+        good=all_matches.loc[all_matches.state.eq("matched")]
+        blocked=set(all_matches.loc[all_matches.state.isin(["ambiguous","raw_row_reused"]),"row_id"])
+        blocked.update(good.loc[good.row_id.duplicated(keep=False),"row_id"])
+        bad=all_matches.state.eq("matched")&all_matches.row_id.isin(blocked)
+        all_matches.loc[bad,"state"]="cross_partition_ambiguous"
+        all_matches.loc[bad,"raw_position"]=np.nan
+        match_tables.append(all_matches)
+        joined=pd.concat(research_values,ignore_index=True)
+        joined=joined.loc[~joined.row_id.isin(blocked)].set_index("row_id").drop(columns="file")
+        if not joined.index.is_unique:
+            raise ValueError("Research recovery ambiguous")
+        # Preserve exact original values, and don't silently resolve disagreement.
+        for field in joined:
+            if field not in recovered:
+                recovered[field]=np.nan
+            old=recovered.loc[joined.index,field]
+            new=joined[field]
+            conflict=old.notna()&new.notna()&~np.isclose(old,new,rtol=1e-6,atol=1e-6)
+            recovered.loc[joined.index,field]=old.where(old.notna(),new).where(~conflict)
     recovered.insert(0,"academic_member",recovered.index.isin(x.index.astype(str)))
     academic=recovered.loc[x.index.astype(str)].drop(columns="academic_member")
     academic.index=x.index
@@ -210,7 +286,8 @@ def run():
         raise ValueError("Historical source changed")
     write_legacy_evidence_json(out/"manifest.json",{"state":"review_required","scope":"m1_raw_measurements_recovery",
         "source_sha256":digest,"feature_audit_sha256":AUDIT_SHA,"historical_rows":len(base),
-        "academic_rows":len(x),"georoc_rows":len(external),"matched_rows":sum(v.get("matched",0) for v in inventory),
+        "academic_rows":len(x),"georoc_rows":len(external),"matched_rows":int(pd.concat(match_tables,ignore_index=True).loc[lambda t:t.state.eq("matched"),"row_id"].nunique()) if match_tables else 0,
+        "research_expansion_sha256":EXPANSION_SHA if mp.is_file() else None,
         "ingestion_audit_sha256":file_sha256(ingest_path) if ingest_path.is_file() else None,
         "measurement_columns":list(academic.columns),"methods_certified":False,"training":False,
         "production_schema_changed":False,"acquisition":False,"promotion":False,
