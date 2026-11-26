@@ -41,3 +41,17 @@ def test_fold_gate_blocks_test_groups_publications_and_ood():
     flags=fold_gate(q,train,{"g1"},fields,test_aliases={"author:2000"},
                     aliases=[set(),set(),{"author:2000"},set()])
     assert flags.fold_transfer_review_candidate.tolist()==[True,False,False,False]
+
+
+def test_preflight_summary_counts_only_eligible_tail_rows():
+    from lithiumscope.experiments.model_1.augmentation.transfer_preflight import summarize_plans
+    part=pd.DataFrame({"fold":[1,1,1,1,1],"source_dataset":["chen"]*4+["puna"],
+        "Li_icpms":[40.,41.,70.,20.,25.],
+        "static_review_candidate":[True,True,True,False,True],
+        "fold_transfer_review_candidate":[True,True,False,False,True]})
+    plans,summary=summarize_plans([part,part.assign(fold=2)])
+    assert len(plans)==10
+    assert plans["tail"].tolist()==[False,True,True,False,False]*2
+    assert plans["accepted_tail"].tolist()==[False,True,False,False,False]*2
+    assert summary.loc[summary["source_dataset"].eq("chen"),"accepted_tail"].tolist()==[1,1]
+    assert summary.loc[summary["source_dataset"].eq("puna"),"accepted_tail"].tolist()==[0,0]
