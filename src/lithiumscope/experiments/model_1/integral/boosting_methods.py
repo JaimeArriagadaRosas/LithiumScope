@@ -73,6 +73,21 @@ def archive_predictions(root,policy,pilot,x):
     return p.set_index("row_id").reindex(x.index.astype(str))
 
 
+def build_method_pipeline(schema,device,policy):
+    family,profile=PROFILES_NEW[policy]
+    params=dict(profile)
+    # The factory's device argument is a DeviceInfo, not XGBoost's backend string.
+    # Set the estimator backend after construction; preserve the registered profile.
+    backend=params.pop("device",None) if family=="xgboost" else None
+    model=build_pipeline(family,device,SEED,schema,params)
+    model.set_params(preprocess__numeric="passthrough")
+    if family=="xgboost":
+        if backend!="cpu":
+            raise ValueError("Experimental XGBoost requires CPU")
+        model.set_params(model__device=backend)
+    return model
+
+
 def fit_method(x,y,validation,schema,device,policy):
     if (not x.index.is_unique or not x.index.equals(y.index) or set(x.index)&set(validation.index)
             or not len(x) or not np.isfinite(y).all() or y.le(0).any()):
@@ -80,9 +95,7 @@ def fit_method(x,y,validation,schema,device,policy):
     cols=schema.numeric+schema.categorical
     if list(x.columns)!=cols or list(validation.columns)!=cols:
         raise ValueError("Feature contract differs")
-    family,params=PROFILES_NEW[policy]
-    model=build_pipeline(family,device,SEED,schema,params)
-    model.set_params(preprocess__numeric="passthrough")
+    model=build_method_pipeline(schema,device,policy)
     with estimator_thread_scope():
         model.fit(x,y)
     pred=np.maximum(np.asarray(model.predict(validation),float),0.)
