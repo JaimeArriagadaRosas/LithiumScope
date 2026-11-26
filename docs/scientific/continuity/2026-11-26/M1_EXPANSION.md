@@ -200,3 +200,24 @@ Nueva ablación academic_features: HGB native_fine fijo, cuatro brazos (canónic
 `python -m lithiumscope.experiments.model_1.expansion.academic_features --allow-unverified-metadata`
 
 Salida results/generalization/model_1_expansion_academic_features.
+
+
+## Ablación de predictores validada y campaña de cierre académico acotada
+Run 20261126T163711_3f9dd35a, commit e5c322f. 42 pruebas aprobadas (3.41 s); 80 ajustes, 16315 predicciones, seis hashes verificados. Manifiesto SHA256 ecb7314e6a4b7ad370d715af7e326c3bd557c06e3284655ec19f3c9f022a044f.
+
+| Brazo | Predictores externos | RMSE medio | MAE medio | R² medio |
+|---|---:|---:|---:|---:|
+| Canónico |33|7.239729|4.025695|.611629|
+| Razones |56|7.250854|4.025934|.611965|
+| Mediciones |107|7.206212|4.002265|.617685|
+| Combinado |130|7.074911|3.892598|.631231|
+| Selección interna |variable|7.085133|3.915786|.628802|
+
+La ampliación combinada reduce RMSE medio 2.28% frente al control; 135 filas >40 ppm concentran 50.83% de SSE del combinado. Diferencia RMSE global combinado-canónico IC95 por 2000 remuestreos de grupos: [-.436,.110] ppm; no concluyente. Varianza objetivo de población académica 136.91 ppm²; RMSE global 5.361 exigiría aproximadamente R² global .7901 (no equivalencia exacta con media de folds). No reducir población, no usar Li como predictor ni confundir métricas académicas con espaciales. Todavía no alcanza RMSE medio <5.361; sí supera R² >.499. Mantener cautela por recuperación retrospectiva que empleó Li para corroborar identidad y por métodos no certificados.
+
+Última campaña acotada propuesta para este conjunto y esta evaluación: academic_final. Contrastar HGB combinado con CatBoost combinado (perfil académico fijo, NaN numéricos nativos), y un estimador local de analogías basado solo en química canónica (log1p, escala robusta TRAIN, cobertura >=50%, mínimo ocho variables compartidas), distancia geográfica haversine con escala fija 50 km y cinco vecinos ponderados. Excluir vecinos de identidad coincidente y coincidencias casi idénticas a <=100 m según química, sin inspeccionar Li de evaluación; si menos de tres vecinos válidos, usar HGB. No garantiza eliminar todas las duplicaciones ni demostrar generalización espacial; el KFold aleatorio histórico comparte grupos. Registrar vecinos y exclusiones. Cuatro mezclas convexas fijas (tres pares al 50%, mezcla de tres a tercios). Siete políticas y una seleccionada exclusivamente por validación interna de tres folds, minimizando RMSE sujeto a R² >.499 (fallback HGB). Reutilizar cinco predicciones externas HGB combinadas archivadas tras verificar hashes y columnas; 35 ajustes nuevos de árboles y 20 construcciones del estimador local. Sin ampliar filas, sin modelo definitivo, sin promoción, sin M2. Cinco nuevas pruebas pendientes de ejecución local.
+
+`git pull --ff-only && set "PYTHONPATH=%CD%\\src" && python -m pytest tests/scientific/m1_expansion -q`
+`python -m lithiumscope.experiments.model_1.expansion.academic_final --allow-unverified-metadata`
+
+Salida results/generalization/model_1_expansion_academic_final. Si no se alcanza el objetivo, cerrar esta secuencia de refinamientos sobre la población histórica y documentar brecha; no prolongar indefinidamente la optimización sobre folds ya examinados. Antes de promover M1 enriquecido, verificar correspondencia sin Li, métodos y disponibilidad de predictores en inferencia, evaluar protocolo espacial completo y conjunto independiente. Decisión posterior de release separada del cumplimiento numérico de la comparación OASIS.
