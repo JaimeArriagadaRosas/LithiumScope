@@ -2,7 +2,7 @@
 
 Fecha: 26 de noviembre de 2026. Rama: `feat/m1-targeted-data-refinement`.
 Alcance exclusivo M1; M2, modelos activos, dataset productivo y main congelados.
-Estado vigente: fase 5, preflight validado; cobertura de cola insuficiente. Fase 6 bloqueada por datos.
+Estado vigente: fase 5 cerrada operativamente con cobertura de cola insuficiente; comparación final de fase 6 implementada, pendiente de ejecución. Ver M1_FUENTES_Y_CIERRE.md.
 
 ## Referencias congeladas y criterio
 
@@ -132,3 +132,7 @@ primarias, no aprobar por resumen. No se adquirieron nuevas tablas en este
 turno. Fase 6 no ejecutada, fase 7 bloqueada. Cero nuevas aprobadas.
 No hay comando pendiente de preflight. M2, producción y main congelados.
 Detalle y hashes en M1_AUGMENTATION.md y state.json.
+
+
+## Decisión de cierre de adquisición y comparación acotada — 26/11
+Revisión bibliográfica y catálogo completo de las fuentes registradas en [M1_FUENTES_Y_CIERRE.md](M1_FUENTES_Y_CIERRE.md). Se detiene la búsqueda externa en esta iteración, conservando candidatos y cuarentenas. Fase 5 cerrada operativamente con cobertura de cola insuficiente, no certificación de nuevas filas. Se levanta únicamente el bloqueo de comparación exploratoria de fase 6: sensibilidad explícita con metadatos no certificados, sin cambiar predictores, algoritmo, hiperparámetros, TEST ni producción. 15 fits HGB nuevos máximo, A y B archivados, C1 solo cola Chen, C2 transferencia Chen ponderada por banda, D C2 + SMOTER histórico TRAIN. Peso individual <=.10 hasta 40 ppm y <=.25 por encima, peso total candidato por banda <=10% del histórico TRAIN; cero si banda sin histórico. No se eligen políticas con TEST para inferencia definitiva; reporte descriptivo de umbral OASIS y guardas. Resultados sintéticos exportados además de linaje. 85 pruebas esperadas, ejecución pendiente. No se inicia otra búsqueda o fit por defecto si no alcanza objetivos. Fase 7 sigue bloqueada por evidencia favorable, validación espacial/independiente y autorización. M2 congelado.
