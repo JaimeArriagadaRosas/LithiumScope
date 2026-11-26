@@ -106,11 +106,14 @@ def parse_tables(samples,data,key):
         for canonical,j in fields.items():
             value,kind,limit=clean(row.iloc[j])
             record[canonical]=value
+            if canonical=="Li_icpms":
+                record["source_li_censoring"]=kind or ""
             if kind:
                 censoring.append({"source_dataset":key,"source_sample":name,"parameter":canonical,
                     "raw":str(row.iloc[j]),"kind":kind,"limit":limit,"value":value})
-        # Keep additional ppm measurements in a separate method-specific namespace.
-        # Do not silently equate XRF and ICP-MS with legacy columns.
+        # Keep additional ppm measurements in a separate review-only namespace.
+        # Method codes are recorded in measurement_inventory; canonical names
+        # are comparison aliases, not certification of analytical equivalence.
         for item,j in zip(inventory,range(start,data.shape[1]),strict=True):
             label=item["parameter"]
             if not item["canonical_field"] and item["unit"] in {"mg/kg","ug/g","ppm"} and label.isalpha() and 1<=len(label)<=2:
@@ -167,10 +170,11 @@ def summarize(rows,edges,known_publications,domain,known_groups):
     r["existing_group"]=r.spatial_group.isin(known_groups)
     r["academic_range"]=r.Li_icpms.between(domain["q025"],domain["q975"])
     r["positive_li"]=r.Li_icpms.gt(0)&np.isfinite(r.Li_icpms)
+    r["li_uncensored"]=r.source_li_censoring.eq("")
     r["publication_overlap"]=[("doi:"+v.lower()) in known_publications for v in r.source_publication]
     blocked={(v["source_dataset"],v["source_sample"]) for v in edges if v["possible_duplicate"]}
     r["possible_duplicate"]=[(a,b) in blocked for a,b in zip(r.source_dataset,r.source_sample)]
-    r["basic_qc"]=r.positive_li&r.qc_diagnostic&r.chemical_predictors.ge(8)&r.Sample_type.eq("whole rock")&r.spatial_group.ne("")
+    r["basic_qc"]=r.positive_li&r.li_uncensored&r.qc_diagnostic&r.chemical_predictors.ge(8)&r.Sample_type.eq("whole rock")&r.spatial_group.ne("")
     # Both sources require publication/method and inference compatibility review.
     # Macusani is a known GEOROC publication even if tokens do not resolve.
     r["publication_overlap"]|=r.source_dataset.eq(MAC)
@@ -219,6 +223,8 @@ def run():
     for key,part in query.groupby("source_dataset"):
         other=query.loc[query.source_dataset.ne(key)]
         edges.extend(duplicate_edges(part,other,"directed_other_source"))
+        for idx in part.index:
+            edges.extend(duplicate_edges(part.loc[[idx]],part.drop(index=idx),"directed_same_source"))
     known=set().union(*historical_tokens(hist),*pubs)
     review=summarize(query,edges,known,domain,set(prepared.groups))
     report=review.groupby("source_dataset")[["positive_li","basic_qc","academic_range","possible_duplicate",
@@ -241,7 +247,8 @@ def run():
     write_legacy_evidence_json(out/"manifest.json",{**links,"state":"review_required","source_sha256":digest,
         "original_hashes":original_hashes,"rows":len(review),"domain":domain,"new_rows_approved":0,
         "target_used_for_matching":False,"training":False,"production_schema_changed":False,
-        "independent_holdout_certified":False,"outputs":{name:file_sha256(out/name) for name in tables}})
+        "independent_holdout_certified":False,"duplicate_scope":"historical_raw_and_prior_candidate_inventory_not_all_raw_partitions",
+        "canonical_columns_are_review_aliases":True,"outputs":{name:file_sha256(out/name) for name in tables}})
     print(report.to_string(index=False))
     print(f"Estado: review_required | Evidencias: {out}",flush=True)
     return out
