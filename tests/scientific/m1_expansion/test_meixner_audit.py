@@ -40,3 +40,14 @@ def test_unrecognized_a1_layout_rejected():
         parse_a1(pd.DataFrame([[1,2]]))
     with pytest.raises(ValueError,match="header"):
         parse_a1(pd.DataFrame(np.zeros((133,14))))
+
+
+def test_raw_view_parses_censoring_and_rejects_invalid_chemistry():
+    raw=pd.DataFrame({"SIO2":["66.1","<2","ND","-1","inf","invalid","0"],
+                      "LI":["5",None,"<0.2","-3","inf","ND","0"]})
+    mapped=raw_view(raw,{"SIO2":"SiO2","LI":"Li_icpms"})
+    np.testing.assert_allclose(mapped.SiO2.to_numpy(),
+        [66.1,1.,np.nan,np.nan,np.nan,np.nan,0.],equal_nan=True)
+    np.testing.assert_allclose(mapped.Li_icpms.to_numpy(),
+        [5.,np.nan,.1,np.nan,np.nan,np.nan,0.],equal_nan=True)
+    assert mapped.index.equals(raw.index)
