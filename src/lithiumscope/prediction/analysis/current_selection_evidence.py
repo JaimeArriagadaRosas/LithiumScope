@@ -59,7 +59,9 @@ def _selected(group,identity,root):
     except (OSError,ValueError,KeyError,TypeError,pd.errors.ParserError) as exc:
         result["eda_reason"]=str(exc)
     for filename in ("winner_treatment.json","winner_spectral_treatment.json"):
-        path=directory/"tables"/filename
+        path=directory/"manifests"/filename
+        if not path.is_file():
+            path=directory/"tables"/filename
         if path.is_file():
             try:
                 result["winner_treatment"]={"file":filename,"sha256":file_sha256(path),"data":read(path)}
@@ -72,7 +74,7 @@ def _paired(group,selected,root):
     folder=root/"results"/"scientific_simulations"
     candidates=list(folder.glob("sim_*/"+group+"/paired_oof/comparison.json"))
     candidates+=list(folder.glob("version_comparisons/*/"+group+"/comparison.json"))
-    for path in sorted(candidates,key=lambda p:p.stat().st_mtime,reverse=True):
+    for path in sorted(candidates,reverse=True):
         try:
             data=read(path)
             identity=data["candidate"]
@@ -84,8 +86,8 @@ def _paired(group,selected,root):
     return {"state":"unavailable","reason":"No matching saved OOF comparison for these model bytes"}
 
 
-def _targeted(selected,root):
-    folder=root/"results"/"generalization"/"model_1_targeted"
+def _targeted(selected,root,campaign="model_1_targeted"):
+    folder=root/"results"/"generalization"/campaign
     for path in sorted(folder.glob("*/manifest.json"),reverse=True):
         try:
             data=read(path)
@@ -95,7 +97,7 @@ def _targeted(selected,root):
             summary=data["summary"]
             return {"run_id":path.parent.name,"manifest_sha256":file_sha256(path),
                     "configurations":data["configurations"],"attempted_evaluations":data["attempted_evaluations"],
-                    "calibration_fits":data["calibration_fits"],
+                    "calibration_fits":data["calibration_fits"],"extra_regime_fits":data.get("extra_regime_fits",0),
                     "summary":[r for r in summary if r["policy"] in {"control","selected_inner"}],
                     "scope":"exploratory_fixed_archived_folds","models_saved":False}
         except (OSError,ValueError,TypeError,KeyError):
@@ -105,7 +107,9 @@ def _targeted(selected,root):
 
 def gather_current(m1,m2,*,root):
     selected={group:_selected(group,ident,root) for group,ident in (("model_1",m1),("model_2",m2))}
-    return {"state":"CURRENT_SELECTION_EVIDENCE","models":selected,
+    from lithiumscope.results.reference_benchmarks import OASIS_M1
+    return {"state":"CURRENT_SELECTION_EVIDENCE","models":selected,"oasis_m1":OASIS_M1,
             "paired":{g:_paired(g,s,root) for g,s in selected.items()},
             "m1_targeted":_targeted(selected["model_1"],root),
+            "m1_balanced":_targeted(selected["model_1"],root,"model_1_balanced"),
             "independent_holdout":False,"user_release_approval_required":True}

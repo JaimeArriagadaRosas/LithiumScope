@@ -50,9 +50,16 @@ def build_current_selection(evidence,styles):
                 out.append(table([["Ganancia positiva","Valor","IC95 inferior","IC95 superior"]]+[[r["metric"],_number(r["observed_gain"]),_number(r["ci95_group_lower"]),_number(r["ci95_group_upper"])] for r in data["gains"]],widths=[4*cm,4*cm,4*cm,4*cm],font_size=7))
         else:
             out.append(paragraph("Comparación OOF emparejada: no disponible para estos artefactos; no se sustituye por métricas ajenas.",styles["LS_Small"]))
-    result=evidence.get("m1_targeted")
-    if result:
-        out.append(paragraph("Refinamiento focalizado M1 — investigación de desarrollo",styles["LS_H2"]))
-        out.append(paragraph(f"{result['configurations']} configuraciones; {result['attempted_evaluations']} evaluaciones y {result['calibration_fits']} ajustes de calibración. No se guardaron modelos nuevos.",styles["LS_Body"]))
+    oasis=evidence.get("oasis_m1")
+    if oasis:
+        out.append(paragraph("Referencia académica OASIS (M1)",styles["LS_H2"]))
+        out.append(table([["Muestras","RMSE medio","R² medio"],[str(oasis["rows"]),_number(oasis["rmse_mean"]),_number(oasis["r2_mean"])]],widths=[4*cm,6*cm,6*cm],font_size=7.5))
+        out.append(paragraph(oasis["source"]+" "+oasis["protocol"]+" Comparación descriptiva: no son los mismos datos ni folds.",styles["LS_Small"]))
+    for key,title in (("m1_targeted","Refinamiento focalizado M1"),("m1_balanced","Balanceo y expertos M1")):
+        result=evidence.get(key)
+        if not result:
+            continue
+        out.append(paragraph(title+" — investigación de desarrollo",styles["LS_H2"]))
+        out.append(paragraph(f"{result['configurations']} configuraciones; {result['attempted_evaluations']} evaluaciones y {result['calibration_fits']} ajustes de calibración y {result.get('extra_regime_fits',0)} ajustes adicionales por régimen. No se guardaron modelos nuevos.",styles["LS_Body"]))
         out.append(table([["Familia","Política","RMSE global","MAE global","R² global"]]+[[r["algorithm"],r["policy"],_number(r.get("global_rmse")),_number(r.get("global_mae")),_number(r.get("global_r2"))] for r in result["summary"]],widths=[4.3*cm,4.3*cm,2.5*cm,2.5*cm,2.4*cm],font_size=7))
     return out

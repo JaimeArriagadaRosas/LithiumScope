@@ -30,6 +30,13 @@ combinan por probabilidades estimadas solo con X; si un régimen carece de datos
 suficientes usa el predictor global. Ninguna modificación productiva ni M2.
 El anexo PDF actual consume evidencia por identidad de modelo y de dataset,
 no se reutilizan métricas históricas de una pareja diferente.
-Pendientes: evaluación de paridad OASIS, ejecución local y decisión de selección.
+5 > 3 > 6 ejecuta un piloto académico OASIS-like con RF, recorte Q2.5–Q97.5
+antes del control de calidad, KFold aleatorio 5x5 y 20 trials por fold externo.
+Con --trials 100 en el módulo experiments.model_1.balanced.academic se iguala
+el presupuesto histórico, no la cohorte original. La cohorte propia debe conservar
+al menos 2043 filas reales. Se registra la superposición de grupos espaciales y
+la limitación del dominio recortado. No cambia la validación espacial principal.
+Pendientes: ejecución local, comparación de evidencia, decisión de selección y
+entrenamiento final solo si se demuestra una alternativa favorable.
 Las decisiones de incorporación de nuevas fuentes se basarán en las tablas de
 elegibilidad, no solo en cantidad de muestras.

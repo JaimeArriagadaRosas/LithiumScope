@@ -16,10 +16,22 @@ def run_version_comparison(*,output_root=None):
     destination=root/(datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")+"_"+uuid4().hex[:8])
     destination.mkdir(parents=True,exist_ok=False)
     records={}
+    from lithiumscope.results.reference_benchmarks import OASIS_M1
     for group in ("model_1","model_2"):
         available,issues=discover_models(group)
         record={"models":{role:identity for role,(_,identity) in available.items()},
                 "inventory_issues":issues,"state":"blocked"}
+        # Always distinguish descriptive stored metrics from strict paired evidence.
+        record["descriptive_metrics"]={}
+        for role,(_,identity) in available.items():
+            from pathlib import Path
+            try:
+                metadata=json.loads(Path(identity["path"]).with_name("metadata.json").read_text(encoding="utf-8"))
+                record["descriptive_metrics"][role]={"samples":metadata.get("samples"),"metrics":metadata.get("metrics",{}),
+                    "dataset_sha256":identity.get("dataset_sha256"),"validation_strategy":metadata.get("validation_strategy"),
+                    "scope":"own_training_protocol"}
+            except (OSError,ValueError,KeyError):
+                continue
         try:
             path=compare_saved(group,available,destination/group)
             record.update(state="complete",comparison_path=str(path),
@@ -30,5 +42,6 @@ def run_version_comparison(*,output_root=None):
         print(f"{group}: {record['state']} {record.get('reason','')}",flush=True)
     manifest={"state":"complete" if all(r["state"]=="complete" for r in records.values()) else "partial",
               "scope":"saved_oof_only_development","independent_holdout":False,"models":records,
+              "academic_reference_m1":OASIS_M1,
               "training":False,"promotion":False,"external_acquisition":False}
     return write_legacy_evidence_json(destination/"manifest.json",manifest)

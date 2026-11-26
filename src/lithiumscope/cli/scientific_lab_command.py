@@ -165,6 +165,13 @@ def _compare_versions():
     return json.loads(path.read_text(encoding="utf-8"))["state"]=="complete"
 
 
+def _academic_reference():
+    from lithiumscope.experiments.model_1.balanced.academic import run_academic
+    from lithiumscope.core.logging.session import run_log
+    with run_log("simulations","m1_oasis_like"):
+        run_academic(trials=20)
+
+
 def _validation_menu() -> bool | None:
     print("\nEJECUCIÓN DE TESTS Y SIMULACIONES\n")
     print("1. Tests completos del software")
@@ -172,13 +179,18 @@ def _validation_menu() -> bool | None:
     print("3. Evaluación experimental de tratamiento de datos")
     print("4. Ejecutar todo")
     print("5. Comparación de versiones guardadas (sin repetir simulaciones)")
+    print("6. Referencia académica OASIS (M1, piloto)")
     print("0. Volver")
-    choice=choose("Seleccione una opción [0-5]: ",set("012345"))
+    choice=choose("Seleccione una opción [0-6]: ",set("0123456"))
     if choice=="0":
         return False
     clear_screen()
-    if choice=="5":
-        return _compare_versions()
+    if choice in {"5","6"}:
+        try:
+            (_compare_versions if choice=="5" else _academic_reference)()
+        except Exception as exc:
+            print(f"[ERROR] {exc}")
+        return None
     operations=[_run_tests,_run_simulations,_treatment_menu]
     if choice=="4":
         print("Modo integral general: incluye doce familias. El refinamiento focalizado M1 se ejecuta por separado.")
