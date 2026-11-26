@@ -131,5 +131,21 @@
     "m1_manifests_identical": true,
     "m2_reconstructed_row_ids_groups_folds_li_and_coordinates_matching": 706,
     "notes": "Checks of supplied data; not execution of the updated repository suite."
+  },
+  "latest_software_validation": {
+    "commit": "571df98dd7dff57402cb98afd02f5459e9d4cb47",
+    "run_id": "20261126T134316Z_1ea2e39ed99445b38a9749b46d030b8b",
+    "total": 1004,
+    "passed": 1000,
+    "failed": 1,
+    "errors": 0,
+    "skipped": 3,
+    "coverage_pct": 57.02,
+    "duration_seconds": 126.453,
+    "git_identity_unchanged": true,
+    "failure": "tests.reporting.test_integrated_decision_page::test_no_valid_inputs_still_has_stage_two",
+    "cause": "early return after empty M1 selection omitted stage 2 heading",
+    "fix": "renderer preserves stage 2 without fabricated candidates; existing failing test retained and PDF page-two regression extended",
+    "retest_pending": true
   }
 }

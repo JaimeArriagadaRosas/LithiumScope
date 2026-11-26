@@ -135,7 +135,11 @@ def build_decision_page(context, styles) -> list:
         styles["LS_Small"],
     ))
     if decision.selected.empty:
-        story.append(paragraph(decision.reason, styles["LS_Body"]))
+        story.extend([
+            paragraph("Etapa 2 - Comparación espectral", styles["LS_H2"]),
+            paragraph(decision.reason, styles["LS_Small"]),
+            paragraph("Sin casos comparables.", styles["LS_Small"]),
+        ])
         return story
 
     story.extend([

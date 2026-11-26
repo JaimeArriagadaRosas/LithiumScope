@@ -133,6 +133,14 @@ def test_rendered_page_is_dynamic_and_exactly_page_two(tmp_path):
     assert "Prioridad exploratoria: site-8" in third
     assert "Único M2 aplicable: site-3" in third
 
+    unavailable = _cases()
+    unavailable["model_1_applicability_warning"] = "INSUFFICIENT_INPUT"
+    fourth = render(unavailable, tmp_path / "unavailable.pdf")
+    assert "Etapa 2 - Comparación espectral" in fourth
+    assert "Sin casos comparables." in fourth
+    assert "PRIORIDAD" not in fourth
+
+
 
 def test_all_m1_outside_domain_keeps_q90_and_compares_m2():
     source = _cases()

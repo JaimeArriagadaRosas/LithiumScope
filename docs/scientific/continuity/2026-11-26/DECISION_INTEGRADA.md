@@ -24,3 +24,15 @@ de desarrollo con esta demostración de diez casos sin independencia certificada
 No ajustar modelos ni umbrales para estos casos. No publicar release por
 completar las fases. El PDF deberá reproducirse localmente desde los artefactos
 reales; los cambios aquí son de decisión posterior a inferencia y presentación.
+
+## Validación del 26/11 — commit 571df98
+
+Suite local: 1004 pruebas, 1000 aprobadas, 1 fallo, 0 errores, 3 omitidas.
+Cobertura 57.02%, duración 126.453 s, identidad Git sin cambios.
+Falló únicamente test_no_valid_inputs_still_has_stage_two: la rama de selección
+vacía devolvía la página antes del encabezado de etapa 2.
+Se corrigió la rama del renderizador, no el contrato de la prueba.
+Se conserva el test original y se añade al test de PDF existente un cuarto
+escenario: ningún M1 utilizable, etapa 2 en página 2, sin casos comparables y
+sin ganador fabricado. Los casos con datos válidos mantienen su ranking.
+La corrección requiere nueva ejecución; no implica entrenamiento ni publicación.
