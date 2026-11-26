@@ -117,3 +117,22 @@ una referencia archivada, resolver esa identidad antes de iniciar fits.
 No ejecutar nuevas búsquedas, ni entrenar el candidato todavía.
 No se afirma certificación de metadatos o evaluación independiente;
 los datos históricos y modelos activos permanecen intactos.
+
+
+## 6. Corrección de compatibilidad de OOF históricos
+Intento local commit 1b0cb60: 121/121 pruebas aprobadas en 7.76 s.
+Fuente, cohorte, paridad sin objetivo y manifiesto espacial superaron
+preflight; KeyError row_position al leer OOF SVM legado. Ningún fit de
+integración iniciado. El lector anterior asumía formato moderno.
+El procedimiento histórico load_m1_oof de compare_vnext_trained_runs.py
+confirma que row_index vive en OOF y los campos espaciales/row_position
+en outer_fold_manifest.csv. Corrección 5539d47: alinear por row_index
+único con el manifiesto de cada run, validar cobertura completa,
+posiciones, folds, grupos, coordenadas, verdad y predicciones finitas.
+Verificar campos redundantes si existen; rechazar inconsistencias.
+Mantener RMSE esperado, hash de fuente y registrar hashes de ambas tablas
+y ambos manifiestos, sin modificar originales. Tres pruebas nuevas f43deda:
+formato legado reordenado, formato moderno con campos redundantes, rechazo
+de IDs/verdad/manifiesto incorrectos. 124 pruebas esperadas. Mismo comando
+y presupuesto 80 bases +10 Ridge; pendiente ejecución local. Sin cambios
+metodológicos, ni nuevos datos, ni modelos productivos/M2.
