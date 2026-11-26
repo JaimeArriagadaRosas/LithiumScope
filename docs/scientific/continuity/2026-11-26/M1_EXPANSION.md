@@ -136,3 +136,22 @@ Puente académico implementado: conserva las 3263 filas del piloto 20261126T1236
 `python -m lithiumscope.experiments.model_1.expansion.academic_bridge --run results/model_1/expansion/20261126T145129_ee7f5431 --allow-unverified-metadata`
 
 Salida results/generalization/model_1_expansion_academic. No repetir campañas previas. M2 congelado.
+
+
+## Puente académico validado; refinamiento HGB
+Run 20261126T153931_23ea0e09, commit 142e339. 26 pruebas focalizadas aprobadas (3.12 s). SHA256 manifiesto 603d44eb4e49d948e16820f9ad7e08edf1cf1c8d00653030d57d4fdd91fc4ea4; cinco hashes de salidas verificados. 30 fits; 19578 predicciones, 3263 identidades únicas por brazo, mismos grupos/verdades/folds. Train histórico 2610–2611, expansión 1729–1788 por fold (1844 candidatas únicas en unión). Ningún ID histórico TRAIN/TEST compartido; grupos espaciales históricos sí compartidos por diseño aleatorio. Reserva de 1483 excluida.
+
+| Familia | RMSE medio histórico | R² medio histórico | RMSE medio expandido | R² medio expandido |
+|---|---:|---:|---:|---:|
+| RF |7.678787|.566651|7.762007|.557885|
+| CatBoost |7.521075|.585015|7.953079|.534899|
+| HGB |7.291410|.607571|7.490458|.586865|
+
+Ninguna configuración alcanza ambos umbrales de memoria (RMSE <5.361, R² >.499). Las seis superan R²; mejor RMSE HGB histórico, requiere reducción adicional 26.48% del RMSE medio. Expansión sin ponderación deteriora las tres familias en este dominio; no extrapolar esta conclusión al dominio completo, donde CatBoost H lidera RMSE. HGB histórico global RMSE 7.319892, MAE 4.054506, R² .608648. En su OOF: 135 observaciones >40 ppm (4.14%) explican 48.7970% del SSE, sesgo -16.7808 ppm; 40 >60 explican 37.1441%; 8 >100 explican 16.3815%, media real 109.11875 y predicha 50.29118 ppm. 50 errores cuadrados mayores concentran 47.4662% SSE. Mantener todos los casos; no modificar población ni filtrar por errores.
+
+Refinamiento acotado: HGB y siete perfiles (control mediana; nativo NaN; nativo min_leaf=5; nativo min_leaf=5 y peso cola 2/4; último con peso cola 2 y transferencia compatible .10/.25). Umbral de cola Q90 del TRAIN histórico de cada ajuste; normalizar pesos históricos, atenuar nuevos datos, sin sobremuestreo. Reusar hiperparámetros del puente excepto min_samples_leaf. Selección interna KFold aleatorio 3, seed 42+fold externo: minimizar RMSE medio sujeto R² medio >.499, control si ninguno cumple. 105 fits internos y 5 finales, sin volver a ajustar controles externos. Validar hashes puente y piloto, mismos TEST históricos de 3263 filas, recorte sin cambios. En cada TRAIN interno recalcular compatibilidad y bloquear grupos/publicaciones identificables de ambas particiones excluidas; conservar reserva y cuarentena. Se reutilizan TEST externos previamente examinados; es desarrollo, no validación independiente. Sin promoción ni guardado de modelos. Cuatro pruebas nuevas pendientes. Si no alcanza el objetivo, no repetir sin límite las variaciones HGB; considerar auditoría de predictores adicionales y mayor información geoquímica útil, o reportar la brecha con la memoria y diferencias de dispersión. M2 congelado.
+
+`python -m pytest tests/scientific/m1_expansion -q`
+`python -m lithiumscope.experiments.model_1.expansion.academic_refinement --run results/model_1/expansion/20261126T145129_ee7f5431 --allow-unverified-metadata`
+
+Salida results/generalization/model_1_expansion_academic_refinement.
