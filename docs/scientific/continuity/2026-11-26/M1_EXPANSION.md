@@ -177,3 +177,15 @@ Se implementa raw_recovery: primero busca particiones históricas nombradas en l
 `python -m lithiumscope.experiments.model_1.expansion.raw_recovery`
 
 Salida results/generalization/model_1_expansion_raw_recovery. No repetir EDA ni entrenamientos previos.
+
+
+## Corrección de recuperación: reutilizar correspondencias de procedencia
+Run 20261126T162820_54d9553f, commit e524bfd. ZIP SHA256 cdb089c807affbe4a59560f1b67386bea32f6ba37f34beaaa399f64c79e5fd5d, manifiesto SHA256 3911c5b0abd24a7fda6b8cf7d47cb88242b1d370525cc2d45e3795c6f8102730; seis hashes correctos. El comando de pytest quedó concatenado al SET de PYTHONPATH: no consta ejecución de las tres pruebas de raw_recovery. Recuperación completada con cero filas aceptadas. CSV histórico presente (SHA256 40ee961450b55f708909e5f90ba3bbb686255d3595a16507fb7d09b66c5d104e), hash no verificado contra auditoría; no autorizar su uso. Los cuatro CSV tienen 42 encabezados explícitos adicionales; no afirmar cobertura por encabezado. Tres particiones Andean verificadas; 8232 comprobaciones (2744 por partición) clasificadas sample_unmatched antes de contraste químico. Posible causa: normalización de nombre anterior no contempla Sample alternativo, puntuación/sufijo de referencia; la auditoría de procedencia sí lo hace.
+
+Reanalizada evidencia histórica M1_provenance: 3296 aristas con clave exacta coordenadas/Li para 2743 filas preparadas GEOROC, 2692 aristas concordantes por nombre normalizado y química para 2689 filas; 2686 aristas uno a uno, eliminadas seis aristas ambiguas (tres filas históricas). Las 2686 tienen 12–22 predictores químicos compartidos en auditoría previa. No equivale a recuperación validada. Nuevo linked_recovery verifica hashes de expansión, procedencia, originales y fuente, reutiliza enlaces uno a uno y posiciones originales, rearmoniza las filas enlazadas, comprueba nombres con la misma normalización, claves de coordenadas/Li, concordancia estricta con vista candidata y tolerancia histórica ya documentada (máximo .001 o 2% por elemento, mínimo cinco, hierro excluido del nuevo contraste por diferencias de representación). La tabla lateral conserva IDs y valores adicionales ppm, no incluye Li como predictor. Inventaría también cobertura real en cada CSV original; no usar métodos no certificados como equivalentes a ICP-MS. Sin adquisición, entrenamiento, cambio de esquema o M2. Dos nuevas pruebas y tres anteriores sin ejecución confirmada; no repetir recuperación fallida.
+
+`set "PYTHONPATH=%CD%\src"`
+`python -m pytest tests/scientific/m1_expansion -q`
+`python -m lithiumscope.experiments.model_1.expansion.linked_recovery`
+
+Salida results/generalization/model_1_expansion_linked_recovery. Esperadas 38 pruebas. Revisar cobertura efectiva antes de nueva campaña; no repetir ciclos indefinidos de entrenamiento.
