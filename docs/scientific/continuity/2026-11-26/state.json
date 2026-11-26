@@ -605,7 +605,7 @@
         "independent_improvement_certified": false
       },
       "integration": {
-        "state": "implemented_pending_local_validation",
+        "state": "legacy_oof_preflight_corrected_pending_local_validation",
         "module": "lithiumscope.experiments.model_1.integral.integration",
         "contract_commit": "18bec72ced86b652483f0366a25cb3a49f7ae8b9",
         "runner_commit": "9ecd4e6e522d362bc578a47eda60cc9bac8eff42",
@@ -618,12 +618,24 @@
         "spatial_groups": 244,
         "base_fits": 80,
         "ridge_fits": 10,
-        "expected_focused_tests": 121,
+        "expected_focused_tests": 124,
         "expected_oof_rows": 33415,
         "expected_calibration_rows": 26732,
         "executed": false,
         "models_saved": false,
-        "independent_holdout": false
+        "independent_holdout": false,
+        "preflight_attempt": {
+          "commit": "1b0cb60fce7ab8737774e7daf767a1d6dbb6bb1b",
+          "passed": 121,
+          "failed": 0,
+          "duration_seconds": 7.76,
+          "inference_parity_passed": true,
+          "spatial_plan_passed": true,
+          "error": "KeyError: row_position in legacy SVM OOF",
+          "experimental_fits": 0
+        },
+        "fix_commit": "5539d47857522af37f63c4d5287d797cb94e1022",
+        "regression_test_commit": "f43deda95d0d85e5e48fd4f101452a1700b9a36c"
       }
     }
   },
@@ -649,7 +661,7 @@
     "frozen_for_current_branch": true
   },
   "next": [
-    "run_canonical_integration_once_and_121_focused_tests",
+    "run_corrected_canonical_integration_once_and_124_focused_tests",
     "verify_inference_parity_and_dual_protocol_guard_results",
     "review_reference_candidate_eligibility_before_fit",
     "fine_tune_reference_candidate_then_final_validation"
@@ -765,11 +777,11 @@
     "comparison_state": "complete"
   },
   "latest_focused_m1_validation": {
-    "commit": "36ebea7b375ea41b68a483a49cb770908afed821",
-    "passed": 115,
-    "total": 115,
+    "commit": "1b0cb60fce7ab8737774e7daf767a1d6dbb6bb1b",
+    "passed": 121,
+    "total": 121,
     "failed": 0,
-    "duration_seconds": 7.74,
+    "duration_seconds": 7.76,
     "scope": "tests/scientific/m1_expansion",
     "full_suite_after_expansion": false
   }
