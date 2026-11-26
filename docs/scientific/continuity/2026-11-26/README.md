@@ -1,5 +1,7 @@
 # Continuidad científica — LithiumScope, 26 de noviembre de 2026
 
+> **Nueva decisión aprobada:** [M1_AUGMENTATION.md](M1_AUGMENTATION.md) contiene la línea vigente de aumento sintético y adquisición dirigida. Se reabre el laboratorio de datos, no la optimización convencional ya agotada. Fases 1–2 implementadas; ejecutar pruebas focalizadas y campaña enriquecida. Fase 4 investigación preliminar de fuentes. No promover modelos; M2 congelado.
+
 > **Estado vigente — cierre de refinamiento histórico M1:** [M1_EXPANSION.md](M1_EXPANSION.md) (última sección) y [state.json](state.json) prevalecen sobre las notas históricas siguientes. Campaña académica final completa: 47/47 pruebas focalizadas, 35 ajustes de árboles y 20 estimadores locales, siete hashes verificados. Mejor RMSE medio académico 7.074911 ppm, R² medio .631231 (HGB combinado); objetivo OASIS parcialmente alcanzado (RMSE <5.361 pendiente; R² >.499 superado). CatBoost H lidera RMSE espacial experimental 111.579554 ppm. No repetir campañas históricas ni promover modelos. Siguiente línea: evaluar adquisición dirigida de datos independientes y congelar protocolo antes de nuevos ajustes. M2 congelado. Última suite completa anterior a expansión: 1002 aprobadas, 3 omitidas, 0 fallos, cobertura 57.05%; no equivale a una suite completa posterior. No hay nueva ejecución local requerida por el cierre documental.
 
 **Entrada canónica para retomar el trabajo en otro chat.** Leer este documento, 
