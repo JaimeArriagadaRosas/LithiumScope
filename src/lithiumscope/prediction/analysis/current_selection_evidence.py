@@ -156,6 +156,35 @@ def _academic(selected,root):
     return None
 
 
+def _m2_diagnostics(selected,root):
+    """Snapshot only diagnostics bound to the selected model and dataset."""
+    if not all(selected.get(k) for k in ("run_id","model_sha256","dataset_sha256")):
+        return {"state":"unavailable"}
+    folder=root/"results/scientific_simulations/version_comparisons"
+    for path in sorted(folder.glob("*/model_2/recovered_reports/recovery_status.json"),reverse=True):
+        try:
+            status=read(path)
+            if (status.get("run_id")!=selected["run_id"]
+                    or status.get("model_sha256")!=selected["model_sha256"]
+                    or status.get("dataset_sha256")!=selected["dataset_sha256"]
+                    or status.get("training") is not False):
+                continue
+            item=status["reports"]["scientific_diagnostics"]
+            summary_path=path.with_name("scientific_diagnostics_summary.json")
+            summary=read(summary_path)
+            if (item["state"]!="complete" or summary.get("state")!="complete"
+                    or summary!=item["result"] or summary.get("samples") not in (706,783)
+                    or summary.get("no_field_rock_certifications") is not True
+                    or summary.get("not_independent_external_validation") is not True):
+                continue
+            return {"state":"complete","comparison_run":path.parents[2].name,
+                    "status_sha256":file_sha256(path),"summary_sha256":file_sha256(summary_path),
+                    "data":summary}
+        except (OSError,ValueError,KeyError,TypeError):
+            continue
+    return {"state":"unavailable","reason":"No matching completed historical M2 diagnostics"}
+
+
 def gather_current(m1,m2,*,root):
     selected={group:_selected(group,ident,root) for group,ident in (("model_1",m1),("model_2",m2))}
     from lithiumscope.results.reference_benchmarks import OASIS_M1
@@ -165,4 +194,5 @@ def gather_current(m1,m2,*,root):
             "m1_balanced":_targeted(selected["model_1"],root,"model_1_balanced"),
             "research_sources":_research(selected["model_1"],root),
             "m1_academic":_academic(selected["model_1"],root),
+            "m2_diagnostics":_m2_diagnostics(selected["model_2"],root),
             "independent_holdout":False,"user_release_approval_required":True}
