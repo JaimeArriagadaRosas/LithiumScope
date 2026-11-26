@@ -80,3 +80,23 @@ Siguiente subetapa acotada, sin repetir A-F: G = F sin alta transferencia; H/I/J
 `python -m lithiumscope.experiments.model_1.expansion.sensitivity --run results/model_1/expansion/20261126T145129_ee7f5431 --allow-unverified-metadata --transfer-refinement`
 
 Salida: results/generalization/model_1_expansion_transfer. Cinco tests adicionales pendientes de ejecución local; M2 intacto.
+
+
+## Refinamiento de transferencia validado y selección interna
+Run 20261126T150549_0d4c067c, commit 04eea06, 15 tests focalizados aprobados (2.64 s). ZIP SHA-256 639b088aab81c1cd6ebbf56eca97594588a2c16477502a12fab7e9916e651d45, manifest c450c1cafabec26ffe965d01cf6d3996de5685af90d7661e4f3050c55107014f. 14/14 hashes correctos, 20 fits, cero errores, 13680 predicciones históricas emparejadas; 4611 pool, 1483 reserva, 687 cuarentena.
+
+| Brazo | RMSE global | MAE global | R² global | RMSE medio fold | RMSE fold 3 | RMSE fold 5 | RMSE reserva |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| G |153.522892|15.363838|.117201|83.101273|32.934700|340.795228|343.261820|
+| H |131.794905|14.717127|.349402|80.258887|76.002089|283.675442|169.870789|
+| I |126.408032|14.755666|.401499|79.112755|87.236046|267.783005|172.139102|
+| J |128.521598|15.079126|.381317|81.264395|95.194140|270.060891|175.821952|
+
+I mejora RMSE global 17.00% frente a A, 20.92% frente a SVM. H menor MAE y mejor reserva (R² -0.036727; no positivo). H/I/J mejoran RMSE global, MAE y RMSE medio frente a A, pero conservan transferencia negativa en fold 3. RMSE banda (100,696] A=128.9188, H=236.8785, I=267.1393, J=290.2585. RMSE <=100 A~13.34, H=11.6233, I=11.4744. IC95 agrupado delta RMSE H-A [-39.9921,24.7446], I-A [-51.9937,31.7965], J-A [-49.9322,36.9746]; MAE también incluye cero. G empeora RMSE con IC95 [0.2162,2.1138]. No eliminar casos del fold 3 ni escoger reglas por sus valores de TEST.
+
+Próxima subetapa K: B (balanceado sin extensión), H e I como expertos; 15 políticas predefinidas, incluida B; combinaciones convexas .25/.50/.75/1 del experto y límites de discrepancia .5/1/2 veces max(predicción B, Q75 del TRAIN histórico, 1 ppm). No usar verdad, ubicación o identificación del caso para enrutar. Selección por OOF interno espacial: minimizar RMSE global sujeto a no empeorar MAE, RMSE medio entre folds, RMSE <=100 y RMSE (100,696] frente a B; al menos 5 filas por banda para permitir cambio. Si no cumple, B. Criterios son guardas exploratorias, no tolerancias instrumentales. Por cada fold interno se bloquean grupos/publicaciones identificables de TEST externo y validación interna, y recalcula D4 desde TRAIN interno. Reserva congelada previa. 75 fits internos (3 x 5 x 5) y 5–10 externos (B y solo el experto seleccionado si procede). No repetir A–J completos. Hiperparámetros archivados seleccionados previamente en TRAIN externo, por tanto los resultados internos no son una nueva búsqueda de hiperparámetros independiente; TEST externo es el mismo desarrollo reutilizado. Registrar evidencia de decisiones, predicciones y trazabilidad. Sin guardado ni promoción.
+
+`python -m pytest tests/scientific/m1_expansion -q`
+`python -m lithiumscope.experiments.model_1.expansion.nested --run results/model_1/expansion/20261126T145129_ee7f5431 --allow-unverified-metadata`
+
+Salida results/generalization/model_1_expansion_nested. Cinco pruebas nuevas pendientes de ejecución. Después de K, decidir si conservar la estrategia o cambiar de familia (CatBoost/HGB) en vez de prolongar la búsqueda de pesos RF; ejecutar evaluación académica con protocolo y población explícitos, sin equiparar RMSE espacial global con OASIS. Certificación analítica/CRS y evaluación independiente continúan pendientes. M2 congelado.
