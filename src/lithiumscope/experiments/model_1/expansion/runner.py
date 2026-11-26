@@ -13,6 +13,7 @@ from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import RESULTS_DIR
 from lithiumscope.core.scientific.eda_statistics import source_series
 from lithiumscope.experiments.data_lab.candidate_screening import text
+from lithiumscope.experiments.data_lab.candidate_audit import FOLD_SHA256
 from lithiumscope.experiments.model_1.expansion.inputs import load_inputs
 from lithiumscope.experiments.model_1.expansion.identity import resolve, describe_domain
 from lithiumscope.experiments.model_1.expansion.cohorts import (
@@ -47,6 +48,7 @@ def run(*, review_path=None, output_root=None):
         raise ValueError("Expansion predictor schema changed")
     # Verify canonical group semantics on valid coordinates, including candidates.
     valid=features[["Longitude","Latitude"]].notna().all(axis=1)
+    audit["prepared_coordinates_valid"]=valid
     computed=build_spatial_groups(features.loc[valid],degrees=.5)
     if not np.array_equal(computed.to_numpy(str),audit.loc[valid,"spatial_group"].to_numpy(str)):
         raise ValueError("Candidate spatial groups differ from production")
@@ -99,6 +101,7 @@ def run(*, review_path=None, output_root=None):
         "scope":"M1_expansion_preparation_not_training","source_sha256":source_digest,
         "historical_rows":len(x),"historical_groups":int(groups.nunique()),"historical_folds":5,
         "historical_test_preserved":True,"candidate_rows":len(audit),
+        "historical_fold_sha256":FOLD_SHA256,
         "exact_candidate_copies":int(audit.exact_copy.sum()),
         "experimental_eligible":int(audit.experimental_eligible.sum()),
         "production_approved":0,"reserved_development_rows":int(audit.candidate_partition.eq("reserved_development_check").sum()),
