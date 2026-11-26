@@ -56,25 +56,56 @@ def spatial_plan(x,groups):
     return outer_from_manifest(f.outer_fold,groups,5),f.outer_fold.to_numpy(int)
 
 
+def align_spatial_reference(pred, manifest, x, y, groups, fold_ids):
+    """Recover legacy OOF identity from its own manifest, never from row order alone."""
+    identity=["row_position","row_index","outer_fold","spatial_group","Longitude","Latitude"]
+    required={"row_index","Li_icpms_real","Li_icpms_predicted"}
+    if not required.issubset(pred.columns) or not set(identity).issubset(manifest.columns):
+        raise ValueError("Missing historical OOF identity fields")
+    if (len(pred)!=len(x) or len(manifest)!=len(x) or not x.index.is_unique
+            or pred.row_index.isna().any() or manifest[identity].isna().any().any()
+            or pred.row_index.duplicated().any() or manifest.row_index.duplicated().any()):
+        raise ValueError("Invalid historical OOF identities")
+    m=manifest.sort_values("row_position").reset_index(drop=True)
+    if (not np.array_equal(m.row_position,np.arange(len(x)))
+            or not np.array_equal(m.row_index,x.index.astype(str))
+            or not np.array_equal(m.outer_fold,fold_ids)
+            or not np.array_equal(m.spatial_group,groups.astype(str))
+            or not np.allclose(m[["Longitude","Latitude"]],x[["Longitude","Latitude"]],rtol=0,atol=1e-8)
+            or set(pred.row_index)!=set(m.row_index)):
+        raise ValueError("Historical OOF manifest identity differs")
+    p=pred.set_index("row_index").reindex(m.row_index)
+    # Modern exports may repeat identity fields. Verify rather than overwrite.
+    for key in identity:
+        if key=="row_index" or key not in p:
+            continue
+        a,b=p[key].to_numpy(),m[key].to_numpy()
+        equal=np.allclose(a,b,rtol=0,atol=1e-8) if key in ("Longitude","Latitude") else np.array_equal(a,b)
+        if not equal:
+            raise ValueError("Historical OOF redundant identity differs: "+key)
+    if (not np.allclose(p.Li_icpms_real,y,rtol=0,atol=1e-8)
+            or not np.isfinite(p.Li_icpms_predicted).all()):
+        raise ValueError("Historical OOF truth or prediction differs")
+    return p.Li_icpms_predicted.to_numpy(float)
+
+
 def spatial_reference(run,algorithm,x,y,groups,fold_ids,digest,expected):
     root=RESULTS_DIR/"model_1/runs"/run
     record=read(root/"run.json")
     if record["state"]!="completed" or record["summary"]["dataset_sha256"]!=digest:
         raise ValueError("Spatial reference source differs")
     path=root/"tables"/f"oof_predictions_{algorithm}__identity.csv"
-    f=pd.read_csv(path,dtype={"row_index":str}).sort_values("row_position")
-    if (not np.array_equal(f.row_position,np.arange(len(x)))
-            or not np.array_equal(f.row_index,x.index.astype(str))
-            or not np.array_equal(f.outer_fold,fold_ids)
-            or not np.array_equal(f.spatial_group,groups.astype(str))
-            or not np.allclose(f.Li_icpms_real,y,rtol=0,atol=1e-8)
-            or not np.isfinite(f.Li_icpms_predicted).all()):
-        raise ValueError("Spatial reference OOF identity differs")
-    p=f.Li_icpms_predicted.to_numpy(float)
+    manifest_path=root/"tables"/"outer_fold_manifest.csv"
+    hashes={"oof_sha256":file_sha256(path),"fold_manifest_sha256":file_sha256(manifest_path)}
+    pred=pd.read_csv(path,dtype={"row_index":str})
+    manifest=pd.read_csv(manifest_path,dtype={"row_index":str})
+    p=align_spatial_reference(pred,manifest,x,y,groups,fold_ids)
     rmse=regression_metrics(y,p).rmse
     if not np.isclose(rmse,expected,rtol=0,atol=1e-5):
         raise ValueError("Spatial reference RMSE differs")
-    return p,file_sha256(path)
+    if hashes!={"oof_sha256":file_sha256(path),"fold_manifest_sha256":file_sha256(manifest_path)}:
+        raise ValueError("Spatial reference changed during read")
+    return p,hashes
 
 
 def stats(part):
@@ -134,7 +165,8 @@ def run():
     out.mkdir(parents=True,exist_ok=False)
     manifest={"state":"running","scope":"canonical_input_integrated_development","source_sha256":digest,
         "runtime":runtime_fingerprint(),"inference_parity":parity,"domain":domain,
-        "spatial_fold_sha256":FOLD_SHA256,"svm_oof_sha256":svm_sha,"rf_oof_sha256":rf_sha,
+        "spatial_fold_sha256":FOLD_SHA256,"svm_oof_sha256":svm_sha["oof_sha256"],"rf_oof_sha256":rf_sha["oof_sha256"],
+        "svm_fold_manifest_sha256":svm_sha["fold_manifest_sha256"],"rf_fold_manifest_sha256":rf_sha["fold_manifest_sha256"],
         "stack_manifest_sha256":STACK_SHA,"profiles":{"hgb":loss_params("squared_error"),"xgb":PROFILES_NEW["xgb_regularized"][1]},
         "max_base_fits":MAX_BASE_FITS,"planned_ridge_fits":10,"reused_development_folds":True,
         "recovered_measurements_used":False,"target_assisted_linkage_used":False,"independent_holdout":False,
