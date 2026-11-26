@@ -331,3 +331,55 @@ antes del fit; sin alterar parámetros científicos ni producción. Test
 ac97be1 verifica CPU incluso con indicador CUDA y que el perfil no se muta.
 104 pruebas esperadas, pendiente validación local. Mismo comando y 100 fits
 presupuestados; no repetir campaña HGB.
+
+
+## 11. Segunda campaña validada y cierre operativo de entrenamiento
+
+Run 20261126T221622_b1d7f8b8; commit 9ac65b4b8724e35d51814b96e6f4de83a6d69637.
+104/104 pruebas focalizadas aprobadas (80.53 s), 100 ajustes nuevos.
+RAR Evidencias(3).rar SHA256 5c5cfa765584eb8d1b4ed223a6e0d9372abb85732f040f5ea87e94e8c502c67a;
+manifest SHA256 ba2090c1e92a62a669fe175382db61d8e124baf2cd7f38eee0977c2d988e7f9f;
+8/8 hashes de salidas recalculados; extracción íntegra de los nueve archivos.
+26104 predicciones OOF, 3263 IDs únicos por política, ocho políticas con
+identidad, grupo, fold y verdad coincidentes. Recalculadas 40 métricas por
+fold y ocho resúmenes, RMSE medio/global, R² medio/global, MAE medio,
+RMSE/sesgo de cola. Cinco particiones externas disjuntas y 15 internas:
+las tres validaciones cubren exactamente cada TRAIN externo. 90 scores
+internos y 100 trazas. Selección interna reproducida de scores registrados
+(XGB cuadrático, XGB cuadrático, HGB cuadrático, XGB regularizado, CatBoost
+Expectile); predicciones seleccionadas coinciden con la política elegida.
+No se regeneraron los modelos o predicciones interiores en chat.
+
+| Política | RMSE medio | R² medio | MAE medio | RMSE >40 | Sesgo >40 |
+|---|---:|---:|---:|---:|---:|
+| HGB cuadrático | 7.074911 | .631231 | 3.892598 | 24.888575 | -16.247821 |
+| XGB regularizado | 7.127917 | .626442 | 3.931971 | 25.381794 | -16.798299 |
+| XGB cuadrático | 7.149983 | .623523 | 3.942072 | 25.359126 | -16.887199 |
+| Selección interna | 7.191287 | .618993 | 3.990353 | 25.216881 | -17.257628 |
+| CatBoost Expectile | 7.347144 | .601816 | 4.124488 | 26.023632 | -18.229053 |
+| CatBoost RMSE | 7.368192 | .600835 | 4.129337 | 26.676692 | -18.980945 |
+| XGB Pseudo-Huber | 7.531363 | .582064 | 4.200464 | 26.124092 | -17.612711 |
+| CatBoost Huber | 7.699048 | .562972 | 4.227541 | 29.018125 | -21.138393 |
+
+XGB regularizado reduce RMSE medio ~.31% vs XGB cuadrático, pero empeora
+ligeramente su cola. CatBoost Expectile reduce RMSE medio ~.29% y cola
+~2.45% vs CatBoost RMSE archivado; comparación descriptiva porque backend
+histórico no certificado. HGB conserva el mejor RMSE, R², MAE y cola entre
+estas ocho políticas. Ninguna nueva configuración cumple guardas vs HGB.
+Versiones locales registradas: Python 3.12.10, sklearn 1.9.1, XGBoost 3.4.1,
+CatBoost 1.2.10. No se promovió ni guardó ningún modelo. El entorno reportó
+RAM disponible reducida al iniciar; mantener ejecución secuencial y presupuesto.
+
+Fase 2 cerrada operativamente para esta iteración: 195 ajustes nuevos entre
+ambas campañas, conservando metodología HGB cuadrática y perfil enriquecido A
+como control de investigación. No declarar exhaustividad matemática: RF poda
+y criterio, SVM gamma numérico, TabNet arquitectura/pretraining, variantes
+adicionales de pérdidas/regularización y warm start no quedaron agotadas;
+las seis familias sí tienen competencia histórica, pero RF/SVM/TabNet no
+tienen comparación equivalente exhaustiva sobre el conjunto enriquecido.
+No se justifican nuevos barridos en esta etapa dado el historial de
+resultados, la brecha de ~24% y el riesgo de sobreajuste a folds reutilizados.
+Conservar XGB regularizado como posible componente de stacking, sin elegirlo
+por TEST retrospectivo como candidato productivo. Refinamiento específico de
+hiperparámetros reservado a fase 6; no reabrir datos. Fase 3 inicia con
+[M1_AUDITORIA_POSTENTRENAMIENTO.md](M1_AUDITORIA_POSTENTRENAMIENTO.md).
