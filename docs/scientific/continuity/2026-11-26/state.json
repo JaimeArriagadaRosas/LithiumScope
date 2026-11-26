@@ -338,6 +338,59 @@
         "models_saved": false,
         "report": "M1_CIERRE_DATOS_RESULTADOS.md"
       }
+    },
+    "integral_optimization": {
+      "state": "approved_pending_training_audit",
+      "plan": "M1_PLAN_OPTIMIZACION_INTEGRAL.md",
+      "approval": {
+        "date": "2026-11-26",
+        "scope": "user_approved_integrated_training_postprocessing_reference_candidate_then_fine_tuning",
+        "release_authorized": false,
+        "main_merge_authorized": false
+      },
+      "phases": {
+        "1_pretraining": "operationally_closed",
+        "2_training": "audit_pending",
+        "3_posttraining": "pending",
+        "4_integration": "pending",
+        "5_reference_candidate": "conditional_pending",
+        "6_fine_tuning": "conditional_pending_reference_candidate",
+        "7_final_validation": "pending"
+      },
+      "current_phase": "2A_training_audit",
+      "next_document": "M1_AUDITORIA_ENTRENAMIENTO.md",
+      "baseline": {
+        "academic_control": "A_historical",
+        "rmse_mean": 7.074911,
+        "r2_mean": 0.631231,
+        "experimental_best": "C_bounded_transfer",
+        "experimental_rmse_mean": 7.053262,
+        "experimental_r2_mean": 0.633404,
+        "experimental_accepted": false,
+        "spatial_release_rmse_global": 159.8463,
+        "spatial_release_r2_global": 0.04298,
+        "spatial_rf_rmse_global": 152.302214,
+        "spatial_experimental_catboost_rmse_global": 111.579554
+      },
+      "objective": {
+        "academic_rmse_mean_strictly_below": 5.361,
+        "academic_r2_mean_strictly_above": 0.499,
+        "comparison_descriptive_only": true,
+        "spatial_reference_separate": true
+      },
+      "constraints": {
+        "reopen_data_search": false,
+        "new_rows_approved": 0,
+        "production_changes": false,
+        "m2_frozen": true,
+        "independent_holdout_certified": false,
+        "reference_candidate_saved": false,
+        "release_authorized": false,
+        "main_merge_authorized": false
+      },
+      "documentation_commit": "39948bf4ff7e9c5756089b2bbfb685e1a61ade58",
+      "local_command_pending": false,
+      "new_fits": 0
     }
   },
   "m2": {
@@ -362,9 +415,11 @@
     "frozen_for_current_branch": true
   },
   "next": [
-    "retain_validated_evidence_no_new_command",
-    "if_new_stage_authorized_obtain_common_OASIS_cohort_and_folds_or_independent_reference",
-    "no_final_fit_or_release_without_eligibility"
+    "audit_training_registry_pipelines_search_spaces_experiments_and_evidence",
+    "write_M1_AUDITORIA_ENTRENAMIENTO.md_and_prioritized_bounded_gaps",
+    "optimize_training_then_audit_posttraining",
+    "integrate_validated_methods_then_reference_fit_if_eligible",
+    "fine_tune_reference_candidate_then_final_validation"
   ],
   "independent_external_holdout": false,
   "main_merge_authorized": false,
