@@ -73,3 +73,17 @@ def test_fit_rejects_overlapping_train_and_invalid_labels():
         bm.fit_method(x.iloc[:2],y.iloc[:2],x.iloc[[1]],schema,None,"xgb_squared")
     with pytest.raises(ValueError,match="Invalid"):
         bm.fit_method(x.iloc[:2],pd.Series([0.,10.]),x.iloc[[2]],schema,None,"xgb_squared")
+
+
+def test_xgb_backend_is_separate_from_factory_device():
+    pytest.importorskip("xgboost")
+    from dataclasses import replace
+    # Even if the host advertises CUDA, the experimental estimator is CPU.
+    device=replace(detect_device(prefer_gpu=False),xgboost_cuda_available=True)
+    schema=FeatureSchema(["SiO2"],["Rock_type"],2,"stable_v1")
+    before=dict(bm.PROFILES_NEW["xgb_squared"][1])
+    pipeline=bm.build_method_pipeline(schema,device,"xgb_squared")
+    assert pipeline.named_steps["model"].get_params()["device"]=="cpu"
+    assert pipeline.named_steps["model"].get_params()["tree_method"]=="hist"
+    assert pipeline.get_params()["preprocess__numeric"]=="passthrough"
+    assert bm.PROFILES_NEW["xgb_squared"][1]==before
