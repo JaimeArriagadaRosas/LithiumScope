@@ -102,5 +102,25 @@
       "f1": 0,
       "positive_predictions": 0
     }
+  },
+  "candidate_audit": {
+    "status": "screened_review_required",
+    "convergent_rows": 319,
+    "convergent_groups": 76,
+    "convergent_new_groups": 73,
+    "high_rows": 69,
+    "high_groups": 14,
+    "high_new_groups": 14,
+    "approved_rows": 0,
+    "method_and_crs_unknown": true
+  },
+  "implementation": {
+    "phase_1": "comparators_and_restore_and_recovery_implemented_local_execution_pending",
+    "phase_2": "candidate_screening_recalculated_from_supplied_tables_review_pending",
+    "phase_3": "conditional_not_started",
+    "phase_4": "conditional_not_started",
+    "phase_5": "decision_and_annex_implemented_local_render_pending",
+    "phase_6": "tests_pending",
+    "release_authorized": false
   }
 }

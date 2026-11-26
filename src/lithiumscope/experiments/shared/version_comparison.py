@@ -38,9 +38,16 @@ def run_version_comparison(*,output_root=None):
                           comparison=json.loads(path.read_text(encoding="utf-8")))
         except (FileNotFoundError,ValueError,KeyError,OSError) as exc:
             record["reason"]=str(exc)
+        if group=="model_2" and "candidate" in available:
+            from lithiumscope.experiments.shared.m2_recovery import recover_m2_reports
+            try:
+                record["report_recovery"]=recover_m2_reports(available["candidate"][1],destination/group/"recovered_reports")
+            except (OSError,ValueError,KeyError,TypeError,RuntimeError) as exc:
+                record["report_recovery"]={"state":"partial","reason":str(exc)}
+            print("M2 informes históricos:",record["report_recovery"]["state"],flush=True)
         records[group]=record
         print(f"{group}: {record['state']} {record.get('reason','')}",flush=True)
-    manifest={"state":"complete" if all(r["state"]=="complete" for r in records.values()) else "partial",
+    manifest={"state":"complete" if all(r["state"]=="complete" and r.get("report_recovery",{}).get("state","complete")=="complete" for r in records.values()) else "partial",
               "scope":"saved_oof_only_development","independent_holdout":False,"models":records,
               "academic_reference_m1":OASIS_M1,
               "training":False,"promotion":False,"external_acquisition":False}
