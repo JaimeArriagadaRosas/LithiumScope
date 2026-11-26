@@ -45,6 +45,10 @@ def compare_saved(group, models, destination):
         old_metrics,new_metrics=regression_metrics(truth,o),regression_metrics(truth,n)
         gains=[group_bootstrap_gain(truth,o,n,groups,metric=m) for m in ("rmse","mae","r2")]
     else:
+        if old["dataset_sha256"]!=new["dataset_sha256"]:
+            from lithiumscope.core.paths import PROJECT_ROOT
+            from lithiumscope.experiments.shared.reconstructed_m2_comparison import compare_reconstructed
+            return compare_reconstructed(old,new,a,b,destination,root=PROJECT_ROOT)
         from lithiumscope.datasets.management.diagnostic_provisioning import prepare_diagnostic_source
         x,y=load_m2_oof(a,old["algorithm"]),load_m2_oof(b,new["algorithm"])
         manifest=pd.read_csv(prepare_diagnostic_source("model_2"))

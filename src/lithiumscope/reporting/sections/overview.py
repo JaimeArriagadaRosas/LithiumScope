@@ -147,8 +147,13 @@ def build_overview(context, styles) -> list:
     ):
         m1 = context.model_1_diagnostics or {}
         m2 = context.model_2_diagnostics or {}
-        m1_ood = context.statistics["m1_ood"]
-        m2_ood = context.statistics["m2_ood"]
+        def marginal_count(group):
+            frame = getattr(context, group + "_predictions", None)
+            if frame is None or "out_of_training_range_fraction" not in frame:
+                return "N/D"
+            return int((frame["out_of_training_range_fraction"] > .25).sum())
+        m1_ood = marginal_count("model_1")
+        m2_ood = marginal_count("model_2")
         def warning_counts(group):
             frame = getattr(context, group + "_predictions", None)
             if frame is None or "applicability_warning" not in frame:

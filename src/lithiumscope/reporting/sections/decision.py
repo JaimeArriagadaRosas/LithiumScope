@@ -139,7 +139,7 @@ def build_decision_page(context, styles) -> list:
         return story
 
     story.extend([
-        paragraph(f"Etapa 2 - Comparación espectral ({len(decision.selected)} casos)", styles["LS_H2"]),
+        paragraph("Etapa 2 - Comparación espectral de las tres imágenes" if len(decision.selected)==3 else f"Etapa 2 - Comparación espectral ({len(decision.selected)} casos)", styles["LS_H2"]),
         _image_cards(decision.selected, decision.winner_id, styles, getattr(context, "decision_previews", {})),
         paragraph(
             "Las imágenes RGB son vistas ilustrativas; el score M2 procede "

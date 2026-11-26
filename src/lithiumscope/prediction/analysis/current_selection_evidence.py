@@ -81,7 +81,9 @@ def _paired(group,selected,root):
             identity=data["candidate"]
             if (identity["run_id"]==selected["run_id"] and selected.get("model_sha256")
                     and identity["sha256"]==selected["model_sha256"]):
-                return {"state":"paired_development_only","sha256":file_sha256(path),"data":data}
+                state = ("reconstructed_development_only" if data.get("scope") ==
+                         "reconstructed_release_protocol_not_published_artifact" else "paired_development_only")
+                return {"state":state,"sha256":file_sha256(path),"data":data}
         except (OSError,KeyError,ValueError,TypeError):
             continue
     return {"state":"unavailable","reason":"No matching saved OOF comparison for these model bytes"}
@@ -127,6 +129,33 @@ def _research(selected,root):
     return found
 
 
+def _academic(selected,root):
+    """Use a completed pilot only when its source matches the selected M1 dataset."""
+    for path in sorted((root/"results/generalization/model_1_oasis_like").glob("*/manifest.json"),reverse=True):
+        try:
+            data=read(path)
+            if data["state"]!="complete" or data["source_sha256"]!=selected["dataset_sha256"]:
+                continue
+            prediction=pd.read_csv(path.parent/"predictions.csv")
+            if (len(prediction)!=data["rows"] or prediction.row_id.duplicated().any()
+                    or prediction.fold.nunique()!=5):
+                continue
+            from sklearn.metrics import mean_squared_error, r2_score
+            import numpy as np
+            scores=[(float(np.sqrt(mean_squared_error(p.truth,p.prediction))),
+                     float(r2_score(p.truth,p.prediction))) for _,p in prediction.groupby("fold")]
+            rmse,r2=np.asarray(scores).mean(axis=0)
+            if not np.allclose([rmse,r2],[data["summary"]["rmse_mean"],data["summary"]["r2_mean"]],atol=1e-8,rtol=0):
+                continue
+            return {"run_id":path.parent.name,"rows":data["rows"],"trials_per_outer_fold":data["trials_per_outer_fold"],
+                    "rmse_mean":float(rmse),"r2_mean":float(r2),"domain":data["domain"],
+                    "manifest_sha256":file_sha256(path),"predictions_sha256":file_sha256(path.parent/"predictions.csv"),
+                    "scope":"own_truncated_cohort_random_cv"}
+        except (OSError,ValueError,KeyError,TypeError):
+            continue
+    return None
+
+
 def gather_current(m1,m2,*,root):
     selected={group:_selected(group,ident,root) for group,ident in (("model_1",m1),("model_2",m2))}
     from lithiumscope.results.reference_benchmarks import OASIS_M1
@@ -135,4 +164,5 @@ def gather_current(m1,m2,*,root):
             "m1_targeted":_targeted(selected["model_1"],root),
             "m1_balanced":_targeted(selected["model_1"],root,"model_1_balanced"),
             "research_sources":_research(selected["model_1"],root),
+            "m1_academic":_academic(selected["model_1"],root),
             "independent_holdout":False,"user_release_approval_required":True}

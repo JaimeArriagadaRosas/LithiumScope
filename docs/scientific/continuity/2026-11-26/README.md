@@ -76,3 +76,15 @@ de informes M2. Las fases 1–6 fueron aprobadas posteriormente, con precisión 
 recuperar ambas etapas de decisión aun con dominio insuficiente y mantener
 etiquetas de alcance breves. Fase 6 es solo validación. Publicación, promoción
 y merge no autorizados. Experimentos y fit final siguen condicionados a evidencia.
+
+## Implementación posterior a la aprobación
+
+- Decisión integrada: selección exploratoria y segunda etapa siempre visible.
+- Comparador M1: identidad congelada completa y resultados por fold; R² global
+  e intervalo agrupado. Comparador M2: referencia reconstruida a corte 21.6 ppm
+  separada de métricas publicadas de protocolo propio.
+- Restaurador de los 14 archivos críticos a resultados locales, sin sobrescribir.
+- Anexo dinámico: comparación reconstruida y piloto académico recalculado
+  desde predicciones, sujeto a identidad.
+- Sin reentrenamiento, merge o release. Queda probar el código y recuperar
+  posprocesamiento M2 en el entorno local. No se ha ejecutado en ese equipo.

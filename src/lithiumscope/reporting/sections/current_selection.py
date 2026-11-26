@@ -41,11 +41,19 @@ def build_current_selection(evidence,styles):
                 if values:
                     out.append(table([["Parámetro","Valor"],*values],widths=[7*cm,9*cm],font_size=7))
         paired=evidence["paired"][group]
-        if paired["state"]=="paired_development_only":
+        if paired["state"] in {"paired_development_only","reconstructed_development_only"}:
             data=paired["data"]
-            keys=sorted(set(data["release_metrics"]) & set(data["candidate_metrics"]))
-            out.append(paragraph("Comparación OOF emparejada exploratoria contra el release.",styles["LS_H2"]))
-            out.append(table([["Métrica","Release","Candidato"]]+[[k,_number(data["release_metrics"][k]),_number(data["candidate_metrics"][k])] for k in keys],widths=[8*cm,4*cm,4*cm],font_size=7))
+            reconstructed=paired["state"]=="reconstructed_development_only"
+            reference=data["reference_metrics"] if reconstructed else data["release_metrics"]
+            keys=sorted(set(reference) & set(data["candidate_metrics"]))
+            title=("Referencia M2 reconstruida — mismos casos, corte Li 21,6 ppm" if reconstructed
+                   else "Comparación OOF emparejada exploratoria contra el release")
+            out.append(paragraph(title,styles["LS_H2"]))
+            out.append(table([["Métrica","Referencia" if reconstructed else "Release","Candidato"]]+[[k,_number(reference[k]),_number(data["candidate_metrics"][k])] for k in keys],widths=[8*cm,4*cm,4*cm],font_size=7))
+            if reconstructed:
+                old,new=data["published_descriptive_metrics"],data["candidate_native_metrics"]
+                out.append(paragraph("Release publicado y candidato — protocolos propios, comparación descriptiva.",styles["LS_Small"]))
+                out.append(table([["Métrica","Release publicado","Candidato"]]+[[k,_number(old[k]),_number(new[k])] for k in ("roc_auc","average_precision","brier")],widths=[8*cm,4*cm,4*cm],font_size=7))
             if data.get("gains"):
                 out.append(table([["Ganancia positiva","Valor","IC95 inferior","IC95 superior"]]+[[r["metric"],_number(r["observed_gain"]),_number(r["ci95_group_lower"]),_number(r["ci95_group_upper"])] for r in data["gains"]],widths=[4*cm,4*cm,4*cm,4*cm],font_size=7))
         else:
@@ -55,6 +63,11 @@ def build_current_selection(evidence,styles):
         out.append(paragraph("Referencia académica OASIS (M1)",styles["LS_H2"]))
         out.append(table([["Muestras","RMSE medio","R² medio"],[str(oasis["rows"]),_number(oasis["rmse_mean"]),_number(oasis["r2_mean"])]],widths=[4*cm,6*cm,6*cm],font_size=7.5))
         out.append(paragraph(oasis["source"]+" "+oasis["protocol"]+" Comparación descriptiva: no son los mismos datos ni folds.",styles["LS_Small"]))
+    academic=evidence.get("m1_academic")
+    if academic:
+        out.append(paragraph("Piloto académico propio (M1)",styles["LS_H2"]))
+        out.append(table([["Muestras","Trials/fold","RMSE medio","R² medio"],[str(academic["rows"]),str(academic["trials_per_outer_fold"]),_number(academic["rmse_mean"]),_number(academic["r2_mean"])]],widths=[4*cm,4*cm,4*cm,4*cm],font_size=7))
+        out.append(paragraph("Cohorte recortada propia; validación aleatoria anidada, no espacial.",styles["LS_Small"]))
     for key,title in (("m1_targeted","Refinamiento focalizado M1"),("m1_balanced","Balanceo y expertos M1")):
         result=evidence.get(key)
         if not result:
