@@ -109,19 +109,19 @@
       "historical_experiment_repetition_authorized": false
     },
     "augmentation": {
-      "state": "directed_intake_validated_mapping_pending",
+      "state": "meixner_identity_audited_no_rows_next_source_batch_pending",
       "plan": "M1_AUGMENTATION.md",
       "phase_1": "code_audit_complete",
       "phase_2": "validated",
       "phase_3": "complete_no_improvement",
       "phase_4": "primary_source_links_verified",
-      "phase_5": "meixner_acquired_inventory_validated_original_tables_required",
+      "phase_5": "meixner_closed_no_admission_other_sources_pending",
       "phase_6": "real_synthetic_comparison_pending",
       "phase_7": "conditional_final_training_pending",
       "arms": 6,
       "max_new_fits": 115,
       "synthetic_test_rows": 0,
-      "expected_focused_tests": 59,
+      "expected_focused_tests": 65,
       "new_real_rows_approved": 0,
       "release_authorized": false,
       "run_id": "20261126T180155_005d9a59",
@@ -140,6 +140,17 @@
         "original_files_reverified_in_chat": 0,
         "new_rows_approved": 0,
         "source": "meixner_2020"
+      },
+      "meixner_audit": {
+        "run_id": "20261126T202913_8686ac5d",
+        "manifest_sha256": "39b6218e257284b19061eb1ac9c2b65a65a29e555614f932a57d79c1d6fbd193",
+        "verified_output_hashes": 4,
+        "primary_li_rows": 80,
+        "name_matched_samples": 5,
+        "site_silica_matched_samples": 0,
+        "matched_with_8_chem_samples": 0,
+        "new_rows_approved": 0,
+        "target_used_for_matching": false
       }
     }
   },
@@ -165,12 +176,10 @@
     "frozen_for_current_branch": true
   },
   "next": [
-    "inspect_meixner_original_tables_and_method",
-    "check_sample_identity_and_available_predictors",
-    "review_other_original_sources",
-    "map_and_deduplicate_eligible_rows",
-    "eda_and_freeze_independent_reserve",
-    "compare_real_and_synthetic_if_eligible",
+    "acquire_macusani_and_fernandez_turiel_originals",
+    "inspect_global_arc_compilation_for_transfer_and_overlap",
+    "audit_eligible_sources_and_freeze_independent_reserve",
+    "compare_real_synthetic_and_combined_if_eligible",
     "conditional_final_training"
   ],
   "independent_external_holdout": false,
@@ -284,11 +293,11 @@
     "comparison_state": "complete"
   },
   "latest_focused_m1_validation": {
-    "commit": "e63fdb9195346547db6d07abb7c537b49163e583",
-    "passed": 59,
-    "total": 59,
+    "commit": "8e64a02e8d7aa7a576324bbbe6311a654eab2883",
+    "passed": 64,
+    "total": 64,
     "failed": 0,
-    "duration_seconds": 31.48,
+    "duration_seconds": 5.86,
     "scope": "tests/scientific/m1_expansion",
     "full_suite_after_expansion": false
   }
