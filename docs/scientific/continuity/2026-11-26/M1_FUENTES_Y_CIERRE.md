@@ -319,3 +319,7 @@ git pull --ff-only && set "PYTHONPATH=%CD%\src" && python -m pytest tests/scient
 Salida results/generalization/model_1_data_closure/<run>. Adjuntar manifest y
 todas las tablas. No descargar, no repetir preflight, no repetir 115 fits.
 No se ejecutó localmente en esta revisión. M2, producción y main intactos.
+
+
+## Cierre ejecutado y validado
+Run 20261126T213014_fc01460c: 85/85 pruebas focalizadas, 15 fits nuevos, 9/9 hashes de evidencia y 16315 OOF verificados. C2 mejor resultado descriptivo RMSE medio 7.053262, R² .633404, MAE 3.864404; mejora RMSE .31% vs A pero empeora cola 25.093647 vs 24.888575. Ninguna política alcanza criterios; conservar A bajo guardas y C2 como resultado experimental. Fases 5–6 cerradas; fase 7 no ejecutada, cero nuevas aprobadas, sin promoción. La auditoría de comparabilidad demuestra mayor dispersión Li en nuestros folds que en OASIS (inferida de RMSE/R² publicados). Ver [M1_CIERRE_DATOS_RESULTADOS.md](M1_CIERRE_DATOS_RESULTADOS.md) para hashes, resultados, linaje, pesos y limitaciones. No repetir campañas ni ejecutar nuevo comando. M2 congelado.
