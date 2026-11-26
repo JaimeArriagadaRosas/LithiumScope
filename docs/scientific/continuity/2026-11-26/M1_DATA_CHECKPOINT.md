@@ -2,7 +2,7 @@
 
 Fecha: 26 de noviembre de 2026. Rama: `feat/m1-targeted-data-refinement`.
 Alcance exclusivo M1; M2, modelos activos, dataset productivo y main congelados.
-Estado vigente: fase 5, preflight corregido pendiente de reejecución.
+Estado vigente: fase 5, preflight validado; cobertura de cola insuficiente. Fase 6 bloqueada por datos.
 
 ## Referencias congeladas y criterio
 
@@ -22,7 +22,7 @@ La evaluación académica recortada no sustituye la espacial de dominio completo
 | 2. Adaptación | Validada |
 | 3. Aumento artificial | Cerrada sin mejora |
 | 4. Investigación dirigida | Realizada inicialmente; Álvarez-Amado pendiente |
-| 5. Adquisición, EDA y armonización | Preflight pendiente tras corrección |
+| 5. Adquisición, EDA y armonización | Preflight validado; adquisición dirigida pendiente |
 | 6. Comparación real/sintética | Pendiente, condicionada a elegibilidad |
 | 7. Entrenamiento definitivo | Pendiente y condicionado; sin autorización de release |
 
@@ -71,7 +71,7 @@ sin evidencia. 2044 pasan filtro de límites ordenados y amplitud <=.1.
 No hay IDs de muestra ni metadatos analíticos certificados en Chen.
 La ausencia de arista no demuestra ausencia de duplicación.
 
-## Ejecución y fallo del preflight
+## Ejecución y fallo del preflight (histórico)
 
 Commit ejecutado 588c313247979ce38e7ca19711d4b1a874fb53d2: 81/81 pruebas
 focalizadas, 4.59 s. El preflight alcanzó el resumen posterior a los cinco
@@ -81,7 +81,7 @@ ni se conocen los recuentos finales; no certificarlos en chat.
 Fallo: acceso `plans.tail` resolvía el método de pandas, no la columna.
 Corrección 60f0ec9: `summarize_plans` con acceso explícito por clave.
 Prueba de regresión c98ecec cubre dos folds, frontera 40 ppm y elegibilidad.
-82 pruebas esperadas, todavía no ejecutadas tras corrección.
+82/82 pruebas aprobadas en 4.58 s tras corrección. Ver actualización final.
 
 ```cmd
 git pull --ff-only && set "PYTHONPATH=%CD%\src" && python -m pytest tests/scientific/m1_expansion -q && python -m lithiumscope.experiments.model_1.augmentation.transfer_preflight
@@ -91,7 +91,7 @@ Salida: results/generalization/model_1_directed_transfer_preflight/.
 Adjuntar manifest.json, static_review.csv, fold_review.csv, summary.csv,
 cross_source_edges.csv. No repetir descargas, auditorías anteriores ni fits.
 
-## Decisiones pendientes (no equivalen a aprobación)
+## Decisiones pendientes del checkpoint anterior (histórico)
 
 1. Validar los cuatro hashes y recuentos por fold; comprobar cuántos candidatos
    únicos y cuántos de cola sobreviven, por fuente/publicación y grupo.
@@ -114,3 +114,21 @@ cross_source_edges.csv. No repetir descargas, auditorías anteriores ni fits.
 
 Última suite completa: 1002 aprobadas, 3 omitidas, cobertura 57.05% antes
 de expansión. No confundir con las 81 focalizadas recientes.
+
+
+## Actualización vigente: preflight completado
+
+82/82 focalizadas en 4.58 s; 4/4 archivos verificados. Manifiesto
+21b112c5faaee0c410a5045ab295b57a41c875eb6dda78f268c8b4c0cfb0d99b.
+Run 20261126T211301_3a7cd8be, 3686 registros, 18430 membresías.
+1974 Chen pasan gate estático, 1588 distintos en algún fold, 1469 en los
+cinco; únicamente 4 distintos >40 ppm (41.4–46.19); ningún >60.
+Puna 0/6 por falta de soporte multivariado en todos los folds.
+La cola de candidatos representa 0.252% frente a 4.14% histórica.
+Conservar control HGB 7.074911/.631231, no ajustar de nuevo sin evidencia útil.
+Cribado cerrado para fuentes actuales, fase 5 abierta para fuente dirigida
+original. Macdonald 1992, USGS PP1523 y Álvarez-Amado 2022: revisar tablas
+primarias, no aprobar por resumen. No se adquirieron nuevas tablas en este
+turno. Fase 6 no ejecutada, fase 7 bloqueada. Cero nuevas aprobadas.
+No hay comando pendiente de preflight. M2, producción y main congelados.
+Detalle y hashes en M1_AUGMENTATION.md y state.json.
