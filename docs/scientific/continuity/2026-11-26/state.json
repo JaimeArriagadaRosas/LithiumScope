@@ -58,17 +58,55 @@
     },
     "new_sources_approved": 0,
     "expansion": {
-      "state": "reopened_approved_plan",
-      "phase_1": "advanced_eda_implemented_local_validation_pending",
-      "phase_2": "cohort_planning_implemented_review_pending",
-      "phase_3": "pending_real_data_eligibility",
-      "phase_4": "pending_experiment_results",
-      "phase_5": "pending_candidate_acceptance",
+      "state": "historical_development_closed_academic_rmse_unmet",
+      "phase_1": "eda_completed",
+      "phase_2": "research_cohorts_validated_metadata_not_certified",
+      "phase_3": "fixed_expansion_sensitivity_completed",
+      "phase_4": "transfer_family_and_academic_refinement_completed",
+      "phase_5": "no_promotion_academic_rmse_unmet",
       "new_sources_approved": 0,
       "plan": "M1_EXPANSION.md",
-      "academic_rmse_provisional_max": 5.629,
-      "academic_r2_provisional_min": 0.499,
-      "production_promotion": false
+      "production_promotion": false,
+      "academic_rmse_target_strictly_below": 5.361,
+      "academic_r2_target_strictly_above": 0.499,
+      "academic_final": {
+        "run_id": "20261126T165331_935bc05f",
+        "manifest_sha256": "ec1831183f53a4b25cd905ac742ad06a019d1f39ce7132f13c3a0f09fa8baa66",
+        "zip_sha256": "ad157d0d5ef9ea222ce3f80177cb805a63da55a24c4bec888d882acc76271a91",
+        "verified_output_hashes": 7,
+        "rows": 3263,
+        "tree_fits": 35,
+        "analog_fits": 20,
+        "predictions": 26104,
+        "best_exploratory_policy": "hgb_combined",
+        "rmse_mean": 7.074911080374409,
+        "r2_mean": 0.6312308450339347,
+        "mae_mean": 3.8925979267215327,
+        "selected_policy": "three_way",
+        "selected_rmse_mean": 7.1640086332067785,
+        "selected_r2_mean": 0.623172527268434,
+        "selected_mae_mean": 3.870956807027409,
+        "rmse_target_met": false,
+        "r2_target_met": true,
+        "both_targets_met": false,
+        "release_eligible": false
+      },
+      "spatial_best_exploratory": {
+        "algorithm": "catboost",
+        "policy": "H_weight_010",
+        "global_rmse": 111.579554,
+        "global_r2": 0.533679,
+        "global_mae": 14.910078,
+        "rows": 3420,
+        "release_eligible": false
+      },
+      "linked_measurement_recovery": {
+        "accepted": 2686,
+        "academic_measurements": 58708,
+        "metadata_certified": false,
+        "target_assisted_linkage": true
+      },
+      "historical_experiment_repetition_authorized": false
     }
   },
   "m2": {
@@ -93,10 +131,11 @@
     "frozen_for_current_branch": true
   },
   "next": [
-    "validate_m1_expansion_tests",
-    "execute_local_advanced_eda",
-    "review_provenance_and_candidate_eligibility",
-    "run_controlled_m1_expansion_if_eligible"
+    "review_targeted_independent_data_acquisition_feasibility",
+    "freeze_new_evaluation_population_and_holdout_before_training",
+    "validate_target_independent_linkage_and_measurement_metadata",
+    "evaluate_spatial_and_academic_protocols_only_if_new_evidence_supports_it",
+    "final_release_decision_separate_from_development"
   ],
   "independent_external_holdout": false,
   "main_merge_authorized": false,
@@ -112,7 +151,7 @@
     "phase_5": "two_stage_exploratory_decision_concise_status",
     "release_authorized": false,
     "phase_3_and_4_conditional": false,
-    "experimental_closure": "historical_campaigns_closed_M1_expansion_reopened"
+    "experimental_closure": "M1_historical_expansion_closed_no_release_M2_frozen"
   },
   "phase_5": {
     "implementation": "decision_logic_and_page_two_updated",
@@ -207,5 +246,14 @@
     "comparison_run": "20261126T141852_5f6cc5d4",
     "comparison_manifest_sha256": "7cf6a5920a0874a9eb8bc2763d00f233028a179665da22c3997fb4e3f993d7a1",
     "comparison_state": "complete"
+  },
+  "latest_focused_m1_validation": {
+    "commit": "c924b14f759432ab77945591a9028eb5276042ee",
+    "passed": 47,
+    "total": 47,
+    "failed": 0,
+    "duration_seconds": 3.7,
+    "scope": "tests/scientific/m1_expansion",
+    "full_suite_after_expansion": false
   }
 }
