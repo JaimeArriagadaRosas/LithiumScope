@@ -1,5 +1,7 @@
 # Auditoría adicional M1 — datos entregados
 
+> Actualización aprobada 26/11: consultar [CIERRE_EXPERIMENTAL.md](CIERRE_EXPERIMENTAL.md) para el estado vigente. Cribado reproducido localmente (11.232 filas); ninguna muestra aprobada. Revisión bibliográfica no ejecutada; decisión de no incorporar en este cierre.
+
 Recalculada sobre las dos vistas armonizadas del EDA (2998 y 8234 filas),
 la fuente combinada bruta congelada y los 244 grupos de referencia.
 No se descargó de nuevo ni se modificó la fuente productiva.
