@@ -221,3 +221,30 @@ La ampliación combinada reduce RMSE medio 2.28% frente al control; 135 filas >4
 `python -m lithiumscope.experiments.model_1.expansion.academic_final --allow-unverified-metadata`
 
 Salida results/generalization/model_1_expansion_academic_final. Si no se alcanza el objetivo, cerrar esta secuencia de refinamientos sobre la población histórica y documentar brecha; no prolongar indefinidamente la optimización sobre folds ya examinados. Antes de promover M1 enriquecido, verificar correspondencia sin Li, métodos y disponibilidad de predictores en inferencia, evaluar protocolo espacial completo y conjunto independiente. Decisión posterior de release separada del cumplimiento numérico de la comparación OASIS.
+
+
+## Cierre de la secuencia académica histórica — objetivo parcialmente alcanzado
+Run 20261126T165331_935bc05f, commit de ejecución c924b14. 47/47 pruebas focalizadas aprobadas (3.70 s). ZIP SHA256 ad157d0d5ef9ea222ce3f80177cb805a63da55a24c4bec888d882acc76271a91, manifiesto ec1831183f53a4b25cd905ac742ad06a019d1f39ce7132f13c3a0f09fa8baa66. CRC correcto y 7/7 hashes de salidas coincidentes. 35 ajustes de árboles y 20 construcciones del estimador local, 55 trazas; 26104 predicciones de ocho políticas, 3263 IDs únicos y mismos folds/grupos/verdad por política. Métricas recalculadas. 16315 trazas de analogías con 81575 vecinos, cero fallback; 85 exclusiones de pares casi idénticos (26 exteriores). Las tres validaciones internas cubren exactamente TRAIN externo de cada fold; ningún vecino registrado pertenece a validación correspondiente o TEST externo. Esto verifica identidades de las trazas suministradas, no independencia de muestras o publicaciones.
+
+| Política | RMSE medio | MAE medio | R² medio |
+|---|---:|---:|---:|
+| HGB combinado |7.074911|3.892598|.631231|
+| HGB + CatBoost |7.093533|3.923232|.629665|
+| Tres componentes / selección interna |7.164009|3.870957|.623173|
+| HGB + analogías |7.241391|3.881312|.614984|
+| CatBoost combinado |7.368192|4.129337|.600835|
+| CatBoost + analogías |7.492343|4.011183|.588200|
+| Analogías |8.327550|4.381987|.490777|
+
+La selección interna eligió mezcla triple en 5/5 folds (promedio descriptivo de 15 splits internos RMSE 7.440449 vs HGB 7.733971), pero no mejora RMSE exterior. HGB combinado conserva el mejor RMSE/R² académico exploratorio; la mezcla triple tiene menor MAE. HGB combinado reduce RMSE medio 8.40% vs piloto 7.723716; R² .561374 -> .631231. Brecha RMSE frente a memoria 1.713911 ppm (31.97% sobre referencia; se requiere reducir 24.23% respecto al actual). R² supera .499, RMSE no supera 5.361 ni el antiguo margen provisional de 5%. No presentar cumplimiento integral. CatBoost H sigue siendo mejor RMSE espacial exploratorio (111.579554 vs SVM release 159.846300, reducción 30.20%); HGB H menor MAE espacial 14.554447 entre brazos de expansión. No confundir protocolos ni promover candidatos.
+
+**Decisión de cierre:** no añadir nuevas campañas de hiperparámetros/mezclas sobre los mismos 3263 TEST históricos. Conservar todos los resultados, incluyendo negativos. No se ha entrenado ni guardado un modelo definitivo nuevo. El objetivo académico permanece abierto, pero esta secuencia de desarrollo se cierra. M2 congelado, no merge ni release.
+
+### Próxima línea propuesta, condicionada a datos nuevos
+1. Auditoría de disponibilidad de publicaciones y mediciones originales para muestras andinas independientes, priorizando soporte del intervalo 40–126 ppm y representación 10–40 ppm, sin limitar la futura evaluación a casos fáciles. Los 135 casos >40 ppm explican 50.83% de SSE de HGB combinado. No usar esa evidencia para eliminar observaciones.
+2. Requerir trazabilidad a publicación y muestra, unidades y método de Li, coordenadas/CRS, roca total, QC, química adicional, derechos de uso; deduplicar por identificadores y composición independiente de Li. Evaluar disponibilidad de nuevos predictores en inferencia sin conocer objetivo; no asumir equivalencia GEOROC ppm / Mamani ICP-MS.
+3. Antes de cualquier fit, congelar población objetivo, reserva independiente por publicación y grupo espacial, manifiesto de fuentes y protocolo de aceptación. Separar dominio académico restringido de dominio completo. Conservar las 3420 históricas y sus 3263 académicas para comparaciones longitudinales, no recortar para alcanzar RMSE. Las 1483 reservadas previas ya fueron examinadas: no presentarlas como holdout independiente nuevo.
+4. Solo si hay datos informativos suficientes, evaluar transferencia dirigida con comparación pareada y selección interna, contra controles congelados; comprobar RMSE medio <5.361 y R² >.499 en la evaluación académica declarada. La comparación numérica con OASIS no demuestra superioridad en poblaciones distintas.
+5. Después, decidir entrenamiento final según validación espacial, compatibilidad de inferencia, metadatos y verificación independiente. Full suite posterior a cambios de expansión pendiente; 47 pruebas focalizadas sí validadas. No ejecutar ni descargar por defecto en esta etapa de cierre documental.
+
+No se requiere nueva ejecución local para cerrar esta campaña. Actualizar el repositorio únicamente cuando se vaya a retomar el trabajo.
