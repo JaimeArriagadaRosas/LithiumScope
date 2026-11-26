@@ -250,3 +250,17 @@ Fase 1 cerrada; fases 2–7 pendientes. Fase 2A siguiente. Ningún nuevo ajuste,
 modelo, cambio de código o prueba ejecutado por este registro documental.
 La fase 7 del plan de aumento previo sigue sin ejecutar; este plan nuevo
 no altera sus resultados ni convierte un experimento negativo en éxito.
+
+
+## Actualización de implementación — fase 2
+Se revisaron árbol de la rama, registro de seis familias, configuración, Optuna,
+tratamientos, rutas de entrenamiento, corrección aditiva, expertos y bitácoras.
+Inventario técnico en [M1_AUDITORIA_ENTRENAMIENTO.md](M1_AUDITORIA_ENTRENAMIENTO.md).
+No se certificaron nuevamente todos los checkpoints históricos locales.
+Subfase 2B iniciada con primera comparación acotada de funciones de pérdida HGB:
+cuadrática archivada exterior, absoluta, Gamma, Poisson, cuantil .60. 95 fits
+nuevos, selección interna con guardas RMSE/MAE/R²/cola; nueve pruebas nuevas
+(94 esperadas). Solo desarrollo académico enriquecido, flag de metadatos no
+certificados. Comando en auditoría. No iniciar fase 3 ni fine-tuning final
+antes de verificar resultados y cerrar brechas justificadas de fase 2.
+No se ejecutó localmente. Sin cambios productivos, datos nuevos ni M2.
