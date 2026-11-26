@@ -109,19 +109,19 @@
       "historical_experiment_repetition_authorized": false
     },
     "augmentation": {
-      "state": "chen_overlap_verified_transfer_preflight_implemented",
+      "state": "transfer_preflight_summary_fixed_pending_retest",
       "plan": "M1_AUGMENTATION.md",
       "phase_1": "code_audit_complete",
       "phase_2": "validated",
       "phase_3": "complete_no_improvement",
       "phase_4": "primary_source_links_verified",
-      "phase_5": "fold_safe_transfer_preflight_pending",
+      "phase_5": "preflight_summary_error_corrected",
       "phase_6": "real_synthetic_comparison_pending",
       "phase_7": "conditional_final_training_pending",
       "arms": 6,
       "max_new_fits": 115,
       "synthetic_test_rows": 0,
-      "expected_focused_tests": 81,
+      "expected_focused_tests": 82,
       "new_real_rows_approved": 0,
       "release_authorized": false,
       "run_id": "20261126T180155_005d9a59",
@@ -238,6 +238,18 @@
         "obsidian_reference_tail_candidates": 32,
         "ordered_bounds_max_span_point1_candidates": 2044,
         "new_rows_approved": 0
+      },
+      "checkpoint": "M1_DATA_CHECKPOINT.md",
+      "transfer_preflight_attempt": {
+        "commit": "588c313247979ce38e7ca19711d4b1a874fb53d2",
+        "tests_passed": 81,
+        "duration_seconds": 4.59,
+        "stage": "summary_after_fold_gate",
+        "error": "DataFrame.tail method collision",
+        "fix_commit": "60f0ec9b6741ce0188b8619921f4e36544c2df11",
+        "regression_commit": "c98ececc51c2ea5cf403a3885e9e43e5d4f27c29",
+        "outputs_emitted": false,
+        "counts_verified": false
       }
     }
   },
@@ -263,8 +275,8 @@
     "frozen_for_current_branch": true
   },
   "next": [
-    "run_transfer_preflight",
-    "verify_fold_safe_candidate_counts_and_whole_rock_hashes",
+    "rerun_corrected_transfer_preflight",
+    "verify_fold_candidate_counts_and_four_output_hashes",
     "resolve_material_methods_crs_and_publication",
     "acquire_and_freeze_independent_reserve",
     "compare_real_and_synthetic_if_eligible"
@@ -380,11 +392,11 @@
     "comparison_state": "complete"
   },
   "latest_focused_m1_validation": {
-    "commit": "440400f9b3c451568d6b4319359071def5750ff7",
-    "passed": 78,
-    "total": 78,
+    "commit": "588c313247979ce38e7ca19711d4b1a874fb53d2",
+    "passed": 81,
+    "total": 81,
     "failed": 0,
-    "duration_seconds": 4.36,
+    "duration_seconds": 4.59,
     "scope": "tests/scientific/m1_expansion",
     "full_suite_after_expansion": false
   }
