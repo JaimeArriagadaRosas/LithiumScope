@@ -42,7 +42,8 @@ def transfer_weights(historical_y,candidate_y,tail_only=False):
     """Fixed experimental weights; preserve historic band mass; never force uniformity."""
     h=pd.cut(historical_y,BINS)
     c=pd.cut(candidate_y,BINS)
-    if h.isna().any() or c.isna().any():
+    if (h.isna().any() or c.isna().any() or not np.isfinite(historical_y).all()
+            or not np.isfinite(candidate_y).all()):
         raise ValueError("Nonpositive or invalid target")
     out=pd.Series(0.,index=candidate_y.index)
     for band in c.cat.categories:
@@ -161,7 +162,7 @@ def run(allow_unverified_metadata=False):
     device=detect_device(prefer_gpu=False)
     params={k:v for k,v in PROFILES["hist_gradient_boosting"].items() if k!="treatment_policy"}
     params["min_samples_leaf"]=5
-    predictions,metrics,members,lineage,coverage,partitions=[],[],[],[],[],[]
+    predictions,metrics,members,lineage,coverage,partitions,synthetic=[],[],[],[],[],[],[]
     fits=0
     try:
         for fold,(tr,te) in enumerate(splits,1):
@@ -181,7 +182,12 @@ def run(allow_unverified_metadata=False):
             allowed=set(tx.index.astype(str))
             if any(str(v[k]) not in allowed for v in parents for k in ("parent_a","parent_b") if k in v):
                 raise ValueError("Synthetic parent outside TRAIN")
-            lineage.extend({"fold":fold,**v} for v in parents)
+            lineage.extend({"fold":fold,"synthetic_position":i,**v} for i,v in enumerate(parents))
+            generated=sx.iloc[len(ty):].copy().reset_index(drop=True)
+            generated.insert(0,"synthetic_position",np.arange(len(generated)))
+            generated.insert(0,"fold",fold)
+            generated["target_li_ppm"]=sy.iloc[len(ty):].to_numpy(float)
+            synthetic.append(generated)
             partitions.append({"fold":fold,"train_ids":tx.index.astype(str).tolist(),
                 "test_ids":x.index[te].astype(str).tolist(),"features":cols})
             values={POLICIES[0]:a.iloc[te].prediction.to_numpy(float),
@@ -225,6 +231,7 @@ def run(allow_unverified_metadata=False):
             write_table(out/"fold_metrics.csv",pd.DataFrame(metrics))
             write_table(out/"candidate_membership.csv",pd.DataFrame(members))
             write_table(out/"training_band_coverage.csv",pd.DataFrame(coverage))
+            write_table(out/"synthetic_features.csv",pd.concat(synthetic,ignore_index=True))
             write_legacy_evidence_json(out/"synthetic_lineage.json",lineage)
             write_legacy_evidence_json(out/"partitions.json",partitions)
         report,band_metrics=[],[]
@@ -245,10 +252,18 @@ def run(allow_unverified_metadata=False):
                     **regression_metrics(g.truth,g.prediction).to_dict()})
         if fits!=15 or len(report)!=5 or file_sha256(source)!=digest:
             raise ValueError("Closure campaign incomplete")
+        base=next(v for v in report if v["policy"]==POLICIES[0])
+        for v in report:
+            v["improves_control_rmse"]=v["rmse_mean"]<base["rmse_mean"]-1e-10
+            v["tail_not_worse"]=v["tail_rmse"]<=base["tail_rmse"]+1e-10
+            v["mae_not_materially_worse"]=v["mae_mean"]<=base["mae_mean"]+.1
+            v["numerical_closure_target_met"]=bool(v["both_better"] and v["improves_control_rmse"]
+                and v["tail_not_worse"] and v["mae_not_materially_worse"])
         write_table(out/"summary.csv",pd.DataFrame(report))
         write_table(out/"band_metrics.csv",pd.DataFrame(band_metrics))
         manifest["summary"]=report
         manifest["state"]="complete"
+        manifest["numerical_target_policies"]=[v["policy"] for v in report if v["numerical_closure_target_met"]]
         manifest["decision"]="development_comparison_only_no_automatic_selection_or_release"
     except BaseException as exc:
         manifest["state"]="interrupted"
