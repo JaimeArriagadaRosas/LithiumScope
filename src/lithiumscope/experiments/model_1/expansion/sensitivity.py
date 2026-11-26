@@ -14,6 +14,7 @@ from lithiumscope.core.paths import RESULTS_DIR
 from lithiumscope.core.scientific.regression_metrics import regression_metrics
 from lithiumscope.datasets.management.local_sources import local_training_source
 from lithiumscope.experiments.model_1.balanced.selection import balanced_positions
+from lithiumscope.experiments.data_lab.candidate_audit import REFERENCE as HISTORICAL_REFERENCE, FOLD_SHA256
 from lithiumscope.experiments.model_1.expansion.sensitivity_data import load_evidence, historical_tokens, reserve, fold_pools
 from lithiumscope.experiments.model_1.targeted.protocol import load_protocol
 from lithiumscope.experiments.model_1.targeted.fit import _base_fit
@@ -40,6 +41,13 @@ def run(run_path, *, allow_unverified_metadata=False):
         raise ValueError("Historical cohort hash differs")
     if list(x.columns)!=evidence["features"] or numeric!=evidence["numeric"] or categorical!=evidence["categorical"]:
         raise ValueError("Frozen predictor schema differs")
+    fold_path=RESULTS_DIR/"model_1/runs"/HISTORICAL_REFERENCE/"tables/outer_fold_manifest.csv"
+    if file_sha256(fold_path)!=FOLD_SHA256 or evidence.get("historical_fold_sha256")!=FOLD_SHA256:
+        raise ValueError("Frozen fold identity differs")
+    historical_folds=pd.read_csv(fold_path).sort_values("row_position")
+    for fold,(_,te,_) in enumerate(splits,1):
+        if not np.array_equal(te,np.flatnonzero(historical_folds.outer_fold.eq(fold))):
+            raise ValueError("Reference RF uses different historical TEST")
     prepared=prepare_training_data(source)
     if not np.array_equal(prepared.frame.index.astype(str),x.index.astype(str)):
         raise ValueError("Historical publication rows not aligned")
@@ -80,7 +88,7 @@ def run(run_path, *, allow_unverified_metadata=False):
               "promotion":False,"models_saved":False,"acquisition":False,"planned_fits":30,
               "reserved_rows":int(held.sum()),"pool_rows":int(pool.sum()),
               "historical_publication_token_rows":sum(bool(v) for v in historical_refs),
-              "candidate_eligible":int(audit.sensitivity_eligible.sum()),"publication_independence_certified":False,
+              "candidate_eligible":int(audit.sensitivity_eligible.sum()),"publication_independence_certified":False,"historical_fold_sha256":FOLD_SHA256,
               "arms":ARMS}
     write_legacy_evidence_json(destination/"manifest.json",manifest)
     device=detect_device(prefer_gpu=False)
