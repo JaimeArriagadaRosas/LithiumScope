@@ -11,6 +11,7 @@ from lithiumscope.datasets.adapters.georoc_ingestion_schema import infer_georoc_
 from lithiumscope.experiments.data_lab.candidate_screening import CHEM, num, group, sample
 from lithiumscope.experiments.model_1.augmentation.source_intake import ROOT
 from lithiumscope.experiments.model_1.augmentation.meixner_audit import raw_view
+from lithiumscope.experiments.model_1.expansion.raw_recovery import measurement_map, numeric_ppm
 from lithiumscope.results.atomic_exports import write_table, write_legacy_evidence_json
 
 SOURCE="chen_global_arcs_2020"
@@ -37,6 +38,15 @@ def profile(table):
     target=pd.to_numeric(raw[names[17]],errors="coerce").astype(float)
     observed=np.isfinite(target)&target.gt(0)
     canon=raw_view(raw[list(mapping)],mapping)
+    # FeOT is total iron reported as FeO. Preserve the original representation,
+    # compute Fe2O3T equivalent for canonical comparison; never add both.
+    if "FEOT(WT%)" in raw:
+        feot=pd.to_numeric(raw["FEOT(WT%)"],errors="coerce").astype(float)
+        canon["FeOT_total_as_FeO"]=feot.where(np.isfinite(feot)&feot.ge(0))
+        if "Fe2O3" in canon:
+            raise ValueError("Ambiguous iron representation")
+        canon["Fe2O3"]=canon.FeOT_total_as_FeO*1.111348
+        canon["Fe_total_provenance"]="FEOT_CONVERTED_TO_FE2O3T"
     chemistry=num(canon,CHEM)
     coverage=chemistry.notna().sum(axis=1)
     ox=chemistry[list(CHEM[:10])].sum(axis=1,min_count=10)
@@ -49,20 +59,30 @@ def profile(table):
     review["source_dataset"]=SOURCE
     review["chemical_predictors"]=coverage.loc[observed]
     review["oxide_sum"]=ox.loc[observed]
+    native=chemistry[list(CHEM[:10])].copy()
+    if "FeOT_total_as_FeO" in canon:
+        native["Fe2O3"]=canon.FeOT_total_as_FeO
+    review["oxide_sum_original_basis"]=native.sum(axis=1,min_count=10).loc[observed]
+    review["original_basis_qc"]=review.oxide_sum_original_basis.between(94,102)
+    review["chen_original_basis_98_101_5"]=review.oxide_sum_original_basis.between(98,101.5)
+    for element,(column,unit) in measurement_map(names).items():
+        review["georoc_"+element+"_ppm"]=numeric_ppm(raw.loc[observed,column],unit)
+    if "LOCATION COMMENT" in raw:
+        review["source_location_comment"]=raw.loc[observed,"LOCATION COMMENT"]
     review["qc_diagnostic"]=review.oxide_sum.between(94,102)
     review["coordinates_valid"]=coord_ok.loc[observed]
     review["spatial_group"]=group(review)
     review["name_available"]=sample(review).ne("")
     review["academic_range"]=review.Li_icpms.between(4.2439,126.12)
     review["academic_tail"]=review.Li_icpms.gt(40)&review.academic_range
-    review["basic_qc"]=review.qc_diagnostic&review.coordinates_valid&review.chemical_predictors.ge(8)
+    review["basic_qc"]=review.qc_diagnostic&review.original_basis_qc&review.coordinates_valid&review.chemical_predictors.ge(8)
     review["approved_for_training"]=False
     # Original strings are preserved by row reference and the immutable workbook.
     inventory=[]
     for j,(header,name) in enumerate(zip(headers,names,strict=True)):
         v=raw[name]
         candidate=v.loc[observed]
-        inventory.append({"excel_column":j+1,"header":header,"mapped_field":mapping.get(name,""),
+        inventory.append({"excel_column":j+1,"header":header,"mapped_field":("FeOT_total_as_FeO" if name=="FEOT(WT%)" else mapping.get(name,"")),
             "nonempty_rows":int(v.notna().sum()),"nonempty_positive_li_rows":int(candidate.notna().sum()),
             "numeric_positive_li_rows":int(pd.to_numeric(candidate,errors="coerce").notna().sum()),
             "examples":" | ".join(str(x)[:100] for x in candidate.dropna().drop_duplicates().head(3))})
@@ -79,7 +99,9 @@ def profile(table):
         "li_min":float(review.Li_icpms.min()) if len(review) else None,
         "li_median":float(review.Li_icpms.median()) if len(review) else None,
         "li_max":float(review.Li_icpms.max()) if len(review) else None,
-        "mapped_chemical_fields":[v for v in mapping.values() if v in CHEM],
+        "mapped_chemical_fields":[v for v in CHEM if v in canon],
+        "original_basis_qc_rows":int(review.original_basis_qc.sum()),
+        "chen_original_basis_qc_rows":int(review.chen_original_basis_98_101_5.sum()),
         "mapped_fields":mapping,"unique_sample_count_verified":False}
     return review,pd.DataFrame(inventory),counts_by_band,summary
 
