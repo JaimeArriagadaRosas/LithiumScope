@@ -35,3 +35,18 @@ def test_csv_intake_no_assumed_header(tmp_path):
     sheets,cells,state=inspect(path)
     assert state=="inspected_unmapped" and sheets[0]["rows"]==3
     assert cells[0]["explicit_unit_in_cell"]
+
+
+def test_selected_source_intake_does_not_reinspect_other_sources(tmp_path,monkeypatch):
+    import json
+    from lithiumscope.experiments.model_1.augmentation import source_intake as intake
+    monkeypatch.setattr(intake,"ROOT",tmp_path/"raw")
+    monkeypatch.setattr(intake,"RESULTS_DIR",tmp_path/"results")
+    out=intake.run(selected=["chen_global_arcs_2020"])
+    manifest=json.loads((out/"manifest.json").read_text(encoding="utf-8"))
+    assert set(manifest["source_dois"])=={"chen_global_arcs_2020"}
+    assert manifest["new_rows_approved"]==0
+    assert not (intake.ROOT/"meixner_2020").exists()
+    assert pd.read_csv(out/"source_inventory.csv").state.tolist()==["missing"]
+    with pytest.raises(ValueError):
+        intake.run(selected=["unknown"])
