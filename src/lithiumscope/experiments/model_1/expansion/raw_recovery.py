@@ -70,7 +70,7 @@ def unique_matches(base,raw):
     """
     matches=[]
     if not set(IDENTITY+["source_sample"]).issubset(raw.columns):
-        return pd.DataFrame(columns=["row_id","raw_position","state","shared_chemistry"])
+        return pd.DataFrame([{"row_id":str(i),"raw_position":None,"state":"raw_core_unavailable","shared_chemistry":0} for i in base.index])
     sample=normalized_sample(raw.source_sample)
     by_sample={k:v for k,v in sample.groupby(sample).groups.items() if k}
     numeric=raw.reindex(columns=IDENTITY+CHEM).apply(pd.to_numeric,errors="coerce")
@@ -131,6 +131,8 @@ def run():
     base=prepared.frame.copy()
     labels=source_series(base)
     external=base.loc[labels.eq("GEOROC")]
+    if external.empty or not external.index.is_unique:
+        raise ValueError("Historical GEOROC rows unavailable")
     recovered=pd.DataFrame(index=base.index.astype(str))
     recovered.index.name="row_id"
     inventory,match_tables=[],[]
@@ -149,6 +151,11 @@ def run():
         header=list(pd.read_csv(path,nrows=0,encoding=encoding).columns)
         extras=measurement_map(header)
         mapping=infer_georoc_column_map(header)
+        if cfg["iron_total_mode"]=="feot_equivalent":
+            for column in header:
+                if column.upper().replace(" ","").replace("_","") in {"FEOT(WT%)","FEOT"}:
+                    mapping[column]="FeOT_total_as_FeO"
+                    break
         inv={"file":name,"state":"verified" if verified else "raw_hash_unverified",
              "sha256":sha,"historical_rows":len(rows),"extra_headers":extras,
              "header":header,"matched":0}
