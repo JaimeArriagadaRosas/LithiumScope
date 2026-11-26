@@ -449,7 +449,7 @@
         "inner_predictions_independently_recomputed": false
       },
       "boosting_methods": {
-        "state": "implemented_pending_local_validation",
+        "state": "preflight_corrected_pending_local_validation",
         "module": "lithiumscope.experiments.model_1.integral.boosting_methods",
         "code_commit": "d31c286b4c9908913e16d3036e9dae87f47e0472",
         "tests_commit": "c0a53a685ae7fe291316715e2939409a878c9de6",
@@ -466,14 +466,24 @@
         "archived_outer_controls": 10,
         "archived_inner_scores": 15,
         "catboost_archived_control_descriptive_only": true,
-        "expected_focused_tests": 103,
+        "expected_focused_tests": 104,
         "previous_passed": 94,
         "expected_oof_rows": 26104,
         "new_fits_executed": 0,
         "new_training_rows": 0,
         "new_predictors": false,
         "independent_holdout": false,
-        "models_saved": false
+        "models_saved": false,
+        "preflight_attempt": {
+          "commit": "7625d15f6dfafeafe9a4ada7e1af6354c3ca7c2e",
+          "passed": 100,
+          "failed": 3,
+          "duration_seconds": 8.32,
+          "error": "duplicate device keyword in XGB factory",
+          "experimental_fits": 0
+        },
+        "fix_commit": "a8f84164b4ae7aae1a7d8ad9ce81a1f998fba419",
+        "regression_test_commit": "ac97be184b53d4fdd7503d66b8ec172f80b8a2e6"
       }
     }
   },
@@ -499,7 +509,7 @@
     "frozen_for_current_branch": true
   },
   "next": [
-    "run_boosting_methods_once_and_103_focused_tests",
+    "run_corrected_boosting_methods_once_and_104_focused_tests",
     "verify_boosting_metrics_hashes_selection_and_partitions",
     "close_remaining_training_gaps_if_justified_then_posttraining_audit",
     "integrate_validated_methods_then_reference_fit_if_eligible",
