@@ -319,3 +319,15 @@ Adjuntar manifest y salidas completas. Ocho políticas, 40 métricas por fold,
 90 puntuaciones internas (15 archivadas), 100 trazas nuevas, cinco
 particiones y selecciones, bandas y manifiesto con hashes/runtime.
 Sin nuevos datos, guardado, release, main ni M2.
+
+
+## 10. Corrección de preflight XGBoost
+Intento local commit 7625d15: 100 aprobadas, 3 fallidas, 8.32 s. Las tres
+pruebas XGB fallaron por colisión entre DeviceInfo de la factoría y parámetro
+`device` del estimador. El comando con && impidió iniciar la campaña: 0 fits
+experimentales. CatBoost pasó sus smoke tests. Corrección a8f8416: copiar
+perfil, separar backend antes de llamar a factoría y fijar model__device=cpu
+antes del fit; sin alterar parámetros científicos ni producción. Test
+ac97be1 verifica CPU incluso con indicador CUDA y que el perfil no se muta.
+104 pruebas esperadas, pendiente validación local. Mismo comando y 100 fits
+presupuestados; no repetir campaña HGB.
