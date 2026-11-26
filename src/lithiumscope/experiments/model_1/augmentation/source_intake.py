@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
 import hashlib
+import json
 from pathlib import Path
 import re
 from uuid import uuid4
@@ -31,7 +32,10 @@ DOWNLOADS={
        for i,ext in ((1,"docx"),(2,"xls"),(3,"xls"),(4,"xls"))},
     "chen_global_arcs_2020":{
         "41467_2020_19106_MOESM6_ESM.xlsx":
-        "https://pmc.ncbi.nlm.nih.gov/articles/instance/7575555/bin/41467_2020_19106_MOESM6_ESM.xlsx"},
+        (
+            "https://static-content.springer.com/esm/art%3A10.1038%2Fs41467-020-19106-z/MediaObjects/41467_2020_19106_MOESM6_ESM.xlsx",
+            "https://static-content.springer-cdn.net/esm/art%3A10.1038%2Fs41467-020-19106-z/MediaObjects/41467_2020_19106_MOESM6_ESM.xlsx",
+        )},
 }
 ALLOWED={".xls",".xlsx",".docx",".csv",".tsv",".txt",".pdf"}
 OLE=b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
@@ -88,6 +92,29 @@ def acquire(path,url):
         return "downloaded"
     finally:
         tmp.unlink(missing_ok=True)
+
+
+def download_options(path, urls):
+    """Bounded alternate publisher URLs; record each outcome, never overwrite."""
+    options=(urls,) if isinstance(urls,str) else tuple(urls)
+    attempts=[]
+    if path.exists():
+        try:
+            check_file(path)
+            return "existing",None,attempts
+        except (OSError,ValueError) as exc:
+            return "existing_invalid: "+str(exc)[:300],None,attempts
+    for url in options:
+        try:
+            status=acquire(path,url)
+        except (requests.RequestException,OSError,ValueError) as exc:
+            attempts.append({"url":url,"status":"failed","error":str(exc)[:300]})
+            if path.exists():
+                break
+        else:
+            attempts.append({"url":url,"status":status})
+            return status,url if status=="downloaded" else None,attempts
+    return "acquisition_failed: all registered URLs failed",None,attempts
 
 
 def cell_text(v):
@@ -158,20 +185,23 @@ def run(*,download=False,selected=None):
         folder.mkdir(parents=True,exist_ok=True)
         links=DOWNLOADS.get(key,{})
         outcomes={}
-        for name,url in links.items():
+        resolved_urls={}
+        download_attempts={}
+        for name,urls in links.items():
             path=folder/name
             if download:
-                try:
-                    outcomes[name]=acquire(path,url)
-                except (requests.RequestException,OSError,ValueError) as exc:
-                    outcomes[name]="acquisition_failed: "+str(exc)[:300]
+                outcomes[name],resolved_urls[name],download_attempts[name]=download_options(path,urls)
             elif not path.exists():
                 outcomes[name]="not_downloaded"
         paths={p.name:p for p in folder.iterdir() if p.is_file() and
                p.suffix.lower() in ALLOWED and ".partial." not in p.name}
         for name in sorted(set(paths)|set(links)):
             path=folder/name
-            record={"source":key,"doi":doi,"file":name,"url":links.get(name),
+            options=links.get(name,())
+            options=(options,) if isinstance(options,str) else tuple(options)
+            record={"source":key,"doi":doi,"file":name,"url":resolved_urls.get(name),
+                    "registered_urls":json.dumps(options,ensure_ascii=False),
+                    "download_attempts":json.dumps(download_attempts.get(name,[]),ensure_ascii=False),
                     "acquisition":outcomes.get(name,"local_original_unverified"),
                     "license_review_required":True,"approved_for_training":False}
             inventory.append(record)
