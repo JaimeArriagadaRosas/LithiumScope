@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 from lithiumscope.experiments.data_lab.candidate_screening import text
+from lithiumscope.experiments.model_1.expansion.identity import multivariate_support
 
 REVIEW_COLUMNS = ["candidate_id","raw_source_sha256","decision","method_evidence",
                   "crs_evidence","reference","notes"]
@@ -108,12 +109,18 @@ def fold_membership(audit, candidate_x, base_x, folds, historical_publications, 
         out=train_domain_fraction(candidate_x,base_x.iloc[np.flatnonzero(~test)],numeric)
         safe=(audit.candidate_partition.eq("train_pool") & ~audit.spatial_group.isin(blocked_groups)
               & ~pub.isin(blocked_publications))
+        other_pool=safe & audit.screening_state.eq("other_domain_review") & audit.review_decision.eq("compatible")
+        chemistry_ok=pd.Series(False,index=audit.index)
+        if other_pool.any():
+            support=multivariate_support(candidate_x.loc[other_pool],base_x.iloc[np.flatnonzero(~test)],numeric)
+            chemistry_ok.loc[other_pool]=support.chemistry_nn_supported
         for cohort,pools in POOLS.items():
             allowed=safe & audit.screening_state.isin(pools)
             if cohort=="D4":
                 other=audit.screening_state.eq("other_domain_review")
-                allowed &= ~other | (out.le(.25) & audit.review_decision.eq("compatible"))
+                allowed &= ~other | (out.le(.25) & chemistry_ok & audit.review_decision.eq("compatible"))
             records.append(pd.DataFrame({"fold":int(fold),"cohort":cohort,
                 "candidate_id":audit.candidate_id,"train_domain_fraction":out,
+                "other_domain_chemistry_supported":chemistry_ok,
                 "candidate_train":allowed}))
     return pd.concat(records,ignore_index=True)
