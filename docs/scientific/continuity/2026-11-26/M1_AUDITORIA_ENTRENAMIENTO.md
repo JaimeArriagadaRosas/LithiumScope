@@ -219,3 +219,103 @@ preflight ni los 15 fits anteriores. Todavía no es el entrenamiento de
 referencia de fase 5, ni el fine-tuning especializado de fase 6.
 No se ha ejecutado la suite local ni el experimento en esta intervención.
 M2, main, release y producción intactos.
+
+
+## 8. Resultado validado de pérdidas HGB — cierre de esta brecha
+
+Run 20261126T214831_885e8ea1, commit 5582fc28fc8989b742aaa1b86cfb12e06beeb79c.
+94/94 pruebas focalizadas aprobadas en 7.43 s; 95 fits nuevos, 75 internos y
+20 exteriores. ZIP evidencia.zip SHA256 e2604b2f3fbf3aa761b5495b83924f5a7256ffd3832679f6c45d01047eae25ec;
+CRC correcto; manifiesto SHA256 93af2f8fa5dbe2bfb07e3c4caa1b30599a5c197f6941487594390326ce901e29;
+8/8 hashes de salidas recalculados. 19578 OOF, seis políticas con 3263 IDs
+únicos cada una, idénticos fold/grupo/verdad. Recalculadas métricas de
+30 filas por fold y seis resúmenes (RMSE, MAE, R², RMSE global/cola y sesgo).
+Cinco particiones exteriores completas/disjuntas; 15 interiores disjuntas,
+cada triple de validaciones cubre TRAIN exterior. 75 puntuaciones internas
+y 95 trazas de fit. Recalculada selección interna: cinco controles,
+ninguna alternativa elegible en ninguna de las cinco particiones; OOF de
+inner_selected exactamente iguales a squared_error. No se regeneraron
+predicciones internas desde estimadores; se verificó selección a partir
+de puntuaciones internas registradas, no prueba independiente.
+
+| Política | RMSE medio | R² medio | MAE medio | RMSE cola >40 | Sesgo cola | Cambio RMSE vs A |
+|---|---:|---:|---:|---:|---:|---:|
+| squared_error / inner_selected | 7.074911 | .631231 | 3.892598 | 24.888575 | -16.247821 | 0% |
+| poisson | 7.342075 | .604482 | 3.845246 | 28.506887 | -20.552137 | +3.78% |
+| gamma | 7.475108 | .590341 | 3.920118 | 29.150437 | -20.781379 | +5.66% |
+| quantile_060 | 7.595791 | .575489 | 4.116071 | 28.276044 | -20.687031 | +7.36% |
+| absolute_error | 7.985510 | .531709 | 4.088510 | 31.843241 | -24.393462 | +12.87% |
+
+La pérdida cuadrática domina en RMSE de los cinco folds exteriores;
+Poisson mejora MAE medio pero empeora RMSE y cola. Ninguna alternativa
+mejora la cola y todas subestiman más el Li alto. Conservar HGB squared_error
+como método de referencia; no repetir estas pérdidas. La decisión está
+condicionada a perfiles y datos congelados, no demuestra invalidez universal.
+No se supera RMSE OASIS; no se guardaron estimadores ni se promovieron filas.
+
+## 9. Segunda implementación de fase 2B: otros métodos de boosting
+
+Razón: XGB no se evaluó con el conjunto enriquecido fijo de A en la campaña
+académica final; CatBoost tiene control RMSE enriquecido previo, pero no
+pérdidas Huber/Expectile evaluadas aisladamente en esa campaña. Cerrar
+estas brechas antes de pasar a postentrenamiento. Referencias oficiales:
+https://xgboost.readthedocs.io/en/release_2.1.0/parameter.html y
+https://catboost.ai/docs/en/concepts/loss-functions-regression .
+Pseudo-Huber reduce gradiente de errores grandes frente a cuadrática;
+Expectile .65 pondera más el error por subestimación (no es cuantil .65).
+Delta/slope 10 ppm y alpha .65 son hipótesis fijas, no óptimos demostrados.
+
+Código: integral/boosting_methods.py. Cinco perfiles nuevos:
+
+| Perfil | Método |
+|---|---|
+| xgb_squared | XGB 400 árboles, .05, depth6, subsample/colsample .9, L1=0, L2=1, min_child_weight=1, cuadrática |
+| xgb_regularized | mismo XGB, L1=.1, L2=5, min_child_weight=5; paquete de regularización, no ablación de cada parámetro |
+| xgb_pseudohuber | mismo XGB cuadrático base, cambiar objective a reg:pseudohubererror, huber_slope=10 |
+| catboost_huber | perfil académico previo 700 iteraciones, depth6, lr .05, L2=3; Huber:delta=10 |
+| catboost_expectile | mismo perfil CatBoost; Expectile:alpha=0.65 |
+
+Nuevos ajustes CPU explícito (evitar incompatibilidad de objetivos GPU),
+NaN numérico nativo, mismas variables, etiquetas y filas, semilla42.
+No alterar preentrenamiento, usar datos externos, ni retocar hiperparámetros
+por resultados del TEST. El control CatBoost archivado puede haber usado
+un backend diferente (su traza no certifica backend); comparación de
+CatBoost nuevo vs archivado es descriptiva, no ablación causal pura de
+pérdida. No se hace búsqueda de arquitectura, no Optuna. XGB regularización
+agrupada no permite atribuir el efecto a un único parámetro.
+
+Reutilizar 5 controles exteriores HGB y 15 puntuaciones internas cuadráticas
+del run HGB validado arriba, y 5 controles exteriores CatBoost del run
+20261126T165331_935bc05f, manifiesto
+ec1831183f53a4b25cd905ac742ad06a019d1f39ce7132f13c3a0f09fa8baa66.
+Verificar hashes de ambos manifests y salidas, fuente, esquema enriquecido,
+identidades/verdad/fold/grupo, particiones interiores y exteriores del HGB,
+n de cola interna y trazas de columnas. CatBoost archivado no entra en
+selección interna: faltan SSE de cola internas. No reconstruirlas a partir
+de RMSE global ni consultar TEST para elegir. HGB es fallback. 75 ajustes
+internos (5 perfiles x 3 x 5), 25 externos: 100 nuevos; 10 controles
+exteriores y 15 puntuaciones internas reutilizadas. Ocho políticas OOF
+incluida selección interna, 26104 predicciones esperadas. Seleccionar
+solo en TRAIN con guardas idénticas al estudio de pérdidas anterior.
+Comparación exterior fija diagnóstica; no seleccionar candidato productivo
+retrospectivamente. Reportar si mejoras son compatibles con cola/MAE/R².
+Mantener objetivo OASIS como descriptivo. Si no hay mejora suficiente,
+no prolongar búsqueda por pérdidas o repetir regularización general:
+cerrar brechas restantes justificadamente y auditar postentrenamiento.
+No adelantar fine-tuning de fase 6.
+
+Nueve casos nuevos de prueba (103 esperadas en m1_expansion), incluyendo
+cinco fits smoke CPU con dependencias opcionales, contratos, guardas,
+identidad de particiones y rechazo de solapamiento. Si faltan dependencias,
+los smoke se omiten y el experimento requiere instalarlas; no declarar
+validación completa con skips no revisados. No ejecutado localmente aún.
+
+```cmd
+git pull --ff-only && set "PYTHONPATH=%CD%\src" && python -m pytest tests/scientific/m1_expansion -q && python -m lithiumscope.experiments.model_1.integral.boosting_methods --allow-unverified-metadata
+```
+
+Salida results/generalization/model_1_integral_boosting_methods/<run>.
+Adjuntar manifest y salidas completas. Ocho políticas, 40 métricas por fold,
+90 puntuaciones internas (15 archivadas), 100 trazas nuevas, cinco
+particiones y selecciones, bandas y manifiesto con hashes/runtime.
+Sin nuevos datos, guardado, release, main ni M2.
