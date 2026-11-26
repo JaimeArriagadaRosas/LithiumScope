@@ -1,5 +1,7 @@
 # Plan de cierre aprobado — 26 de noviembre de 2026
 
+> Actualización aprobada 26/11: consultar [CIERRE_EXPERIMENTAL.md](CIERRE_EXPERIMENTAL.md) para el estado vigente. Fases 3 y 4 cerradas por decisión de conservar los RF actuales sin nuevo ajuste; fases 5 y 6 pendientes de evidencia final. Se conserva el plan original como registro de criterios.
+
 ## Fase 0. Preservar la evidencia
 
 Restaurar únicamente archivos verificados del ZIP en los destinos indicados
