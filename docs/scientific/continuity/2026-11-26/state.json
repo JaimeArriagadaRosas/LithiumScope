@@ -12,14 +12,20 @@
     "github_raw_upload": false
   },
   "tests": {
-    "commit": "b964ab3873af818cece45aa55e015159d473ad12",
-    "total": 987,
-    "passed": 984,
+    "commit": "1cd365920c9f3f2fc7604de7dea1a783256e47db",
+    "run_id": "20261126T135021Z_9fef752595a24d18817227676b5cf16d",
+    "total": 1004,
+    "passed": 1001,
     "failed": 0,
     "errors": 0,
     "skipped": 3,
-    "coverage_pct": 57.08,
-    "live_line_retest_pending": true
+    "coverage_pct": 57.02,
+    "duration_seconds": 129,
+    "git_identity_unchanged": true,
+    "exit_code": 0,
+    "retest_pending": false,
+    "skip_review": "two older 05-06 November comparisons, one unused local expanded 783 cohort; retain conditional skips",
+    "live_line_retest_pending": false
   },
   "m1": {
     "reference_run": "training_20261125_115932_m0300_826123c1",
@@ -59,18 +65,25 @@
     "optimization_closed": true,
     "retrain": false,
     "historical_evidence_recovered": true,
-    "postprocessing_pending": true
+    "postprocessing_pending": false,
+    "report_recovery": {
+      "state": "complete",
+      "samples": 706,
+      "qa_pass": 690,
+      "qa_retained": 16,
+      "scl_proxy_accepted": 566,
+      "scl_abstentions": 140,
+      "conflicting_sites": 25,
+      "ood_above_25pct": 9,
+      "scenes": 64,
+      "source_inventory_scenes": 111
+    }
   },
   "next": [
-    "restore_verified_evidence",
-    "run_full_software_tests",
-    "run_saved_version_comparison_and_m2_recovery",
-    "run_candidate_audit_from_existing_eda",
-    "verify_candidate_provenance_and_domain",
-    "conditional_m1_experiment",
-    "conditional_final_fit",
-    "render_and_verify_integrated_pdf",
-    "final_software_validation"
+    "render_integrated_pdf_with_recovered_evidence",
+    "verify_report_reconstruction_from_frozen_artifacts",
+    "review_final_evidence_and_close_phase_6",
+    "release_decision_separate_requires_approval"
   ],
   "independent_external_holdout": false,
   "main_merge_authorized": false,
@@ -85,7 +98,8 @@
     ],
     "phase_5": "two_stage_exploratory_decision_concise_status",
     "release_authorized": false,
-    "phase_3_and_4_conditional": true
+    "phase_3_and_4_conditional": false,
+    "experimental_closure": "approved_retain_existing_rf_rf_no_additional_fit"
   },
   "phase_5": {
     "implementation": "decision_logic_and_page_two_updated",
@@ -102,10 +116,13 @@
       "balanced_accuracy": 0.5,
       "f1": 0,
       "positive_predictions": 0
-    }
+    },
+    "page_two_validated": true,
+    "validated_demo": "demonstration_20261126_105426_m0300_c04bd5968e22",
+    "remaining": "final PDF with recovered comparisons, reconstruction"
   },
   "candidate_audit": {
-    "status": "screened_review_required",
+    "status": "screening_validated_no_incorporation_approved",
     "convergent_rows": 319,
     "convergent_groups": 76,
     "convergent_new_groups": 73,
@@ -113,15 +130,22 @@
     "high_groups": 14,
     "high_new_groups": 14,
     "approved_rows": 0,
-    "method_and_crs_unknown": true
+    "method_and_crs_unknown": true,
+    "run_id": "20261126T142237_76e00f95",
+    "total_rows": 11232,
+    "excluded_rows": 4451,
+    "other_domain_rows": 6393,
+    "zip_sha256": "dc8439fbd12b7aab2899b517f72cccc8456096aa0a37ad38e5792817c25c54b3",
+    "original_publications_verified": false
   },
   "implementation": {
-    "phase_1": "comparators_and_restore_and_recovery_implemented_local_execution_pending",
-    "phase_2": "candidate_screening_recalculated_from_supplied_tables_review_pending",
-    "phase_3": "conditional_not_started",
-    "phase_4": "conditional_not_started",
-    "phase_5": "decision_and_annex_implemented_local_render_pending",
-    "phase_6": "tests_pending",
+    "phase_0": "complete",
+    "phase_1": "complete",
+    "phase_2": "screening_validated_no_incorporation_approved",
+    "phase_3": "closed_not_executed_by_approved_decision",
+    "phase_4": "closed_existing_rf_retained_no_fit",
+    "phase_5": "page_two_validated_final_render_and_reconstruction_pending",
+    "phase_6": "software_suite_passed_operational_final_evidence_pending",
     "release_authorized": false
   },
   "release_authorized": false,
@@ -133,6 +157,21 @@
     "notes": "Checks of supplied data; not execution of the updated repository suite."
   },
   "latest_software_validation": {
+    "commit": "1cd365920c9f3f2fc7604de7dea1a783256e47db",
+    "run_id": "20261126T135021Z_9fef752595a24d18817227676b5cf16d",
+    "total": 1004,
+    "passed": 1001,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 3,
+    "coverage_pct": 57.02,
+    "duration_seconds": 129,
+    "git_identity_unchanged": true,
+    "exit_code": 0,
+    "retest_pending": false,
+    "skip_review": "two older 05-06 November comparisons, one unused local expanded 783 cohort; retain conditional skips"
+  },
+  "previous_software_validation": {
     "commit": "571df98dd7dff57402cb98afd02f5459e9d4cb47",
     "run_id": "20261126T134316Z_1ea2e39ed99445b38a9749b46d030b8b",
     "total": 1004,
@@ -147,5 +186,14 @@
     "cause": "early return after empty M1 selection omitted stage 2 heading",
     "fix": "renderer preserves stage 2 without fabricated candidates; existing failing test retained and PDF page-two regression extended",
     "retest_pending": true
+  },
+  "restoration": {
+    "state": "complete",
+    "archive_restored": 10,
+    "archive_already_verified": 4,
+    "scientific_lab_recovered": 3,
+    "comparison_run": "20261126T141852_5f6cc5d4",
+    "comparison_manifest_sha256": "7cf6a5920a0874a9eb8bc2763d00f233028a179665da22c3997fb4e3f993d7a1",
+    "comparison_state": "complete"
   }
 }
