@@ -72,5 +72,35 @@
     "verify_pdf_and_release"
   ],
   "independent_external_holdout": false,
-  "main_merge_authorized": false
+  "main_merge_authorized": false,
+  "approval": {
+    "phases": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "phase_5": "two_stage_exploratory_decision_concise_status",
+    "release_authorized": false,
+    "phase_3_and_4_conditional": true
+  },
+  "phase_5": {
+    "implementation": "decision_logic_and_page_two_updated",
+    "local_validation_pending": true,
+    "original_demo": "demonstration_20261126_101332_m0300_5971be0437fe",
+    "m1_external": {
+      "rmse": 1.9461,
+      "mae": 1.4994,
+      "r2": 0.9301
+    },
+    "m2_external": {
+      "roc_auc": 0.25,
+      "average_precision": 0.1964,
+      "balanced_accuracy": 0.5,
+      "f1": 0,
+      "positive_predictions": 0
+    }
+  }
 }

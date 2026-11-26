@@ -149,6 +149,14 @@ def build_overview(context, styles) -> list:
         m2 = context.model_2_diagnostics or {}
         m1_ood = context.statistics["m1_ood"]
         m2_ood = context.statistics["m2_ood"]
+        def warning_counts(group):
+            frame = getattr(context, group + "_predictions", None)
+            if frame is None or "applicability_warning" not in frame:
+                return ("N/D", "N/D")
+            status = frame["applicability_warning"].astype(str).str.upper()
+            return (int(status.eq("OUT_OF_DOMAIN").sum()), int(status.ne("OK").sum()))
+        m1_full, m1_not_ok = warning_counts("model_1")
+        m2_full, m2_not_ok = warning_counts("model_2")
         diagnostics = [
             paragraph(
                 "Diagnosticos de aplicabilidad",
@@ -162,10 +170,12 @@ def build_overview(context, styles) -> list:
                         "Modelo 2",
                     ],
                     [
-                        "Casos fuera de dominio (OOD)",
+                        "Fuera de rango marginal (>25 %)",
                         m1_ood,
                         m2_ood,
                     ],
+                    ["Fuera de dominio (diagnóstico final)", m1_full, m2_full],
+                    ["Casos con diagnóstico distinto de OK", m1_not_ok, m2_not_ok],
                     [
                         "Casos fallidos",
                         m1.get("failed_cases", "N/D"),

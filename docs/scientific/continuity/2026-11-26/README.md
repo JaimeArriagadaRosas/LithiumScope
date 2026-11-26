@@ -72,5 +72,7 @@ en el inventario. No solicitar de nuevo lo ya archivado si el ZIP está accesibl
 - [Consola de tests](../../../models/TEST_CONSOLE.md)
 
 Siguiente paso: restauración verificada, comparador por identidad y recuperación
-de informes M2. El plan científico posterior requiere aprobación antes de
-implementar nuevos experimentos, y ninguna promoción automática.
+de informes M2. Las fases 1–6 fueron aprobadas posteriormente, con precisión de fase 5:
+recuperar ambas etapas de decisión aun con dominio insuficiente y mantener
+etiquetas de alcance breves. Fase 6 es solo validación. Publicación, promoción
+y merge no autorizados. Experimentos y fit final siguen condicionados a evidencia.

@@ -1,4 +1,4 @@
-# Propuesta de cierre — pendiente de aprobación
+# Plan de cierre aprobado — 26 de noviembre de 2026
 
 ## Fase 0. Preservar la evidencia
 
@@ -93,7 +93,23 @@ no publicar ni cambiar main hasta autorización. Si no hay mejora material,
 conservar RF actual evita reentrenamiento innecesario. La campaña balanceada
 no produjo modelos guardados.
 
-## Fase 5. PDF y defensa
+## Fase 5. PDF, decisión integrada y defensa
+
+Aprobación posterior a la revisión de los PDF del 13 y 26 de noviembre:
+- Mantener página 2 con las dos etapas. Separar validez numérica de aplicabilidad.
+- Priorizar M1 aplicable y completar hasta tres con predicciones válidas de alcance
+  exploratorio. Usar q90 uniforme si disponible; en otro caso Li estimado.
+- Comparar los scores M2 aplicables si hay al menos dos; si no, usar los scores
+  válidos disponibles para ranking exploratorio. Mostrar las tres vistas reales
+  cuando existan; si faltan imágenes, mostrar su estado, no inventarlas.
+- Mantener empates y falta real de datos como casos sin ganador. Etapa 2 visible.
+- Etiquetas breves de alcance; no repetir advertencias en la página 2. Mantener
+  las limitaciones científicas en las secciones de diagnóstico y evaluación.
+- Separar conteo marginal del diagnóstico final (incluye multivariado).
+- No cambiar predicciones, umbrales ni etiquetas para mejorar la demostración.
+- Validar PDF del release y candidatos, nueva generación y reconstrucción.
+  No usar estos diez casos para seleccionar o ajustar hiperparámetros.
+
 
 Anexo dinámico vinculado al hash de cada modelo realmente utilizado:
 cohorte y EDA, tratamientos, ranking, OOF, TRAIN/TEST, comparación release,
@@ -104,7 +120,15 @@ Comprobar render real, portada, tablas, figuras, páginas, unidades, manifiesto
 y reconstrucción sin rutas vivas. Revisar que la salida no oculte las
 limitaciones de M2 ni presente proxy SCL como exposición de roca certificada.
 Generar evidencia final y documentación de instalación; suite y CI antes
-de merge autorizado, no repetir investigación ya completada.
+de cualquier decisión futura; no repetir investigación ya completada.
+
+## Fase 6. Validación final sin publicación automática
+
+Validar tests, integridad de artefactos y operación real. El release es una decisión
+posterior e independiente: solo si el conjunto final supera la referencia publicada
+bajo criterios científicos y funcionales aprobados. Considerar todos los candidatos
+experimentales desde el release anterior; no asumir que el más reciente es mejor.
+No empaquetar, publicar, promover ni fusionar main por completar las fases.
 
 ## Criterio global de cierre
 

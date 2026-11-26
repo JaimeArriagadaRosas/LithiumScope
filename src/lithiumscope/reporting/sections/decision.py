@@ -39,7 +39,8 @@ def _image_cards(selected: pd.DataFrame, winner_id: str | None, styles, previews
             styles["LS_Small"],
         )
         score = _fmt(row["_m2_score"], 3)
-        status = "M2 aplicable" if bool(row["_m2_ok"]) else "M2 no aplicable"
+        status = ("M2 aplicable" if bool(row["_m2_ok"]) else
+                  "M2 exploratorio" if bool(row.get("_m2_valid", False)) else "M2 no disponible")
         contents = [[heading], [_image_or_note(previews.get(case_id), styles)], [
             paragraph(f"Score M2: {score}", styles["LS_Small"])
         ], [paragraph(status, styles["LS_Small"])]]
@@ -81,20 +82,24 @@ def build_decision_page(context, styles) -> list:
     ]
     required = {"case_id", "_m1_ppm", "_m1_rank_score", "_m1_position", "_m2_score", "_m1_ok"}
     if decision.ranked.empty or not required <= set(decision.ranked.columns):
-        story.append(paragraph(decision.reason, styles["LS_Body"]))
+        story.extend([paragraph(decision.reason, styles["LS_Body"]),
+                      paragraph("Etapa 2 - Comparación espectral", styles["LS_H2"]),
+                      paragraph("Sin casos comparables.", styles["LS_Small"])])
         return story
 
     top_ids = set(decision.selected.case_id.astype(str)) if not decision.selected.empty else set()
     rows = [[
-        "Candidato", "Li M1 (ppm)", "Cota M1 (ppm)",
+        "Candidato", "Li M1 (ppm)", "Cota M1 (ppm)" if decision.m1_rule.startswith("cota inferior") else "Ranking M1 (ppm)",
         "Posición M1", "Score M2", "Resultado",
     ]]
     for _, item in decision.ranked.iterrows():
         case_id = str(item.case_id)
         if case_id == decision.winner_id:
-            result = "Prioridad M2"
+            result = "Prioridad explor." if decision.status == "EXPLORATORY" else "Prioridad M2"
         elif case_id in top_ids:
-            result = "Top 3 M1"
+            result = "Top M1" if bool(item["_m1_ok"]) else "Top M1 (explor.)"
+        elif not bool(item.get("_m1_valid", False)):
+            result = "M1 no utilizable"
         elif not bool(item["_m1_ok"]):
             result = "M1 fuera dominio"
         else:
@@ -125,8 +130,8 @@ def build_decision_page(context, styles) -> list:
     story.append(comparison)
     story.append(Spacer(1, 0.12 * cm))
     story.append(paragraph(
-        f"Regla M1: {decision.m1_rule}. Se excluyen predicciones M1 fuera "
-        "del dominio empírico antes de elegir tres. El Li observado NO interviene.",
+        f"Regla M1: {decision.m1_rule}. Se priorizan casos aplicables; "
+        "se completa con estimaciones exploratorias. Li observado no interviene.",
         styles["LS_Small"],
     ))
     if decision.selected.empty:
@@ -134,7 +139,7 @@ def build_decision_page(context, styles) -> list:
         return story
 
     story.extend([
-        paragraph("Etapa 2 - Comparación espectral de las tres imágenes", styles["LS_H2"]),
+        paragraph(f"Etapa 2 - Comparación espectral ({len(decision.selected)} casos)", styles["LS_H2"]),
         _image_cards(decision.selected, decision.winner_id, styles, getattr(context, "decision_previews", {})),
         paragraph(
             "Las imágenes RGB son vistas ilustrativas; el score M2 procede "
@@ -144,16 +149,17 @@ def build_decision_page(context, styles) -> list:
         Spacer(1, 0.10 * cm),
     ])
     heading = (
-        f"Prioridad {'provisional' if decision.status == 'PROVISIONAL' else 'relativa'}: "
+        f"Prioridad { {'PROVISIONAL': 'provisional', 'EXPLORATORY': 'exploratoria'}.get(decision.status, 'relativa')}: "
         f"{decision.winner_id}"
         if decision.winner_id else "Sin ganador justificable"
     )
     story.append(paragraph(heading, styles["LS_H2"]))
-    story.append(paragraph(
-        f"Regla M2: {decision.m2_rule}. {decision.reason} "
-        "Los scores son relativos; no son probabilidades de yacimiento "
-        "ni representan costos reales de extracción.", styles["LS_Small"],
-    ))
+    story.append(paragraph(f"Regla M2: {decision.m2_rule}.", styles["LS_Small"]))
+    applicable = decision.selected[decision.selected["_m2_ok"]]
+    if decision.status == "EXPLORATORY" and len(applicable) == 1:
+        story.append(paragraph(f"Único M2 aplicable: {applicable.iloc[0].case_id}.", styles["LS_Small"]))
+    if decision.winner_id is None:
+        story.append(paragraph(decision.reason, styles["LS_Small"]))
     if decision.retrospective:
         retrospective = decision.retrospective
         story.append(paragraph(

@@ -53,14 +53,15 @@ def test_bad_m2_quality_blocks_highest_scoring_candidate():
     assert result.status == "PROVISIONAL"
 
 
-def test_insufficient_m1_applicability_abstains():
+def test_insufficient_m1_applicability_completes_exploratory_shortlist():
     source = _cases()
     source["model_1_applicability_warning"] = "OUT_OF_DOMAIN"
     source.loc[:1, "model_1_applicability_warning"] = "OK"
     result = calculate_decision(source)
-    assert result.winner_id is None
-    assert result.selected.empty
-    assert result.status == "INSUFFICIENT"
+    assert len(result.selected) == 3
+    assert set(result.selected.case_id) == {"site-0", "site-1", "site-2"}
+    assert result.status == "EXPLORATORY"
+    assert result.winner_id == "site-2"
 
 
 def test_m2_tie_or_insufficient_data_abstains():
@@ -68,7 +69,7 @@ def test_m2_tie_or_insufficient_data_abstains():
     source.loc[source.case_id == "site-8", "prospectivity_score"] = .8
     assert calculate_decision(source).winner_id is None
     source.loc[source.case_id.isin(["site-2", "site-3"]), "model_2_applicability_warning"] = "OUT_OF_DOMAIN"
-    assert calculate_decision(source).status == "ABSTAIN"
+    assert calculate_decision(source).status == "EXPLORATORY"
 
 
 def test_missing_q90_switches_all_candidates_to_same_fallback():
@@ -119,3 +120,40 @@ def test_rendered_page_is_dynamic_and_exactly_page_two(tmp_path):
     assert "site-8 - PRIORIDAD" in first
     assert "site-3 - PRIORIDAD" in second
     assert first != second
+
+
+def test_all_m1_outside_domain_keeps_q90_and_compares_m2():
+    source = _cases()
+    source["model_1_applicability_warning"] = "OUT_OF_DOMAIN"
+    source["model_2_applicability_warning"] = "OUT_OF_DOMAIN"
+    source.loc[source.case_id == "site-3", "model_2_applicability_warning"] = "OK"
+    result = calculate_decision(source)
+    assert result.status == "EXPLORATORY"
+    assert result.selected.case_id.tolist() == ["site-2", "site-3", "site-8"]
+    assert result.winner_id == "site-8"
+    assert result.m1_rule.startswith("cota inferior q90")
+    assert result.selected["_m2_ok"].sum() == 1
+    assert result.selected["_m1_ok"].sum() == 0
+
+
+def test_invalid_predictions_and_missing_inputs_are_not_exploratory():
+    source = _cases()
+    source["model_1_applicability_warning"] = "INSUFFICIENT_INPUT"
+    source.loc[2, "model_1_applicability_warning"] = "OUT_OF_DOMAIN"
+    source.loc[3, "model_1_applicability_warning"] = "OK"
+    source.loc[3, "Li_icpms_predicted"] = np.nan
+    result = calculate_decision(source)
+    assert result.selected.case_id.tolist() == ["site-2"]
+    assert result.winner_id is None
+    assert result.status == "ABSTAIN"
+    story = build_decision_page(SimpleNamespace(decision=result), build_styles())
+    assert any("Etapa 2" in getattr(item, "text", "") for item in story)
+
+
+def test_no_valid_inputs_still_has_stage_two():
+    source = _cases()
+    source["model_1_applicability_warning"] = "INSUFFICIENT_INPUT"
+    result = calculate_decision(source)
+    assert result.status == "INSUFFICIENT"
+    story = build_decision_page(SimpleNamespace(decision=result), build_styles())
+    assert any("Etapa 2" in getattr(item, "text", "") for item in story)

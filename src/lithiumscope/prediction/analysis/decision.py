@@ -34,10 +34,10 @@ def _numeric(frame: pd.DataFrame, name: str) -> pd.Series:
 
 
 def calculate_decision(paired: pd.DataFrame) -> Decision:
-    """Rank top 3 conservative M1 estimates, then valid M2 spectral scores.
+    """Rank valid M1 estimates, prefer applicable rows and compare M2 scores.
 
-    Fail closed when fewer than three M1 candidates are in domain; do not
-    silently substitute model predictions with observed Li ground truth.
+    Domain warnings change the scope of the ranking, not numeric validity.
+    Missing input, invalid predictions and missing scores remain excluded.
     """
     if paired is None or paired.empty:
         return Decision(
@@ -61,73 +61,65 @@ def calculate_decision(paired: pd.DataFrame) -> Decision:
         raise ValueError("Report decision requires unique paired case_id")
     frame["_m1_ppm"] = _numeric(frame, "Li_icpms_predicted")
     frame["_m2_score"] = _numeric(frame, "prospectivity_score")
-    frame["_m1_ok"] = (
-        frame.model_1_applicability_warning.astype(str).str.upper().eq("OK")
-        & np.isfinite(frame["_m1_ppm"])
-        & frame["_m1_ppm"].ge(0)
-    )
+    m1_status = frame.model_1_applicability_warning.astype(str).str.strip().str.upper()
+    allowed = {"OK", "OUT_OF_DOMAIN", "INSUFFICIENT_PROFILE"}
+    frame["_m1_valid"] = (m1_status.isin(allowed) & np.isfinite(frame["_m1_ppm"])
+                          & frame["_m1_ppm"].ge(0))
+    frame["_m1_ok"] = frame["_m1_valid"] & m1_status.eq("OK")
     lower = _numeric(frame, "Li_icpms_interval_low_q90")
-    # Use a consistent rule across all in-domain candidate rows: if q90 is
-    # unavailable for any, use predicted ppm for everyone.
-    use_lower = (
-        frame["_m1_ok"].any()
-        and np.isfinite(lower[frame["_m1_ok"]]).all()
-    )
+    # Apply the same ranking quantity to all usable M1 rows, including OOD.
+    use_lower = (frame["_m1_valid"].any()
+                 and np.isfinite(lower[frame["_m1_valid"]]).all())
     if use_lower:
         frame["_m1_rank_score"] = lower.clip(lower=0.0)
         m1_rule = "cota inferior q90 M1 (max(0, Li estimado - error absoluto q90))"
     else:
         frame["_m1_rank_score"] = frame["_m1_ppm"]
         m1_rule = "Li estimado M1 (intervalos q90 no disponibles para todos)"
-    frame["_m2_ok"] = (
-        frame.model_2_applicability_warning.astype(str).str.upper().eq("OK")
-        & np.isfinite(frame["_m2_score"])
-        & frame["_m2_score"].between(0, 1)
-    )
+    m2_status = frame.model_2_applicability_warning.astype(str).str.strip().str.upper()
+    frame["_m2_valid"] = (m2_status.isin(allowed) & np.isfinite(frame["_m2_score"])
+                          & frame["_m2_score"].between(0, 1))
+    frame["_m2_ok"] = frame["_m2_valid"] & m2_status.eq("OK")
     frame["_selected"] = False
     frame["_winner"] = False
     frame = frame.sort_values(
-        ["_m1_ok", "_m1_rank_score", "_m1_ppm", "case_id"],
-        ascending=[False, False, False, True],
+        ["_m1_valid", "_m1_ok", "_m1_rank_score", "_m1_ppm", "case_id"],
+        ascending=[False, False, False, False, True],
         kind="stable",
     ).reset_index(drop=True)
     frame["_m1_position"] = np.arange(1, len(frame) + 1)
 
-    valid_m1 = frame[frame["_m1_ok"]]
-    if len(valid_m1) < TOP_K:
-        return Decision(
-            frame, pd.DataFrame(), None, "INSUFFICIENT",
-            f"Solo {len(valid_m1)} candidatos M1 aplicables; se necesitan {TOP_K}.",
-            m1_rule, "Mayor score espectral M2 dentro de los tres M1.", {},
-        )
+    valid_m1 = frame[frame["_m1_valid"]]
     selected_ids = valid_m1.head(TOP_K).case_id.tolist()
     frame.loc[frame.case_id.isin(selected_ids), "_selected"] = True
     chosen = frame[frame["_selected"]].copy()
-    eligible_m2 = chosen[chosen["_m2_ok"]].sort_values(
-        ["_m2_score", "case_id"], ascending=[False, True], kind="stable",
-    )
+    applicable_m2 = chosen[chosen["_m2_ok"]]
+    usable_m2 = chosen[chosen["_m2_valid"]]
+    # Keep the original strict preference when at least two scores are
+    # applicable. Otherwise a finite spectral ranking is exploratory only.
+    pool = applicable_m2 if len(applicable_m2) >= 2 else usable_m2
+    pool = pool.sort_values(["_m2_score", "case_id"], ascending=[False, True], kind="stable")
     winner_id: str | None = None
     status = "ABSTAIN"
-    if len(eligible_m2) < 2:
-        reason = (
-            "Menos de dos de las tres imágenes tienen score M2 "
-            "aplicable; no se declara ganador."
-        )
-    elif (
-        len(eligible_m2) > 1
-        and abs(float(eligible_m2["_m2_score"].iloc[0])
-                - float(eligible_m2["_m2_score"].iloc[1])) <= SCORE_TIE_ATOL
-    ):
-        reason = "Empate espectral en primer lugar; no se declara ganador."
+    if len(chosen) == 0:
+        status = "INSUFFICIENT"
+        reason = "No hay predicciones M1 utilizables."
+    elif len(pool) < 2:
+        reason = "Menos de dos scores M2 válidos; comparación sin ganador."
+    elif abs(float(pool["_m2_score"].iloc[0]) - float(pool["_m2_score"].iloc[1])) <= SCORE_TIE_ATOL:
+        reason = "Empate espectral en primer lugar."
     else:
-        winner_id = str(eligible_m2.case_id.iloc[0])
+        winner_id = str(pool.case_id.iloc[0])
         frame.loc[frame.case_id == winner_id, "_winner"] = True
-        status = "COMPARABLE" if len(eligible_m2) == TOP_K else "PROVISIONAL"
-        reason = (
-            "Tres evaluaciones M2 dentro de dominio; preferencia relativa."
-            if status == "COMPARABLE"
-            else "Prioridad provisional: al menos un candidato M2 fuera de dominio."
-        )
+        if len(chosen) < TOP_K or not chosen["_m1_ok"].all() or len(applicable_m2) < 2:
+            status = "EXPLORATORY"
+            reason = "Prioridad exploratoria según los scores disponibles."
+        elif len(applicable_m2) == TOP_K:
+            status = "COMPARABLE"
+            reason = "Tres evaluaciones M2 aplicables; preferencia relativa."
+        else:
+            status = "PROVISIONAL"
+            reason = "Prioridad provisional entre scores M2 aplicables."
 
     # Ground truth is used AFTER the decision only for retrospective reporting.
     retrospective: dict = {}
@@ -152,6 +144,6 @@ def calculate_decision(paired: pd.DataFrame) -> Decision:
     chosen = frame[frame["_selected"]].copy()
     return Decision(
         frame, chosen, winner_id, status, reason, m1_rule,
-        "max score espectral M2; excluir valores no finitos y fuera de dominio",
+        "Mayor score M2 aplicable si hay al menos dos; en otro caso, ranking exploratorio de scores válidos",
         retrospective,
     )
