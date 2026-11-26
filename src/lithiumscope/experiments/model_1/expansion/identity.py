@@ -37,7 +37,7 @@ def resolve(candidates, base, groups):
     strong = uid.ne("") | (pub.ne("") & names.ne(""))
     # Use exact complete record equality, including missingness, and a strong
     # identity. A coordinate/Li coincidence alone never authorizes collapsing.
-    fields = list(dict.fromkeys([*IDENTITY, *MEASUREMENTS, *CONTEXT]))
+    fields = sorted(set(x.columns) - set(KEY) - {"raw_source_sha256"})
     signatures = x.reindex(columns=fields).copy()
     signatures["__uid"] = uid
     signatures["__pub"] = pub
