@@ -71,6 +71,9 @@ def _write_outputs(
         selection_evidence = gather_selection_evidence(
             model_1_identity, model_2_identity
         )
+        from lithiumscope.prediction.exports.eda_figure_snapshot import snapshot_eda_figures
+        from lithiumscope.core.paths import RESULTS_DIR
+        figures = [*figures, *snapshot_eda_figures(selection_evidence, session.figures, root=RESULTS_DIR.parent)]
         write_json(session.root / "model_selection_evidence.json", selection_evidence)
         runtime["model_selection_evidence"] = selection_evidence
     report_path = write_pdf_report(

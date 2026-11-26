@@ -62,4 +62,12 @@ def build_current_selection(evidence,styles):
         out.append(paragraph(title+" — investigación de desarrollo",styles["LS_H2"]))
         out.append(paragraph(f"{result['configurations']} configuraciones; {result['attempted_evaluations']} evaluaciones y {result['calibration_fits']} ajustes de calibración y {result.get('extra_regime_fits',0)} ajustes adicionales por régimen. No se guardaron modelos nuevos.",styles["LS_Body"]))
         out.append(table([["Familia","Política","RMSE global","MAE global","R² global"]]+[[r["algorithm"],r["policy"],_number(r.get("global_rmse")),_number(r.get("global_mae")),_number(r.get("global_r2"))] for r in result["summary"]],widths=[4.3*cm,4.3*cm,2.5*cm,2.5*cm,2.4*cm],font_size=7))
+    research=evidence.get("research_sources",[])
+    if research:
+        out.append(paragraph("Fuentes de investigación — no incorporadas al entrenamiento",styles["LS_H2"]))
+        out.append(table([["Fuente","Filas candidatas","QC sin alerta de identidad","Li >696 ppm","Aprobadas"]]+[
+            [row["source"],str(row["summary"].get("candidate_rows")),str(row["summary"].get("qc_no_identity_flag_rows")),
+             str(row["summary"].get("above_696_qc_no_identity_flag")),str(row["summary"].get("approved_rows"))] for row in research],
+             widths=[5*cm,2.5*cm,3.5*cm,2.5*cm,2.5*cm],font_size=7))
+        out.append(paragraph("El cribado descriptivo no prueba independencia ni autoriza incorporación de muestras.",styles["LS_Small"]))
     return out

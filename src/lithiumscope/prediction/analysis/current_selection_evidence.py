@@ -55,6 +55,7 @@ def _selected(group,identity,root):
         result["eda"]={"run_id":name,"rows_raw":manifest["rows_raw"],"rows_prepared":manifest["rows_prepared"],
                        "features":manifest["features"],"manifest_sha256":link["manifest_sha256"],
                        "source_sha256":manifest["source_sha256"],"fold_protocol":manifest["development_protocol"],
+                       "figures":{k:v for k,v in manifest["artifacts"].items() if k.startswith("figures/") and k.endswith(".png")},
                        "cohort_summary":_rows(evidence/"tables"/"cohort_summary.csv",("source","stage","rows","target_min","target_median","target_max"))}
     except (OSError,ValueError,KeyError,TypeError,pd.errors.ParserError) as exc:
         result["eda_reason"]=str(exc)
@@ -105,6 +106,27 @@ def _targeted(selected,root,campaign="model_1_targeted"):
     return None
 
 
+def _research(selected,root):
+    found=[]
+    for source in sorted((root/"results"/"model_1"/"candidate_eda").glob("*")):
+        if not source.is_dir():
+            continue
+        for path in sorted(source.glob("eda_*/manifest.json"),reverse=True):
+            try:
+                data=read(path)
+                if (data["base_sha256"]!=selected["dataset_sha256"]
+                        or not verify_eda(path.parent,data["signature"])):
+                    continue
+                found.append({"source":data["source_key"],"run_id":path.parent.name,
+                    "doi":data["doi"],"summary":data["summary"],"eligibility":data["eligibility"],
+                    "manifest_sha256":file_sha256(path),
+                    "figures":{k:v for k,v in data["artifacts"].items() if k.startswith("figures/") and k.endswith(".png")}})
+                break
+            except (OSError,ValueError,TypeError,KeyError):
+                continue
+    return found
+
+
 def gather_current(m1,m2,*,root):
     selected={group:_selected(group,ident,root) for group,ident in (("model_1",m1),("model_2",m2))}
     from lithiumscope.results.reference_benchmarks import OASIS_M1
@@ -112,4 +134,5 @@ def gather_current(m1,m2,*,root):
             "paired":{g:_paired(g,s,root) for g,s in selected.items()},
             "m1_targeted":_targeted(selected["model_1"],root),
             "m1_balanced":_targeted(selected["model_1"],root,"model_1_balanced"),
+            "research_sources":_research(selected["model_1"],root),
             "independent_holdout":False,"user_release_approval_required":True}
