@@ -109,15 +109,15 @@
       "historical_experiment_repetition_authorized": false
     },
     "augmentation": {
-      "state": "bounded_data_closure_implemented_pending_execution",
+      "state": "data_closure_validated_target_not_met",
       "plan": "M1_AUGMENTATION.md",
       "phase_1": "code_audit_complete",
       "phase_2": "validated",
       "phase_3": "complete_no_improvement",
       "phase_4": "primary_source_links_verified",
       "phase_5": "operationally_closed_no_new_rows_approved",
-      "phase_6": "fixed_development_sensitivity_pending_execution",
-      "phase_7": "blocked_pending_favorable_evidence_independent_validation_and_authorization",
+      "phase_6": "complete_no_policy_meets_acceptance",
+      "phase_7": "not_executed_no_eligible_candidate_independent_validation_pending",
       "arms": 6,
       "max_new_fits": 115,
       "synthetic_test_rows": 0,
@@ -307,9 +307,36 @@
         "r2_target_strictly_above": 0.499,
         "tail_rmse_no_worse_than_control": true,
         "mae_mean_tolerance_ppm": 0.1,
-        "training_run_pending": true,
+        "training_run_pending": false,
         "models_saved": false,
         "new_rows_approved": 0
+      },
+      "closure_results": {
+        "run_id": "20261126T213014_fc01460c",
+        "manifest_sha256": "929732600e49a8da72ba506729f16a2b7a48195e0fa9189695d2474079762e46",
+        "zip_sha256": "92136668fa1a1599b4d09366f6dd814d1568acfe360019f307b9db53c063ea1a",
+        "verified_hashes": 9,
+        "new_fits": 15,
+        "oof_rows": 16315,
+        "unique_test_rows": 3263,
+        "synthetic_rows": 175,
+        "candidate_memberships": 15399,
+        "unique_transfer_candidates": 1588,
+        "unique_tail_candidates": 4,
+        "best_descriptive_policy": "C_bounded_transfer",
+        "rmse_mean": 7.053262250771354,
+        "r2_mean": 0.6334035239555804,
+        "mae_mean": 3.8644036739388974,
+        "rmse_global": 7.076867966353227,
+        "tail_rmse": 25.09364690398,
+        "control_tail_rmse": 24.88857517018625,
+        "numerical_target_met": false,
+        "retained_control": "A_historical",
+        "metadata_certified": false,
+        "independent_holdout": false,
+        "approved_rows": 0,
+        "models_saved": false,
+        "report": "M1_CIERRE_DATOS_RESULTADOS.md"
       }
     }
   },
@@ -335,10 +362,9 @@
     "frozen_for_current_branch": true
   },
   "next": [
-    "run_fixed_data_closure_once",
-    "verify_five_policy_oof_identity_membership_weights_synthetic_lineage_and_metrics",
-    "close_academic_development_report_without_repeating_campaigns",
-    "final_fit_only_if_favorable_independent_and_spatial_validation_and_authorization"
+    "retain_validated_evidence_no_new_command",
+    "if_new_stage_authorized_obtain_common_OASIS_cohort_and_folds_or_independent_reference",
+    "no_final_fit_or_release_without_eligibility"
   ],
   "independent_external_holdout": false,
   "main_merge_authorized": false,
@@ -451,11 +477,11 @@
     "comparison_state": "complete"
   },
   "latest_focused_m1_validation": {
-    "commit": "ede544a85c7e30da728d38d6d25ae7f6b89f99f0",
-    "passed": 82,
-    "total": 82,
+    "commit": "ff4a4a5a7adff25b11d7895903eed1d91b26297f",
+    "passed": 85,
+    "total": 85,
     "failed": 0,
-    "duration_seconds": 4.58,
+    "duration_seconds": 27.13,
     "scope": "tests/scientific/m1_expansion",
     "full_suite_after_expansion": false
   }
