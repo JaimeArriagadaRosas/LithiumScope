@@ -340,7 +340,7 @@
       }
     },
     "integral_optimization": {
-      "state": "hgb_losses_validated_boosting_comparison_implemented",
+      "state": "training_methods_operationally_closed_posttraining_implemented",
       "plan": "M1_PLAN_OPTIMIZACION_INTEGRAL.md",
       "approval": {
         "date": "2026-11-26",
@@ -350,15 +350,15 @@
       },
       "phases": {
         "1_pretraining": "operationally_closed",
-        "2_training": "native_hgb_losses_closed_boosting_methods_pending",
-        "3_posttraining": "pending",
+        "2_training": "operationally_closed_hgb_squared_retained",
+        "3_posttraining": "audit_documented_point_calibration_pending",
         "4_integration": "pending",
         "5_reference_candidate": "conditional_pending",
         "6_fine_tuning": "conditional_pending_reference_candidate",
         "7_final_validation": "pending"
       },
-      "current_phase": "2B_boosting_methods_pending_execution",
-      "next_document": "M1_AUDITORIA_ENTRENAMIENTO.md",
+      "current_phase": "3A_point_calibration_pending_execution",
+      "next_document": "M1_AUDITORIA_POSTENTRENAMIENTO.md",
       "baseline": {
         "academic_control": "A_historical",
         "rmse_mean": 7.074911,
@@ -390,7 +390,7 @@
       },
       "documentation_commit": "39948bf4ff7e9c5756089b2bbfb685e1a61ade58",
       "local_command_pending": true,
-      "new_fits": 95,
+      "new_fits": 195,
       "training_audit": {
         "document": "M1_AUDITORIA_ENTRENAMIENTO.md",
         "audit_commit": "3c50ecfa43a4e564099e8cb5ca6bb3f46c31ce60",
@@ -403,7 +403,7 @@
           "catboost_loss",
           "other_family_specific_training_methods_if_justified"
         ],
-        "posttraining_audit_pending": true
+        "posttraining_audit_pending": false
       },
       "training_losses": {
         "state": "complete_validated_squared_error_retained",
@@ -449,7 +449,7 @@
         "inner_predictions_independently_recomputed": false
       },
       "boosting_methods": {
-        "state": "preflight_corrected_pending_local_validation",
+        "state": "complete_validated_hgb_control_retained",
         "module": "lithiumscope.experiments.model_1.integral.boosting_methods",
         "code_commit": "d31c286b4c9908913e16d3036e9dae87f47e0472",
         "tests_commit": "c0a53a685ae7fe291316715e2939409a878c9de6",
@@ -469,7 +469,7 @@
         "expected_focused_tests": 104,
         "previous_passed": 94,
         "expected_oof_rows": 26104,
-        "new_fits_executed": 0,
+        "new_fits_executed": 100,
         "new_training_rows": 0,
         "new_predictors": false,
         "independent_holdout": false,
@@ -483,7 +483,48 @@
           "experimental_fits": 0
         },
         "fix_commit": "a8f84164b4ae7aae1a7d8ad9ce81a1f998fba419",
-        "regression_test_commit": "ac97be184b53d4fdd7503d66b8ec172f80b8a2e6"
+        "regression_test_commit": "ac97be184b53d4fdd7503d66b8ec172f80b8a2e6",
+        "run_id": "20261126T221622_b1d7f8b8",
+        "manifest_sha256": "ba2090c1e92a62a669fe175382db61d8e124baf2cd7f38eee0977c2d988e7f9f",
+        "rar_sha256": "5c5cfa765584eb8d1b4ed223a6e0d9372abb85732f040f5ea87e94e8c502c67a",
+        "verified_output_hashes": 8,
+        "oof_rows": 26104,
+        "selected": [
+          "xgb_squared",
+          "xgb_squared",
+          "hgb_squared",
+          "xgb_regularized",
+          "catboost_expectile"
+        ],
+        "selection_recomputed": true,
+        "inner_predictions_independently_recomputed": false,
+        "alternative_development_improvement": false
+      },
+      "posttraining": {
+        "state": "implemented_pending_local_validation",
+        "document": "M1_AUDITORIA_POSTENTRENAMIENTO.md",
+        "module": "lithiumscope.experiments.model_1.integral.posttraining",
+        "calibration_commit": "d03b6dfa92dc6b53e99532ba5b6caa824fe6f452",
+        "runner_commit": "a27b08e2a5e502174051da7c25d9970c425c2d2f",
+        "tests_commit": "188fd34b77267a71e47bcf3cc0decaf28508b941",
+        "policies": [
+          "identity",
+          "additive",
+          "affine_shrunk",
+          "isotonic_shrunk",
+          "residual_ridge",
+          "inner_selected"
+        ],
+        "base_fits": 60,
+        "calibration_sets": 20,
+        "calibration_estimators": 60,
+        "bias_statistics": 20,
+        "archived_outer_base_fits": 5,
+        "expected_focused_tests": 110,
+        "expected_oof_rows": 19578,
+        "executed": false,
+        "independent_holdout": false,
+        "models_saved": false
       }
     }
   },
@@ -509,9 +550,9 @@
     "frozen_for_current_branch": true
   },
   "next": [
-    "run_corrected_boosting_methods_once_and_104_focused_tests",
-    "verify_boosting_metrics_hashes_selection_and_partitions",
-    "close_remaining_training_gaps_if_justified_then_posttraining_audit",
+    "run_posttraining_once_and_110_focused_tests",
+    "verify_crossfit_lineage_and_calibration_metrics",
+    "decide_remaining_posttraining_methods_if_justified",
     "integrate_validated_methods_then_reference_fit_if_eligible",
     "fine_tune_reference_candidate_then_final_validation"
   ],
@@ -626,11 +667,11 @@
     "comparison_state": "complete"
   },
   "latest_focused_m1_validation": {
-    "commit": "5582fc28fc8989b742aaa1b86cfb12e06beeb79c",
-    "passed": 94,
-    "total": 94,
+    "commit": "9ac65b4b8724e35d51814b96e6f4de83a6d69637",
+    "passed": 104,
+    "total": 104,
     "failed": 0,
-    "duration_seconds": 7.43,
+    "duration_seconds": 80.53,
     "scope": "tests/scientific/m1_expansion",
     "full_suite_after_expansion": false
   }
