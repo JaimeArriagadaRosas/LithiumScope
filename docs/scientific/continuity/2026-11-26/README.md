@@ -6,6 +6,10 @@ Rama: `feat/m1-targeted-data-refinement`. Base de esta documentación:
 `f97a2daf9266e6dae2206870988bfea122892ebf`. Main permanece en 
 `a3b77a02d98e626558b81163d94fcf92da1ddfb5`. No fusionar ni publicar sin aprobación.
 
+## Actualización de cierre (26/11)
+
+**Leer [CIERRE_EXPERIMENTAL.md](CIERRE_EXPERIMENTAL.md) y [state.json](state.json) como estado vigente; las notas anteriores a esta actualización son históricas.** Fases 0 y 1 completas; fase 2 cerrada como cribado validado y decisión aprobada de no incorporar datos. Fases 3 y 4 cerradas sin ejecución ni fit adicional; se conservan los RF de 25/11. Suite: 1001/1004 aprobadas, 3 omitidas, cero fallos/errores, cobertura 57.02%. Comparador global complete. Página 2 validada. Restan PDF final con evidencia recuperada, reconstrucción y cierre operativo de fase 6. No publicar ni fusionar.
+
 ## Decisiones vigentes
 
 - Objetivo principal: superar descriptivamente el release con validación espacial
@@ -91,19 +95,8 @@ y merge no autorizados. Experimentos y fit final siguen condicionados a evidenci
 
 ## Ejecución local pendiente (sin entrenamiento)
 
-1. Actualizar la rama con git pull --ff-only cuando no haya ejecución activa.
-2. Restaurar evidencia desde ZIP privado con scripts/restore_scientific_evidence.py,
-   primero en vista previa y luego con --apply si no hay conflictos.
-3. Menú 5 > 3 > 1: suite completa.
-4. Menú 5 > 3 > 5: comparación histórica y recuperación M2.
-5. python -m lithiumscope.experiments.data_lab.candidate_audit:
-   reproducir auditoría de fuentes desde EDA existente, sin descargar.
-6. Menú 1 > 2: regenerar demostración con evidencia disponible y comprobar página 2.
-   No reentrena. No usar los diez casos de demo para seleccionar modelos.
-7. Decidir fase 3 según revisión de procedencia; fase 4 solo si hay mejora justificada.
-   No preparar ni publicar release automáticamente.
+1. Actualizar la rama con `git pull --ff-only`.
+2. Menú 1 > 2: regenerar PDF con las comparaciones restauradas (run 20261126T141852_5f6cc5d4) y verificar los anexos y la página 2.
+3. Comprobar reconstrucción a partir de artefactos congelados y cerrar fase 6. Revisar resultados y decidir release por separado.
 
-Verificación de los adjuntos: 14 hashes críticos coincidentes; los dos manifiestos
-M1 son idénticos, 3420 filas. En M2 coinciden los 706 IDs, posiciones, grupos,
-folds, Li y coordenadas de la referencia reconstruida y el candidato.
-No equivalen a ejecutar los nuevos tests de Python ni a renderizar un PDF real.
+Las restauraciones, suite, comparación y auditoría de candidatos ya se ejecutaron. No repetir por defecto. El detalle de los skips, los hashes y las limitaciones está en CIERRE_EXPERIMENTAL.md.
