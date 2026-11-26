@@ -58,3 +58,25 @@ Ejecutar pruebas focalizadas y, si el usuario acepta esta limitación:
 `python -m pytest tests/scientific/m1_expansion -q`
 `python -m lithiumscope.experiments.model_1.expansion.sensitivity --run results/model_1/expansion/20261126T145129_ee7f5431 --allow-unverified-metadata`
 La salida está en results/generalization/model_1_expansion_sensitivity. No repetir EDA, adquisición ni campañas anteriores. Implementación y cuatro pruebas nuevas pendientes de ejecución local.
+
+
+## Resultados sensibilidad y refinamiento de transferencia
+Run 20261126T145931_b132b506, commit c240a9b; 10 tests focalizados aprobados, 3.76 s. ZIP SHA256 e077795a061b5a434c8ae85ce4ca8eb10822ac3473207c64cf150748fc040849; manifest SHA256 6ce065c46143061388baf03ce92eedf47877abab63d98f353747a70f10e8e366. 14 hashes verificados, 30 fits, cero errores, 20.520 predicciones históricas, identidades pareadas y A reproduce RF archivado (diferencia máxima 1.42e-13 ppm). 6781 elegibles exploratorias: 4611 pool, 1483 reserva, 687 cuarentena. Referencias históricas identificables mediante tokens en 676 filas; independencia bibliográfica no certificada.
+
+| Brazo | RMSE global | MAE global | R2 global | RMSE medio folds |
+|---|---:|---:|---:|---:|
+| A |152.302214|15.303595|.131184|82.310168|
+| B |151.648396|15.300003|.138627|81.431717|
+| C |152.807342|15.214643|.125411|82.221456|
+| D |146.698532|16.106772|.193940|90.295179|
+| E |143.027716|16.159153|.233776|90.811562|
+| F |134.461658|15.618894|.322807|87.592351|
+
+F reduce RMSE global 11.71% frente a A y 15.88% frente al SVM publicado, pero aumenta MAE .315299 ppm y RMSE medio. IC95 agrupado de diferencia F-A RMSE [-46.7653,57.3129], MAE [-3.593754,4.886718]. Fold 5 RMSE 338.14 ->272.74; fold 3 32.35 ->124.16, tres casos del grupo g_151_219 explican 93.56% del incremento neto de SSE del fold 3. No excluir ni seleccionar reglas usando ese grupo o los valores reales de TEST. Nueve fuera del soporte histórico: RMSE 2932.72 ->2364.68; restantes 3411: 23.74 ->58.08; Li <=100 ppm 13.34 ->11.81. El máximo TRAIN fold 5 aumenta de 696 a 6201.47 ppm. Reserva 1483: RMSE 351.74 ->186.61, MAE 136.27 ->63.97, R2 -3.445 ->-.251; sigue siendo exploratoria y bajo desempeño. No autorizar release ni afirmar superioridad integral.
+
+Siguiente subetapa acotada, sin repetir A-F: G = F sin alta transferencia; H/I/J = F con peso .10/.25/.50 de las filas intraplaca de alta concentración (incluidas todas sus copias rare_group_sqrt). El resto conserva peso 1. Se mantienen RF, folds, hiperparámetros archivados, balanceo histórico y reglas de admisión. Los pesos son hipótesis predeclaradas de sensibilidad, no estimaciones de incertidumbre; selección futura exclusivamente interna. 20 fits exteriores fijos, no búsqueda de hiperparámetros, no promoción ni guardado de modelos. G prueba el aporte de expansión amplia sin las altas; H/I/J buscan reducir transferencia negativa. Reutilizar evidencias de A-F como controles. No declarar candidato hasta verificar mejora global, MAE y estabilidad de folds. Si no hay equilibrio, probar adaptación condicionada por química y/o otras familias con selección espacial interna. Mantener evaluación OASIS separada; no inferir cumplimiento de 5% a partir de RMSE espacial.
+
+`python -m pytest tests/scientific/m1_expansion -q`
+`python -m lithiumscope.experiments.model_1.expansion.sensitivity --run results/model_1/expansion/20261126T145129_ee7f5431 --allow-unverified-metadata --transfer-refinement`
+
+Salida: results/generalization/model_1_expansion_transfer. Cinco tests adicionales pendientes de ejecución local; M2 intacto.
