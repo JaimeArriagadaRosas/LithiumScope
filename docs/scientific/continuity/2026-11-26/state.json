@@ -1,0 +1,76 @@
+{
+  "date": "2026-11-26",
+  "branch": "feat/m1-targeted-data-refinement",
+  "base_commit": "f97a2daf9266e6dae2206870988bfea122892ebf",
+  "backup": {
+    "filename": "LithiumScope_respaldo_evidencias_2026-11-26.zip",
+    "original_files": 158,
+    "original_bytes": 191321208,
+    "zip_bytes": 30459757,
+    "sha256": "275890d4065cc409579a2ea45aec2d130a6a07295304693a36d22836f91fba0b",
+    "inventory_sha256": "07d73a023c56f6381ab13d238bc892984ad1f6cf243889b204064e36e82d2861",
+    "github_raw_upload": false
+  },
+  "tests": {
+    "commit": "b964ab3873af818cece45aa55e015159d473ad12",
+    "total": 987,
+    "passed": 984,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 3,
+    "coverage_pct": 57.08,
+    "live_line_retest_pending": true
+  },
+  "m1": {
+    "reference_run": "training_20261125_115932_m0300_826123c1",
+    "release": "training_20261106_111653_m0300",
+    "rows": 3420,
+    "groups": 244,
+    "matched": 3420,
+    "folds": 5,
+    "candidate_saved": "random_forest",
+    "balance_model_saved": false,
+    "targeted": {
+      "configurations": 45,
+      "main": 1350,
+      "calibration": 540
+    },
+    "balanced": {
+      "configurations": 21,
+      "main": 630,
+      "expert_fits": 591
+    },
+    "academic": {
+      "run_id": "20261126T123613_24ef3f6c",
+      "rows": 3263,
+      "trials_per_fold": 20,
+      "rmse_mean": 7.723715652956827,
+      "r2_mean": 0.5613736927850079,
+      "rmse_global": 7.757604753655232,
+      "mae_global": 4.29677697643394,
+      "r2_global": 0.560445163803176,
+      "random_cv": true
+    },
+    "new_sources_approved": 0
+  },
+  "m2": {
+    "candidate": "training_20261125_144535_m0300_6fa5d269",
+    "release": "training_20260920_195933_m0300",
+    "optimization_closed": true,
+    "retrain": false,
+    "historical_evidence_recovered": true,
+    "postprocessing_pending": true
+  },
+  "next": [
+    "restore_verified_evidence",
+    "fix_identity_comparison",
+    "restore_m2_postprocessing",
+    "validate_console",
+    "audit_candidate_domain",
+    "conditional_m1_experiment",
+    "conditional_final_fit",
+    "verify_pdf_and_release"
+  ],
+  "independent_external_holdout": false,
+  "main_merge_authorized": false
+}
