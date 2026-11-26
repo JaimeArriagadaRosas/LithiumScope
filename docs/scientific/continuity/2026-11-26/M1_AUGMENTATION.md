@@ -44,3 +44,31 @@ No descargar indiscriminadamente ni contabilizar nuevos casos desde metadatos. E
 ## Fases 6–7: diseño aprobado, pendiente evidencia
 
 A: reales históricos. B: históricos + sintéticos TRAIN. C: históricos + nuevas filas reales elegibles. D: históricos + nuevas reales + sintéticos TRAIN. Reusar controles, seleccionar tratamientos internamente, comparar mismos TEST, errores por banda y grupos; no tratar sintéticos como observaciones independientes. Solo avanzar al fit definitivo si evidencia y contratos de inferencia lo respaldan, con validación espacial y prueba independiente; no promover por superar cifras en poblaciones distintas. Full suite posterior a cambios pendiente. M2 no se toca.
+
+
+## Fase 3 validada; avanzar a adquisición dirigida
+Run 20261126T180155_005d9a59, commit 8e4c9d1. 55/55 tests (3.52 s). RAR SHA256 8d8b7487fb78b5048dfb36dced7cd56177443310e587efa90a8bcfe86cc43761; manifest SHA256 d5e7f6cb8f6afce7913a8a1cb9275889525137516e7386e85029674935a215fe. 10/10 hashes, 115 fits nuevos, 120 tratamientos, 22841 predicciones externas (7 x 3263) alineadas por ID/fold/grupo/verdad; 78312 internas; 20 particiones, 7335 registros de linaje y ningún padre registrado fuera del TRAIN correspondiente. No se han verificado mediciones sintéticas directamente (no se exportaron). Métricas recalculadas.
+
+| Política | RMSE medio | R² medio | MAE medio | RMSE global >40 ppm | RMSE global <=40 ppm |
+|---|---:|---:|---:|---:|---:|
+| Control |7.074911|.631231|3.892598|24.888575|5.085539|
+| SMOTER |7.230849|.615639|3.958293|25.569325|5.185766|
+| Selección interna |7.319484|.605633|3.982114|25.844258|5.260398|
+| Gaussiano |7.348474|.602499|4.013787|25.859887|5.292169|
+| Copias cola |7.392674|.594996|4.033167|25.747261|5.366148|
+| Copias relevancia |7.440143|.591892|4.038865|26.135125|5.376133|
+| KDE |7.717502|.562479|4.145926|26.900469|5.617366|
+
+SMOTER +2.20% RMSE vs control. 175 filas sintéticas en cinco ajustes externos (28/41/44/26/36) de presupuesto 1080, 106 parejas contadas por fold, no únicas globalmente. Gaussiano 173. En 20 particiones SMOTER 427, gaussiano 428, copias cola 3240, copias relevancia 3240. Selección interna gaussiano/gaussiano/SMOTER/SMOTER/copias. SMOTER baja RMSE 40–60 de 14.424811 a 13.795802 pero aumenta >100 de 57.971611 a 62.649335. No supera control ni umbral OASIS; no concluir que todo SMOTER/SMOGN sea inútil, solo estas variantes y presupuestos en esta población. Conservar brazo B negativo; no repetirlo por defecto. Objetivo permanece abierto.
+
+## Fase 4–5: adquisición e inventario implementados
+Confirmados enlaces ESM1–4 de Meixner en https://link.springer.com/article/10.1007/s00126-019-00915-2 . Los binarios no pudieron descargarse en entorno de chat (fallo DNS/cache). Artículo de suscripción; no eludir autenticación. Álvarez-Amado (https://www.sciencedirect.com/science/article/pii/S0375674222001200) bloqueó lectura de suplementos; repositorio U. Mayor confirma 20–50 ppm en rocas, no confundir con sedimentos. Fernández-Turiel: https://epos-msl.uu.nl/data-publication/0aa9848d06477eaee50b61f3aa829b64 informa métodos y tablas; Li no confirmado. Macusani https://ecl.earthchem.org/view.php?id=3778 licencia CC BY 4.0, posible duplicación conocida; no asumir independencia. Del Bono et al. 2026 DOI 10.1007/s00126-026-01428-5 suplemento XLSX de ubicación/descripción y DOCX de figuras de lixiviación, no tabla química completa confirmada; no priorizar descargas.
+
+Nuevo `augmentation.source_intake`: descarga explícita de cuatro suplementos Meixner a `data/raw/model_1/research/directed/meixner_2020`, sin reemplazar archivos. Crea directorios para tres fuentes manuales. Verifica firma/formato, límites, SHA256, inventaría hojas/tablas, dimensiones y celdas que mencionan Li/unidades sin inferir orientación ni número de muestras. DOCX tablas y párrafos; XLS requiere xlrd; PDF manual. No extrae automáticamente objetivos, métodos ni aprueba filas. Errores explícitos; permite repetir inventario sin descarga. Los originales locales y licencias requieren revisión antes de compartirlos; no subirlos al repositorio público. Cuatro pruebas nuevas pendientes. Próximo paso: revisar originales y fijar mapeo por fuente, deduplicación independiente de Li, QC y EDA real. No entrenar todavía. M2 congelado.
+
+```cmd
+git pull --ff-only && set "PYTHONPATH=%CD%\src" && python -m pytest tests/scientific/m1_expansion -q
+python -m pip install "xlrd>=2.0.1,<3"
+python -m lithiumscope.experiments.model_1.augmentation.source_intake --download
+```
+Salida `results/generalization/model_1_directed_source_intake`. Esperadas 59 pruebas. Adjuntar evidencias del inventario y, si es permitido, originales para mapear hojas. No repetir tratamientos. Cero filas nuevas aprobadas.
