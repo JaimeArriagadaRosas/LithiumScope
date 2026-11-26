@@ -1,4 +1,4 @@
-"""Fixed RF expansion sensitivity experiment, no promotion or saved estimators."""
+"""Fixed expansion sensitivity experiment, no promotion or saved estimators."""
 from __future__ import annotations
 
 import argparse
@@ -21,6 +21,7 @@ from lithiumscope.experiments.model_1.targeted.protocol import load_protocol
 from lithiumscope.experiments.model_1.targeted.fit import _base_fit
 from lithiumscope.experiments.model_1.targeted.policies import Arm
 from lithiumscope.experiments.model_1.targeted.report import fold_metrics, summarize
+from lithiumscope.experiments.shared.paired_comparison import paired_group_intervals
 from lithiumscope.model_1.pipeline import prepare_training_data
 from lithiumscope.resources.detection.device import detect_device
 from lithiumscope.results.atomic_exports import write_legacy_evidence_json, write_table
@@ -35,10 +36,17 @@ TRANSFER_ARMS={"G_no_high":"D4","H_weight_010":"D4","I_weight_025":"D4","J_weigh
 TRANSFER_WEIGHTS={"H_weight_010":.1,"I_weight_025":.25,"J_weight_050":.5}
 
 
-def run(run_path, *, allow_unverified_metadata=False, transfer_refinement=False):
+FAMILY_ARMS={"B_balanced":None,"H_weight_010":"D4","I_weight_025":"D4"}
+FAMILIES=("random_forest","catboost","hist_gradient_boosting")
+
+
+def run(run_path, *, allow_unverified_metadata=False, transfer_refinement=False, algorithm=ALGORITHM):
     if not allow_unverified_metadata:
         raise ValueError("Explicit --allow-unverified-metadata required; research sensitivity only")
-    arms=TRANSFER_ARMS if transfer_refinement else ARMS
+    if algorithm not in FAMILIES or (algorithm!=ALGORITHM and transfer_refinement):
+        raise ValueError("Unsupported algorithm or incompatible campaign")
+    family=algorithm!=ALGORITHM
+    arms=FAMILY_ARMS if family else (TRANSFER_ARMS if transfer_refinement else ARMS)
     planned=len(arms)*5
     evidence,audit,features,pubs,links=load_evidence(run_path)
     data,splits,params,archived,identity=load_protocol(REFERENCE)
@@ -83,6 +91,8 @@ def run(run_path, *, allow_unverified_metadata=False, transfer_refinement=False)
             positions=positions[~high_mask[positions]]
         return positions
     campaign="model_1_expansion_transfer" if transfer_refinement else "model_1_expansion_sensitivity"
+    if family:
+        campaign="model_1_expansion_families/"+algorithm
     destination=RESULTS_DIR/"generalization"/campaign/(datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")+"_"+uuid4().hex[:8])
     destination.mkdir(parents=True,exist_ok=False)
     selection=audit[["candidate_id","screening_state","source_dataset","Li_icpms","spatial_group","source_publication",
@@ -103,20 +113,20 @@ def run(run_path, *, allow_unverified_metadata=False, transfer_refinement=False)
               "reserved_rows":int(held.sum()),"pool_rows":int(pool.sum()),
               "historical_publication_token_rows":sum(bool(v) for v in historical_refs),
               "candidate_eligible":int(audit.sensitivity_eligible.sum()),"publication_independence_certified":False,"historical_fold_sha256":FOLD_SHA256,
-              "arms":arms,"transfer_weights":TRANSFER_WEIGHTS if transfer_refinement else {}}
+              "arms":arms,"algorithm":algorithm,"transfer_weights":{k:v for k,v in TRANSFER_WEIGHTS.items() if k in arms}}
     write_legacy_evidence_json(destination/"manifest.json",manifest)
     device=detect_device(prefer_gpu=False)
     predictions,metrics,reserved,trace,errors,ref_rows=[],[],[],[],[],[]
     attempted=0
     def rows(policy,fold,positions,scores,train_max):
-        return [{"algorithm":ALGORITHM,"policy":policy,"fold":fold,"position":int(i),"row_id":str(x.index[i]),
+        return [{"algorithm":algorithm,"policy":policy,"fold":fold,"position":int(i),"row_id":str(x.index[i]),
                  "group":str(groups.iloc[i]),"source":str(sources.iloc[i]),"truth":float(y.iloc[i]),
                  "prediction":float(score),"train_max":float(train_max),
                  "actual_above_train_max":bool(y.iloc[i]>train_max)}
                 for i,score in zip(positions,scores,strict=True)]
     try:
         for fold,tr,te,keep,chosen in plans:
-            ref_rows.extend(rows("archived",fold,te,archived[ALGORITHM][te],y.iloc[tr].max()))
+            ref_rows.extend(rows("archived",fold,te,archived[algorithm][te],y.iloc[tr].max()))
             for policy,cohort in arms.items():
                 pos=arm_positions(policy,cohort,chosen)
                 hist=tr if policy=="A_control" else keep
@@ -137,17 +147,17 @@ def run(run_path, *, allow_unverified_metadata=False, transfer_refinement=False)
                         high=pd.Series(np.r_[np.zeros(len(hist),dtype=bool),high_mask[pos]],index=bx.index)
                         if not high.any():
                             raise ValueError("No high-domain samples to attenuate")
-                        predict,info=fit_weighted(device,identity["seed"],params[ALGORITHM,fold],
-                            bx,by,bg,numeric,categorical,high,TRANSFER_WEIGHTS[policy])
+                        predict,info=fit_weighted(device,identity["seed"],params[algorithm,fold],
+                            bx,by,bg,numeric,categorical,high,TRANSFER_WEIGHTS[policy],algorithm=algorithm)
                     else:
-                        predict,info=_base_fit(ALGORITHM,Arm("control"),device,identity["seed"],
-                                              params[ALGORITHM,fold],bx,by,bg,bs,numeric,categorical)
+                        predict,info=_base_fit(algorithm,Arm("control"),device,identity["seed"],
+                                              params[algorithm,fold],bx,by,bg,bs,numeric,categorical)
                     score=np.maximum(np.asarray(predict(x.iloc[te]),float),0.)
                     train_score=np.maximum(np.asarray(predict(x.iloc[tr]),float),0.)
                     if not np.isfinite(score).all() or not np.isfinite(train_score).all():
                         raise ValueError("Nonfinite predictions")
                     values=fold_metrics(y.iloc[te].to_numpy(float),score,y.iloc[tr].to_numpy(float),train_score)
-                    metrics.append({"algorithm":ALGORITHM,"policy":policy,"fold":fold,"new_rows":len(pos),
+                    metrics.append({"algorithm":algorithm,"policy":policy,"fold":fold,"new_rows":len(pos),
                         "actual_fit_target_max":float(by.max()),**values})
                     # Keep support stratum fixed to historical TRAIN across arms for fair comparison.
                     predictions.extend(rows(policy,fold,te,score,y.iloc[tr].max()))
@@ -171,7 +181,14 @@ def run(run_path, *, allow_unverified_metadata=False, transfer_refinement=False)
         ref=pd.DataFrame(ref_rows)
         write_table(destination/"archived_predictions.csv",ref)
         pred=pd.DataFrame(predictions)
-        manifest["summary"]=summarize(destination,pd.DataFrame(metrics),pred,len(x),{ALGORITHM:ref}) if len(pred) else []
+        manifest["summary"]=summarize(destination,pd.DataFrame(metrics),pred,len(x),{algorithm:ref}) if len(pred) else []
+        if family and not errors and attempted==planned:
+            baseline=pred.loc[pred.policy.eq("B_balanced")]
+            comparisons=[]
+            for policy in ("H_weight_010","I_weight_025"):
+                for item in paired_group_intervals(baseline,pred.loc[pred.policy.eq(policy)],kind="regression",repeats=1000):
+                    comparisons.append({"policy":policy,**item})
+            write_table(destination/"paired_vs_balanced.csv",pd.DataFrame(comparisons))
         if len(pred):
             bands=pred.copy()
             bands["band"]=pd.cut(bands.truth,[-np.inf,5,20,50,100,696,1000,np.inf]).astype(str)
@@ -208,5 +225,6 @@ if __name__=="__main__":
     parser.add_argument("--run",required=True)
     parser.add_argument("--allow-unverified-metadata",action="store_true")
     parser.add_argument("--transfer-refinement",action="store_true")
+    parser.add_argument("--algorithm",choices=FAMILIES,default=ALGORITHM)
     args=parser.parse_args()
-    run(args.run,allow_unverified_metadata=args.allow_unverified_metadata,transfer_refinement=args.transfer_refinement)
+    run(args.run,allow_unverified_metadata=args.allow_unverified_metadata,transfer_refinement=args.transfer_refinement,algorithm=args.algorithm)
