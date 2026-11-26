@@ -15,7 +15,7 @@ from lithiumscope.core.scientific.eda_statistics import source_series
 from lithiumscope.experiments.data_lab.candidate_screening import text
 from lithiumscope.experiments.data_lab.candidate_audit import FOLD_SHA256
 from lithiumscope.experiments.model_1.expansion.inputs import load_inputs
-from lithiumscope.experiments.model_1.expansion.identity import resolve, describe_domain
+from lithiumscope.experiments.model_1.expansion.identity import resolve, describe_domain, multivariate_support
 from lithiumscope.experiments.model_1.expansion.cohorts import (
     GOOD_STATES, REVIEW_COLUMNS, review_candidates, reserve_holdout, fold_membership)
 from lithiumscope.model_1.pipeline import prepare_training_data, prepare_prediction_data
@@ -53,6 +53,7 @@ def run(*, review_path=None, output_root=None):
     if not np.array_equal(computed.to_numpy(str),audit.loc[valid,"spatial_group"].to_numpy(str)):
         raise ValueError("Candidate spatial groups differ from production")
     audit=audit.join(describe_domain(features,x,prepared.schema.numeric))
+    audit=audit.join(multivariate_support(features,x,prepared.schema.numeric))
     audit["lithium_band"]=pd.cut(audit.Li_icpms,[-np.inf,5,20,50,100,696,1000,np.inf]).astype(str)
     review=None
     review_digest=None
@@ -72,7 +73,8 @@ def run(*, review_path=None, output_root=None):
     coverage=(audit.groupby(["source_dataset","screening_state","lithium_band"],observed=True)
               .agg(rows=("candidate_id","size"),groups=("spatial_group","nunique"),
                    median_predictors=("predictors_present","median"),
-                   median_marginal_ood=("marginal_ood_fraction","median")).reset_index())
+                   median_marginal_ood=("marginal_ood_fraction","median"),
+                   chemistry_supported=("chemistry_nn_supported","sum")).reset_index())
     proposed=audit.loc[audit.screening_state.isin(GOOD_STATES)].copy()
     requests=(proposed.groupby(["source_dataset","source_publication","screening_state"],dropna=False)
               .agg(rows=("candidate_id","size"),method_known=("method_known","sum"),
