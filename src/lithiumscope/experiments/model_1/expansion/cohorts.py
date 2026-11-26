@@ -38,7 +38,7 @@ def review_candidates(audit, review=None):
             if row.raw_source_sha256 != current.raw_source_sha256:
                 raise ValueError("Review source hash differs")
             if row.decision != "reject":
-                if (current.screening_state not in GOOD_STATES or not current.raw_verified
+                if (current.screening_state not in GOOD_STATES or not current.raw_verified or not current.prepared_coordinates_valid
                         or not all(str(v).strip() for v in (row.method_evidence,row.crs_evidence,row.reference))
                         or any(str(v).strip().casefold() in {"unknown","desconocido","n/a","nd"}
                                for v in (row.method_evidence,row.crs_evidence,row.reference))):
@@ -50,7 +50,7 @@ def review_candidates(audit, review=None):
                               "review_crs_evidence","review_notes"]] = [
                 row.decision,row.reference,row.method_evidence,row.crs_evidence,row.notes]
     result["experimental_eligible"] = (result.screening_state.isin(GOOD_STATES)
-        & result.raw_verified & result.review_decision.isin({"compatible","experimental_transfer"}))
+        & result.raw_verified & result.prepared_coordinates_valid & result.review_decision.isin({"compatible","experimental_transfer"}))
     result["approved_for_production"] = False
     return result
 
