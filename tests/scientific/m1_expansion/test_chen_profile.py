@@ -48,3 +48,43 @@ def test_profile_requires_documented_target_header_and_position():
     a.iat[1,17]="LI(PPB)"
     with pytest.raises(ValueError,match="layout"):
         profile(a)
+
+
+def test_feot_conversion_preserves_both_oxide_bases():
+    a=workbook()
+    a.iat[1,8]="FEOT(WT%)"
+    rows,inventory,_,summary=profile(a)
+    assert rows.FeOT_total_as_FeO.eq(7.).all()
+    np.testing.assert_allclose(rows.Fe2O3,7.*1.111348)
+    np.testing.assert_allclose(rows.oxide_sum-rows.oxide_sum_original_basis,7.*.111348)
+    assert rows.basic_qc.all()
+    assert summary["original_basis_qc_rows"]==2
+    assert inventory.loc[inventory.header.eq("FEOT(WT%)"),"mapped_field"].item()=="FeOT_total_as_FeO"
+
+
+def test_chen_overlap_is_target_independent_and_uses_location_bounds():
+    from lithiumscope.experiments.model_1.augmentation.chen_overlap import overlap_edges
+    rows,_,_,_=profile(workbook())
+    q=rows.iloc[[0]].copy()
+    q["Latitude_min"]=-24.1
+    q["Latitude_max"]=-23.9
+    base=q.copy().drop(columns=["Latitude_min","Latitude_max"]).assign(Latitude=-23.95,Li_icpms=900.)
+    edges=overlap_edges(q,base,[{"georoc:1"}],[{"georoc:2"}],"base")
+    assert len(edges)==1 and edges[0]["site_overlap"] and not edges[0]["publication_overlap"]
+    assert edges==overlap_edges(q.assign(Li_icpms=1.),base.assign(Li_icpms=2.),
+                                [{"georoc:1"}],[{"georoc:2"}],"base")
+    far=base.assign(Latitude=-10.)
+    assert not overlap_edges(q,far,[{"georoc:1"}],[{"georoc:2"}],"base")
+    assert len(overlap_edges(q,far,[{"georoc:1"}],[{"georoc:1"}],"base"))==1
+    assert not overlap_edges(q,base.assign(SiO2=80.),[set()],[set()],"base")
+
+
+def test_bibliography_rejects_ambiguous_and_unresolved_ids():
+    from lithiumscope.experiments.model_1.augmentation.chen_overlap import bibliography,publication_sets
+    table=pd.DataFrame([["title"],["CITATIONS"],["[1] Author 2010"],["[2] First"],
+                        ["[2] Second"],["[1]"]])
+    index=bibliography(table)
+    resolved,pubs=publication_sets(["[1]","[2]","[3]","[1]; [2]"],index)
+    assert resolved.tolist()==[True,False,False,False]
+    assert "georoc:1" in pubs[0] and "text:author 2010" in pubs[0]
+    assert "georoc:3" in pubs[2]
