@@ -2,7 +2,7 @@
 
 Fecha: 26 de noviembre de 2026. Rama: `feat/m1-targeted-data-refinement`.
 Alcance exclusivo M1; M2, modelos activos, dataset productivo y main congelados.
-Estado vigente: fase 5 cerrada operativamente con cobertura de cola insuficiente; comparación final de fase 6 implementada, pendiente de ejecución. Ver M1_FUENTES_Y_CIERRE.md.
+Estado vigente: fases 5–6 cerradas y comparación final validada; objetivo RMSE no alcanzado. Ver M1_CIERRE_DATOS_RESULTADOS.md.
 
 ## Referencias congeladas y criterio
 
@@ -136,3 +136,7 @@ Detalle y hashes en M1_AUGMENTATION.md y state.json.
 
 ## Decisión de cierre de adquisición y comparación acotada — 26/11
 Revisión bibliográfica y catálogo completo de las fuentes registradas en [M1_FUENTES_Y_CIERRE.md](M1_FUENTES_Y_CIERRE.md). Se detiene la búsqueda externa en esta iteración, conservando candidatos y cuarentenas. Fase 5 cerrada operativamente con cobertura de cola insuficiente, no certificación de nuevas filas. Se levanta únicamente el bloqueo de comparación exploratoria de fase 6: sensibilidad explícita con metadatos no certificados, sin cambiar predictores, algoritmo, hiperparámetros, TEST ni producción. 15 fits HGB nuevos máximo, A y B archivados, C1 solo cola Chen, C2 transferencia Chen ponderada por banda, D C2 + SMOTER histórico TRAIN. Peso individual <=.10 hasta 40 ppm y <=.25 por encima, peso total candidato por banda <=10% del histórico TRAIN; cero si banda sin histórico. No se eligen políticas con TEST para inferencia definitiva; reporte descriptivo de umbral OASIS y guardas. Resultados sintéticos exportados además de linaje. 85 pruebas esperadas, ejecución pendiente. No se inicia otra búsqueda o fit por defecto si no alcanza objetivos. Fase 7 sigue bloqueada por evidencia favorable, validación espacial/independiente y autorización. M2 congelado.
+
+
+## Cierre ejecutado y validado
+Run 20261126T213014_fc01460c: 85/85 pruebas focalizadas, 15 fits nuevos, 9/9 hashes de evidencia y 16315 OOF verificados. C2 mejor resultado descriptivo RMSE medio 7.053262, R² .633404, MAE 3.864404; mejora RMSE .31% vs A pero empeora cola 25.093647 vs 24.888575. Ninguna política alcanza criterios; conservar A bajo guardas y C2 como resultado experimental. Fases 5–6 cerradas; fase 7 no ejecutada, cero nuevas aprobadas, sin promoción. La auditoría de comparabilidad demuestra mayor dispersión Li en nuestros folds que en OASIS (inferida de RMSE/R² publicados). Ver [M1_CIERRE_DATOS_RESULTADOS.md](M1_CIERRE_DATOS_RESULTADOS.md) para hashes, resultados, linaje, pesos y limitaciones. No repetir campañas ni ejecutar nuevo comando. M2 congelado.
