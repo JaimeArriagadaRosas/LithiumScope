@@ -172,3 +172,7 @@ Nuevo augmentation.transfer_preflight: reusa Chen audit verificado y verifica se
 git pull --ff-only && set "PYTHONPATH=%CD%\src" && python -m pytest tests/scientific/m1_expansion -q && python -m lithiumscope.experiments.model_1.augmentation.transfer_preflight
 ```
 Salida results/generalization/model_1_directed_transfer_preflight. Evaluar candidatos y cola por fold antes de cualquier comparación. No afirmar equivalencia de población ni superioridad científica frente a OASIS.
+
+
+## Incidencia de resumen preflight — 26/11
+81/81 pruebas focalizadas en 4.59 s, commit 588c313. Error posterior a los cinco folds: `plans.tail` era método pandas, no columna. Corrección 60f0ec9 y regresión c98ecec extraen `summarize_plans`, usan `plans["tail"]`, conservan criterios. No se emitieron archivos finales ni se conocen recuentos. Los controles de hashes locales precedentes no lanzaron excepción; aún no hay manifiesto para verificar en chat. Esperadas 82 pruebas, reejecutar únicamente preflight. Ver [M1_DATA_CHECKPOINT.md](M1_DATA_CHECKPOINT.md) para continuidad consolidada. M2 congelado.
