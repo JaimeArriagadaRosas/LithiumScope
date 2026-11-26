@@ -109,19 +109,19 @@
       "historical_experiment_repetition_authorized": false
     },
     "augmentation": {
-      "state": "whole_rock_audit_reported_chen_download_fallback_pending",
+      "state": "chen_acquired_profile_implemented_pending_execution",
       "plan": "M1_AUGMENTATION.md",
       "phase_1": "code_audit_complete",
       "phase_2": "validated",
       "phase_3": "complete_no_improvement",
       "phase_4": "primary_source_links_verified",
-      "phase_5": "puna_review_candidates_macusani_quarantine_chen_retry_pending",
+      "phase_5": "chen_profile_pending_puna_review_macusani_quarantine",
       "phase_6": "real_synthetic_comparison_pending",
       "phase_7": "conditional_final_training_pending",
       "arms": 6,
       "max_new_fits": 115,
       "synthetic_test_rows": 0,
-      "expected_focused_tests": 72,
+      "expected_focused_tests": 75,
       "new_real_rows_approved": 0,
       "release_authorized": false,
       "run_id": "20261126T180155_005d9a59",
@@ -170,7 +170,7 @@
           "publication_quarantine": true
         }
       },
-      "chen_acquired": false,
+      "chen_acquired": true,
       "whole_rock_audit": {
         "run_id": "20261126T205508_dccd2ea0",
         "evidence_status": "console_only_hashes_not_verified",
@@ -196,11 +196,17 @@
         }
       },
       "chen_intake": {
-        "run_id": "20261126T205509_5ff18c63",
-        "manifest_sha256": "f87a5f47e5dd27950e0a40988d43e6a6c57e8030eda1231dfff76743c35de6bb",
+        "run_id": "20261126T205949_acebdd9e",
+        "manifest_sha256": "b5eb956fc5a4836907ed1cece73507c68d68ce55993c073fedcc357ee4cdf984",
         "verified_output_hashes": 3,
-        "files_inspected": 0,
-        "status": "pmc_html_rejected_publisher_alternatives_unverified"
+        "files_inspected": 1,
+        "original_sha256": "a5cfd0c5453ea26ed9f2e436e2de87678fb0a34e91b148d841dfda5f5db0e69d",
+        "original_hash_verified_in_chat": false,
+        "sheet_rows": 50145,
+        "sheet_columns": 66,
+        "li_header_row": 2,
+        "li_header_column": 18,
+        "status": "downloaded_publisher_original_unmapped"
       }
     }
   },
@@ -226,9 +232,10 @@
     "frozen_for_current_branch": true
   },
   "next": [
-    "run_chen_publisher_alternative_intake_only",
+    "run_chen_profile",
+    "verify_chen_header_mapping_and_coverage",
+    "resolve_bibliography_and_target_independent_overlap",
     "verify_whole_rock_audit_outputs",
-    "inspect_chen_original_layout_if_acquired",
     "review_eligible_new_data_and_independent_reserve",
     "compare_real_and_synthetic_if_eligible"
   ],
@@ -343,11 +350,11 @@
     "comparison_state": "complete"
   },
   "latest_focused_m1_validation": {
-    "commit": "655c7651f65b0e469809e6fbd7e0ab79bd8f134d",
-    "passed": 70,
-    "total": 70,
+    "commit": "9bd0d9600fbf929549b889f784038149e0ef094a",
+    "passed": 72,
+    "total": 72,
     "failed": 0,
-    "duration_seconds": 27.56,
+    "duration_seconds": 4.15,
     "scope": "tests/scientific/m1_expansion",
     "full_suite_after_expansion": false
   }
