@@ -135,3 +135,14 @@ Chen: run 20261126T205509_5ff18c63, manifiesto SHA256 f87a5f47e5dd27950e0a40988d
 ```cmd
 git pull --ff-only && set "PYTHONPATH=%CD%\src" && python -m pytest tests/scientific/m1_expansion -q && python -m lithiumscope.experiments.model_1.augmentation.source_intake --download --source chen_global_arcs_2020
 ```
+
+
+## Chen adquirido: EDA específico pendiente
+Ejecución local en 9bd0d9600fbf929549b889f784038149e0ef094a: 72/72 pruebas (4.15 s). Run 20261126T205949_acebdd9e: primera URL alternativa Springer funcionó, 10950278 bytes; original SHA256 a5cfd0c5453ea26ed9f2e436e2de87678fb0a34e91b148d841dfda5f5db0e69d registrado por ejecución local, no recalculado aquí porque no se adjuntó el XLSX. Manifiesto SHA256 b5eb956fc5a4836907ed1cece73507c68d68ce55993c073fedcc357ee4cdf984 y 3/3 hashes de CSV adjuntos verificados. Hoja Table 3 - global arc WR dataset 50145 x 66, 1561783 celdas no vacías, Sheet1 vacía. LI(PPM) fila 2 columna 18, 42 menciones textuales de Li (incluidas referencias y topónimos, no recuento de mediciones). Referencias bibliográficas desde al menos fila 45101, no asumir que todas las filas anteriores sean muestras independientes. No hay recuento de valores Li numéricos todavía.
+
+Nuevo `augmentation.chen_profile`: verifica hash y forma del original, encabezado explícito de Li y posición, conserva identificadores de columnas ambiguas/duplicadas, inventaría campos y ejemplos, utiliza inferencia existente de alias GEOROC solo para diagnóstico. Excluye objetivos no numéricos/censurados/no positivos del inventario de Li exacto; conserva posiciones Excel. Perfil por bandas, cobertura química, coordenadas, suma completa de óxidos 94–102, rango académico aproximado 4.2439–126.12 ppm y cola >40; no implica equivalencia de métodos ni material certificado. Marca referencias aparentes sin química, no pretende resolver la bibliografía ni identificar grano único. No entrena, no incorpora filas, no declara independencia ni altera datos originales. Tres pruebas focalizadas nuevas pendientes (75 esperadas); mapeo provisional hasta inspeccionar encabezados reales. Siguiente paso: inspeccionar perfil, validar unidades, métodos y material, resolver referencias y duplicados contra histórico/expansión; separar transferencias de nueva reserva independiente. Las evidencias de whole-rock 20261126T205508_dccd2ea0 siguen pendientes de comprobación de hashes. No repetir intake ni auditoría whole-rock. M2 congelado.
+
+```cmd
+git pull --ff-only && set "PYTHONPATH=%CD%\src" && python -m pytest tests/scientific/m1_expansion -q && python -m lithiumscope.experiments.model_1.augmentation.chen_profile
+```
+Salida results/generalization/model_1_chen_profile. Adjuntar manifiesto, column_inventory.csv, band_counts.csv y positive_li_review.csv; original XLSX opcional para revisar las columnas no mapeadas y bibliografía.
