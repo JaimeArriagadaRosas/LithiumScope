@@ -156,17 +156,29 @@ def _treatment_menu():
     return _treatment_experiments(all_families=True, groups=("model_2",)) if choice == "3" else _treatment_experiments()
 
 
+def _compare_versions():
+    from lithiumscope.experiments.shared.version_comparison import run_version_comparison
+    from lithiumscope.core.logging.session import run_log
+    with run_log("simulations","saved_version_comparison"):
+        path=run_version_comparison()
+    print(f"Evidencias: {path}")
+    return json.loads(path.read_text(encoding="utf-8"))["state"]=="complete"
+
+
 def _validation_menu() -> bool | None:
     print("\nEJECUCIÓN DE TESTS Y SIMULACIONES\n")
     print("1. Tests completos del software")
     print("2. Simulación y comparaciones de modelos")
     print("3. Evaluación experimental de tratamiento de datos")
     print("4. Ejecutar todo")
+    print("5. Comparación de versiones guardadas (sin repetir simulaciones)")
     print("0. Volver")
-    choice=choose("Seleccione una opción [0-4]: ",set("01234"))
+    choice=choose("Seleccione una opción [0-5]: ",set("012345"))
     if choice=="0":
         return False
     clear_screen()
+    if choice=="5":
+        return _compare_versions()
     operations=[_run_tests,_run_simulations,_treatment_menu]
     if choice=="4":
         print("Modo integral general: incluye doce familias. El refinamiento focalizado M1 se ejecuta por separado.")

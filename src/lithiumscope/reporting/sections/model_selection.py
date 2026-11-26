@@ -40,6 +40,9 @@ def build_model_selection(context, styles) -> list:
     evidence = context.runtime.get("model_selection_evidence")
     if context.mode != "demonstration" or not evidence:
         return []
+    if evidence.get("state") == "CURRENT_SELECTION_EVIDENCE":
+        from lithiumscope.reporting.sections.current_selection import build_current_selection
+        return build_current_selection(evidence,styles)
     if evidence.get("state") in {"NOT_APPLICABLE_TO_SELECTED_PAIR", "HISTORICAL_EVIDENCE_UNAVAILABLE"}:
         return [PageBreak(), paragraph("Anexo científico - evidencia histórica no disponible para esta selección",
                                        styles["LS_H1"]),

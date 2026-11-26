@@ -67,6 +67,8 @@ def acquire(spec, root, *, downloader=fetch_partition):
         raise ValueError("Acquisition receipt does not match plan")
     known = {p["identifier"]:p for p in old.get("files",[])}
     records = []
+    if not partitions or len({p.identifier for p in partitions})!=len(partitions) or len({p.filename for p in partitions})!=len(partitions):
+        raise ValueError("Empty or duplicate partition plan")
     for partition in partitions:
         name = partition.filename
         if Path(name).name != name or not name.lower().endswith(".csv") or partition.identifier<=0:
@@ -80,6 +82,9 @@ def acquire(spec, root, *, downloader=fetch_partition):
         result = downloader(partition.identifier,path,expected_sha256=expected)
         records.append({"identifier":partition.identifier,"filename":name,"sha256":result["sha256"],
                         "state":result["state"],"bytes":path.stat().st_size})
-        _publish(receipt,{"doi":spec.doi,"plan_sha256":file_sha256(plan_path),"files":records,
+        # Retain hashes of previously downloaded later partitions during partial retries.
+        known[partition.identifier]=records[-1]
+        _publish(receipt,{"doi":spec.doi,"plan_sha256":file_sha256(plan_path),
+                          "files":[known[p.identifier] for p in partitions if p.identifier in known],
                           "state":"complete" if len(records)==len(partitions) else "partial"})
     return tuple(root/p.filename for p in partitions), receipt

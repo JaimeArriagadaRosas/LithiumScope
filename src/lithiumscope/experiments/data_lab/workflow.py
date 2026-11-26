@@ -2,12 +2,7 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
-
 from lithiumscope.core.config import load_config
-from lithiumscope.core.hashing import file_sha256
-from lithiumscope.core.paths import RESULTS_DIR
-from lithiumscope.results.eda_artifacts import verify_eda
 
 
 def analyze(group, source, *, include_candidates=True):
@@ -17,7 +12,14 @@ def analyze(group, source, *, include_candidates=True):
         from lithiumscope.model_2.eda.pipeline import run_eda
     else:
         raise ValueError("Unknown model group")
-    evidence=run_eda(source)
+    from lithiumscope.experiments.data_lab import eda_cache
+    evidence=eda_cache.lookup(group,source)
+    if evidence is None:
+        key=eda_cache.key_for(group,source)
+        evidence=run_eda(source)
+        eda_cache.record(group,source,evidence,key)
+    else:
+        print(f"[OK] EDA descriptivo vigente, sin repetir análisis: {evidence}")
     records=[]
     if group=="model_1" and include_candidates:
         from lithiumscope.experiments.data_lab.candidate_eda import run_candidates
@@ -29,16 +31,11 @@ def analyze(group, source, *, include_candidates=True):
 
 
 def existing_eda(group, source):
-    """Find intact same-source EDA; actual treatment preparation validates its own signature."""
-    digest=file_sha256(source)
-    for path in sorted((RESULTS_DIR/group/"eda").glob("eda_*"),reverse=True):
-        try:
-            manifest=json.loads((path/"manifest.json").read_text(encoding="utf-8"))
-            if (manifest.get("source_sha256")==digest and manifest.get("effective_config")==load_config(group)
-                    and verify_eda(path,manifest["signature"])):
-                return path
-        except (OSError,ValueError,KeyError,TypeError):
-            continue
+    """Require exact, intact descriptive evidence from the independent EDA stage."""
+    from lithiumscope.experiments.data_lab.eda_cache import lookup
+    path=lookup(group,source)
+    if path is not None:
+        return path
     raise FileNotFoundError("Ejecute primero el análisis exploratorio para esta fuente y configuración")
 
 
