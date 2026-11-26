@@ -92,6 +92,16 @@ def fold_gate(rows,train_x,test_groups,chemistry,*,test_aliases,aliases):
         "marginal_ood_fraction":fraction,"fold_transfer_review_candidate":eligible})
 
 
+def summarize_plans(parts):
+    """Build fold counts with explicit column access (tail is a DataFrame method)."""
+    plans=pd.concat(parts,ignore_index=True)
+    plans["tail"]=plans["Li_icpms"].gt(40)
+    plans["accepted_tail"]=plans["tail"] & plans["fold_transfer_review_candidate"]
+    summary=plans.groupby(["fold","source_dataset"])[
+        ["static_review_candidate","fold_transfer_review_candidate","accepted_tail"]].sum().reset_index()
+    return plans,summary
+
+
 def run():
     chen=RESULTS_DIR/"generalization/model_1_chen_overlap_audit"/CHEN_RUN
     whole=RESULTS_DIR/"generalization/model_1_directed_whole_rock_audit"/WHOLE_RUN
@@ -162,10 +172,7 @@ def run():
             test_aliases=test_aliases,aliases=aliases)
         flags.insert(0,"fold",fold)
         plans.append(flags)
-    plans=pd.concat(plans,ignore_index=True)
-    plans["tail"]=plans.Li_icpms.gt(40)
-    plans["accepted_tail"]=plans.tail & plans.fold_transfer_review_candidate
-    summary=plans.groupby(["fold","source_dataset"])[["static_review_candidate","fold_transfer_review_candidate","accepted_tail"]].sum().reset_index()
+    plans,summary=summarize_plans(plans)
     # No independent reserve is certified from the previously explored compilation.
     out=RESULTS_DIR/"generalization/model_1_directed_transfer_preflight"/(
         datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")+"_"+uuid4().hex[:8])
