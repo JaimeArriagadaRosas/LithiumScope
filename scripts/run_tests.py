@@ -14,6 +14,12 @@ import uuid
 import xml.etree.ElementTree as ET
 
 
+if __package__:
+    from .pytest_console import monitor, print_summary, report_details
+else:
+    from pytest_console import monitor, print_summary, report_details
+
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -58,6 +64,8 @@ def coverage_mode(requested: bool) -> str:
 
 
 def run(args: list[str]) -> int:
+    json_output = "--json" in args
+    args = [arg for arg in args if arg != "--json"]
     coverage_requested = "--coverage" in args
     mode = coverage_mode(coverage_requested)
     coverage = mode == "enabled"
@@ -77,6 +85,7 @@ def run(args: list[str]) -> int:
     logs.mkdir(parents=True, exist_ok=False)
     events = logs / "events.jsonl"
     report = results / "junit.xml"
+    progress_file = logs / "progress.jsonl"
     env = os.environ.copy()
     # Checkout resolution must not inherit an old workspace override.
     env.pop("LITHIUMSCOPE_HOME", None)
@@ -85,6 +94,7 @@ def run(args: list[str]) -> int:
     env.pop("PYTEST_ADDOPTS", None)
     env["LITHIUMSCOPE_DISABLE_AUTO_INSTALL"] = "1"
     env["LITHIUMSCOPE_TEST_SESSION_ID"] = session_id
+    env["LITHIUMSCOPE_PYTEST_PROGRESS"] = str(progress_file)
     env["LITHIUMSCOPE_SESSION_DIR"] = str(parent)
     if coverage:
         env["COVERAGE_FILE"] = str(results / ".coverage")
@@ -105,11 +115,10 @@ def run(args: list[str]) -> int:
         event("warning", reason="pytest_cov_missing; running regression without coverage")
     try:
         with tempfile.TemporaryDirectory(prefix="pytest-", dir=results) as tmp:
-            command = [sys.executable, "-m", "pytest", *args,
+            command = [sys.executable, "-m", "pytest", "-p", "scripts.pytest_progress", *args,
                        "--basetemp", tmp, "--junitxml", str(report)]
-            with (logs / "pytest.log").open("wb") as output:
-                code = subprocess.run(command, cwd=ROOT, env=env,
-                                      stdout=output, stderr=subprocess.STDOUT).returncode
+            code = monitor(command, cwd=ROOT, env=env, log=logs / "pytest.log",
+                           progress_file=progress_file, show=not json_output)
     except KeyboardInterrupt:
         code = 130
         error = "KeyboardInterrupt"
@@ -124,12 +133,17 @@ def run(args: list[str]) -> int:
                "counts": junit_counts(report), "error": error,
                "coverage_requested": coverage_requested, "coverage_state": mode,
                "log": (logs / "pytest.log").relative_to(ROOT).as_posix(),
-               "arguments": args}
+               "arguments": args,
+               "progress_log": progress_file.relative_to(ROOT).as_posix(),
+               "details": report_details(report, results / "coverage.xml")}
     temporary = results / ".summary.json.tmp"
     temporary.write_text(json.dumps(summary, indent=2), encoding="utf-8")
     temporary.replace(results / "summary.json")
     event(state, exit_code=code, duration_seconds=summary["duration_seconds"], error=error)
-    print(json.dumps(summary, indent=2))
+    if json_output:
+        print(json.dumps(summary, indent=2))
+    else:
+        print_summary(summary, results.relative_to(ROOT))
     return code
 
 

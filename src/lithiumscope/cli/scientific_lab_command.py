@@ -74,7 +74,7 @@ def _eda_menu() -> bool | None:
     state = "COMPLETADO" if all(s == "COMPLETADO" for s in states) else "PARCIAL" if any(s in {"COMPLETADO","PARCIAL"} for s in states) else "ERROR" if "ERROR" in states else "BLOQUEADO"
     print(f"Estado: {state}. Análisis descriptivo; no se prepararon tratamientos ni se entrenaron modelos.")
     from lithiumscope.cli.eda_verification import write_verification
-    print(f"Informe único para revisión: {write_verification(state, records, scope="descriptive_eda_only")}")
+    print(f"Informe único para revisión: {write_verification(state, records, scope='descriptive_eda_only')}")
 
 
 def _run_tests() -> bool:
@@ -82,11 +82,10 @@ def _run_tests() -> bool:
     if not runner.is_file() or not (PROJECT_ROOT / "tests").is_dir():
         print("[BLOQUEADO] Suite local no disponible.")
         return False
-    print("[OK] Suite descubierta en tests/. Ejecutando; el resumen se obtiene de JUnit.")
+    print("\nValidación del software | Suite completa y cobertura de líneas", flush=True)
     from lithiumscope.core.logging.session import current_session_directory
     env={**os.environ,"LITHIUMSCOPE_SESSION_DIR":str(current_session_directory())}
     completed = subprocess.run([sys.executable, str(runner), "--coverage", "--", "-q", "tests"], cwd=PROJECT_ROOT, check=False,env=env)
-    print(f"Estado: {'COMPLETADO' if completed.returncode == 0 else 'ERROR'}; código={completed.returncode}")
     return completed.returncode == 0
 
 

@@ -56,11 +56,11 @@ def test_write_snapshot_is_unique_and_only_writes_report(tmp_path, monkeypatch):
 def test_retired_snapshot_option_is_not_exposed(monkeypatch, capsys):
     from lithiumscope.cli import scientific_lab_command as lab
     calls = []
-    choices = iter(["2", "0"])
+    choices = iter(["3", "0"])
 
     def select(prompt, allowed):
-        assert allowed == set("0123")
-        assert "4" not in allowed and "5" not in allowed
+        assert allowed == set("01234")
+        assert "5" not in allowed and "6" not in allowed
         return next(choices)
 
     monkeypatch.setattr(lab, "choose", select)
@@ -70,6 +70,8 @@ def test_retired_snapshot_option_is_not_exposed(monkeypatch, capsys):
     lab.run()
     assert calls == ["validation"]
     output = capsys.readouterr().out
-    assert "2. Ejecución de tests y simulaciones" in output
+    assert "2. Preparación y tratamiento de datos" in output
+    assert "3. Ejecución de tests y simulaciones" in output
+    assert "4. Salud y diagnóstico del entorno" in output
     assert "4. Evidencias de desarrollo" not in output
     assert "5. Optimización científica" not in output

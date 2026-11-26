@@ -24,9 +24,15 @@ def test_undefined_predictions_do_not_become_negative_concordance():
         concordance_table(frame, lithium_threshold_ppm=10., model_2_probability_threshold=np.nan)
 
 
-def test_annex_is_optional_for_other_pairs_and_missing_archive(tmp_path):
+def test_annex_supports_current_pairs_without_inventing_missing_archive(tmp_path):
     result = gather_selection_evidence({"run_id": "new_m1"}, {"run_id": "new_m2"}, root=tmp_path)
-    assert result["state"] == "NOT_APPLICABLE_TO_SELECTED_PAIR"
+    assert result["state"] == "CURRENT_SELECTION_EVIDENCE"
+    assert result["models"]["model_1"]["run_id"] == "new_m1"
+    assert result["models"]["model_2"]["run_id"] == "new_m2"
+    assert all(m["state"] == "metadata_only" and "ranking" not in m for m in result["models"].values())
+    assert all(p["state"] == "unavailable" for p in result["paired"].values())
+    assert not result["independent_holdout"]
+    assert result["user_release_approval_required"]
     result = gather_selection_evidence({"run_id": M1_RUNS[2]}, {"run_id": M2_RUNS[0]}, root=tmp_path)
     assert result["state"] == "HISTORICAL_EVIDENCE_UNAVAILABLE"
     assert not result["model_2_external_independent_holdout"]
