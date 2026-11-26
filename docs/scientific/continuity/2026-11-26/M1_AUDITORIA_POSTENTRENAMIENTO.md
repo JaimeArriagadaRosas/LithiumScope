@@ -214,3 +214,58 @@ git pull --ff-only && set "PYTHONPATH=%CD%\src" && python -m pytest tests/scient
 ```
 Salida results/generalization/model_1_integral_stacking/<run>.
 Enviar consola y evidencias completas. No repetir posttraining.
+
+
+## 7. Stacking: resultados verificados y cierre de fase 3
+
+Run 20261126T231135_4ec86481, commit 36ebea7b375ea41b68a483a49cb770908afed821.
+115/115 pruebas focalizadas, 7.74 s. RAR Evidencias(5).rar SHA256
+4d103860bd606ecff49ee0fb6f278c372cd6c728480332a526a42334077cb6db.
+Manifiesto SHA256 bc54c943eb5a1c350c2104d0b3df9174da9811a6360324b01430e9a4c8804350.
+9/9 hashes de salidas recalculados. 26104 OOF, ocho políticas sobre
+3263 IDs únicos, mismos targets, grupos y folds. 39156 filas OOF de
+calibración pareada, 60 ajustes XGB base, 40 metaestimadores, 20 pesos
+convexos, 60 trazas base, 20 de calibración y 75 puntuaciones internas.
+Se verificó disjunción de TRAIN y evaluación, cobertura exacta de
+los subfolds de calibración y exclusión del TEST exterior.
+Se recalcularon resúmenes, selección interna desde scores archivados
+y correspondencia de las predicciones seleccionadas. No se regeneraron
+los modelos ni sus predicciones internas.
+
+| Política | RMSE medio | R² medio | MAE medio | RMSE cola >40 | Sesgo cola |
+|---|---:|---:|---:|---:|---:|
+| identity | 7.074911 | .631231 | 3.892598 | 24.888575 | -16.247821 |
+| equal_blend | 7.021003 | .637216 | 3.855054 | 24.996926 | -16.523060 |
+| convex_stack | 7.034942 | .635899 | 3.863723 | 25.073425 | -16.624634 |
+| ridge_stack | 7.034486 | .635544 | 3.866031 | 24.844553 | -16.276934 |
+| nonlinear_residual | 7.094513 | .628597 | 3.924426 | 24.723986 | -15.882142 |
+| inner_selected | 7.035411 | .635856 | 3.864080 | 25.074446 | -16.619126 |
+| prior_calibration_selected | 7.071948 | .631321 | 3.904815 | 24.830341 | -16.003423 |
+| xgb_regularized | 7.127917 | .626442 | 3.931971 | 25.381794 | -16.798299 |
+
+Selección interna: convexo, convexo, 50/50, 50/50, convexo. Pesos XGB
+exteriores .647234, .558726, .484968, .535010, .75. No pasa guarda
+de cola. La mezcla fija 50/50 es el mejor RMSE académico descriptivo
+de todas las campañas hasta aquí, pero falla cola; no es el elegido.
+Ridge es la única política nueva que cumple las guardas previas,
+mejora 4/5 folds, RMSE medio .57%, MAE medio .68%, cola .18%;
+el sesgo de cola empeora marginalmente (.029113 ppm más negativo).
+Bootstrap pareado agrupado descriptivo, 5000 réplicas seed42, delta
+RMSE global Ridge−HGB IC95 aproximadamente [-.073902,-.000073].
+No es evidencia confirmatoria, no ajustado por multiplicidad, selección
+de familia y políticas sobre folds reutilizados. El objetivo 5.361 no
+se alcanza. La selección anterior de calibración permanece como
+candidata histórica marginal; no apilarla automáticamente con Ridge,
+pues se ajustó a otra distribución de predicciones.
+
+Cierre operativo de postentrenamiento puntual: conservar HGB como control,
+Ridge como candidato de integración, no promover mezcla 50/50, no repetir
+calibraciones ni extender arquitecturas de metaestimación sin evidencia.
+Se han evaluado 415 ajustes nuevos en fases 2–3 (195 base de entrenamiento,
+120 base/correctores fase 3A, 100 base/meta fase 3B); no contar estadísticas
+analíticas como fits. Los intervalos conformales agrupados existentes son
+diagnóstico de fiabilidad, no optimización de predicciones puntuales;
+su ejecución histórica no se ha recertificado. La fase 4 comprobará
+la metodología sin enriquecimiento retrospectivo asistido por objetivo.
+No se modifica la producción, no se guarda nuevo predictor ni se toca M2.
+Ver [M1_INTEGRACION_METODOLOGICA.md](M1_INTEGRACION_METODOLOGICA.md).
