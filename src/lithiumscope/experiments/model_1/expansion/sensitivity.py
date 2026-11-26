@@ -16,6 +16,7 @@ from lithiumscope.datasets.management.local_sources import local_training_source
 from lithiumscope.experiments.model_1.balanced.selection import balanced_positions
 from lithiumscope.experiments.data_lab.candidate_audit import REFERENCE as HISTORICAL_REFERENCE, FOLD_SHA256
 from lithiumscope.experiments.model_1.expansion.sensitivity_data import load_evidence, historical_tokens, reserve, fold_pools
+from lithiumscope.experiments.model_1.expansion.transfer_weights import fit_weighted
 from lithiumscope.experiments.model_1.targeted.protocol import load_protocol
 from lithiumscope.experiments.model_1.targeted.fit import _base_fit
 from lithiumscope.experiments.model_1.targeted.policies import Arm
@@ -30,9 +31,15 @@ ARMS={"A_control":None,"B_balanced":None,"C_convergent":"D1","D_high":"D2",
       "E_combined":"D3","F_broader":"D4"}
 
 
-def run(run_path, *, allow_unverified_metadata=False):
+TRANSFER_ARMS={"G_no_high":"D4","H_weight_010":"D4","I_weight_025":"D4","J_weight_050":"D4"}
+TRANSFER_WEIGHTS={"H_weight_010":.1,"I_weight_025":.25,"J_weight_050":.5}
+
+
+def run(run_path, *, allow_unverified_metadata=False, transfer_refinement=False):
     if not allow_unverified_metadata:
         raise ValueError("Explicit --allow-unverified-metadata required; research sensitivity only")
+    arms=TRANSFER_ARMS if transfer_refinement else ARMS
+    planned=len(arms)*5
     evidence,audit,features,pubs,links=load_evidence(run_path)
     data,splits,params,archived,identity=load_protocol(REFERENCE)
     x,y,groups,sources,_,numeric,categorical=data
@@ -69,7 +76,14 @@ def run(run_path, *, allow_unverified_metadata=False):
         chosen=fold_pools(audit,cx,x.iloc[tr],numeric,pool,pubs,set(groups.iloc[te]),blocked_refs)
         keep=tr[balanced_positions(x.iloc[tr],y.iloc[tr],groups.iloc[tr],sources.iloc[tr],2700,identity["seed"])]
         plans.append((fold,tr,te,keep,chosen))
-    destination=RESULTS_DIR/"generalization/model_1_expansion_sensitivity"/(datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")+"_"+uuid4().hex[:8])
+    high_mask=audit.screening_state.eq("high_transfer_review").to_numpy()
+    def arm_positions(policy,cohort,chosen):
+        positions=chosen[cohort] if cohort else np.array([],dtype=int)
+        if policy=="G_no_high":
+            positions=positions[~high_mask[positions]]
+        return positions
+    campaign="model_1_expansion_transfer" if transfer_refinement else "model_1_expansion_sensitivity"
+    destination=RESULTS_DIR/"generalization"/campaign/(datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")+"_"+uuid4().hex[:8])
     destination.mkdir(parents=True,exist_ok=False)
     selection=audit[["candidate_id","screening_state","source_dataset","Li_icpms","spatial_group","source_publication",
                      "bibliography_resolved","sensitivity_eligible","historical_exact_overlap","metadata_review_required"]].copy()
@@ -77,19 +91,19 @@ def run(run_path, *, allow_unverified_metadata=False):
     write_table(destination/"candidate_partition.csv",selection)
     plan_rows=[]
     for fold,tr,te,keep,chosen in plans:
-        for arm,cohort in ARMS.items():
-            positions=chosen[cohort] if cohort else np.array([],dtype=int)
+        for arm,cohort in arms.items():
+            positions=arm_positions(arm,cohort,chosen)
             plan_rows.append({"fold":fold,"policy":arm,"historical_train":(tr if arm=="A_control" else keep).tolist(),
                 "historical_test":te.tolist(),"candidate_train_ids":audit.candidate_id.iloc[positions].tolist(),
                 "candidate_train_count":len(positions)})
     write_legacy_evidence_json(destination/"partitions.json",plan_rows)
     manifest={**identity,**links,"state":"running","scope":"metadata_uncertified_sensitivity_reused_outer_folds",
               "independent_holdout":False,"release_eligible":False,"metadata_certified":False,"selection":False,
-              "promotion":False,"models_saved":False,"acquisition":False,"planned_fits":30,
+              "promotion":False,"models_saved":False,"acquisition":False,"planned_fits":planned,"transfer_refinement":transfer_refinement,
               "reserved_rows":int(held.sum()),"pool_rows":int(pool.sum()),
               "historical_publication_token_rows":sum(bool(v) for v in historical_refs),
               "candidate_eligible":int(audit.sensitivity_eligible.sum()),"publication_independence_certified":False,"historical_fold_sha256":FOLD_SHA256,
-              "arms":ARMS}
+              "arms":arms,"transfer_weights":TRANSFER_WEIGHTS if transfer_refinement else {}}
     write_legacy_evidence_json(destination/"manifest.json",manifest)
     device=detect_device(prefer_gpu=False)
     predictions,metrics,reserved,trace,errors,ref_rows=[],[],[],[],[],[]
@@ -103,8 +117,8 @@ def run(run_path, *, allow_unverified_metadata=False):
     try:
         for fold,tr,te,keep,chosen in plans:
             ref_rows.extend(rows("archived",fold,te,archived[ALGORITHM][te],y.iloc[tr].max()))
-            for policy,cohort in ARMS.items():
-                pos=chosen[cohort] if cohort else np.array([],dtype=int)
+            for policy,cohort in arms.items():
+                pos=arm_positions(policy,cohort,chosen)
                 hist=tr if policy=="A_control" else keep
                 if cohort and not len(pos):
                     errors.append({"fold":fold,"policy":policy,"reason":"No eligible new rows; no fit"})
@@ -119,8 +133,15 @@ def run(run_path, *, allow_unverified_metadata=False):
                     if not bx.index.is_unique or set(bg)&set(groups.iloc[te]):
                         raise ValueError("TRAIN identity or spatial overlap")
                     attempted+=1
-                    predict,info=_base_fit(ALGORITHM,Arm("control"),device,identity["seed"],
-                                          params[ALGORITHM,fold],bx,by,bg,bs,numeric,categorical)
+                    if policy in TRANSFER_WEIGHTS:
+                        high=pd.Series(np.r_[np.zeros(len(hist),dtype=bool),high_mask[pos]],index=bx.index)
+                        if not high.any():
+                            raise ValueError("No high-domain samples to attenuate")
+                        predict,info=fit_weighted(device,identity["seed"],params[ALGORITHM,fold],
+                            bx,by,bg,numeric,categorical,high,TRANSFER_WEIGHTS[policy])
+                    else:
+                        predict,info=_base_fit(ALGORITHM,Arm("control"),device,identity["seed"],
+                                              params[ALGORITHM,fold],bx,by,bg,bs,numeric,categorical)
                     score=np.maximum(np.asarray(predict(x.iloc[te]),float),0.)
                     train_score=np.maximum(np.asarray(predict(x.iloc[tr]),float),0.)
                     if not np.isfinite(score).all() or not np.isfinite(train_score).all():
@@ -168,7 +189,7 @@ def run(run_path, *, allow_unverified_metadata=False):
                 mean=part.groupby("candidate_id").agg(truth=("truth","first"),prediction=("prediction","mean"))
                 output.append({"policy":policy,"rows":len(mean),**regression_metrics(mean.truth,mean.prediction).to_dict()})
             write_table(destination/"reserved_metrics.csv",pd.DataFrame(output))
-        manifest["state"]="complete" if not errors and attempted==30 else "partial"
+        manifest["state"]="complete" if not errors and attempted==planned else "partial"
     except BaseException:
         manifest["state"]="interrupted"
         raise
@@ -186,5 +207,6 @@ if __name__=="__main__":
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run",required=True)
     parser.add_argument("--allow-unverified-metadata",action="store_true")
+    parser.add_argument("--transfer-refinement",action="store_true")
     args=parser.parse_args()
-    run(args.run,allow_unverified_metadata=args.allow_unverified_metadata)
+    run(args.run,allow_unverified_metadata=args.allow_unverified_metadata,transfer_refinement=args.transfer_refinement)
