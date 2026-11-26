@@ -58,6 +58,25 @@ def build_current_selection(evidence,styles):
                 out.append(table([["Ganancia positiva","Valor","IC95 inferior","IC95 superior"]]+[[r["metric"],_number(r["observed_gain"]),_number(r["ci95_group_lower"]),_number(r["ci95_group_upper"])] for r in data["gains"]],widths=[4*cm,4*cm,4*cm,4*cm],font_size=7))
         else:
             out.append(paragraph("Comparación OOF emparejada: no disponible para estos artefactos; no se sustituye por métricas ajenas.",styles["LS_Small"]))
+    diagnostics=evidence.get("m2_diagnostics",{})
+    if diagnostics.get("state")=="complete":
+        data=diagnostics["data"]
+        out.append(paragraph("Diagnóstico científico histórico M2",styles["LS_H2"]))
+        fields=(("Muestras evaluadas","samples"),("Históricas","historical"),
+                ("GEOROC provisionales","GEOROC_provisional"),
+                ("QA espectral aprobado","spectral_QA_pass"),
+                ("QA no aprobado, retenidas en TEST","spectral_QA_fail_but_test_retained"),
+                ("Proxy óptico SCL aceptado","SCL_accepted_as_optical_proxy"),
+                ("Abstenciones SCL","SCL_abstentions"),
+                ("Sitios con etiquetas contradictorias","historical_conflicting_label_sites"),
+                ("OOD superior al 25 %","OOD_above_25pct"),
+                ("Escenas de la cohorte","STAC_scenes"),
+                ("Escenas del inventario original de 783","STAC_source_inventory_scenes_783"))
+        out.append(table([["Indicador","Valor"]]+[[label,str(data.get(key,"N/D"))] for label,key in fields],
+                         widths=[12*cm,4*cm],font_size=7))
+        out.append(paragraph("Proxy óptico SCL, no certificación de roca en terreno. Evidencia de desarrollo, no validación externa independiente.",styles["LS_Small"]))
+    elif diagnostics:
+        out.append(paragraph("Diagnóstico científico histórico M2: no disponible para el modelo utilizado.",styles["LS_Small"]))
     oasis=evidence.get("oasis_m1")
     if oasis:
         out.append(paragraph("Referencia académica OASIS (M1)",styles["LS_H2"]))
