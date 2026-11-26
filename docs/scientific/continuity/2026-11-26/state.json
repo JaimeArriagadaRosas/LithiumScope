@@ -109,21 +109,29 @@
       "historical_experiment_repetition_authorized": false
     },
     "augmentation": {
-      "state": "approved_implementation_pending_local_validation",
+      "state": "augmentation_validated_no_improvement_directed_intake_implemented",
       "plan": "M1_AUGMENTATION.md",
       "phase_1": "code_audit_complete",
-      "phase_2": "enriched_augmentation_implemented",
-      "phase_3": "local_execution_pending",
-      "phase_4": "preliminary_source_metadata_review_complete",
-      "phase_5": "acquisition_and_eda_pending",
+      "phase_2": "validated",
+      "phase_3": "complete_no_improvement",
+      "phase_4": "primary_source_links_verified",
+      "phase_5": "intake_implemented_local_execution_pending",
       "phase_6": "real_synthetic_comparison_pending",
       "phase_7": "conditional_final_training_pending",
       "arms": 6,
       "max_new_fits": 115,
       "synthetic_test_rows": 0,
-      "expected_focused_tests": 55,
+      "expected_focused_tests": 59,
       "new_real_rows_approved": 0,
-      "release_authorized": false
+      "release_authorized": false,
+      "run_id": "20261126T180155_005d9a59",
+      "manifest_sha256": "d5e7f6cb8f6afce7913a8a1cb9275889525137516e7386e85029674935a215fe",
+      "rar_sha256": "8d8b7487fb78b5048dfb36dced7cd56177443310e587efa90a8bcfe86cc43761",
+      "verified_hashes": 10,
+      "new_fits": 115,
+      "best_policy": "control",
+      "control_rmse_mean": 7.074911080374409,
+      "smoter_rmse_mean": 7.2308491799175245
     }
   },
   "m2": {
@@ -148,11 +156,11 @@
     "frozen_for_current_branch": true
   },
   "next": [
-    "run_focused_m1_tests_and_enriched_augmentation",
-    "verify_augmentation_lineage_and_results",
-    "inspect_prospective_original_source_tables_and_overlap",
-    "acquire_and_audit_eligible_new_real_data",
-    "compare_real_synthetic_and_combined",
+    "run_directed_original_intake",
+    "inspect_original_tables_and_licenses",
+    "map_and_deduplicate_new_rows",
+    "eda_and_freeze_independent_reserve",
+    "compare_real_and_synthetic_if_eligible",
     "conditional_final_training"
   ],
   "independent_external_holdout": false,
@@ -266,11 +274,11 @@
     "comparison_state": "complete"
   },
   "latest_focused_m1_validation": {
-    "commit": "c924b14f759432ab77945591a9028eb5276042ee",
-    "passed": 47,
-    "total": 47,
+    "commit": "8e4c9d1a3672ccf533cea932dfcb5b1ea87120e1",
+    "passed": 55,
+    "total": 55,
     "failed": 0,
-    "duration_seconds": 3.7,
+    "duration_seconds": 3.52,
     "scope": "tests/scientific/m1_expansion",
     "full_suite_after_expansion": false
   }
