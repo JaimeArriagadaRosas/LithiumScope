@@ -17,7 +17,8 @@ def test_identity_independent_of_target_and_ambiguity_retained():
     assert len(edges)==3
     assert [v["identity_review_candidate"] for v in edges]==[True,True,False]
     assert not any(v["approved_for_training"] for v in edges)
-    assert edges==match_names(q.assign(Li_ppm=1000.),f,"test","original.csv")
+    pd.testing.assert_frame_equal(pd.DataFrame(edges),
+        pd.DataFrame(match_names(q.assign(Li_ppm=1000.),f,"test","original.csv")))
 
 def test_missing_coordinates_or_silica_only_name_evidence():
     f=pd.DataFrame({"source_sample":["QUIS-96h-9"],"Latitude":[-23.231833],
