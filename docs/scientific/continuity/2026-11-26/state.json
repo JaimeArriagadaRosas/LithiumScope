@@ -12,19 +12,18 @@
     "github_raw_upload": false
   },
   "tests": {
-    "commit": "1cd365920c9f3f2fc7604de7dea1a783256e47db",
-    "run_id": "20261126T135021Z_9fef752595a24d18817227676b5cf16d",
-    "total": 1004,
-    "passed": 1001,
+    "commit": "b5b059415bf4c9ec2f45ed12f3cac516db1dc171",
+    "run_id": "20261126T143344Z_d13f9d7678c449f1825f87304e2c897c",
+    "total": 1005,
+    "passed": 1002,
     "failed": 0,
     "errors": 0,
     "skipped": 3,
-    "coverage_pct": 57.02,
-    "duration_seconds": 129,
+    "coverage_pct": 57.05,
+    "duration_seconds": 236.703,
     "git_identity_unchanged": true,
     "exit_code": 0,
-    "retest_pending": false,
-    "skip_review": "two older 05-06 November comparisons, one unused local expanded 783 cohort; retain conditional skips",
+    "scope": "before_m1_expansion_changes",
     "live_line_retest_pending": false
   },
   "m1": {
@@ -57,7 +56,20 @@
       "r2_global": 0.560445163803176,
       "random_cv": true
     },
-    "new_sources_approved": 0
+    "new_sources_approved": 0,
+    "expansion": {
+      "state": "reopened_approved_plan",
+      "phase_1": "advanced_eda_implemented_local_validation_pending",
+      "phase_2": "cohort_planning_implemented_review_pending",
+      "phase_3": "pending_real_data_eligibility",
+      "phase_4": "pending_experiment_results",
+      "phase_5": "pending_candidate_acceptance",
+      "new_sources_approved": 0,
+      "plan": "M1_EXPANSION.md",
+      "academic_rmse_provisional_max": 5.629,
+      "academic_r2_provisional_min": 0.499,
+      "production_promotion": false
+    }
   },
   "m2": {
     "candidate": "training_20261125_144535_m0300_6fa5d269",
@@ -77,13 +89,14 @@
       "ood_above_25pct": 9,
       "scenes": 64,
       "source_inventory_scenes": 111
-    }
+    },
+    "frozen_for_current_branch": true
   },
   "next": [
-    "render_integrated_pdf_with_recovered_evidence",
-    "verify_report_reconstruction_from_frozen_artifacts",
-    "review_final_evidence_and_close_phase_6",
-    "release_decision_separate_requires_approval"
+    "validate_m1_expansion_tests",
+    "execute_local_advanced_eda",
+    "review_provenance_and_candidate_eligibility",
+    "run_controlled_m1_expansion_if_eligible"
   ],
   "independent_external_holdout": false,
   "main_merge_authorized": false,
@@ -99,7 +112,7 @@
     "phase_5": "two_stage_exploratory_decision_concise_status",
     "release_authorized": false,
     "phase_3_and_4_conditional": false,
-    "experimental_closure": "approved_retain_existing_rf_rf_no_additional_fit"
+    "experimental_closure": "historical_campaigns_closed_M1_expansion_reopened"
   },
   "phase_5": {
     "implementation": "decision_logic_and_page_two_updated",
@@ -157,19 +170,18 @@
     "notes": "Checks of supplied data; not execution of the updated repository suite."
   },
   "latest_software_validation": {
-    "commit": "1cd365920c9f3f2fc7604de7dea1a783256e47db",
-    "run_id": "20261126T135021Z_9fef752595a24d18817227676b5cf16d",
-    "total": 1004,
-    "passed": 1001,
+    "commit": "b5b059415bf4c9ec2f45ed12f3cac516db1dc171",
+    "run_id": "20261126T143344Z_d13f9d7678c449f1825f87304e2c897c",
+    "total": 1005,
+    "passed": 1002,
     "failed": 0,
     "errors": 0,
     "skipped": 3,
-    "coverage_pct": 57.02,
-    "duration_seconds": 129,
+    "coverage_pct": 57.05,
+    "duration_seconds": 236.703,
     "git_identity_unchanged": true,
     "exit_code": 0,
-    "retest_pending": false,
-    "skip_review": "two older 05-06 November comparisons, one unused local expanded 783 cohort; retain conditional skips"
+    "scope": "before_m1_expansion_changes"
   },
   "previous_software_validation": {
     "commit": "571df98dd7dff57402cb98afd02f5459e9d4cb47",
