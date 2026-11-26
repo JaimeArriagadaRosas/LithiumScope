@@ -18,7 +18,18 @@ evidencias originales se conservan y los artefactos compatibles se reutilizan.
 La preparación conserva la cohorte congelada y ajusta tratamientos aprendidos
 solamente dentro de TRAIN. No se entrena ni se promueve ningún modelo.
 
-Próximas fases: comparación emparejada release/candidato, anexo PDF dinámico,
-balanceo TRAIN con mínimo real por cohorte, expertos por régimen y evaluación
-de paridad OASIS. Las decisiones de incorporación de nuevas fuentes se basarán
-en las tablas de elegibilidad, no solo en cantidad de muestras.
+5 > 3 > 5 compara artefactos OOF ya guardados sin repetir las simulaciones.
+5 > 3 > 3 > 2 ejecuta la campaña balanceada M1 de 21 configuraciones (7 por
+familia) en 630 evaluaciones base. Los expertos requieren ajustes adicionales
+por régimen, incluidos en el manifiesto. La campaña anterior de 45 configuraciones
+permanece disponible por su comando Python explícito, sin volver a ejecutarla.
+Las metas 3000/2700/2400/2043 son tamaños equivalentes de cohorte; se aplican
+proporcionalmente a cada TRAIN, nunca se recorta TEST. Se conserva cada estrato
+fuente/grupo/litología/banda y toda muestra TRAIN >=100 ppm. Los expertos se
+combinan por probabilidades estimadas solo con X; si un régimen carece de datos
+suficientes usa el predictor global. Ninguna modificación productiva ni M2.
+El anexo PDF actual consume evidencia por identidad de modelo y de dataset,
+no se reutilizan métricas históricas de una pareja diferente.
+Pendientes: evaluación de paridad OASIS, ejecución local y decisión de selección.
+Las decisiones de incorporación de nuevas fuentes se basarán en las tablas de
+elegibilidad, no solo en cantidad de muestras.

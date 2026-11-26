@@ -143,7 +143,7 @@ def _treatment_experiments(*, all_families=None, groups=("model_1", "model_2")) 
 def _treatment_menu():
     print("\nEVALUACIÓN EXPERIMENTAL DE TRATAMIENTOS")
     print("1. Evaluación general (ambos modelos: completa o piloto)")
-    print("2. Evaluación focalizada de M1")
+    print("2. Evaluación focalizada de M1 (balanceo y regímenes)")
     print("3. Evaluación focalizada de M2 (protocolo existente)")
     print("0. Volver")
     choice = choose("Seleccione una opción [0-3]: ", set("0123"))

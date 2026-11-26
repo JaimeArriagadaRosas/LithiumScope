@@ -102,7 +102,8 @@ def test_validation_clears_screen_before_dispatch(monkeypatch):
 def test_targeted_m1_runs_approved_reference_without_extra_prompts(monkeypatch, tmp_path):
     from contextlib import nullcontext
     from lithiumscope.cli import m1_targeted_command as command
-    from lithiumscope.experiments.model_1.targeted import protocol, runner
+    from lithiumscope.experiments.model_1.targeted import protocol
+    from lithiumscope.experiments.model_1.balanced import runner
     from lithiumscope.core.logging import session
 
     calls = []
@@ -113,7 +114,7 @@ def test_targeted_m1_runs_approved_reference_without_extra_prompts(monkeypatch, 
         raise AssertionError("No additional input expected")
     monkeypatch.setattr("builtins.input", forbidden_input)
     (tmp_path/"manifest.json").write_text('{"state":"complete"}', encoding="utf-8")
-    monkeypatch.setattr(runner, "run_targeted", lambda run_id: calls.append(run_id) or tmp_path)
+    monkeypatch.setattr(runner, "run_balanced", lambda run_id: calls.append(run_id) or tmp_path)
     assert command.run() is True
     assert calls == [reference]
     monkeypatch.setattr(protocol, "available_runs", lambda: ["old"])

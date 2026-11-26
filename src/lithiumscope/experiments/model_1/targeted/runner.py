@@ -28,20 +28,20 @@ def select_arm(rows):
     return min(allowed, key=lambda r:(r["rmse"], abs(r["high_bias"]), r["policy"]))["policy"]
 
 
-def run_targeted(run_id, *, output_root=None, device=None):
+def run_targeted(run_id, *, output_root=None, device=None, arms=ARMS, fit_function=fit_arm, campaign="model_1_targeted"):
     data, splits, params, archived, identity = load_protocol(run_id)
     x, y, groups, sources, _, numeric, categorical = data
     seed = identity["seed"]
     device = device or detect_device(prefer_gpu=False)
-    root = output_root or RESULTS_DIR/"generalization"/"model_1_targeted"
+    root = output_root or RESULTS_DIR/"generalization"/campaign
     destination = root/(datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")+"_"+uuid4().hex[:8])
     destination.mkdir(parents=True, exist_ok=False)
-    planned = len(ALGORITHMS)*len(ARMS)*sum(len(inner)+1 for _,_,inner in splits)
-    planned_calibration = len(ALGORITHMS)*sum(a.correction for a in ARMS)*sum(len(inner)+1 for _,_,inner in splits)*3
+    planned = len(ALGORITHMS)*len(arms)*sum(len(inner)+1 for _,_,inner in splits)
+    planned_calibration = len(ALGORITHMS)*sum(a.correction for a in arms)*sum(len(inner)+1 for _,_,inner in splits)*3
     manifest = {**identity,"state":"running","scope":"development_reuses_outer_folds",
                 "independent_holdout":False,"promotion":False,"fitted_models_saved":False,
-                "runtime":runtime_fingerprint(),"arms":[asdict(a) for a in ARMS],
-                "planned_evaluations":planned,"planned_calibration_fits":planned_calibration,"configurations":len(ALGORITHMS)*len(ARMS),
+                "campaign":campaign,"runtime":runtime_fingerprint(),"arms":[asdict(a) for a in arms],
+                "planned_evaluations":planned,"planned_calibration_fits":planned_calibration,"configurations":len(ALGORITHMS)*len(arms),
                 "hyperparameters":"sealed_previous_outer_train_optimization_frozen_for_all_arms"}
     write_legacy_evidence_json(destination/"manifest.json", manifest)
     write_legacy_evidence_json(destination/"partitions.json", [{"fold":n,"train":tr.tolist(),"test":te.tolist(),
@@ -49,6 +49,8 @@ def run_targeted(run_id, *, output_root=None, device=None):
         for n,(tr,te,inner) in enumerate(splits,1)])
     metrics, predictions, inner_rows, selected, trace, errors = [], [], [], [], [], []
     print(f"M1: {planned} evaluaciones + {planned_calibration} ajustes de calibración previstos",flush=True)
+    if campaign=="model_1_balanced":
+        print("Los expertos añaden ajustes de enrutamiento y regresiones por régimen; se registran al completar.",flush=True)
     references = {}
     count = 0
 
@@ -68,7 +70,7 @@ def run_targeted(run_id, *, output_root=None, device=None):
         if set(groups.iloc[tr]) & set(groups.iloc[te]):
             raise ValueError("Spatial TRAIN/validation overlap")
         print(f"[{count}/{planned}] {algorithm} | fold {fold} | {phase} | {arm.name}",flush=True)
-        score, train_score, info = fit_arm(algorithm,arm,device,seed,params[algorithm,fold],
+        score, train_score, info = fit_function(algorithm,arm,device,seed,params[algorithm,fold],
             x.iloc[tr],y.iloc[tr],groups.iloc[tr],sources.iloc[tr],numeric,categorical,x.iloc[te])
         values = fold_metrics(y.iloc[te].to_numpy(float),score,y.iloc[tr].to_numpy(float),train_score)
         trace.append({"algorithm":algorithm,"policy":arm.name,"fold":fold,"phase":phase,**info})
@@ -80,7 +82,7 @@ def run_targeted(run_id, *, output_root=None, device=None):
             for fold,(tr,te,inner) in enumerate(splits,1):
                 reference_rows.extend(prediction_rows(algorithm,"archived",fold,te,archived[algorithm][te]))
                 scores_inner = []
-                for arm in ARMS:
+                for arm in arms:
                     pieces, truths, biases = [], [], []
                     try:
                         for number,(a,b) in enumerate(inner,1):
@@ -100,7 +102,7 @@ def run_targeted(run_id, *, output_root=None, device=None):
                         print(f"  [BLOQUEADO/ERROR] {exc}",flush=True)
                 chosen = select_arm(scores_inner)
                 selected.append({"algorithm":algorithm,"fold":fold,"policy":chosen,"inner_scores":scores_inner})
-                for arm in ARMS:
+                for arm in arms:
                     try:
                         score, values = evaluate(algorithm,arm,fold,"outer",tr,te)
                         row = {"algorithm":algorithm,"policy":arm.name,"fold":fold,**values}
@@ -127,7 +129,8 @@ def run_targeted(run_id, *, output_root=None, device=None):
         raise
     finally:
         manifest.update(attempted_evaluations=count,errors=errors,
-                        calibration_fits=sum(item["calibration_fits"] for item in trace))
+                        calibration_fits=sum(item["calibration_fits"] for item in trace),
+                        extra_regime_fits=sum(item.get("extra_regime_fits",0) for item in trace))
         write_legacy_evidence_json(destination/"manifest.json",manifest)
     print(f"Estado: {manifest['state']} | Evidencias: {destination}",flush=True)
     return destination
