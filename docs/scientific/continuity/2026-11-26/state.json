@@ -109,19 +109,19 @@
       "historical_experiment_repetition_authorized": false
     },
     "augmentation": {
-      "state": "transfer_preflight_validated_insufficient_tail_coverage",
+      "state": "bounded_data_closure_implemented_pending_execution",
       "plan": "M1_AUGMENTATION.md",
       "phase_1": "code_audit_complete",
       "phase_2": "validated",
       "phase_3": "complete_no_improvement",
       "phase_4": "primary_source_links_verified",
-      "phase_5": "current_sources_screened_no_admission_directed_acquisition_pending",
-      "phase_6": "blocked_insufficient_eligible_tail_and_metadata",
-      "phase_7": "blocked_pending_favorable_evidence_and_independent_reserve",
+      "phase_5": "operationally_closed_no_new_rows_approved",
+      "phase_6": "fixed_development_sensitivity_pending_execution",
+      "phase_7": "blocked_pending_favorable_evidence_independent_validation_and_authorization",
       "arms": 6,
       "max_new_fits": 115,
       "synthetic_test_rows": 0,
-      "expected_focused_tests": 82,
+      "expected_focused_tests": 85,
       "new_real_rows_approved": 0,
       "release_authorized": false,
       "run_id": "20261126T180155_005d9a59",
@@ -283,6 +283,33 @@
         "summary_recomputed": true,
         "approved_rows": 0,
         "training": false
+      },
+      "source_catalog": "M1_FUENTES_Y_CIERRE.md",
+      "closure": {
+        "module": "lithiumscope.experiments.model_1.augmentation.data_closure",
+        "max_new_fits": 15,
+        "policies": [
+          "A_historical",
+          "B_archived_smoter",
+          "C_tail_only",
+          "C_bounded_transfer",
+          "D_bounded_plus_smoter"
+        ],
+        "candidate_low_weight_cap": 0.1,
+        "candidate_tail_weight_cap": 0.25,
+        "candidate_weight_mass_per_band_cap": 0.1,
+        "source_search_closed_for_iteration": true,
+        "allow_unverified_metadata_explicit": true,
+        "production_schema_changed": false,
+        "metadata_certified": false,
+        "independent_holdout": false,
+        "rmse_target_strictly_below": 5.361,
+        "r2_target_strictly_above": 0.499,
+        "tail_rmse_no_worse_than_control": true,
+        "mae_mean_tolerance_ppm": 0.1,
+        "training_run_pending": true,
+        "models_saved": false,
+        "new_rows_approved": 0
       }
     }
   },
@@ -308,9 +335,10 @@
     "frozen_for_current_branch": true
   },
   "next": [
-    "review_primary_Macdonald_1992_and_Alvarez_Amado_2022_tables_if_accessible",
-    "seek_compatible_high_tail_whole_rock_data_and_independent_reserve",
-    "compare_real_and_synthetic_only_if_eligible"
+    "run_fixed_data_closure_once",
+    "verify_five_policy_oof_identity_membership_weights_synthetic_lineage_and_metrics",
+    "close_academic_development_report_without_repeating_campaigns",
+    "final_fit_only_if_favorable_independent_and_spatial_validation_and_authorization"
   ],
   "independent_external_holdout": false,
   "main_merge_authorized": false,
