@@ -23,11 +23,15 @@ DOIS={
     "alvarez_amado_2022":"10.1016/j.gexplo.2022.107062",
     "fernandez_turiel_2020":"10.20350/DIGITALCSIC/10527",
     "macusani_2025":"10.60520/IEDA/113778",
+    "chen_global_arcs_2020":"10.1038/s41467-020-19106-z",
 }
 DOWNLOADS={
     MEIXNER:{f"126_2019_915_MOESM{i}_ESM.{ext}":
        f"https://static-content.springer.com/esm/art%3A10.1007%2Fs00126-019-00915-2/MediaObjects/126_2019_915_MOESM{i}_ESM.{ext}"
        for i,ext in ((1,"docx"),(2,"xls"),(3,"xls"),(4,"xls"))},
+    "chen_global_arcs_2020":{
+        "41467_2020_19106_MOESM6_ESM.xlsx":
+        "https://pmc.ncbi.nlm.nih.gov/articles/instance/7575555/bin/41467_2020_19106_MOESM6_ESM.xlsx"},
 }
 ALLOWED={".xls",".xlsx",".docx",".csv",".tsv",".txt",".pdf"}
 OLE=b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
@@ -140,12 +144,16 @@ def inspect(path):
     return summaries,mentions,"inspected_unmapped"
 
 
-def run(*,download=False):
+def run(*,download=False,selected=None):
+    selected=tuple(DOIS) if selected is None else tuple(selected)
+    if not selected or len(set(selected))!=len(selected) or not set(selected).issubset(DOIS):
+        raise ValueError('Invalid source selection')
     out=RESULTS_DIR/"generalization/model_1_directed_source_intake"/(
         datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")+"_"+uuid4().hex[:8])
     out.mkdir(parents=True,exist_ok=False)
     inventory,sheets,mentions=[],[],[]
-    for key,doi in DOIS.items():
+    for key in selected:
+        doi=DOIS[key]
         folder=ROOT/key
         folder.mkdir(parents=True,exist_ok=True)
         links=DOWNLOADS.get(key,{})
@@ -192,7 +200,7 @@ def run(*,download=False):
         write_table(out/name,table)
     write_legacy_evidence_json(out/"manifest.json",{
         "state":"review_required","scope":"directed_original_intake_unmapped",
-        "download_requested":download,"source_dois":DOIS,"files_inspected":sum(v.get("state")=="inspected_unmapped" for v in inventory),
+        "download_requested":download,"source_dois":{key:DOIS[key] for key in selected},"files_inspected":sum(v.get("state")=="inspected_unmapped" for v in inventory),
         "new_rows_approved":0,"training":False,"harmonization":False,"production_schema_changed":False,
         "outputs":{name:sha((out/name).read_bytes()) for name in tables}})
     print(tables["source_inventory.csv"].to_string(index=False))
@@ -204,4 +212,6 @@ def run(*,download=False):
 if __name__=="__main__":
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--download",action="store_true")
-    run(download=parser.parse_args().download)
+    parser.add_argument("--source",choices=tuple(DOIS),action="append",help="Inspect only selected sources; repeat as needed")
+    args=parser.parse_args()
+    run(download=args.download,selected=args.source)
