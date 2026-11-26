@@ -1,5 +1,7 @@
 # Continuidad científica — LithiumScope, 26 de noviembre de 2026
 
+> **Actualización posterior:** [M1_EXPANSION.md](M1_EXPANSION.md) es la continuación vigente para M1. Se reabre la investigación con datos reales nuevos; M2 queda congelado. El cierre anterior se conserva como registro histórico, no como aprobación de release. Última suite validada: b5b0594, 1002/1005 aprobadas, 3 omitidas, cero fallos, cobertura 57.05%. Pendiente ejecutar EDA avanzado y pruebas nuevas.
+
 **Entrada canónica para retomar el trabajo en otro chat.** Leer este documento, 
 RESULTADOS.md, PLAN_CIERRE.md y EVIDENCIAS.md antes de modificar el código.
 Rama: `feat/m1-targeted-data-refinement`. Base de esta documentación: 
