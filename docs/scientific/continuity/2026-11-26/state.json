@@ -109,19 +109,19 @@
       "historical_experiment_repetition_authorized": false
     },
     "augmentation": {
-      "state": "chen_profile_verified_iron_and_overlap_audit_implemented",
+      "state": "chen_overlap_verified_transfer_preflight_implemented",
       "plan": "M1_AUGMENTATION.md",
       "phase_1": "code_audit_complete",
       "phase_2": "validated",
       "phase_3": "complete_no_improvement",
       "phase_4": "primary_source_links_verified",
-      "phase_5": "chen_corrected_overlap_pending",
+      "phase_5": "fold_safe_transfer_preflight_pending",
       "phase_6": "real_synthetic_comparison_pending",
       "phase_7": "conditional_final_training_pending",
       "arms": 6,
       "max_new_fits": 115,
       "synthetic_test_rows": 0,
-      "expected_focused_tests": 78,
+      "expected_focused_tests": 81,
       "new_real_rows_approved": 0,
       "release_authorized": false,
       "run_id": "20261126T180155_005d9a59",
@@ -221,6 +221,23 @@
         "initial_qc_blocker": "unmapped_FEOT_WT_PERCENT",
         "sample_names_available": 0,
         "new_rows_approved": 0
+      },
+      "chen_overlap": {
+        "run_id": "20261126T210740_ed33aa31",
+        "manifest_sha256": "b0bfff9a1ee3e7660a5e7388acd2b3ce1886ca6acc1fe6fc7895f057eca44925",
+        "verified_output_hashes": 6,
+        "positive_li_rows": 3680,
+        "basic_qc_rows": 3676,
+        "possible_duplicates": 826,
+        "candidate_publication_overlap": 1122,
+        "transfer_review_candidates": 2303,
+        "tail_review_candidates": 45,
+        "andean_candidates": 6,
+        "andean_tail_candidates": 2,
+        "obsidian_reference_candidates": 70,
+        "obsidian_reference_tail_candidates": 32,
+        "ordered_bounds_max_span_point1_candidates": 2044,
+        "new_rows_approved": 0
       }
     }
   },
@@ -246,10 +263,10 @@
     "frozen_for_current_branch": true
   },
   "next": [
-    "run_corrected_chen_overlap_audit",
-    "verify_chen_overlap_evidence_and_tail_candidates",
-    "verify_whole_rock_audit_outputs",
-    "review_eligible_new_data_and_independent_reserve",
+    "run_transfer_preflight",
+    "verify_fold_safe_candidate_counts_and_whole_rock_hashes",
+    "resolve_material_methods_crs_and_publication",
+    "acquire_and_freeze_independent_reserve",
     "compare_real_and_synthetic_if_eligible"
   ],
   "independent_external_holdout": false,
@@ -363,11 +380,11 @@
     "comparison_state": "complete"
   },
   "latest_focused_m1_validation": {
-    "commit": "8be2698d072daee6f70e716c00b586da01ce1058",
-    "passed": 75,
-    "total": 75,
+    "commit": "440400f9b3c451568d6b4319359071def5750ff7",
+    "passed": 78,
+    "total": 78,
     "failed": 0,
-    "duration_seconds": 4.11,
+    "duration_seconds": 4.36,
     "scope": "tests/scientific/m1_expansion",
     "full_suite_after_expansion": false
   }
