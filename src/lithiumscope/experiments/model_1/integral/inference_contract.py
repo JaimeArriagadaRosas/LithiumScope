@@ -11,6 +11,7 @@ from sklearn.preprocessing import StandardScaler
 from lithiumscope.experiments.model_1.integral.training_losses import loss_params
 from lithiumscope.experiments.model_1.integral.boosting_methods import build_method_pipeline
 from lithiumscope.model_1.training.factory import build_pipeline
+from lithiumscope.model_1.training.preprocessing.tabular import OXIDES, TRACE_ELEMENTS, SPATIAL_CANDIDATES, DERIVED, CATEGORICAL
 from lithiumscope.resources.manager import estimator_thread_scope
 
 POLICIES=("hgb_canonical","xgb_canonical","ridge_canonical")
@@ -18,7 +19,7 @@ POLICIES=("hgb_canonical","xgb_canonical","ridge_canonical")
 
 def canonical_columns(schema):
     cols=list(schema.numeric)+list(schema.categorical)
-    if len(cols)!=33 or len(set(cols))!=33:
+    if cols!=OXIDES+TRACE_ELEMENTS+SPATIAL_CANDIDATES+DERIVED+CATEGORICAL or len(cols)!=33:
         raise ValueError("Expected frozen 33-column M1 contract")
     return cols
 
