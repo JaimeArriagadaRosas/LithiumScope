@@ -109,13 +109,13 @@
       "historical_experiment_repetition_authorized": false
     },
     "augmentation": {
-      "state": "augmentation_validated_no_improvement_directed_intake_implemented",
+      "state": "directed_intake_validated_mapping_pending",
       "plan": "M1_AUGMENTATION.md",
       "phase_1": "code_audit_complete",
       "phase_2": "validated",
       "phase_3": "complete_no_improvement",
       "phase_4": "primary_source_links_verified",
-      "phase_5": "intake_implemented_local_execution_pending",
+      "phase_5": "meixner_acquired_inventory_validated_original_tables_required",
       "phase_6": "real_synthetic_comparison_pending",
       "phase_7": "conditional_final_training_pending",
       "arms": 6,
@@ -131,7 +131,16 @@
       "new_fits": 115,
       "best_policy": "control",
       "control_rmse_mean": 7.074911080374409,
-      "smoter_rmse_mean": 7.2308491799175245
+      "smoter_rmse_mean": 7.2308491799175245,
+      "intake": {
+        "run_id": "20261126T195310_b4a13662",
+        "manifest_sha256": "c2bb62201978dda79f66be707268df11d9d580a3bf32241fbca9fd7f2f8ec709",
+        "verified_output_hashes": 3,
+        "original_files_inspected_locally": 4,
+        "original_files_reverified_in_chat": 0,
+        "new_rows_approved": 0,
+        "source": "meixner_2020"
+      }
     }
   },
   "m2": {
@@ -156,9 +165,10 @@
     "frozen_for_current_branch": true
   },
   "next": [
-    "run_directed_original_intake",
-    "inspect_original_tables_and_licenses",
-    "map_and_deduplicate_new_rows",
+    "inspect_meixner_original_tables_and_method",
+    "check_sample_identity_and_available_predictors",
+    "review_other_original_sources",
+    "map_and_deduplicate_eligible_rows",
     "eda_and_freeze_independent_reserve",
     "compare_real_and_synthetic_if_eligible",
     "conditional_final_training"
@@ -274,11 +284,11 @@
     "comparison_state": "complete"
   },
   "latest_focused_m1_validation": {
-    "commit": "8e4c9d1a3672ccf533cea932dfcb5b1ea87120e1",
-    "passed": 55,
-    "total": 55,
+    "commit": "e63fdb9195346547db6d07abb7c537b49163e583",
+    "passed": 59,
+    "total": 59,
     "failed": 0,
-    "duration_seconds": 3.52,
+    "duration_seconds": 31.48,
     "scope": "tests/scientific/m1_expansion",
     "full_suite_after_expansion": false
   }
