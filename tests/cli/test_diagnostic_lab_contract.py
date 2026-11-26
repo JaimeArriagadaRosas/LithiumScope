@@ -8,18 +8,19 @@ from lithiumscope.tools.inspection import health
 
 def test_lab_menu_has_exact_dispatch_and_cancel(monkeypatch, capsys):
     calls = []
-    choices = iter(["1", "2", "3", "0"])
+    choices = iter(["1", "2", "3", "4", "0"])
     monkeypatch.setattr(lab, "choose", lambda *_: next(choices))
     monkeypatch.setattr(lab, "clear_screen", lambda: None)
     monkeypatch.setattr(lab, "pause", lambda: None)
-    for name in ("_eda_menu", "_validation_menu", "_health"):
+    for name in ("_eda_menu", "_preparation_menu", "_validation_menu", "_health"):
         monkeypatch.setattr(lab, name, lambda n=name: calls.append(n))
     lab.run()
-    assert calls == ["_eda_menu", "_validation_menu", "_health"]
+    assert calls == ["_eda_menu", "_preparation_menu", "_validation_menu", "_health"]
     out = capsys.readouterr().out
     assert "1. Análisis exploratorio" in out
-    assert "2. Ejecución de tests y simulaciones" in out
-    assert "3. Salud y diagnóstico del entorno" in out
+    assert "2. Preparación y tratamiento de datos" in out
+    assert "3. Ejecución de tests y simulaciones" in out
+    assert "4. Salud y diagnóstico del entorno" in out
     assert "4. Evidencias de desarrollo" not in out
     assert "5. Optimización científica" not in out
 

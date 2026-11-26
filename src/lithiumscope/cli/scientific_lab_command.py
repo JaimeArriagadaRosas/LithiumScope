@@ -12,14 +12,8 @@ from lithiumscope.core.paths import PROJECT_ROOT
 
 
 def _prepare_eda(group):
-    from lithiumscope.core.config import load_config
-    from lithiumscope.experiments.generalization.prepared import prepare_version
-    from lithiumscope.experiments.generalization.preflight import prepare_treatments, show_treatments
-    snapshot, evidence = prepare_version(group, _eda_source(group))
-    directory, manifest = prepare_treatments(group, snapshot, load_config(group))
-    show_treatments(directory, manifest)
-    from lithiumscope.cli.eda_verification import collect
-    return evidence, manifest["state"], collect(snapshot, evidence, directory, manifest)
+    from lithiumscope.experiments.data_lab.workflow import analyze
+    return analyze(group, _eda_source(group))
 
 
 def _run_eda_m1():
@@ -50,6 +44,7 @@ def _eda_menu() -> bool | None:
     choice = choose("Seleccione una opción [0-3]: ", set("0123"))
     if choice == "0":
         return False
+    clear_screen()
     jobs = [("M1", _run_eda_m1), ("M2", _run_eda_m2)]
     selected = jobs if choice == "3" else [jobs[int(choice) - 1]]
     states = []
@@ -77,9 +72,9 @@ def _eda_menu() -> bool | None:
             records[label] = {"state":"ERROR","reason":str(exc)}
             print(f"[ERROR] {label}: {exc}")
     state = "COMPLETADO" if all(s == "COMPLETADO" for s in states) else "PARCIAL" if any(s in {"COMPLETADO","PARCIAL"} for s in states) else "ERROR" if "ERROR" in states else "BLOQUEADO"
-    print(f"Estado: {state}. Diagnóstico y preparación experimental SOLO TRAIN; no se entrenaron modelos.")
+    print(f"Estado: {state}. Análisis descriptivo; no se prepararon tratamientos ni se entrenaron modelos.")
     from lithiumscope.cli.eda_verification import write_verification
-    print(f"Informe único para revisión: {write_verification(state, records)}")
+    print(f"Informe único para revisión: {write_verification(state, records, scope="descriptive_eda_only")}")
 
 
 def _run_tests() -> bool:
@@ -205,18 +200,24 @@ def _health() -> None:
     print("[OK] No se aplicaron reparaciones.")
 
 
+def _preparation_menu():
+    from lithiumscope.cli.data_preparation_command import run
+    return run()
+
+
 def run() -> None:
     while True:
         clear_screen()
         print("\nLABORATORIO DE DIAGNÓSTICO")
         print("1. Análisis exploratorio")
-        print("2. Ejecución de tests y simulaciones")
-        print("3. Salud y diagnóstico del entorno")
+        print("2. Preparación y tratamiento de datos")
+        print("3. Ejecución de tests y simulaciones")
+        print("4. Salud y diagnóstico del entorno")
         print("0. Volver")
-        choice = choose("Seleccione una opción [0-3]: ", set("0123"))
+        choice = choose("Seleccione una opción [0-4]: ", set("01234"))
         if choice == "0":
             return
         clear_screen()
-        actions = {"1": _eda_menu, "2": _validation_menu, "3": _health}
+        actions = {"1": _eda_menu, "2": _preparation_menu, "3": _validation_menu, "4": _health}
         if actions[choice]() is not False:
             pause()

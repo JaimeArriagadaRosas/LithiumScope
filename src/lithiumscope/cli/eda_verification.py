@@ -52,13 +52,13 @@ def collect(snapshot, evidence, treatments, treatment_manifest):
         "cohort_summary":records(source_table) if source_table.is_file() else []}
 
 
-def write_verification(state, records, *, root=None):
+def write_verification(state, records, *, root=None, scope="local_eda_and_train_only_data_preparation"):
     root=Path(root) if root is not None else RESULTS_DIR/"eda_verification"
     root.mkdir(parents=True,exist_ok=True)
     stamp=datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
     path=root/f"eda_verification_{stamp}_{uuid4().hex[:8]}.json"
     payload={"schema_version":1,"state":state,"git_commit":_git_commit(),
-        "scope":"local_eda_and_train_only_data_preparation",
+        "scope":scope,
         "model_fits":0,"predictive_improvement_verified":False,
         "models":records}
     temporary=path.with_suffix(".tmp")
