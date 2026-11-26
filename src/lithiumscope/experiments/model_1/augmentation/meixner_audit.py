@@ -74,7 +74,11 @@ def raw_view(chunk,mapping):
     frame=chunk.rename(columns=mapping).copy()
     for c in (*CHEM,"Li_icpms"):
         if c in frame:
-            frame[c]=frame[c].map(lambda v:parse_analytical_value(v,decimal_comma=False)[0])
+            parsed=frame[c].map(lambda v:parse_analytical_value(v,decimal_comma=False)[0])
+            # Analytical parsing handles censoring, but leaves ordinary strings
+            # unchanged. Numeric conversion is a separate required step.
+            values=pd.to_numeric(parsed,errors="coerce").astype(float)
+            frame[c]=values.where(np.isfinite(values)&values.ge(0))
     for axis in ("Latitude","Longitude"):
         if axis not in frame and axis+"_min" in frame:
             low=pd.to_numeric(frame[axis+"_min"],errors="coerce")
