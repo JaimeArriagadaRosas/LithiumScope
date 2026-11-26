@@ -1,6 +1,6 @@
 # Continuidad científica — LithiumScope, 26 de noviembre de 2026
 
-> **Actualización posterior:** [M1_EXPANSION.md](M1_EXPANSION.md) es la continuación vigente para M1. Se reabre la investigación con datos reales nuevos; M2 queda congelado. El cierre anterior se conserva como registro histórico, no como aprobación de release. Última suite validada: b5b0594, 1002/1005 aprobadas, 3 omitidas, cero fallos, cobertura 57.05%. Pendiente ejecutar EDA avanzado y pruebas nuevas.
+> **Estado vigente — cierre de refinamiento histórico M1:** [M1_EXPANSION.md](M1_EXPANSION.md) (última sección) y [state.json](state.json) prevalecen sobre las notas históricas siguientes. Campaña académica final completa: 47/47 pruebas focalizadas, 35 ajustes de árboles y 20 estimadores locales, siete hashes verificados. Mejor RMSE medio académico 7.074911 ppm, R² medio .631231 (HGB combinado); objetivo OASIS parcialmente alcanzado (RMSE <5.361 pendiente; R² >.499 superado). CatBoost H lidera RMSE espacial experimental 111.579554 ppm. No repetir campañas históricas ni promover modelos. Siguiente línea: evaluar adquisición dirigida de datos independientes y congelar protocolo antes de nuevos ajustes. M2 congelado. Última suite completa anterior a expansión: 1002 aprobadas, 3 omitidas, 0 fallos, cobertura 57.05%; no equivale a una suite completa posterior. No hay nueva ejecución local requerida por el cierre documental.
 
 **Entrada canónica para retomar el trabajo en otro chat.** Leer este documento, 
 RESULTADOS.md, PLAN_CIERRE.md y EVIDENCIAS.md antes de modificar el código.
@@ -8,9 +8,9 @@ Rama: `feat/m1-targeted-data-refinement`. Base de esta documentación:
 `f97a2daf9266e6dae2206870988bfea122892ebf`. Main permanece en 
 `a3b77a02d98e626558b81163d94fcf92da1ddfb5`. No fusionar ni publicar sin aprobación.
 
-## Actualización de cierre (26/11)
+## Actualización de cierre anterior (26/11; registro histórico)
 
-**Leer [CIERRE_EXPERIMENTAL.md](CIERRE_EXPERIMENTAL.md) y [state.json](state.json) como estado vigente; las notas anteriores a esta actualización son históricas.** Fases 0 y 1 completas; fase 2 cerrada como cribado validado y decisión aprobada de no incorporar datos. Fases 3 y 4 cerradas sin ejecución ni fit adicional; se conservan los RF de 25/11. Suite: 1001/1004 aprobadas, 3 omitidas, cero fallos/errores, cobertura 57.02%. Comparador global complete. Página 2 validada. Restan PDF final con evidencia recuperada, reconstrucción y cierre operativo de fase 6. No publicar ni fusionar.
+**[CIERRE_EXPERIMENTAL.md](CIERRE_EXPERIMENTAL.md) registra el cierre anterior; el estado vigente de M1 está en la actualización superior.** Fases 0 y 1 completas; fase 2 cerrada como cribado validado y decisión aprobada de no incorporar datos. Fases 3 y 4 cerradas sin ejecución ni fit adicional; se conservan los RF de 25/11. Suite: 1001/1004 aprobadas, 3 omitidas, cero fallos/errores, cobertura 57.02%. Comparador global complete. Página 2 validada. Restan PDF final con evidencia recuperada, reconstrucción y cierre operativo de fase 6. No publicar ni fusionar.
 
 ## Decisiones vigentes
 
@@ -95,7 +95,7 @@ y merge no autorizados. Experimentos y fit final siguen condicionados a evidenci
 - Sin reentrenamiento, merge o release. Queda probar el código y recuperar
   posprocesamiento M2 en el entorno local. No se ha ejecutado en ese equipo.
 
-## Ejecución local pendiente (sin entrenamiento)
+## Ejecución local pendiente del cierre anterior (registro histórico; no repetir por defecto)
 
 1. Actualizar la rama con `git pull --ff-only`.
 2. Menú 1 > 2: regenerar PDF con las comparaciones restauradas (run 20261126T141852_5f6cc5d4) y verificar los anexos y la página 2.
