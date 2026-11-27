@@ -213,7 +213,7 @@
       "tests/unit/algorithms/test_texture_geographic_reference.py"
     ],
     "M2-18": [
-      "tests/scientific/m2_training/test_m2_full_competition_quality.py",
+      "tests/scientific/evaluation/test_m2_full_competition_quality.py",
       "tests/integration/training/test_m2_refactored_outer_cv_smoke.py",
       "tests/scientific/m2_training/test_m2_canonical_protocol.py"
     ],
@@ -240,12 +240,12 @@
     "M2-23": [
       "tests/scientific/m2_training/test_m2_historical_706_control.py",
       "tests/scientific/experiments/test_compare_vnext_trained_runs.py",
-      "tests/scientific/m2_training/test_m2_release_closure_comparison.py"
+      "tests/scientific/evaluation/test_m2_release_closure_comparison.py"
     ],
     "M2-24": [
       "tests/functional/model_lifecycle/test_candidate_evidence.py",
       "tests/functional/model_lifecycle/test_demo_promotion_guard.py",
-      "tests/scientific/m2_training/test_m2_full_competition_quality.py"
+      "tests/scientific/evaluation/test_m2_full_competition_quality.py"
     ],
     "M2-25": [
       "tests/unit/inference/test_model_2_operating_threshold.py",
@@ -259,7 +259,7 @@
     ],
     "M2-27": [
       "tests/functional/model_lifecycle/test_final_fit_contract.py",
-      "tests/scientific/m2_training/test_m2_manual_closure.py"
+      "tests/scientific/evaluation/test_m2_manual_closure.py"
     ],
     "M2-28": [
       "tests/unit/inference/test_applicability.py",
@@ -267,7 +267,7 @@
       "tests/unit/inference/test_verified_patch_contract.py"
     ],
     "M2-29": [
-      "tests/scientific/m2_training/test_m2_full_competition_diagnostics.py",
+      "tests/scientific/evaluation/test_m2_full_competition_diagnostics.py",
       "tests/integration/reporting/test_spatial_maps.py"
     ],
     "M2-30": [
@@ -446,7 +446,7 @@
     "ARQ-034": [
       "tests/functional/model_lifecycle/test_candidate_evaluation_gates.py",
       "tests/functional/model_lifecycle/test_release_gate_catalog.py",
-      "tests/scientific/m2_training/test_m2_full_competition_quality.py"
+      "tests/scientific/evaluation/test_m2_full_competition_quality.py"
     ],
     "ARQ-035": [
       "tests/scientific/experiments/test_learning_curves.py",
@@ -474,7 +474,7 @@
       "tests/integration/training/test_pretraining_holdout_reservation.py"
     ],
     "ARQ-039": [
-      "tests/scientific/m2_training/test_m2_full_competition_diagnostics.py",
+      "tests/scientific/evaluation/test_m2_full_competition_diagnostics.py",
       "tests/functional/model_lifecycle/test_candidate_evidence.py"
     ],
     "ARQ-040": [
@@ -482,7 +482,7 @@
       "tests/model_2/test_verified_feature_cache.py"
     ],
     "ARQ-041": [
-      "tests/scientific/m2_training/test_m2_release_closure_comparison.py",
+      "tests/scientific/evaluation/test_m2_release_closure_comparison.py",
       "tests/scientific/m2_training/test_m2_generalization_protocol.py",
       "tests/integration/training/test_pretraining_holdout_reservation.py",
       "tests/core/test_historical_parity_preflight.py"
