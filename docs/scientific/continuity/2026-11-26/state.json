@@ -340,7 +340,7 @@
       }
     },
     "integral_optimization": {
-      "state": "point_posttraining_operationally_closed_canonical_integration_implemented",
+      "state": "integration_verified_no_eligible_candidate_reference_fit_blocked",
       "plan": "M1_PLAN_OPTIMIZACION_INTEGRAL.md",
       "approval": {
         "date": "2026-11-26",
@@ -352,12 +352,12 @@
         "1_pretraining": "operationally_closed",
         "2_training": "operationally_closed_hgb_squared_retained",
         "3_posttraining": "operationally_closed_ridge_candidate_for_integration",
-        "4_integration": "implemented_pending_local_validation",
-        "5_reference_candidate": "conditional_pending",
-        "6_fine_tuning": "conditional_pending_reference_candidate",
+        "4_integration": "evaluation_complete_no_eligible_method",
+        "5_reference_candidate": "blocked_by_spatial_eligibility",
+        "6_fine_tuning": "not_started_reference_blocked",
         "7_final_validation": "pending"
       },
-      "current_phase": "4_canonical_integration_pending_execution",
+      "current_phase": "4_review_spatial_generalization_blocker",
       "next_document": "M1_INTEGRACION_METODOLOGICA.md",
       "baseline": {
         "academic_control": "A_historical",
@@ -389,8 +389,8 @@
         "main_merge_authorized": false
       },
       "documentation_commit": "39948bf4ff7e9c5756089b2bbfb685e1a61ade58",
-      "local_command_pending": true,
-      "new_fits": 415,
+      "local_command_pending": false,
+      "new_fits": 505,
       "training_audit": {
         "document": "M1_AUDITORIA_ENTRENAMIENTO.md",
         "audit_commit": "3c50ecfa43a4e564099e8cb5ca6bb3f46c31ce60",
@@ -605,7 +605,7 @@
         "independent_improvement_certified": false
       },
       "integration": {
-        "state": "legacy_oof_preflight_corrected_pending_local_validation",
+        "state": "complete_verified_no_eligible_candidate",
         "module": "lithiumscope.experiments.model_1.integral.integration",
         "contract_commit": "18bec72ced86b652483f0366a25cb3a49f7ae8b9",
         "runner_commit": "9ecd4e6e522d362bc578a47eda60cc9bac8eff42",
@@ -621,7 +621,7 @@
         "expected_focused_tests": 124,
         "expected_oof_rows": 33415,
         "expected_calibration_rows": 26732,
-        "executed": false,
+        "executed": true,
         "models_saved": false,
         "independent_holdout": false,
         "preflight_attempt": {
@@ -635,7 +635,34 @@
           "experimental_fits": 0
         },
         "fix_commit": "5539d47857522af37f63c4d5287d797cb94e1022",
-        "regression_test_commit": "f43deda95d0d85e5e48fd4f101452a1700b9a36c"
+        "regression_test_commit": "f43deda95d0d85e5e48fd4f101452a1700b9a36c",
+        "run_id": "20261126T232226_c7612b4d",
+        "manifest_sha256": "0ec679dfe7c15a318869bbcdb65bbb5e148dfba089ade5d993da5649db9b5d72",
+        "zip_sha256": "4a8226c17ddd0729c93d7f707f6c8a69f65ba21dd37623baf4db4400305e40bf",
+        "verified_output_hashes": 6,
+        "oof_rows": 33415,
+        "calibration_oof_rows": 26732,
+        "base_fits_executed": 80,
+        "ridge_fits_executed": 10,
+        "ridge_reproduced_from_oof": 10,
+        "spatial_group_isolation_verified": true,
+        "inference_parity_recorded": true,
+        "reference_review_eligible": false,
+        "academic_ridge_rmse_mean": 7.185906322744751,
+        "academic_ridge_r2_mean": 0.6178299135738838,
+        "spatial_hgb_rmse_global": 150.26962119453827,
+        "spatial_hgb_rmse_mean": 109.26247737174496,
+        "spatial_hgb_mae": 17.969185305857653,
+        "spatial_ridge_rmse_global": 156.64709663889815,
+        "spatial_ridge_rmse_mean": 118.71865924597982,
+        "diagnosis": {
+          "fold_1_single_row_error_dominance": true,
+          "fold_3_group_error_concentration": true,
+          "guard_failure": "spatial_mean_rmse_and_mae_despite_hgb_global_gain",
+          "retained_reference": "random_forest_prior_candidate",
+          "remediation_pending_review": true
+        },
+        "results_commit": "8bf9761fd0b04113fc4e6a9a9c2fc1aa819d158e"
       }
     }
   },
@@ -661,10 +688,10 @@
     "frozen_for_current_branch": true
   },
   "next": [
-    "run_corrected_canonical_integration_once_and_124_focused_tests",
-    "verify_inference_parity_and_dual_protocol_guard_results",
-    "review_reference_candidate_eligibility_before_fit",
-    "fine_tune_reference_candidate_then_final_validation"
+    "review_spatial_support_and_error_concentration_without_new_data",
+    "predeclare_bounded_remediation_if_justified_or_reconsider_reference_anchor",
+    "do_not_fit_reference_until_eligibility_resolved",
+    "fine_tuning_not_started"
   ],
   "independent_external_holdout": false,
   "main_merge_authorized": false,
@@ -777,11 +804,11 @@
     "comparison_state": "complete"
   },
   "latest_focused_m1_validation": {
-    "commit": "1b0cb60fce7ab8737774e7daf767a1d6dbb6bb1b",
-    "passed": 121,
-    "total": 121,
+    "commit": "a2832985584d439a4492112ff1e15ea0a25475d4",
+    "passed": 124,
+    "total": 124,
     "failed": 0,
-    "duration_seconds": 7.76,
+    "duration_seconds": 8.69,
     "scope": "tests/scientific/m1_expansion",
     "full_suite_after_expansion": false
   }
