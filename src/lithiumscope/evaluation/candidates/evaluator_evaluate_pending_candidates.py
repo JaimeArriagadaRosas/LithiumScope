@@ -130,12 +130,8 @@ def evaluate_pending_candidates(
         active_path, candidate_path = (
             targets["model_2"]
         )
-        active_bundle = joblib.load(
-            active_path
-        )
-        candidate_bundle = joblib.load(
-            candidate_path
-        )
+        active_bundle = load_model_artifact(active_path, model_group="model_2")
+        candidate_bundle = load_model_artifact(candidate_path, model_group="model_2")
         demo_cfg = load_config(
             "prediction"
         )["demonstration"]
@@ -151,13 +147,13 @@ def evaluate_pending_candidates(
         active_predictions, _ = (
             score_model_2_cases(
                 imagery,
-                bundle=active_bundle,
+                bundle=active_bundle, strict=True, include_abstentions=True,
             )
         )
         candidate_predictions, _ = (
             score_model_2_cases(
                 imagery,
-                bundle=candidate_bundle,
+                bundle=candidate_bundle, strict=True, include_abstentions=True,
             )
         )
         active_reference = float(

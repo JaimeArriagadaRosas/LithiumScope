@@ -25,6 +25,16 @@ def run_complete_prediction(
     )
     m1_digest = snapshot_input(model_1_path, model_1_snapshot)
     m2_digest = snapshot_input(model_2_path, model_2_snapshot)
+    sidecars = {}
+    if model_2_path.suffix.lower() in {".npy", ".tif", ".tiff"}:
+        # Both supported provenance conventions are preserved, including an
+        # ambiguous pair that must still be rejected by the spectral contract.
+        for source, target in (
+            (model_2_path.with_suffix(model_2_path.suffix + ".json"), model_2_snapshot.with_suffix(model_2_snapshot.suffix + ".json")),
+            (model_2_path.with_suffix(".json"), model_2_snapshot.with_suffix(".json")),
+        ):
+            if source.is_file():
+                sidecars[target.relative_to(session.root).as_posix()] = snapshot_input(source, target)
 
     model_1_input = ensure_case_ids(
         load_data(model_1_snapshot)
@@ -38,14 +48,15 @@ def run_complete_prediction(
     input_info = {
         "model_1": {
             "original_path": str(model_1_path),
-            "snapshot_path": str(model_1_snapshot),
+            "snapshot_path": model_1_snapshot.relative_to(session.root).as_posix(),
             "sha256": m1_digest,
         },
         "model_2": {
             **model_2_input_info,
             "original_path": str(model_2_path),
-            "snapshot_path": str(model_2_snapshot),
+            "snapshot_path": model_2_snapshot.relative_to(session.root).as_posix(),
             "snapshot_sha256": m2_digest,
+            "sidecars": sidecars,
         },
         "pairing_rule": (
             "case_id; una imagen única se empareja automáticamente "

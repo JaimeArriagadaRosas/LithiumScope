@@ -2,11 +2,16 @@ from __future__ import annotations
 
 import argparse
 import json
+from hashlib import sha256
+from uuid import uuid4
+import shutil
 from pathlib import Path
 
 import pandas as pd
 
 from lithiumscope.core.paths import RESULTS_DIR
+from lithiumscope.core.hashing import file_sha256
+from lithiumscope.results.prediction_artifacts import verify_report_sources, session_artifact
 from lithiumscope.reporting.service import report_title, write_pdf_report
 from lithiumscope.results.atomic_exports import write_legacy_evidence_json
 from lithiumscope.core.logging.session import get_logger
@@ -51,6 +56,7 @@ def rebuild_pdf(run: str | Path) -> Path:
         raise RuntimeError("La ejecucion no contiene prediction_manifest.json.")
 
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    verify_report_sources(run_dir, manifest)
     interpretation_path = run_dir / "interpretation.txt"
     interpretation = (
         interpretation_path.read_text(encoding="utf-8")
@@ -80,47 +86,75 @@ def rebuild_pdf(run: str | Path) -> Path:
     )
     title = manifest.get("title") or report_title(manifest.get("mode"), *manifest.get("models", {}).values())
     logger.info("Rebuilding PDF for %s", run_dir)
-    destination = write_pdf_report(
-        run_dir / "report.pdf",
-        title=title,
-        run_id=str(manifest.get("run_id", run_dir.name)),
-        mode=str(manifest.get("mode", "unknown")),
-        interpretation=interpretation,
-        model_1_identity=manifest.get("models", {}).get("model_1", {}),
-        model_2_identity=manifest.get("models", {}).get("model_2", {}),
-        model_1_metrics=manifest.get("metrics", {}).get("model_1_external", {}),
-        model_2_metrics=manifest.get("metrics", {}).get("model_2_external", {}),
-        model_1_predictions=model_1,
-        model_2_predictions=model_2,
-        paired=paired,
-        correlations=correlations,
-        concordance=concordance,
-        training_vs_external=comparison,
-        overlap_audit=manifest.get("overlap_audit"),
-        input_info=manifest.get("inputs"),
-        model_1_diagnostics=read_json(
-            run_dir / "model_1" / "diagnostics.json"
-        ),
-        model_2_diagnostics=read_json(
-            run_dir / "model_2" / "diagnostics.json"
-        ),
-        maps=maps,
-        figures=figures,
-        lithium_threshold_ppm=manifest.get("thresholds", {}).get(
-            "lithium_reference_ppm"
-        ),
-        model_2_classification_threshold=manifest.get("thresholds", {}).get(
-            "model_2_classification_score"
-        ),
-        runtime=manifest.get("runtime", {}),
-    )
-
-    artifacts = manifest.setdefault("artifacts", {})
-    artifacts["report_pdf"] = str(destination)
-    write_legacy_evidence_json(manifest_path, manifest)
+    destination = run_dir / "report.pdf"
+    temporary = run_dir / f".report.{uuid4().hex}.pdf"
+    previous = run_dir / f".report.{uuid4().hex}.backup"
+    previews = {}
+    if "case_id" in paired:
+        for case_id in paired["case_id"].astype(str):
+            image = run_dir / "decision_previews" / (sha256(case_id.encode("utf-8")).hexdigest() + ".png")
+            if image.is_file():
+                previews[case_id] = image
+    try:
+        write_pdf_report(
+            temporary,
+            title=title,
+            run_id=str(manifest.get("run_id", run_dir.name)),
+            mode=str(manifest.get("mode", "unknown")),
+            interpretation=interpretation,
+            model_1_identity=manifest.get("models", {}).get("model_1", {}),
+            model_2_identity=manifest.get("models", {}).get("model_2", {}),
+            model_1_metrics=manifest.get("metrics", {}).get("model_1_external", {}),
+            model_2_metrics=manifest.get("metrics", {}).get("model_2_external", {}),
+            model_1_predictions=model_1,
+            model_2_predictions=model_2,
+            paired=paired,
+            correlations=correlations,
+            concordance=concordance,
+            training_vs_external=comparison,
+            overlap_audit=manifest.get("overlap_audit"),
+            input_info=manifest.get("inputs"),
+            model_1_diagnostics=read_json(
+                run_dir / "model_1" / "diagnostics.json"
+            ),
+            model_2_diagnostics=read_json(
+                run_dir / "model_2" / "diagnostics.json"
+            ),
+            maps=maps,
+            figures=figures,
+            lithium_threshold_ppm=manifest.get("thresholds", {}).get(
+                "lithium_reference_ppm"
+            ),
+            model_2_classification_threshold=manifest.get("thresholds", {}).get(
+                "model_2_classification_score"
+            ),
+            runtime=manifest.get("runtime", {}),
+            decision_previews=previews,
+        )
+        artifacts = manifest.setdefault("artifacts", {})
+        artifacts["report_pdf"] = "report.pdf" if manifest.get("schema_version", 1) >= 2 else str(destination)
+        if manifest.get("schema_version", 1) >= 2:
+            manifest["artifact_sha256"]["report.pdf"] = file_sha256(temporary)
+        existed = destination.is_file()
+        if existed:
+            shutil.copyfile(destination, previous)
+        temporary.replace(destination)
+        try:
+            write_legacy_evidence_json(manifest_path, manifest)
+        except Exception:
+            if existed:
+                previous.replace(destination)
+            else:
+                destination.unlink(missing_ok=True)
+            raise
+    except Exception:
+        logger.exception("PDF regeneration failed for %s", run_dir)
+        raise
+    finally:
+        temporary.unlink(missing_ok=True)
+        previous.unlink(missing_ok=True)
     logger.info("PDF rebuilt: %s", destination)
     return destination
-
 
 def main() -> None:
     parser = argparse.ArgumentParser(

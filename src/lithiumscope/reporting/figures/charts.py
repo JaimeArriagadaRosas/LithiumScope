@@ -3,6 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+from lithiumscope.core.logging.session import get_logger
+
+logger = get_logger("reporting.figures.charts")
 import numpy as np
 import pandas as pd
 
@@ -33,8 +36,11 @@ def _scatter(
     axis.grid(True, alpha=0.25)
     figure.tight_layout()
     destination.parent.mkdir(parents=True, exist_ok=True)
-    figure.savefig(destination, dpi=150)
-    plt.close(figure)
+    try:
+        figure.savefig(destination, dpi=150)
+        logger.info("Figure written: %s", destination)
+    finally:
+        plt.close(figure)
     return destination
 
 
@@ -76,8 +82,11 @@ def _case_bar(
     axis.grid(True, axis="y", alpha=0.25)
     figure.tight_layout()
     destination.parent.mkdir(parents=True, exist_ok=True)
-    figure.savefig(destination, dpi=150)
-    plt.close(figure)
+    try:
+        figure.savefig(destination, dpi=150)
+        logger.info("Figure written: %s", destination)
+    finally:
+        plt.close(figure)
     return destination
 
 

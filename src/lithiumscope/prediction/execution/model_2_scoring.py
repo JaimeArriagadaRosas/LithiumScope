@@ -44,7 +44,7 @@ def _score_model_2_cases(cases: pd.DataFrame, bundle: dict, *, strict: bool = Fa
     logger.info("M2 batch finished requested=%d returned=%d failed=%d", len(cases), len(records), len(failures))
     return pd.DataFrame(records), {
         "expected_features": list(bundle["features"]), "missing_feature_counts": dict(missing_feature_counts),
-        "ready_cases": len(records), "requested_cases": len(cases), "failed_cases": len(failures),
+        "ready_cases": sum(row["prospectivity_score"] is not None for row in records), "requested_cases": len(cases), "failed_cases": len(failures),
         "failed_case_details": failures, "operating_threshold": float(bundle.get("operating_threshold", .5)),
         "operating_threshold_objective": bundle.get("operating_threshold_objective"),
     }

@@ -163,7 +163,7 @@ def load_model_with_identity(model_group: str, *, candidate_run_id: str | None =
         "release_promoted_by_demonstration": False,
     }
     if model_group == "model_2":
-        bands = bundle.get("bands", bundle.get("band_names"))
+        bands = bundle.get("bands") or bundle.get("band_names") or (bundle.get("patch_input_contract") or {}).get("bands")
         identity["bands"] = list(bands) if isinstance(bands, (list, tuple)) else None
         identity["feature_extractor_version"] = bundle.get("feature_extractor_version")
         identity["feature_count"] = len(bundle.get("features", [])) or None

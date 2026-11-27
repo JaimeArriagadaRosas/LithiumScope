@@ -4,6 +4,9 @@ import math
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+from lithiumscope.core.logging.session import get_logger
+
+logger = get_logger("reporting.figures.maps")
 import pandas as pd
 
 
@@ -129,8 +132,11 @@ def save_sample_location_map(
     axis.set_title("Ubicacion geografica de las muestras evaluadas")
     figure.tight_layout()
     destination.parent.mkdir(parents=True, exist_ok=True)
-    figure.savefig(destination, dpi=170)
-    plt.close(figure)
+    try:
+        figure.savefig(destination, dpi=170)
+        logger.info("Figure written: %s", destination)
+    finally:
+        plt.close(figure)
     return destination
 
 
@@ -217,8 +223,11 @@ def save_model_result_map(
     )
     figure.tight_layout()
     destination.parent.mkdir(parents=True, exist_ok=True)
-    figure.savefig(destination, dpi=170)
-    plt.close(figure)
+    try:
+        figure.savefig(destination, dpi=170)
+        logger.info("Figure written: %s", destination)
+    finally:
+        plt.close(figure)
     return destination
 
 

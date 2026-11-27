@@ -2,6 +2,7 @@
 from __future__ import annotations
 from pathlib import Path
 from typing import Any
+from lithiumscope.reporting.context import ReportContext
 
 
 def report_title(mode: str, *identities: dict) -> str:
@@ -38,6 +39,7 @@ def write_pdf_report(
     lithium_threshold_ppm: float | None = None,
     model_2_classification_threshold: float | None = None,
     runtime: dict | None = None,
+    decision_previews: dict[str, Path] | None = None,
 ) -> Path:
     from lithiumscope.core.scientific.decision import calculate_decision
     from lithiumscope.core.scientific.report_context import report_statistics
@@ -52,12 +54,12 @@ def write_pdf_report(
     statistics = report_statistics(model_1_predictions, model_2_predictions, concordance,
                                    model_2_classification_threshold, model_1_diagnostics)
     from lithiumscope.reporting.figures.decision_previews import prepare_decision_previews
-    decision_previews = prepare_decision_previews(
-        decision.selected, model_2_identity, path.parent / "decision_previews"
-    )
+    if decision_previews is None:
+        decision_previews = prepare_decision_previews(
+            decision.selected, model_2_identity, path.parent / "decision_previews"
+        )
     from lithiumscope.reporting.pdf import write_pdf_report as render_pdf
-    return render_pdf(
-        path,
+    context = ReportContext(
         title=title,
         run_id=run_id,
         mode=mode,
@@ -76,8 +78,8 @@ def write_pdf_report(
         input_info=input_info,
         model_1_diagnostics=model_1_diagnostics,
         model_2_diagnostics=model_2_diagnostics,
-        maps=maps,
-        figures=figures,
+        maps=tuple(maps),
+        figures=tuple(figures),
         lithium_threshold_ppm=lithium_threshold_ppm,
         model_2_classification_threshold=(
             model_2_classification_threshold
@@ -87,3 +89,5 @@ def write_pdf_report(
         statistics=statistics,
         decision_previews=decision_previews,
     )
+
+    return render_pdf(path, context)

@@ -2,7 +2,7 @@
 from __future__ import annotations
 from datetime import datetime, timezone
 from pathlib import Path
-from lithiumscope.core.hashing import file_sha256
+from lithiumscope.results.prediction_artifacts import artifact_hashes, session_relative_path
 from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.reproducibility import runtime_fingerprint
 from lithiumscope.results.atomic_exports import write_table, write_text, write_legacy_evidence_json as write_json
@@ -34,7 +34,7 @@ def _publish_outputs(session, frames, evidence, thresholds, run_log_path):
     from lithiumscope.reporting.workbook import write_workbook
 
     def relative(path):
-        return Path(path).resolve().relative_to(session.root.resolve()).as_posix()
+        return session_relative_path(session.root, path)
 
     model_1_predictions = frames.model_1_predictions
     model_2_predictions = frames.model_2_predictions
@@ -71,11 +71,14 @@ def _publish_outputs(session, frames, evidence, thresholds, run_log_path):
         paired,
         session.figures / "maps",
     )
-    satellite_preview = save_satellite_input_preview(
-        model_2_cases,
-        session.figures / "sentinel_inputs.png",
-        bands=model_2_identity.get("bands"),
-    )
+    bands = model_2_identity.get("bands")
+    satellite_preview = None
+    if bands:
+        satellite_preview = save_satellite_input_preview(
+            model_2_cases, session.figures / "sentinel_inputs.png", bands=bands,
+        )
+    else:
+        logger.warning("Satellite preview omitted: selected model has no documented band order")
     figures = save_integrated_figures(paired, session.figures)
     if satellite_preview is not None:
         figures = [satellite_preview, *figures]
@@ -170,6 +173,9 @@ def _publish_outputs(session, frames, evidence, thresholds, run_log_path):
             "report_pdf": relative(report_path),
             "interpretation": relative(interpretation_path),
             "run_log": str(run_log_path),
+            "model_1_diagnostics": relative(session.model_1 / "diagnostics.json"),
+            "model_2_diagnostics": relative(session.model_2 / "diagnostics.json"),
+            "decision_previews": [relative(path) for path in sorted((session.root / "decision_previews").glob("*.png"))],
             "maps": [relative(path) for path in maps],
             "figures": [relative(path) for path in figures],
             "satellite_input_preview": (
@@ -179,11 +185,9 @@ def _publish_outputs(session, frames, evidence, thresholds, run_log_path):
             ),
         },
     }
-    manifest["artifact_sha256"] = {
-        key: file_sha256(session.root / value)
-        for key, value in manifest["artifacts"].items()
-        if key != "run_log" and isinstance(value, str) and (session.root / value).is_file()
-    }
+    if session.mode == "demonstration":
+        manifest["artifacts"]["model_selection_evidence"] = "model_selection_evidence.json"
+    manifest["artifact_sha256"] = artifact_hashes(session.root, manifest["artifacts"])
     manifest_path = write_json(session.root / "prediction_manifest.json", manifest)
     logger.info("Prediction artifacts published run=%s manifest=%s", session.run_id, manifest_path)
     return report_path, workbook_path, manifest_path

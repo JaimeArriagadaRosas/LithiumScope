@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 from uuid import uuid4
 
-import pandas as pd
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
 from reportlab.platypus import SimpleDocTemplate
@@ -23,72 +22,10 @@ from lithiumscope.reporting.styles import (
 )
 
 
-def write_pdf_report(
-    path: Path,
-    *,
-    title: str,
-    run_id: str,
-    mode: str,
-    interpretation: str,
-    model_1_identity: dict,
-    model_2_identity: dict,
-    model_1_metrics: dict,
-    model_2_metrics: dict,
-    model_1_predictions: pd.DataFrame,
-    model_2_predictions: pd.DataFrame,
-    paired: pd.DataFrame,
-    correlations: pd.DataFrame,
-    concordance: pd.DataFrame,
-    training_vs_external: pd.DataFrame,
-    overlap_audit: dict | None,
-    input_info: dict | None,
-    model_1_diagnostics: dict | None,
-    model_2_diagnostics: dict | None,
-    maps: list[Path],
-    figures: list[Path],
-    lithium_threshold_ppm: float | None = None,
-    model_2_classification_threshold: float | None = None,
-    runtime: dict | None = None,
-    decision,
-    statistics: dict,
-    decision_previews: dict[str, Path] | None = None,
-) -> Path:
-    path.parent.mkdir(
-        parents=True,
-        exist_ok=True,
-    )
-    context = ReportContext(
-        title=title,
-        run_id=run_id,
-        mode=mode,
-        interpretation=interpretation,
-        model_1_identity=model_1_identity,
-        model_2_identity=model_2_identity,
-        model_1_metrics=model_1_metrics,
-        model_2_metrics=model_2_metrics,
-        model_1_predictions=model_1_predictions,
-        model_2_predictions=model_2_predictions,
-        paired=paired,
-        correlations=correlations,
-        concordance=concordance,
-        training_vs_external=training_vs_external,
-        overlap_audit=overlap_audit,
-        input_info=input_info,
-        model_1_diagnostics=model_1_diagnostics,
-        model_2_diagnostics=model_2_diagnostics,
-        maps=tuple(maps),
-        figures=tuple(figures),
-        lithium_threshold_ppm=lithium_threshold_ppm,
-        model_2_classification_threshold=(
-            model_2_classification_threshold
-        ),
-        runtime=dict(runtime or {}),
-        decision=decision,
-        statistics=statistics,
-        decision_previews=dict(decision_previews or {}),
-    )
+def write_pdf_report(path: Path, context: ReportContext) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
     logger = get_logger("reporting.pdf")
-    logger.info("PDF generation started run=%s path=%s", run_id, path)
+    logger.info("PDF generation started run=%s path=%s", context.run_id, path)
     styles = build_styles()
 
     temporary = path.with_name(f".{path.name}.{uuid4().hex}.tmp")
@@ -99,7 +36,7 @@ def write_pdf_report(
         leftMargin=1.55 * cm,
         topMargin=1.55 * cm,
         bottomMargin=1.6 * cm,
-        title=title,
+        title=context.title,
         author="LithiumScope",
         subject=(
             "Prediccion integrada y demostracion "
@@ -132,9 +69,9 @@ def write_pdf_report(
             onLaterPages=page_footer,
         )
         temporary.replace(path)
-        logger.info("PDF generated run=%s path=%s", run_id, path)
+        logger.info("PDF generated run=%s path=%s", context.run_id, path)
     except Exception:
-        logger.exception("PDF generation failed run=%s", run_id)
+        logger.exception("PDF generation failed run=%s", context.run_id)
         raise
     finally:
         temporary.unlink(missing_ok=True)
