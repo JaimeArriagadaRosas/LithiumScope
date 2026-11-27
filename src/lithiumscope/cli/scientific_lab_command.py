@@ -92,17 +92,6 @@ def _run_tests() -> bool:
     return completed.returncode == 0
 
 
-def _run_simulations() -> bool:
-    from lithiumscope.experiments.shared.registry import run_registered_simulations
-
-    from lithiumscope.core.logging.session import run_log
-    with run_log("simulations","registered"):
-        manifest = run_registered_simulations()
-    record = json.loads(manifest.read_text(encoding="utf-8"))
-    print(f"Estado: {record['state']}\nEvidencias: {manifest}")
-    return record["state"] == "COMPLETADO"
-
-
 def _treatment_experiments(*, all_families=None, groups=("model_1", "model_2")) -> bool:
     from lithiumscope.experiments.generalization.screen import run_screen
     from lithiumscope.core.logging.session import run_log
@@ -142,72 +131,56 @@ def _treatment_experiments(*, all_families=None, groups=("model_1", "model_2")) 
     return complete
 
 
+def _select_models(title):
+    print(f"\n{title}")
+    print("1. Modelo 1")
+    print("2. Modelo 2")
+    print("3. Ambos modelos")
+    print("0. Volver")
+    choice = choose("Seleccione una opción [0-3]: ", set("0123"))
+    return {"1": ("model_1",), "2": ("model_2",),
+            "3": ("model_1", "model_2")}.get(choice, ())
+
+
+def _comparison_menu():
+    groups = _select_models("COMPARACIONES DE MODELOS")
+    if not groups:
+        return False
+    clear_screen()
+    from lithiumscope.cli.model_comparison_command import run
+    return run(groups)
+
+
 def _treatment_menu():
-    print("\nEVALUACIÓN EXPERIMENTAL DE TRATAMIENTOS")
-    print("1. Evaluación general (ambos modelos: completa o piloto)")
-    print("2. Evaluación focalizada de M1 (balanceo y regímenes)")
-    print("3. Evaluación focalizada de M2 (protocolo existente)")
+    groups = _select_models("EVALUACIÓN DE TRATAMIENTO DE DATOS")
+    if not groups:
+        return False
+    clear_screen()
+    if groups == ("model_1",):
+        mode = choose("¿Evaluación general [g] o focalizada M1 [f]? [g/f/0]: ", {"g", "f", "0"})
+        if mode == "0":
+            return False
+        if mode == "f":
+            from lithiumscope.cli.m1_targeted_command import run
+            return run()
+    return _treatment_experiments(groups=groups)
+
+
+def _validation_menu() -> bool | None:
+    print("\nEJECUCIÓN DE TESTS Y SIMULACIONES\n")
+    print("1. Validación del software")
+    print("2. Comparaciones de modelos")
+    print("3. Evaluación de tratamiento de datos")
     print("0. Volver")
     choice = choose("Seleccione una opción [0-3]: ", set("0123"))
     if choice == "0":
         return False
     clear_screen()
-    if choice == "2":
-        from lithiumscope.cli.m1_targeted_command import run
-        return run()
-    return _treatment_experiments(all_families=True, groups=("model_2",)) if choice == "3" else _treatment_experiments()
-
-
-def _compare_versions():
-    from lithiumscope.experiments.shared.version_comparison import run_version_comparison
-    from lithiumscope.core.logging.session import run_log
-    with run_log("simulations","saved_version_comparison"):
-        path=run_version_comparison()
-    print(f"Evidencias: {path}")
-    return json.loads(path.read_text(encoding="utf-8"))["state"]=="complete"
-
-
-def _academic_reference():
-    from lithiumscope.experiments.model_1.studies.balanced.academic import run_academic
-    from lithiumscope.core.logging.session import run_log
-    with run_log("simulations","m1_oasis_like"):
-        run_academic(trials=20)
-
-
-def _validation_menu() -> bool | None:
-    print("\nEJECUCIÓN DE TESTS Y SIMULACIONES\n")
-    print("1. Validación integral del software (estática, tests y cobertura)")
-    print("2. Simulación y comparaciones de modelos")
-    print("3. Evaluación experimental de tratamiento de datos")
-    print("4. Ejecutar todo")
-    print("5. Comparación de versiones guardadas (sin repetir simulaciones)")
-    print("6. Referencia académica OASIS (M1, piloto)")
-    print("0. Volver")
-    choice=choose("Seleccione una opción [0-6]: ",set("0123456"))
-    if choice=="0":
-        return False
-    clear_screen()
-    if choice in {"5","6"}:
-        try:
-            (_compare_versions if choice=="5" else _academic_reference)()
-        except Exception as exc:
-            print(f"[ERROR] {exc}")
+    try:
+        return {"1": _run_tests, "2": _comparison_menu, "3": _treatment_menu}[choice]()
+    except Exception as exc:
+        print(f"[ERROR] {exc}")
         return None
-    operations=[_run_tests,_run_simulations,_treatment_menu]
-    if choice=="4":
-        print("Modo integral general: incluye doce familias. El refinamiento focalizado M1 se ejecuta por separado.")
-        selected=[_run_tests,_run_simulations,lambda:_treatment_experiments(all_families=True)]
-    else:
-        selected=[operations[int(choice)-1]]
-    outcomes=[]
-    for operation in selected:
-        try:
-            outcomes.append(operation())
-        except Exception as exc:
-            print(f"[ERROR] {exc}")
-            outcomes.append(False)
-    if len(outcomes)>1:
-        print("Estado global: "+("COMPLETADO" if all(outcomes) else "PARCIAL" if any(outcomes) else "ERROR/BLOQUEADO"))
 
 
 def _health() -> None:

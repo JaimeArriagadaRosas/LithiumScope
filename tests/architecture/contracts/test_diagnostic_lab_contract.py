@@ -61,33 +61,52 @@ def test_health_audit_does_not_modify_workspace(tmp_path, monkeypatch):
     assert sorted(p.name for p in source.iterdir()) == ["src"]
 
 
-def test_validation_menu_integral_dispatch(monkeypatch):
-    calls=[]
-    monkeypatch.setattr(lab,"choose",lambda *_:"4")
-    for name in ("_run_tests","_run_simulations","_treatment_experiments"):
-        monkeypatch.setattr(lab,name,lambda n=name,**kwargs:calls.append(n) or True)
-    lab._validation_menu()
-    assert calls==["_run_tests","_run_simulations","_treatment_experiments"]
+def test_validation_menu_exact_dispatch_and_cancel(monkeypatch, capsys):
+    calls = []
+    options = iter(["1", "2", "3", "0"])
+    def select(prompt, allowed):
+        assert allowed == set("0123")
+        return next(options)
+    monkeypatch.setattr(lab, "choose", select)
+    monkeypatch.setattr(lab, "clear_screen", lambda: None)
+    for name in ("_run_tests", "_comparison_menu", "_treatment_menu"):
+        monkeypatch.setattr(lab, name, lambda n=name: calls.append(n) or True)
+    for _ in range(4):
+        lab._validation_menu()
+    assert calls == ["_run_tests", "_comparison_menu", "_treatment_menu"]
+    out = capsys.readouterr().out
+    assert "1. Validación del software\n2. Comparaciones de modelos\n3. Evaluación de tratamiento de datos\n0. Volver" in out
+    assert "Ejecutar todo" not in out and "OASIS" not in out
 
 
-def test_validation_menu_labels_and_spacing(monkeypatch, capsys):
-    monkeypatch.setattr(lab,"choose",lambda *_:"3")
-    monkeypatch.setattr(lab,"_treatment_menu",lambda:print("EVALUACIÓN EXPERIMENTAL"))
-    lab._validation_menu()
-    out=capsys.readouterr().out
-    assert "2. Simulación y comparaciones de modelos" in out
-    assert "3. Evaluación experimental de tratamiento de datos" in out
-    assert "4. Ejecutar todo\n" in out
-    assert "EVALUACIÓN EXPERIMENTAL" in out
+def test_comparison_menu_selects_only_requested_model(monkeypatch):
+    from lithiumscope.cli import model_comparison_command
+    monkeypatch.setattr(lab, "choose", lambda *_: "2")
+    monkeypatch.setattr(lab, "clear_screen", lambda: None)
+    calls = []
+    monkeypatch.setattr(model_comparison_command, "run", lambda groups: calls.append(groups) or True)
+    assert lab._comparison_menu() is True
+    assert calls == [("model_2",)]
+
 
 def test_treatment_menu_m1_dispatch(monkeypatch):
     from lithiumscope.cli import m1_targeted_command
-    monkeypatch.setattr(lab, "choose", lambda *_: "2")
+    choices = iter(["1", "f"])
+    monkeypatch.setattr(lab, "choose", lambda *_: next(choices))
     calls = []
     monkeypatch.setattr(lab, "clear_screen", lambda: calls.append("clear"))
     monkeypatch.setattr(m1_targeted_command, "run", lambda: calls.append("m1") or True)
     assert lab._treatment_menu() is True
     assert calls == ["clear", "m1"]
+
+
+def test_treatment_menu_both_selects_both(monkeypatch):
+    monkeypatch.setattr(lab, "choose", lambda *_: "3")
+    monkeypatch.setattr(lab, "clear_screen", lambda: None)
+    calls = []
+    monkeypatch.setattr(lab, "_treatment_experiments", lambda **kw: calls.append(kw) or True)
+    assert lab._treatment_menu() is True
+    assert calls == [{"groups": ("model_1", "model_2")}]
 
 
 def test_validation_clears_screen_before_dispatch(monkeypatch):

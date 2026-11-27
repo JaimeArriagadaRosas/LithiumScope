@@ -11,13 +11,16 @@ from lithiumscope.experiments.shared.saved_comparison import compare_saved
 from lithiumscope.results.atomic_exports import write_legacy_evidence_json
 
 
-def run_version_comparison(*,output_root=None):
+def run_version_comparison(*, output_root=None, groups=("model_1", "model_2")):
+    groups = tuple(dict.fromkeys(groups))
+    if not groups or not set(groups) <= {"model_1", "model_2"}:
+        raise ValueError("Invalid model scope")
     root=output_root or RESULTS_DIR/"scientific_simulations"/"version_comparisons"
     destination=root/(datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")+"_"+uuid4().hex[:8])
     destination.mkdir(parents=True,exist_ok=False)
     records={}
     from lithiumscope.results.reference_benchmarks import OASIS_M1
-    for group in ("model_1","model_2"):
+    for group in groups:
         available,issues=discover_models(group)
         record={"models":{role:identity for role,(_,identity) in available.items()},
                 "inventory_issues":issues,"state":"blocked"}
@@ -49,6 +52,6 @@ def run_version_comparison(*,output_root=None):
         print(f"{group}: {record['state']} {record.get('reason','')}",flush=True)
     manifest={"state":"complete" if all(r["state"]=="complete" and r.get("report_recovery",{}).get("state","complete")=="complete" for r in records.values()) else "partial",
               "scope":"saved_oof_only_development","independent_holdout":False,"models":records,
-              "academic_reference_m1":OASIS_M1,
+              "academic_reference_m1":OASIS_M1 if "model_1" in groups else None,
               "training":False,"promotion":False,"external_acquisition":False}
     return write_legacy_evidence_json(destination/"manifest.json",manifest)

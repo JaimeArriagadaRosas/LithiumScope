@@ -16,7 +16,11 @@ from lithiumscope.experiments.reporting.reporting import compare_geographies
 from lithiumscope.results.atomic_exports import write_json, write_table
 
 
-def run_registered_simulations(output_root: Path | None = None) -> Path:
+def run_registered_simulations(output_root: Path | None = None, *,
+                               groups=("model_1", "model_2"), include_saved_oof=True) -> Path:
+    groups = tuple(dict.fromkeys(groups))
+    if not groups or not set(groups) <= {"model_1", "model_2"}:
+        raise ValueError("Invalid model scope")
     root=output_root if output_root is not None else RESULTS_DIR/"scientific_simulations"
     destination=root/f"sim_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S_%fZ')}_{uuid4().hex[:8]}"
     destination.mkdir(parents=True,exist_ok=False)
@@ -32,7 +36,7 @@ def run_registered_simulations(output_root: Path | None = None) -> Path:
         protocols.append(result)
         print(f"{name}: {result['state']} {result.get('reason','')}",flush=True)
         return result
-    models={group:discover_models(group) for group in ("model_1","model_2")}
+    models={group:discover_models(group) for group in groups}
     for group,(available,issues) in models.items():
         for issue in issues:
             protocols.append({"protocol":f"{group}: inventario {issue['role']}",**issue})
@@ -40,11 +44,12 @@ def run_registered_simulations(output_root: Path | None = None) -> Path:
         for role,(_,identity) in available.items():
             identities.append({"role":role,**identity})
             print(f"{group} {role}: {identity['run_id']} | {identity['algorithm']}")
-        record(group+": OOF histórico/candidato",lambda g=group,m=available:
-               {"artifact":str(compare_saved(g,m,destination/g/"paired_oof"))})
+        if include_saved_oof:
+            record(group+": OOF histórico/candidato",lambda g=group,m=available:
+                   {"artifact":str(compare_saved(g,m,destination/g/"paired_oof"))})
     cases_path=PROJECT_ROOT/"examples"/"integrated_demo"/"cases.csv"
     m1_outputs={}
-    for role,(bundle,identity) in models["model_1"][0].items():
+    for role,(bundle,identity) in models.get("model_1", ({}, []))[0].items():
         folder=destination/"model_1"/role
         def m1_single():
             result=evaluate_model_1(bundle,pd.read_csv(cases_path),folder/"single")
@@ -63,7 +68,7 @@ def run_registered_simulations(output_root: Path | None = None) -> Path:
                 paired[name+"_delta"]=paired[name+"_candidate"]-paired[name+"_release"]
             return {"artifact":str(write_table(destination/"model_1"/"paired_stress.csv",paired)),"paired_rows":len(paired)}
         record("M1: comparación de robustez pareada",pair_m1)
-    available=models["model_2"][0]
+    available=models.get("model_2", ({}, []))[0]
     matrix={}
     def common():
         from lithiumscope.experiments.model_2.evaluation.descriptor_stress import load_common_matrix
@@ -128,6 +133,6 @@ def run_registered_simulations(output_root: Path | None = None) -> Path:
     state="COMPLETADO" if states=={"COMPLETADO"} else "PARCIAL" if states&{"COMPLETADO","PARCIAL"} else "ERROR" if "ERROR" in states else "BLOQUEADO"
     return write_json(destination/"manifest.json",{"run_id":destination.name,"state":state,
         "scope":"read_only_robustness_and_saved_oof_not_independent_validation",
-        "models":identities,"protocols":protocols,"training":False,"promotion":False,
+        "models":identities,"protocols":protocols,"groups":list(groups),"training":False,"promotion":False,
         "external_acquisition":False,
         "historical_scripts":"Not automatically replayed: may acquire, fit or depend on old frozen protocols."})
