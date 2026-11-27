@@ -2,7 +2,7 @@ from pathlib import Path
 
 
 def test_prediction_menu_has_approved_labels():
-    root = Path(__file__).resolve().parents[2]
+    root = next(parent for parent in Path(__file__).resolve().parents if (parent / "pyproject.toml").is_file())
     text = (
         root
         / "src"

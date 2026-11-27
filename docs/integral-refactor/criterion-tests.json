@@ -276,25 +276,25 @@
       "tests/datasets/provenance/test_dataset_manifest.py"
     ],
     "ARQ-001": [
-      "tests/cli/test_readonly_results.py",
+      "tests/functional/cli/test_readonly_results.py",
       "tests/architecture/contracts/test_pipeline_inspection_reporting.py",
       "tests/reporting/test_document_integrity.py"
     ],
     "ARQ-002": [
-      "tests/cli/test_readonly_results.py",
-      "tests/cli/test_report_viewer.py"
+      "tests/functional/cli/test_readonly_results.py",
+      "tests/functional/cli/test_report_viewer.py"
     ],
     "ARQ-003": [
       "tests/architecture/contracts/test_diagnostic_lab_contract.py",
       "tests/scientific/shared/treatments/test_integral_eda.py",
-      "tests/cli/test_diagnostic_acquisition_policy.py"
+      "tests/functional/cli/test_diagnostic_acquisition_policy.py"
     ],
     "ARQ-004": [
       "tests/runtime/test_training_logging_session.py",
       "tests/architecture/contracts/test_refactor_menu_contract.py"
     ],
     "ARQ-005": [
-      "tests/prediction/test_prediction_menu.py",
+      "tests/functional/cli/test_prediction_menu.py",
       "tests/architecture/contracts/test_refactor_menu_contract.py"
     ],
     "ARQ-006": [
@@ -372,7 +372,7 @@
     "ARQ-019": [
       "tests/scientific/shared/treatments/test_integral_eda.py",
       "tests/runtime/test_candidate_evidence.py",
-      "tests/cli/test_readonly_results.py"
+      "tests/functional/cli/test_readonly_results.py"
     ],
     "ARQ-020": [
       "tests/architecture/structure/test_canonical_execution_packages.py",
