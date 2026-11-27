@@ -8,7 +8,7 @@ from pathlib import Path
 import numpy as np
 
 from lithiumscope.core.hashing import file_sha256
-from lithiumscope.datasets.management.paths import resolve_image_path
+from lithiumscope.datasets.management.sources.model_2_paths import resolve_image_path
 from lithiumscope.model_2.preparation.features.physical_v5 import BANDS, physical_reflectance
 from lithiumscope.model_2.preparation.features.spectral import DEFAULT_BAND_NAMES
 from lithiumscope.model_2.preparation.features.rededge import NEW_BANDS

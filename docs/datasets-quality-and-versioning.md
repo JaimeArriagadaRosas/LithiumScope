@@ -67,7 +67,15 @@ asserted in this document.
 
 Coordinate validation lives in `validation/spatial/coordinates.py`.
 Header validation and target-column resolution share `validation/tabular/schema.py`.
-Historical image-path resolution lives in `management/paths.py`.
+Historical image-path resolution lives in `management/sources/model_2_paths.py`.
 The validation root retains only its initializer, contracts, file-integrity checks,
 and the cross-domain quality report. The retired modules are not compatibility shims.
 The relocation catalog and static import check include these moves.
+
+## Management ownership
+
+M1 source resolution and acquisition share `management/sources/model_1.py`;
+assembly is independent in `model_1_assembly.py`. M2 frozen and expanded
+contracts share `model_2.py`, with linked imagery resolution in `model_2_paths.py`.
+Image verification is opt-in at the manifest contract boundary and does not certify spectral validity.
+No retired source modules are retained as compatibility shims.

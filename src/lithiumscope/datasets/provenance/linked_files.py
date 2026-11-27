@@ -4,7 +4,7 @@ from typing import Any
 import pandas as pd
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.reproducibility import canonical_json_hash
-from lithiumscope.datasets.management.paths import resolve_image_path
+from lithiumscope.datasets.management.sources.model_2_paths import resolve_image_path
 
 def linked_file_metadata(path: Path, frame: pd.DataFrame | None, model_group: str) -> dict[str, Any]:
     # M2 preparation supplies a feature matrix; the raw source manifest has paths.

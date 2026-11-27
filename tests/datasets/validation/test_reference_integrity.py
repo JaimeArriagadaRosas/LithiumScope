@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 
 from lithiumscope.core.hashing import file_sha256
-from lithiumscope.datasets.management.sources.model_2.expanded import require_expanded_manifest
+from lithiumscope.datasets.management.sources.model_2 import require_expanded_manifest
 from lithiumscope.datasets.validation.chemistry.external_geochemistry import review_independence
 
 

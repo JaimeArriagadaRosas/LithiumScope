@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from lithiumscope.tools.acquisition.georoc import filtered as georoc
-from lithiumscope.datasets.management.sources.model_1 import source as sources
+from lithiumscope.datasets.management.sources import model_1 as sources
 
 
 def setup(monkeypatch, tmp_path):

@@ -5,13 +5,13 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from lithiumscope.datasets.management.sources.model_2.frozen import require_frozen_manifest
+from lithiumscope.datasets.management.sources.model_2 import require_frozen_manifest
 from lithiumscope.datasets.provenance.manifest import build_tabular_manifest
 
 
 @pytest.mark.parametrize("name", [
     "datasets.management.registry", "datasets.management.status",
-    "datasets.management.sources.local", "datasets.management.sources.model_1.source",
+    "datasets.management.sources.local", "datasets.management.sources.model_1",
     "runtime.dataset_provisioning", "datasets.provenance.manifest", "datasets.validation.files",
 ])
 def test_canonical_management_imports(name):

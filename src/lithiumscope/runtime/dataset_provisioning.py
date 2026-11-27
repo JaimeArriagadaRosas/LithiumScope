@@ -11,7 +11,7 @@ from lithiumscope.core.states import DatasetState
 from lithiumscope.tools.acquisition.tabular import ensure_dataset
 from lithiumscope.datasets.management.registry import get_dataset_spec
 from lithiumscope.datasets.management.status import DatasetStatus
-from lithiumscope.datasets.management.sources.model_1.source import (
+from lithiumscope.datasets.management.sources.model_1 import (
     prepare_model_1_training_source,
 )
 
@@ -229,7 +229,7 @@ def require_model_1_dataset(
 
 
 def require_frozen_model_2_manifest() -> Path:
-    from lithiumscope.datasets.management.sources.model_2.frozen import require_frozen_manifest
+    from lithiumscope.datasets.management.sources.model_2 import require_frozen_manifest
     return require_frozen_manifest(load_config("model_2")["training"], PROJECT_ROOT)
 
 

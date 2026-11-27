@@ -16,7 +16,7 @@ def test_dataset_root_has_only_public_package_entry():
 
 @pytest.mark.parametrize("name", [
     "adapters.georoc.ingestion", "adapters.georoc.transformation",
-    "management.sources.model_1.source", "management.sources.local",
+    "management.sources.model_1", "management.sources.local",
     "validation.chemistry.analytical", "validation.tabular.missing_values",
     "validation.georoc.source_audit",
 ])
@@ -42,7 +42,7 @@ def test_harmonization_is_public_facade():
 
 
 def test_relative_source_paths_are_portable(tmp_path, monkeypatch):
-    from lithiumscope.datasets.management.sources.model_1.configuration import project_path
+    from lithiumscope.datasets.management.sources.model_1 import project_path
     first, second = tmp_path / "first clone", tmp_path / "second clone"
     first.mkdir()
     second.mkdir()
@@ -68,6 +68,6 @@ def test_validation_relocated_modules_are_retired(name):
 
 def test_validation_canonical_owners():
     from lithiumscope.datasets.validation.spatial.coordinates import assess_coordinate_aliases
-    from lithiumscope.datasets.management.paths import resolve_image_path
+    from lithiumscope.datasets.management.sources.model_2_paths import resolve_image_path
     from lithiumscope.datasets.validation.tabular.schema import validate_headers, resolve_target
     assert all(callable(fn) for fn in (assess_coordinate_aliases, resolve_image_path, validate_headers, resolve_target))
