@@ -177,7 +177,9 @@ def _validation_menu() -> bool | None:
         return False
     clear_screen()
     try:
-        return {"1": _run_tests, "2": _comparison_menu, "3": _treatment_menu}[choice]()
+        {"1": _run_tests, "2": _comparison_menu, "3": _treatment_menu}[choice]()
+        # Keep the report visible even when an executed operation fails.
+        return None
     except Exception as exc:
         print(f"[ERROR] {exc}")
         return None

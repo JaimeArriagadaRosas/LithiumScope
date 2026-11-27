@@ -1,26 +1,44 @@
 # Validación local: presentación y evidencias
 
-El menú del laboratorio 5 > 3 > 1 ejecuta la misma suite con cobertura.
-El observador de pytest registra colección, comienzo y fin de cada prueba y
-resultados por fase. La consola muestra avance real, área, incidencias y
-un aviso cada ocho segundos durante pruebas lentas o recopilación de evidencia.
-Los estados finales proceden del JUnit, no de estimaciones del progreso.
+El menú 5 > 3 > 1, **Validación del software**, ejecuta una sola suite de pytest
+con cobertura, sin filtros automáticos. Las opciones 2 y 3 quedan reservadas
+para comparaciones y evaluación de tratamiento de datos.
 
-Se conservan summary.json, junit.xml, coverage.xml, .coverage, pytest.log,
-events.jsonl y progress.jsonl. El resumen presenta conteos, cobertura de líneas,
-integridad Git, grupos, pruebas fallidas y omitidas y cinco pruebas más lentas.
-Si falta JUnit o cobertura, se declara explícitamente. No se modifica la
-selección ni la ejecución científica de los tests.
+## Flujo
 
-Para consumidores que necesitan el JSON por stdout:
-`python scripts/run_tests.py --json --coverage -- -q tests`.
+1. Sintaxis, lint, dependencias, imports, arranque y límites de tamaño.
+2. Auditoría de la arquitectura de tests (inventario, catálogo, fixtures y marcadores).
+3. Recopilación y ejecución de todos los tests, conservando los errores de colección.
+4. Comprobación de artefactos protegidos, identidad Git y cobertura.
+5. Reconciliación de los casos recopilados y JUnit; evaluación del catálogo de criterios.
+6. Resumen y exportación de evidencias.
 
-Los dos contratos de regresión se alinean al nuevo menú y al anexo dinámico,
-conservando la prohibición de exponer las opciones retiradas y de inventar
-evidencias científicas cuando faltan archivos.
+El observador registra colección, comienzo y fin de cada prueba y resultados por
+fase. La consola mantiene una sola línea dinámica en CMD/PowerShell, muestra
+categoría/responsabilidad y avisa de pruebas lentas cada ocho segundos.
+Si stdout está redirigido, se conserva el progreso por líneas.
 
-En una terminal interactiva (CMD/PowerShell) el progreso sobrescribe una sola
-línea mediante retorno de carro y se limpia antes del resumen. Se limita al
-ancho de la terminal para evitar saltos de línea. Si stdout está redirigido
-a un archivo o capturado por otro proceso, se mantiene el progreso por líneas
-para facilitar su lectura. Los eventos y el resumen final no cambian.
+Las ocho categorías son excluyentes; los ámbitos M1, M2, EDA, training, slow y
+local_artifacts se solapan. Los resultados provienen de JUnit, no del progreso
+estimado. No se certifica una suite incompleta o con identidad no comprobada.
+Las asociaciones con criterios no equivalen a aceptación científica.
+
+## Evidencias
+
+En results/tests/<run_id> se generan:
+
+- summary.json: identidad, estado, comprobaciones, conteos y agregaciones.
+- junit.xml, coverage.xml y .coverage: evidencia original cuando se genera.
+- architecture.json: auditoría estática de la suite (modo integral).
+- criterion_evidence.json: asociaciones de los 166 criterios, por familia.
+- verification_report.md: informe legible para revisión, sin duplicar los logs.
+
+Los logs pytest.log, events.jsonl, progress.jsonl y las comprobaciones previas
+quedan en logs/sessions/<session_id>/tests/<run_id>. No se inventan conteos,
+cobertura ni resultados cuando falta evidencia.
+
+Para consumir JSON por stdout:
+`python scripts/run_tests.py --json --preflight --coverage -- -q --continue-on-collection-errors tests`.
+
+Las ejecuciones parciales mediante -m/-k siguen disponibles para desarrollo,
+pero no acreditan la validación integral.

@@ -23,6 +23,8 @@ def elapsed(seconds):
 
 def group_of(nodeid):
     path = nodeid.split("::", 1)[0].replace(chr(92), "/").split("/")
+    if len(path) >= 4 and path[0] == "tests":
+        return "/".join(path[1:3])
     return path[1] if len(path) >= 3 and path[0] == "tests" else path[0]
 
 
@@ -92,7 +94,7 @@ class Progress:
         kind = event.get("kind")
         if kind == "collected":
             self.total = int(event["total"])
-            self.line(f"Pruebas seleccionadas: {self.total}", now)
+            self.line(f"Pruebas seleccionadas: {self.total} | módulos: {len(event.get('module_counts', {}))}", now)
         elif kind == "start":
             self.current = event["nodeid"]
             group = group_of(self.current)
@@ -178,6 +180,16 @@ def monitor(command, *, cwd, env, log, progress_file, show=True):
                 live.clear()
 
 
+def _print_groups(title, groups):
+    if not groups:
+        return
+    print("\n" + title)
+    print(f"{'Área':42} {'OK':>7} {'Fallos':>7} {'Errores':>7} {'Omit.':>7}")
+    for group, counts in groups.items():
+        print(f"{group[:42]:42} {counts.get('passed',0):7} {counts.get('failure',0):7} "
+              f"{counts.get('error',0):7} {counts.get('skipped',0):7}")
+
+
 def print_summary(summary, results):
     counts = summary["counts"]
     details = summary["details"]
@@ -216,12 +228,23 @@ def print_summary(summary, results):
         print("\nCAUSAS DE ERRORES DE RECOPILACIÓN")
         for cause, count in details["collection_causes"].items():
             print(f"  {count:4} | {cause}")
-    if details["groups"]:
-        print("\nRESULTADOS POR GRUPO")
-        print(f"{'Grupo':32} {'OK':>7} {'Fallos':>7} {'Errores':>7} {'Omit.':>7}")
-        for group, values in details["groups"].items():
-            print(f"{group[:32]:32} {values.get('passed',0):7} {values.get('failure',0):7} "
-                  f"{values.get('error',0):7} {values.get('skipped',0):7}")
+    collection = details.get("collection", {})
+    if collection:
+        print(f"Suite completa : {'verificada' if collection['full_suite_verified'] else 'no verificada'}")
+        print(f"Módulos        : {collection['collected_modules']}/{collection['expected_modules']}")
+        print(f"Casos recogidos: {collection['selected_cases']} | deseleccionados: {collection['deselected_cases']}")
+        if collection["missing_modules"]:
+            print("Módulos no recopilados: " + ", ".join(collection["missing_modules"]))
+    _print_groups("CATEGORÍAS PRINCIPALES", details.get("categories") or details["groups"])
+    _print_groups("RESPONSABILIDADES", details.get("responsibilities", {}))
+    _print_groups("ÁMBITOS TRANSVERSALES (SOLAPADOS)", details.get("scopes", {}))
+    if details.get("unclassified"):
+        print(f"Casos sin clasificación: {details['unclassified']}")
+    criteria = details.get("criterion_summary", {})
+    if criteria:
+        print(f"\nCRITERIOS ASOCIADOS | {criteria['state']}")
+        for family, counts_by_state in criteria["by_family"].items():
+            print(f"  {family}: " + " | ".join(f"{state}: {n}" for state, n in counts_by_state.items()))
     failures = [r for r in details["nonpassing"] if r["state"] != "skipped"]
     if failures:
         print("\nPRUEBAS CON FALLOS O ERRORES")
@@ -244,6 +267,9 @@ def print_summary(summary, results):
         print(f"  Código pytest: {summary['pytest_exit_code']}")
     if rate is not None:
         print(f"  Cobertura XML: {results / 'coverage.xml'}")
+    for name in ("architecture.json", "criterion_evidence.json", "verification_report.md"):
+        if (results / name).is_file():
+            print(f"  {name}: {results / name}")
     print(f"  Log completo : {summary['log']}")
     print("\nInterpretación : " + ("sin fallos de pytest; no demuestra superioridad científica."
           if summary["state"] == "passed" and counts else "revisar incidencias antes de continuar."))
