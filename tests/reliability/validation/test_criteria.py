@@ -39,3 +39,15 @@ def test_duplicate_stems_require_qualified_evidence():
     result=evaluate_catalog(criteria,[{"module":"tests.model_1.test_same.TestClass","outcome":"passed"}],trusted_run=True)["criteria"]
     assert result["M1-01"]["state"]=="ASSOCIATED_TESTS_PASSED"
     assert result["M2-01"]["state"]=="INCOMPLETE_TEST_EVIDENCE"
+
+
+def test_explicit_canonical_path_overrides_junit_classname():
+    criteria = {"M1-01": ["tests/unit/data/test_same.py"], "M2-01": ["tests/scientific/features/test_same.py"]}
+    cases = [{"path": "tests/scientific/features/test_same.py", "module": "tests.unit.data.test_same",
+              "outcome": "passed"}]
+    result = evaluate_catalog(criteria, cases, trusted_run=True)["criteria"]
+    assert result["M1-01"]["state"] == "INCOMPLETE_TEST_EVIDENCE"
+    assert result["M2-01"]["state"] == "ASSOCIATED_TESTS_PASSED"
+    cases[0]["path"] = "tests/unknown/test_same.py"
+    result = evaluate_catalog(criteria, cases, trusted_run=True)["criteria"]
+    assert all(row["state"] == "INCOMPLETE_TEST_EVIDENCE" for row in result.values())

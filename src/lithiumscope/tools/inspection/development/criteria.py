@@ -37,6 +37,12 @@ def evaluate_catalog(criteria: dict, cases: list[dict], *, trusted_run: bool) ->
     by_module: dict[str, list[dict]] = {}
     ambiguous = set()
     for case in cases:
+        canonical = case.get("path")
+        if canonical is not None:
+            # Explicit identity is authoritative; never fall back to a misleading stem.
+            if canonical in declared:
+                by_module.setdefault(canonical, []).append(case)
+            continue
         classname = case["module"]
         exact = []
         for module in declared:

@@ -84,8 +84,15 @@ def junit_breakdown(path: Path) -> dict:
         group = ".".join(parts[:2]) if parts[0] == "tests" else parts[0]
         outcome = next((tag for tag in ("error", "failure", "skipped")
                         if case.find(tag) is not None), "passed")
-        groups[group][outcome] += 1
+        props = {p.get("name"): p.get("value", "") for p in case.findall("./properties/property")}
         record = {"module": module, "test": case.get("name", ""), "outcome": outcome}
+        if "lithiumscope_test_path" in props:
+            record["path"] = props["lithiumscope_test_path"]
+            record["markers"] = [tag for tag in props.get("lithiumscope_test_markers", "").split(",") if tag]
+            category = props.get("lithiumscope_test_category", "")
+            if category:
+                group = f"tests.{category}"
+        groups[group][outcome] += 1
         cases.append(record)
         if outcome != "passed":
             detail=case.find(outcome)

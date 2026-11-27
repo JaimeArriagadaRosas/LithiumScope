@@ -74,3 +74,16 @@ def test_runner_detects_missing_coverage_plugin(monkeypatch):
     assert run_tests.coverage_mode(False) == "not_requested"
     monkeypatch.setattr(run_tests.importlib.util, "find_spec", lambda name: object())
     assert run_tests.coverage_mode(True) == "enabled"
+
+
+def test_junit_canonical_properties_preserve_category_and_markers(tmp_path):
+    path = tmp_path / "junit.xml"
+    path.write_text("""<testsuite><testcase classname="test_sample" name="test_ok">
+        <properties><property name="lithiumscope_test_path" value="tests/unit/data/test_sample.py"/>
+        <property name="lithiumscope_test_category" value="unit"/>
+        <property name="lithiumscope_test_markers" value="m1,unit"/></properties>
+        </testcase></testsuite>""", encoding="utf-8")
+    result = validation.junit_breakdown(path)
+    assert result["groups"] == {"tests.unit": {"passed": 1}}
+    assert result["cases"][0]["path"] == "tests/unit/data/test_sample.py"
+    assert result["cases"][0]["markers"] == ["m1", "unit"]
