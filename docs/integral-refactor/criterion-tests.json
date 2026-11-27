@@ -154,7 +154,7 @@
     ],
     "M2-05": [
       "tests/unit/inference/test_verified_patch_contract.py",
-      "tests/scientific/m2_spectral/test_m2_site_patch_phase_e.py",
+      "tests/scientific/features/test_m2_site_patch_phase_e.py",
       "tests/integration/acquisition/test_registered_sentinel_patch.py"
     ],
     "M2-06": [
@@ -192,11 +192,11 @@
     ],
     "M2-13": [
       "tests/scientific/features/test_verified_feature_cache.py",
-      "tests/scientific/m2_spectral/test_v4_local_integrity_contract.py"
+      "tests/scientific/features/test_v4_local_integrity_contract.py"
     ],
     "M2-14": [
       "tests/scientific/features/test_verified_feature_cache.py",
-      "tests/scientific/m2_spectral/test_v4_local_integrity_contract.py"
+      "tests/scientific/features/test_v4_local_integrity_contract.py"
     ],
     "M2-15": [
       "tests/model_2/test_scientific_training_protocol.py",
@@ -407,7 +407,7 @@
     ],
     "ARQ-026": [
       "tests/scientific/features/test_verified_feature_cache.py",
-      "tests/scientific/m2_spectral/test_v4_local_integrity_contract.py"
+      "tests/scientific/features/test_v4_local_integrity_contract.py"
     ],
     "ARQ-027": [
       "tests/scientific/eda/test_integral_eda.py",
@@ -450,14 +450,14 @@
     ],
     "ARQ-035": [
       "tests/scientific/experiments/test_learning_curves.py",
-      "tests/scientific/m2_spectral/test_m2_spectral_overfit.py",
+      "tests/scientific/features/test_m2_spectral_overfit.py",
       "tests/scientific/experiments/test_curve_suite.py",
       "tests/architecture/boundaries/test_diagnostic_module_relocation.py"
     ],
     "ARQ-036": [
       "tests/scientific/m2_training/test_m2_historical_706_control.py",
       "tests/scientific/features/test_m2_rededge_v4.py",
-      "tests/scientific/m2_spectral/test_m2_vnext_expansion.py",
+      "tests/scientific/features/test_m2_vnext_expansion.py",
       "tests/scientific/experiments/test_paired_experiment_design.py",
       "tests/experiments/test_paired_suite.py",
       "tests/unit/algorithms/test_texture_geographic_reference.py"
