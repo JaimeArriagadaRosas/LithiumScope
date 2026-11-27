@@ -17,7 +17,10 @@ def read_spectrum(path: Path, *, source: str, sample_id: str, reflectance_unit: 
         raise ValueError("Explicit reflectance unit and valid header count required")
     digest = file_sha256(path)
     with path.open(encoding="utf-8-sig") as stream:
-        header = [next(stream, "").rstrip() for _ in range(header_lines)]
+        try:
+            header = [next(stream).rstrip() for _ in range(header_lines)]
+        except StopIteration as exc:
+            raise ValueError("Spectrum header is incomplete") from exc
         pairs = []
         for line_number, line in enumerate(stream, header_lines + 1):
             if not line.strip():

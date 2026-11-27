@@ -12,6 +12,7 @@ def inspect_sentinel_patch(path: Path, *, expected_bands, expected_pixels, expec
     sidecars = [p for p in (path.with_suffix(".json"), path.with_suffix(path.suffix + ".json")) if p.is_file()]
     if len(sidecars) != 1:
         raise ValueError("Exactly one patch metadata sidecar required")
+    sidecar_digest = file_sha256(sidecars[0])
     meta = json.loads(sidecars[0].read_text(encoding="utf-8"))
     digest = file_sha256(path)
     if meta.get("image_sha256") != digest or meta.get("collection") != "sentinel-2-l2a":
@@ -40,9 +41,9 @@ def inspect_sentinel_patch(path: Path, *, expected_bands, expected_pixels, expec
         raise ValueError("Unsupported patch format")
     if data.shape != (len(expected_bands), expected_pixels, expected_pixels) or not np.issubdtype(data.dtype, np.number) or np.iscomplexobj(data):
         raise ValueError("Invalid numeric patch shape")
-    if file_sha256(path) != digest:
+    if file_sha256(path) != digest or file_sha256(sidecars[0]) != sidecar_digest:
         raise ValueError("Patch changed during inspection")
-    evidence = {"source_sha256": digest, "scene_id": meta["scene_id"], "geometry": geometry,
+    evidence = {"source_sha256": digest, "sidecar_sha256": sidecar_digest, "scene_id": meta["scene_id"], "geometry": geometry,
                 "bands": list(expected_bands), "joint_valid_fraction": float(np.isfinite(data).all(axis=0).mean()),
                 "band_valid_fractions": np.isfinite(data).mean(axis=(1,2)).tolist(),
                 "training_label_certified": False}

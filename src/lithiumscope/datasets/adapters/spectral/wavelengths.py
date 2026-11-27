@@ -33,4 +33,9 @@ def response_weighted_reflectance(wave_nm, reflectance, response_nm, response, *
     area = trapezoid(w, nodes)
     if area <= 0:
         raise ValueError("Response has zero integrated weight")
-    return float(trapezoid(np.interp(nodes, wave, values) * w, nodes) / area)
+    interpolated = np.interp(nodes, wave, values)
+    # The product of two piecewise-linear functions is quadratic; integrate exactly per segment.
+    left, right = interpolated[:-1], interpolated[1:]
+    a, b = w[:-1], w[1:]
+    integral = np.sum(np.diff(nodes) * (2*left*a + left*b + right*a + 2*right*b)/6)
+    return float(integral / area)

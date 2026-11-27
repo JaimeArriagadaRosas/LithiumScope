@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import csv
 from dataclasses import asdict
+from contextlib import nullcontext
 import json
 from pathlib import Path
 
@@ -12,6 +13,8 @@ import pandas as pd
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import RESULTS_DIR
 from lithiumscope.datasets.adapters.georoc.ingestion import ingest_georoc_files
+from lithiumscope.datasets.adapters.registry import get_adapter
+from lithiumscope.datasets.adapters.spectral.archives import selected_text_member, list_text_members
 from lithiumscope.datasets.management.snapshots import (dataset_implementation_revision, list_snapshots,
     materialize_snapshot, materialize_sources, verify_snapshot)
 from lithiumscope.datasets.provenance.comparison import compare_versions
@@ -84,6 +87,44 @@ def build_georoc_candidates(sources: list[Path], *, root: Path, policy: QualityP
                                 transform_revision=revision + "-combined", transform=assemble, recover_corrupt=recover_corrupt)
 
 
+def adapt_reference(source: Path, *, key: str, options: dict, root: Path,
+                    member: str | None = None, recover_corrupt: bool = False):
+    """Version a local reference file, without changing the training data."""
+    source = Path(source)
+    if key not in {"mamani09_public_mirror", "fregeneda_almendra", "greenpeg", "sentinel2"}:
+        raise ValueError("Use the existing georoc workflow for multi-source GEOROC")
+    if member is not None and key not in {"fregeneda_almendra", "greenpeg"}:
+        raise ValueError("Archive members are supported only for reference spectra")
+    inputs = {"source": source}
+    if key == "sentinel2":
+        sidecars = [p for p in (source.with_suffix(".json"), source.with_suffix(source.suffix+".json")) if p.is_file()]
+        if len(sidecars) != 1:
+            raise ValueError("Exactly one patch sidecar required")
+        inputs["sidecar"] = sidecars[0]
+    adapter = get_adapter(key)
+    def transform(inputs, output):
+        archive = inputs["source"]
+        context = selected_text_member(archive, member) if member is not None else nullcontext(archive)
+        with context as path:
+            if key == "sentinel2":
+                _, evidence = adapter(path, **options)
+                frame = pd.DataFrame({"band": evidence["bands"], "valid_fraction": evidence["band_valid_fractions"]})
+            else:
+                result = adapter(path, **options)
+                frame, evidence = result.frame, dict(result.evidence)
+        evidence.update(source_key=key, archive_member=member, input_sha256=file_sha256(archive),
+                        training_label_certified=False)
+        if key == "mamani09_public_mirror":
+            _export_quality(frame, candidate_policy("model_1"), output)
+        else:
+            frame.to_csv(output, index=False)
+        (output.parent / "adapter_evidence.json").write_text(
+            json.dumps(evidence, indent=2, ensure_ascii=False, allow_nan=False), encoding="utf-8")
+    return materialize_snapshot(root, inputs, policy={"source": key, "options": options, "member": member,
+                                    "source_name": source.name}, transform_revision=dataset_implementation_revision("source-adapter-v1"),
+                                transform=transform, recover_corrupt=recover_corrupt)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
@@ -96,6 +137,14 @@ def main():
     georoc.add_argument("--minimum-predictors", type=int, default=8)
     georoc.add_argument("--iron-total-mode", choices=("original", "feot_equivalent"), default="original")
     georoc.add_argument("--recover-corrupt", action="store_true")
+    adapt = commands.add_parser("adapt")
+    adapt.add_argument("key", choices=("mamani09_public_mirror","fregeneda_almendra","greenpeg","sentinel2"))
+    adapt.add_argument("source", type=Path)
+    adapt.add_argument("--options", type=Path, help="JSON file containing explicit adapter parameters")
+    adapt.add_argument("--member", help="Exact member of the downloaded spectral ZIP")
+    adapt.add_argument("--recover-corrupt", action="store_true")
+    members = commands.add_parser("members")
+    members.add_argument("archive", type=Path)
     commands.add_parser("list")
     verify = commands.add_parser("verify")
     verify.add_argument("directory", type=Path)
@@ -105,6 +154,9 @@ def main():
     compare.add_argument("--identity", nargs="+", required=True)
     args = parser.parse_args()
     root = RESULTS_DIR / "dataset_candidates"
+    if args.command == "members":
+        print(json.dumps(list_text_members(args.archive), indent=2, ensure_ascii=False))
+        return
     if args.command == "list":
         print(json.dumps(list_snapshots(root), indent=2, ensure_ascii=False))
         return
@@ -114,7 +166,13 @@ def main():
             raise ValueError("Candidate version outside catalog")
         print(json.dumps(verify_snapshot(directory), indent=2, ensure_ascii=False))
         return
-    if args.command == "audit":
+    if args.command == "adapt":
+        options = json.loads(args.options.read_text(encoding="utf-8")) if args.options else {}
+        if not isinstance(options, dict):
+            raise ValueError("Adapter options must be a JSON object")
+        result = adapt_reference(args.source, key=args.key, options=options, root=root / "adapted" / args.key,
+                                 member=args.member, recover_corrupt=args.recover_corrupt)
+    elif args.command == "audit":
         result = audit_candidate(args.source, root=root / "audit", policy=candidate_policy(args.model), recover_corrupt=args.recover_corrupt)
     elif args.command == "georoc":
         result = build_georoc_candidates(args.sources, root=root / "georoc",
