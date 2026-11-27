@@ -10,19 +10,31 @@ TRAIN=PROJECT_ROOT/"data/processed/model_2/training_manifest.csv"
 SOURCE_DOC=PROJECT_ROOT / "docs/data/DATASETS_AND_FEATURES.md"
 
 
+def unambiguous_references(refs):
+    """Keep exact duplicate metadata but withhold conflicting citation identities."""
+    table = refs.copy()
+    table["citation_number"] = pd.to_numeric(table.CITATIONS, errors="coerce")
+    table = table.loc[table.citation_number.notna()].drop_duplicates()
+    ambiguous = set(table.loc[table.citation_number.duplicated(keep=False), "citation_number"])
+    return table.loc[~table.citation_number.isin(ambiguous)], ambiguous
+
+
 def main():
     ref_file=ROOT/"georoc_citations_2024.tab"
     refs=pd.read_csv(ref_file,sep="\t",encoding="latin1",low_memory=False)
     targets=pd.read_csv(ROOT/"pilot_target_metadata.csv")
     train=pd.read_csv(TRAIN)
     doc=SOURCE_DOC.read_text(encoding="utf8",errors="replace")
-    ref_ids=pd.to_numeric(refs.CITATIONS,errors="coerce")
+    refs, ambiguous = unambiguous_references(refs)
+    ref_ids=refs.citation_number
     records=[]
     for row in targets.to_dict("records"):
         links=[]
         for ref in re.findall(r"\d+",str(row["citation_ids"])):
             matching=refs.loc[ref_ids.eq(int(ref))]
-            if matching.empty:
+            if int(ref) in ambiguous:
+                links.append({"reference_id":ref,"status":"UNRESOLVED_AMBIGUOUS_CITATION"})
+            elif matching.empty:
                 links.append({"reference_id":ref,"status":"UNRESOLVED_IN_2024_CITATION_TABLE"})
             else:
                 item=matching.iloc[0]

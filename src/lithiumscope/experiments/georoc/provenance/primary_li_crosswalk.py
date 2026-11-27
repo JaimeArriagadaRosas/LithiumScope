@@ -25,13 +25,15 @@ def main():
        "sample_name_supp":r["Sample Name"]})
     tab=pd.DataFrame(records)
     src["name"]=src.sample_name.map(clean)
+    src["candidate_row"]=range(len(src))
+    tab["primary_match_count"]=tab.groupby("name",dropna=False)["name"].transform("size")
     joined=src.merge(tab,on="name",how="left")
     joined["same_li"]=np.isclose(joined.li_ppm,joined.li_original,rtol=.00001,atol=.02,equal_nan=False)
     joined["coords_match"]=np.isclose(joined.latitude,joined.lat_original,atol=.01,equal_nan=False) & np.isclose(joined.longitude,joined.lon_original,atol=.01,equal_nan=False)
-    joined["source_value_status"]=np.where(joined.same_li,"PRIMARY_LI_VALUE_MATCH","NO_EXACT_PRIMARY_LI_MATCH")
+    joined["source_value_status"]=np.select([joined.primary_match_count.gt(1),joined.same_li&joined.coords_match,joined.same_li],["AMBIGUOUS_PRIMARY_SAMPLE","PRIMARY_LI_VALUE_AND_COORDINATES_MATCH","LI_VALUE_MATCH_COORDINATES_UNVERIFIED"],default="NO_EXACT_PRIMARY_LI_MATCH")
     joined["scientific_approval"]=False
     joined[["sample_name","li_ppm","sample_name_supp","li_original","same_li","coords_match","sheet","passes_filter","source_value_status"]].to_csv(B/"georoc_20576_primary_li_crosswalk.csv",index=False)
-    report={"georoc_candidates":len(src),"matched_rows":int(joined.same_li.sum()),"unique_primary_matches":int(joined.loc[joined.same_li,"sample_name"].nunique()),"coordinate_matches":int((joined.same_li&joined.coords_match).sum()),"primary_spreadsheet_sha256":hashlib.sha256(path.read_bytes()).hexdigest(),"approved_for_external_model2":0}
+    report={"georoc_candidates":len(src),"matched_rows":int(joined.same_li.sum()),"unique_primary_matches":int(joined.loc[joined.same_li&joined.coords_match&joined.primary_match_count.eq(1),"candidate_row"].nunique()),"coordinate_matches":int((joined.same_li&joined.coords_match).sum()),"primary_spreadsheet_sha256":hashlib.sha256(path.read_bytes()).hexdigest(),"approved_for_external_model2":0}
     (B/"georoc_20576_primary_li_crosswalk.json").write_text(json.dumps(report,indent=2),encoding="utf8")
     print("CROSSWALK",report,flush=True)
     print(joined.loc[joined.same_li,["sample_name","li_ppm","li_original","lat_original","lon_original","latitude","longitude","passes_filter"]].head(8).to_string(index=False),flush=True)
