@@ -62,11 +62,15 @@ def build_georoc_candidates(sources: list[Path], *, root: Path, policy: QualityP
     ingestion_policy = {"minimum_predictors": minimum_predictors, "iron_total_mode": iron_total_mode}
     def transform(inputs, output):
         _, path = next(iter(inputs.items()))
-        with (output.parent / "raw_exclusions.csv").open("w", encoding="utf-8", newline="") as handle:
+        with (output.parent / "raw_exclusions.csv").open("w", encoding="utf-8", newline="") as handle, \
+             (output.parent / "analytical_censoring.jsonl").open("w", encoding="utf-8") as censoring:
             writer = csv.DictWriter(handle, fieldnames=["source_file", "source_row_position", "reason"])
             writer.writeheader()
+            def record_censoring(records):
+                for record in records:
+                    censoring.write(json.dumps(record, ensure_ascii=False, allow_nan=False) + "\n")
             ingest_georoc_files([path], output, audit_path=output.parent / "ingestion_audit.json",
-                                exclusion_callback=writer.writerows, **ingestion_policy)
+                                exclusion_callback=writer.writerows, censoring_callback=record_censoring, **ingestion_policy)
     revision = dataset_implementation_revision(REVISION)
     processed = materialize_sources(root / "sources", named, policy=ingestion_policy,
                                     transform_revision=revision + "-georoc", transform=transform, recover_corrupt=recover_corrupt)

@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 from typing import Iterable
+from itertools import combinations
+
+import numpy as np
+import pandas as pd
 
 
 GEOROC_ALIASES: dict[str, tuple[str, ...]] = {
@@ -123,3 +127,33 @@ def ingestion_layout(paths, read_header, iron_total_mode):
             output_columns.append(name)
 
     return mappings, output_columns
+
+
+def equivalent_numeric_aliases(columns):
+    """Only compare overlapping measurement aliases; Fe species are not equivalent."""
+    names = {_normalize(str(c)): str(c) for c in columns}
+    groups = {}
+    for target, aliases in GEOROC_ALIASES.items():
+        if target == "Fe2O3" or not (target in MAJOR_OXIDES or target.endswith("_icpms") or target.startswith(("Longitude", "Latitude"))):
+            continue
+        matched = tuple(dict.fromkeys(names[_normalize(alias)] for alias in aliases if _normalize(alias) in names))
+        if len(matched) > 1:
+            groups[target] = matched
+    return groups
+
+
+def validate_alias_agreement(frame, groups):
+    """Reject contradictory jointly reported values, never infer units or coalesce aliases."""
+    missing = {"", "nan", "unknown", "na", "n/a", "none", "not reported", "<na>"}
+    for target, columns in groups.items():
+        for left, right in combinations(columns, 2):
+            a = frame[left].astype("string").fillna("").str.strip().str.casefold()
+            b = frame[right].astype("string").fillna("").str.strip().str.casefold()
+            present = ~a.isin(missing) & ~b.isin(missing)
+            x, y = pd.to_numeric(a, errors="coerce"), pd.to_numeric(b, errors="coerce")
+            close = np.isclose(x.to_numpy(dtype=float, na_value=np.nan), y.to_numpy(dtype=float, na_value=np.nan),
+                               rtol=1e-9, atol=1e-5 if target.startswith(("Longitude", "Latitude")) else 1e-9)
+            conflict = present & a.ne(b) & ~close
+            if conflict.any():
+                rows = frame.index[conflict].tolist()[:5]
+                raise ValueError(f"Conflicting GEOROC aliases for {target}: {left!r}, {right!r}; rows={rows}")

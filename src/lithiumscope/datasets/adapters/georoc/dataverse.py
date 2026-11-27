@@ -13,8 +13,15 @@ def whole_rock_candidates(frame,source_file):
     lat,lon,li=(pd.to_numeric(frame[c],errors="coerce") for c in REQUIRED[:3])
     material=frame["MATERIAL"].fillna("").astype(str)
     mask=np.isfinite(li)&li.ge(0)&lat.between(-90,90)&lon.between(-180,180)&material.map(lambda value: parse_georoc_material(value).code).eq("WR")
+    bounds_review = pd.Series(False, index=frame.index)
+    for axis, low, limit in (("LATITUDE", lat, 90), ("LONGITUDE", lon, 180)):
+        name = axis + " MAX"
+        if name in frame:
+            high = pd.to_numeric(frame[name], errors="coerce")
+            bounds_review |= frame[name].notna() & (~high.between(-limit, limit) | high.lt(low))
+    mask &= ~bounds_review
     selected=frame.loc[mask]
     result=pd.DataFrame({"source_file":source_file,"sample_name":selected["SAMPLE NAME"].astype(str),
         "latitude":lat[mask],"longitude":lon[mask],"li_ppm":li[mask],"material":selected.MATERIAL.astype(str),
         "citation_ids":selected.CITATIONS.astype(str),"location":selected.LOCATION.astype(str)})
-    return result.reset_index(drop=True),{"all_rows":len(frame),"li_numeric":int(np.isfinite(li).sum()),"candidate_whole_rock":len(result)}
+    return result.reset_index(drop=True),{"all_rows":len(frame),"li_numeric":int(np.isfinite(li).sum()),"candidate_whole_rock":len(result),"coordinate_bounds_review":int(bounds_review.sum())}

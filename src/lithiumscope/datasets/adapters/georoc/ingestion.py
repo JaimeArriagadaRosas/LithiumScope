@@ -17,7 +17,7 @@ from lithiumscope.datasets.provenance.ingestion_audit import write_ingestion_aud
 from lithiumscope.datasets.adapters.georoc.schema import (
     GEOROC_ALIASES,
     MAJOR_OXIDES,
-    infer_georoc_column_map, ingestion_layout,
+    infer_georoc_column_map, ingestion_layout, equivalent_numeric_aliases, validate_alias_agreement,
 )
 from lithiumscope.datasets.adapters.georoc.transformation import (
     harmonize_chunk,
@@ -71,6 +71,7 @@ def ingest_georoc_files(
     iron_total_mode: str = "original",
     allow_incompatible_sources: bool = False,
     exclusion_callback: Callable[[list[dict]], None] | None = None,
+    censoring_callback: Callable[[list[dict]], None] | None = None,
 ) -> GeorocIngestionResult:
     started = monotonic()
     if not isinstance(chunksize, int) or chunksize <= 0 or not isinstance(minimum_predictors, int) or minimum_predictors < 0:
@@ -118,6 +119,7 @@ def ingest_georoc_files(
     headers = {path: validate_csv_structure(path, delimiter=",", encoding=encodings[path]) for path in paths}
     mappings, output_columns = ingestion_layout(paths, headers.__getitem__, iron_total_mode)
     censoring = []
+    censoring_count = 0
     source_details = []
     rejection_counts = Counter()
 
@@ -147,7 +149,8 @@ def ingest_georoc_files(
 
             first_read, first_kept = rows_read, rows_kept
             source_rejections = Counter()
-            usecols = list(mapping.keys())
+            alias_groups = equivalent_numeric_aliases(headers[path])
+            usecols = list(dict.fromkeys([*mapping, *(name for group in alias_groups.values() for name in group)]))
             for chunk in pd.read_csv(
                 path,
                 usecols=usecols,
@@ -159,7 +162,9 @@ def ingest_georoc_files(
                 dtype=str,
                 encoding=encodings[path],
             ):
+                validate_alias_agreement(chunk, alias_groups)
                 rows_read += len(chunk)
+                chunk_censoring = [] if censoring_callback is not None else censoring
                 exclusions = {}
                 harmonized, dropped = (
                     harmonize_chunk(
@@ -174,10 +179,13 @@ def ingest_georoc_files(
                             minimum_predictors
                         ),
                         iron_total_mode=iron_total_mode,
-                        censoring=censoring,
+                        censoring=chunk_censoring,
                         rejections=exclusions,
                     )
                 )
+                if censoring_callback is not None and chunk_censoring:
+                    censoring_callback(chunk_censoring)
+                    censoring_count += len(chunk_censoring)
                 if len(exclusions) != dropped:
                     raise ValueError("GEOROC rejection accounting mismatch")
                 source_rejections.update(exclusions.values())
@@ -233,6 +241,8 @@ def ingest_georoc_files(
         ),
         minimum_predictors=minimum_predictors,
         censoring=censoring,
+        censoring_count=censoring_count if censoring_callback is not None else len(censoring),
+        censoring_external=censoring_callback is not None,
         source_hashes=source_hashes,
         source_details=source_details,
         output_sha256=file_sha256(temporary),
