@@ -1,14 +1,25 @@
-"""Separated run_experiments responsibility; preserve prior public API."""
+"""Historical grouped M2 experiment; development evidence only."""
 from __future__ import annotations
 
 from pathlib import Path
-from lithiumscope.core.paths import PROJECT_ROOT
+from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR
+import hashlib
+import json
+import joblib
+import numpy as np
+import pandas as pd
+from sklearn.base import clone
+from sklearn.calibration import CalibratedClassifierCV
+from sklearn.model_selection import GroupShuffleSplit
+from lithiumscope.model_2.validation.spatial import make_scientific_folds
+from lithiumscope.experiments.model_2.representation.augmentation import make_augmentation_table
+from lithiumscope.experiments.model_2.calibration.partitions import calibration_splits
+from lithiumscope.experiments.model_2.evaluation.metrics import score_metrics
 
 def run_experiments(
     root: Path = PROJECT_ROOT,
     destination: Path | None = None,
 ) -> dict:
-    from lithiumscope.experiments.model_2.run_vnext_m2 import CalibratedClassifierCV, GroupShuffleSplit, PROJECT_ROOT, Path, RESULTS_DIR, _calibration_splits, clone, hashlib, joblib, json, make_augmentation_table, make_scientific_folds, np, pd, score_metrics
     out = destination or (
         RESULTS_DIR / "scientific_simulations" / "vnext_20261106" / "stage3_m2"
     )
@@ -78,7 +89,7 @@ def run_experiments(
                 ytrain=np.concatenate([ytrain,ytrain])
             estimator=clone(base)
             if calibrate:
-                split=_calibration_splits(
+                split=calibration_splits(
                     x.iloc[tr].reset_index(drop=True),
                     fold.y_train,
                     groups.iloc[tr].reset_index(drop=True),
@@ -161,7 +172,7 @@ def run_experiments(
         if not eligible.empty else "rf_regularized"
     )
     if selected=="rf_group_calibrated":
-        splits=_calibration_splits(x,(lithium>=float(lithium.quantile(.75))).astype(int),groups)
+        splits=calibration_splits(x,(lithium>=float(lithium.quantile(.75))).astype(int),groups)
         if splits is None:
             selected="rf_regularized"
     spec=next(z for z in specs if z[0]==selected)
@@ -209,3 +220,8 @@ def run_experiments(
         json.dumps(meta,ensure_ascii=False,indent=2,default=str),encoding='utf8'
     )
     return meta
+
+
+if __name__=="__main__":
+    result=run_experiments()
+    print("M2_DEVELOPMENT_DONE",result["selected"],flush=True)

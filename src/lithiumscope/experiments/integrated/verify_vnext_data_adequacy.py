@@ -253,7 +253,7 @@ def group_train_indices(
     return selected
 
 
-from lithiumscope.experiments.model_2.historical.adequacy_learning_curve import run_m2_learning_curve
+from lithiumscope.experiments.model_2.evaluation.learning_curves import run_m2_learning_curve
 
 
 if __name__=="__main__":

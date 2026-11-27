@@ -93,7 +93,7 @@ def _run_tests() -> bool:
 
 
 def _run_simulations() -> bool:
-    from lithiumscope.experiments.registry import run_registered_simulations
+    from lithiumscope.experiments.shared.registry import run_registered_simulations
 
     from lithiumscope.core.logging.session import run_log
     with run_log("simulations","registered"):

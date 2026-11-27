@@ -13,7 +13,7 @@ from lithiumscope.model_2.methodology.validation.independence_gate import (
 from lithiumscope.model_2.methodology.spectral.spectral_feature_policy import (
     BANDS, STATS, select_spectral_features,
 )
-from lithiumscope.experiments.model_2.m2_generalization_pilot import (
+from lithiumscope.experiments.model_2.spatial.generalization import (
     metrics, model_params, ARMS,
 )
 

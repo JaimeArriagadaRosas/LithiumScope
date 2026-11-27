@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
-from lithiumscope.experiments.shared.reconstructed_m2_comparison import pair_reference, PREVIOUS_ARM
+from lithiumscope.experiments.model_2.evaluation.reconstructed_comparison import pair_reference, PREVIOUS_ARM
 
 
 def fixture():

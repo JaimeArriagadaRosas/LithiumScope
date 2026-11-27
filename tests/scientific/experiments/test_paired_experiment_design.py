@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 
 from lithiumscope.experiments.shared.design import budget_arms,choose_algorithms
-from lithiumscope.experiments.model_2.paired_study import representation_arms,policy_arms
+from lithiumscope.experiments.model_2.studies.paired import representation_arms,policy_arms
 
 
 def test_budget_is_factorial_and_references_same_family_and_seed():

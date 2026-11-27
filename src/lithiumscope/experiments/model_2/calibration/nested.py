@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import balanced_accuracy_score, brier_score_loss
 from lithiumscope.core.paths import PROJECT_ROOT
-from lithiumscope.experiments.model_2.m2_generalization_pilot import (
+from lithiumscope.experiments.model_2.spatial.generalization import (
     OUTPUT, get_train_indices, load_contract, metrics, model_params,
     nested_decision, sha256,
 )

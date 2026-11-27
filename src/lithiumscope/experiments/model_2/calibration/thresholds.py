@@ -12,9 +12,8 @@ from sklearn.calibration import CalibratedClassifierCV
 from sklearn.metrics import balanced_accuracy_score, f1_score, recall_score
 
 from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR
-from lithiumscope.experiments.model_2.run_vnext_m2 import (
-    _calibration_splits, score_metrics,
-)
+from lithiumscope.experiments.model_2.calibration.partitions import calibration_splits
+from lithiumscope.experiments.model_2.evaluation.metrics import score_metrics
 from lithiumscope.model_2.validation.spatial import make_scientific_folds
 
 
@@ -57,7 +56,7 @@ def run_threshold_experiment(
         xte=x.iloc[test]
         ytr=np.asarray(fold.y_train,dtype=int)
         yte=np.asarray(fold.y_test,dtype=int)
-        inner=_calibration_splits(
+        inner=calibration_splits(
             xtr,ytr,groups.iloc[train].reset_index(drop=True)
         )
         if inner is None:

@@ -94,14 +94,14 @@ def run(*, output: Path, study="representation", algorithms=None, execute=False,
     if study=="representation":
         physical=None
         if physical_directory is not None:
-            from lithiumscope.experiments.model_2.physical_comparison import load_physical_comparison
+            from lithiumscope.experiments.model_2.representation.physical import load_physical_comparison
             physical,mask=load_physical_comparison(physical_directory,source,frame,x,mask)
         arms=representation_arms(x,selected,mask,seed=seed,mode=mode,physical=physical)
     elif study=="texture":
-        from lithiumscope.experiments.model_2.texture_study import texture_arms
+        from lithiumscope.experiments.model_2.representation.texture import texture_arms
         physical = physical_directory is not None
         if physical:
-            from lithiumscope.experiments.model_2.physical_comparison import load_physical_comparison
+            from lithiumscope.experiments.model_2.representation.physical import load_physical_comparison
             x, mask = load_physical_comparison(physical_directory, source, frame, x, mask)
         arms = texture_arms(x, selected, mask, seed=seed, mode=mode, physical=physical)
     elif study=="temporal":
@@ -109,7 +109,7 @@ def run(*, output: Path, study="representation", algorithms=None, execute=False,
             raise ValueError("Temporal study requires explicit staged manifest, root and fixed interval")
         import json
         import pandas as pd
-        from lithiumscope.experiments.model_2.temporal_comparison import temporal_arms
+        from lithiumscope.experiments.model_2.temporal.comparison import temporal_arms
         cohort=pd.read_csv(source,dtype={"sample_id":str})
         if (len(cohort)!=len(frame) or not np.array_equal(cohort[training["lithium_column"]].to_numpy(),frame[training["lithium_column"]].to_numpy())
                 or not np.array_equal(cohort[training["spatial_group_column"]].astype(str).to_numpy(),groups.astype(str).to_numpy())):

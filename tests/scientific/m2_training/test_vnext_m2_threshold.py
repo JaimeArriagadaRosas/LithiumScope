@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from lithiumscope.experiments.model_2.run_vnext_m2_threshold import (
+from lithiumscope.experiments.model_2.calibration.thresholds import (
     threshold_by_training_prevalence,
 )
 

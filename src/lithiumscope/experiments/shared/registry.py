@@ -66,7 +66,7 @@ def run_registered_simulations(output_root: Path | None = None) -> Path:
     available=models["model_2"][0]
     matrix={}
     def common():
-        from lithiumscope.experiments.shared.descriptor_stress import load_common_matrix
+        from lithiumscope.experiments.model_2.evaluation.descriptor_stress import load_common_matrix
         matrix["frame"],matrix["ids"]=load_common_matrix()
         return {"rows":len(matrix["frame"]),"scope":"historical_cohort_may_overlap_training"}
     if available:
@@ -83,7 +83,7 @@ def run_registered_simulations(output_root: Path | None = None) -> Path:
         def descriptor():
             if not matrix:
                 raise FileNotFoundError("Matriz espectral local no verificada")
-            from lithiumscope.experiments.shared.descriptor_stress import descriptor_stress
+            from lithiumscope.experiments.model_2.evaluation.descriptor_stress import descriptor_stress
             output=descriptor_stress(bundle,matrix["frame"],matrix["ids"],folder)
             descriptor_outputs[role]=output
             return {"artifact":str(output),"summary":str(summarize(output,folder/"descriptor_summary"))}

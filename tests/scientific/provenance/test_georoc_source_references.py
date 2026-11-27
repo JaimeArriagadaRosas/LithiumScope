@@ -1,4 +1,4 @@
-from lithiumscope.experiments.model_2.audit_georoc_source_references import (
+from lithiumscope.experiments.model_2.external_validation.source_references import (
     parse_bibliography, decimal_places, classify_record,
 )
 

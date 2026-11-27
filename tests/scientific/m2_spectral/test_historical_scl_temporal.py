@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from lithiumscope.model_2.methodology.historical_scl_recovery import identity
-from lithiumscope.experiments.model_2.temporal_comparison import compare_cubes
+from lithiumscope.experiments.model_2.temporal.comparison import compare_cubes
 
 
 def test_scl_identity_requires_scene_coordinates_and_metadata():
@@ -30,7 +30,7 @@ def test_temporal_median_uses_only_joint_valid_dates_and_reference_order():
 
 
 def test_temporal_windows_require_three_nonoverlapping_intervals():
-    from lithiumscope.experiments.model_2.temporal_acquisition import validate_windows
+    from lithiumscope.experiments.model_2.temporal.acquisition import validate_windows
     valid=["2024-03-01/2024-03-15","2024-01-01/2024-01-15","2024-02-01/2024-02-15"]
     assert validate_windows(valid)==sorted(valid)
     with pytest.raises(ValueError,match="disjoint"):

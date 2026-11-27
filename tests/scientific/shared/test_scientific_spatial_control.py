@@ -1,6 +1,6 @@
 import pandas as pd
 import pytest
-from lithiumscope.experiments.validation.spatial_control import offset,plan,verify_existing_pairs
+from lithiumscope.experiments.model_2.spatial.control import offset,plan,verify_existing_pairs
 
 
 def test_plan_has_36_positions_for_four_centers():

@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR
 from lithiumscope.model_1.methodology.qc_protocols import protocol_masks
-from lithiumscope.experiments.model_2.pilot_georoc_m2_labels import _stable_sample_id
+from lithiumscope.experiments.model_2.external_validation.label_candidates import _stable_sample_id
 
 OUT = RESULTS_DIR/"scientific_simulations"/"vnext_20261106"/"georoc_source_validation"
 REF_URL = "https://georoc.mpch-mainz.gwdg.de/georoc/reference_list.csv"

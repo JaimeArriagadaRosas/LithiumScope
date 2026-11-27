@@ -55,7 +55,7 @@ def run() -> None:
             )
             print(f"Resultados: {output}")
         elif choice == "4":
-            from lithiumscope.experiments.acquisition.acquisition import acquire_pilot
+            from lithiumscope.tools.acquisition.sentinel2.pilot import acquire_pilot
             destination = RESULTS_DIR / "scientific_simulations" / "sentinel2_real"
             manifest, failures = acquire_pilot(destination)
             print(f"Catálogo: {manifest} | Fallos: {failures}")

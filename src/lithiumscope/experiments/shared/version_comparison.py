@@ -39,7 +39,7 @@ def run_version_comparison(*,output_root=None):
         except (FileNotFoundError,ValueError,KeyError,OSError) as exc:
             record["reason"]=str(exc)
         if group=="model_2" and "candidate" in available:
-            from lithiumscope.experiments.shared.m2_recovery import recover_m2_reports
+            from lithiumscope.experiments.model_2.evaluation.recovery import recover_m2_reports
             try:
                 record["report_recovery"]=recover_m2_reports(available["candidate"][1],destination/group/"recovered_reports")
             except (OSError,ValueError,KeyError,TypeError,RuntimeError) as exc:

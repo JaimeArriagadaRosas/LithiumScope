@@ -35,7 +35,7 @@ def compare_saved(group, models, destination):
             return tables[0].stem.removeprefix("oof_predictions_")
         x,y=load_m1_oof(a,key(a,old)),load_m1_oof(b,key(b,new))
         if old["dataset_sha256"]==new["dataset_sha256"]:
-            from lithiumscope.experiments.shared.frozen_m1_comparison import pair_frozen_m1
+            from lithiumscope.experiments.model_1.evaluation.frozen_comparison import pair_frozen_m1
             paired,details=pair_frozen_m1(x,y)
         else:
             paired,details=pair_shared_m1(x,y)
@@ -47,7 +47,7 @@ def compare_saved(group, models, destination):
     else:
         if old["dataset_sha256"]!=new["dataset_sha256"]:
             from lithiumscope.core.paths import PROJECT_ROOT
-            from lithiumscope.experiments.shared.reconstructed_m2_comparison import compare_reconstructed
+            from lithiumscope.experiments.model_2.evaluation.reconstructed_comparison import compare_reconstructed
             return compare_reconstructed(old,new,a,b,destination,root=PROJECT_ROOT)
         from lithiumscope.datasets.management.sources.diagnostic import prepare_diagnostic_source
         x,y=load_m2_oof(a,old["algorithm"]),load_m2_oof(b,new["algorithm"])

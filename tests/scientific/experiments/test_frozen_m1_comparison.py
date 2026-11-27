@@ -1,6 +1,6 @@
 import pandas as pd
 import pytest
-from lithiumscope.experiments.shared.frozen_m1_comparison import pair_frozen_m1
+from lithiumscope.experiments.model_1.evaluation.frozen_comparison import pair_frozen_m1
 
 
 def fixture():

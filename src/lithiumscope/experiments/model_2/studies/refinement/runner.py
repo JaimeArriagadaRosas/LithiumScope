@@ -14,9 +14,9 @@ import pandas as pd
 from lithiumscope.core.paths import RESULTS_DIR
 from lithiumscope.core.reproducibility import runtime_fingerprint
 from lithiumscope.experiments.generalization.partitions import training_target
-from lithiumscope.experiments.model_2.refinement_support.refinement_evidence import load_protocol
-from lithiumscope.experiments.model_2.refinement_support.refinement_policies import POLICIES, fit_policy
-from lithiumscope.experiments.model_2.refinement_support.refinement_metrics import ranking, summarize
+from lithiumscope.experiments.model_2.studies.refinement.evidence import load_protocol
+from lithiumscope.experiments.model_2.studies.refinement.policies import POLICIES, fit_policy
+from lithiumscope.experiments.model_2.studies.refinement.metrics import ranking, summarize
 from lithiumscope.resources.detection.device import detect_device
 from lithiumscope.results.atomic_exports import write_table, write_legacy_evidence_json
 
