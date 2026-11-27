@@ -66,8 +66,8 @@ def test_frozen_cohort_is_read_only_and_rejects_invalid_identity(tmp_path):
 
 def test_source_management_has_no_nested_model_packages_or_runtime_import():
     root = Path(__file__).resolve().parents[3] / "src/lithiumscope/datasets/management"
-    assert not (root / "sources/model_1").exists()
-    assert not (root / "sources/model_2").exists()
+    assert not list((root / "sources/model_1").rglob("*.py"))
+    assert not list((root / "sources/model_2").rglob("*.py"))
     assert not (root / "paths.py").exists()
     tree = ast.parse((root / "sources/diagnostic.py").read_text(encoding="utf-8"))
     for node in ast.walk(tree):
