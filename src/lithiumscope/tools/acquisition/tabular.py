@@ -9,8 +9,8 @@ import requests
 from lithiumscope.core.exceptions import DatasetError
 from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.paths import DATA_DIR
-from lithiumscope.datasets.registry import DatasetSpec, get_dataset_spec
-from lithiumscope.datasets.validator import validate_nonempty
+from lithiumscope.datasets.management.registry import DatasetSpec, get_dataset_spec
+from lithiumscope.datasets.validation.files import validate_nonempty
 from lithiumscope.runtime.console_status import Spinner
 
 logger = get_logger("datasets")
