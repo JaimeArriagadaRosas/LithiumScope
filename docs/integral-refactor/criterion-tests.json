@@ -146,16 +146,16 @@
       "tests/unit/algorithms/test_texture_geographic_reference.py"
     ],
     "M2-04": [
-      "tests/datasets/integration/test_sentinel2_provider.py",
+      "tests/integration/acquisition/test_sentinel2_provider.py",
       "tests/scientific/shared/test_scientific_acquisition.py",
       "tests/scientific/m2_spectral/test_m2_satellite_quality_radiometry.py",
-      "tests/datasets/integration/test_registered_sentinel_patch.py",
+      "tests/integration/acquisition/test_registered_sentinel_patch.py",
       "tests/scientific/m2_spectral/test_historical_scl_temporal.py"
     ],
     "M2-05": [
       "tests/unit/inference/test_verified_patch_contract.py",
       "tests/scientific/m2_spectral/test_m2_site_patch_phase_e.py",
-      "tests/datasets/integration/test_registered_sentinel_patch.py"
+      "tests/integration/acquisition/test_registered_sentinel_patch.py"
     ],
     "M2-06": [
       "tests/datasets/provenance/test_dataset_manifest.py",
@@ -308,7 +308,7 @@
     ],
     "ARQ-008": [
       "tests/architecture/structure/test_acquisition_architecture.py",
-      "tests/datasets/integration/test_georoc_acquisition.py",
+      "tests/integration/acquisition/test_georoc_acquisition.py",
       "tests/datasets/management/test_frozen_model_1_input.py",
       "tests/architecture/boundaries/test_acquisition_provider_relocation.py"
     ],
@@ -390,10 +390,10 @@
       "tests/unit/data/test_preprocessing_contracts.py"
     ],
     "ARQ-023": [
-      "tests/datasets/integration/test_sentinel2_provider.py",
+      "tests/integration/acquisition/test_sentinel2_provider.py",
       "tests/scientific/shared/test_scientific_acquisition.py",
       "tests/unit/inference/test_verified_patch_contract.py",
-      "tests/datasets/integration/test_registered_sentinel_patch.py"
+      "tests/integration/acquisition/test_registered_sentinel_patch.py"
     ],
     "ARQ-024": [
       "tests/model_2/test_model_2_sample_source.py",
@@ -785,7 +785,7 @@
       "tests/runtime/test_logging_lifecycle.py",
       "tests/runtime/test_training_logging_session.py",
       "tests/core/test_tracker_atomic.py",
-      "tests/datasets/integration/test_georoc_acquisition.py",
+      "tests/integration/acquisition/test_georoc_acquisition.py",
       "tests/runtime/test_worker_logging_isolation.py",
       "tests/development/test_validation.py",
       "tests/runtime/test_operation_log_layout.py"
