@@ -1,5 +1,8 @@
 """Merge harmonized inputs and persist the source-merge evidence."""
 import json
+from uuid import uuid4
+from lithiumscope.core.hashing import file_sha256
+from lithiumscope.datasets.provenance.publication import publish_pair
 import pandas as pd
 
 def _source_name(frame: pd.DataFrame, fallback: str) -> pd.DataFrame:
@@ -10,6 +13,8 @@ def _source_name(frame: pd.DataFrame, fallback: str) -> pd.DataFrame:
 
 
 def assemble_sources(base_dataset, ingestion, merge_path, audit_path, georoc, *, load_data, merge_harmonized_sources):
+    base_digest = file_sha256(base_dataset)
+    external_digest = file_sha256(ingestion.path)
     base = _source_name(
         load_data(base_dataset, quiet=True),
         "Mamani09 bootstrap",
@@ -26,13 +31,16 @@ def assemble_sources(base_dataset, ingestion, merge_path, audit_path, georoc, *,
         parents=True,
         exist_ok=True,
     )
-    merged.to_csv(
-        merge_path,
-        index=False,
-    )
-
+    if file_sha256(base_dataset) != base_digest or file_sha256(ingestion.path) != external_digest:
+        raise ValueError("Source changed during assembly")
+    if merged.empty:
+        raise ValueError("Combined dataset is empty")
+    if len({p.resolve() for p in (base_dataset, ingestion.path, merge_path, audit_path)}) != 4:
+        raise ValueError("Source and assembly output paths must be distinct")
     audit = {
         "base_dataset": str(base_dataset),
+        "base_sha256": base_digest,
+        "harmonized_sha256": external_digest,
         "georoc_files": list(ingestion.files),
         "georoc_ingestion": {
             "rows_read": ingestion.rows_read,
@@ -47,13 +55,15 @@ def assemble_sources(base_dataset, ingestion, merge_path, audit_path, georoc, *,
         parents=True,
         exist_ok=True,
     )
-    audit_path.write_text(
-        json.dumps(
-            audit,
-            indent=2,
-            ensure_ascii=False,
-        ),
-        encoding="utf-8",
-    )
+    data_stage = merge_path.with_name(f".{merge_path.name}.{uuid4().hex}.tmp")
+    audit_stage = audit_path.with_name(f".{audit_path.name}.{uuid4().hex}.tmp")
+    try:
+        merged.to_csv(data_stage, index=False)
+        audit["combined_sha256"] = file_sha256(data_stage)
+        audit_stage.write_text(json.dumps(audit, indent=2, ensure_ascii=False), encoding="utf-8")
+        publish_pair(data_stage, merge_path, audit_stage, audit_path)
+    finally:
+        data_stage.unlink(missing_ok=True)
+        audit_stage.unlink(missing_ok=True)
 
     return merged, merge_audit

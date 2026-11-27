@@ -53,6 +53,9 @@ def build_tabular_manifest(
 
     linked = _linked_file_metadata(path, frame, model_group)
     merged_metadata = {**(metadata or {}), **linked}
+    # READY describes file availability, not eligibility for scientific training.
+    merged_metadata["scientific_quality_certified"] = False
+    merged_metadata["state_semantics"] = "artifact_availability_only"
     if file_sha256(path) != digest:
         raise ValueError("Dataset changed during manifest construction")
 
@@ -63,7 +66,7 @@ def build_tabular_manifest(
         stage=stage,
         source_path=str(path),
         source_sha256=digest,
-        state=(DatasetState.PARTIAL if linked and not linked["linked_files_complete"] else DatasetState.READY).value,
+        state=(DatasetState.PARTIAL if frame is None or frame.empty or (linked and not linked["linked_files_complete"]) else DatasetState.READY).value,
         rows=int(frame.shape[0]) if frame is not None else None,
         columns=int(frame.shape[1]) if frame is not None else None,
         column_names=[str(column) for column in frame.columns] if frame is not None else [],
