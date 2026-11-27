@@ -44,7 +44,7 @@
     ],
     "M1-10": [
       "tests/scientific/methodology/test_model_1_spatial_validation.py",
-      "tests/scientific/shared/test_spatial_audit_contract.py",
+      "tests/scientific/methodology/test_spatial_audit_contract.py",
       "tests/scientific/methodology/test_nested_protocol.py"
     ],
     "M1-11": [
@@ -82,7 +82,7 @@
     "M1-18": [
       "tests/scientific/data_quality/test_coordinate_lineage.py",
       "tests/scientific/methodology/test_model_1_spatial_validation.py",
-      "tests/scientific/shared/test_spatial_audit_contract.py"
+      "tests/scientific/methodology/test_spatial_audit_contract.py"
     ],
     "M1-19": [
       "tests/scientific/methodology/test_model_1_scientific_guards.py",
@@ -142,7 +142,7 @@
     ],
     "M2-03": [
       "tests/scientific/methodology/test_scientific_training_protocol.py",
-      "tests/scientific/shared/test_spatial_audit_contract.py",
+      "tests/scientific/methodology/test_spatial_audit_contract.py",
       "tests/unit/algorithms/test_texture_geographic_reference.py"
     ],
     "M2-04": [
@@ -204,7 +204,7 @@
     ],
     "M2-16": [
       "tests/scientific/methodology/test_scientific_training_protocol.py",
-      "tests/scientific/shared/test_spatial_audit_contract.py",
+      "tests/scientific/methodology/test_spatial_audit_contract.py",
       "tests/scientific/methodology/test_nested_protocol.py"
     ],
     "M2-17": [
@@ -420,7 +420,7 @@
     ],
     "ARQ-029": [
       "tests/scientific/methodology/test_scientific_training_protocol.py",
-      "tests/scientific/shared/test_spatial_audit_contract.py",
+      "tests/scientific/methodology/test_spatial_audit_contract.py",
       "tests/scientific/methodology/test_nested_protocol.py"
     ],
     "ARQ-030": [
@@ -765,7 +765,7 @@
     "ARQ-096": [
       "tests/scientific/methodology/test_scientific_checks.py",
       "tests/datasets/provenance/test_dataset_manifest.py",
-      "tests/scientific/shared/test_spatial_audit_contract.py"
+      "tests/scientific/methodology/test_spatial_audit_contract.py"
     ],
     "ARQ-097": [
       "tests/resources/test_runtime_limits.py",
