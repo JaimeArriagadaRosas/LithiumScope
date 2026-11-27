@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -55,6 +56,14 @@ def pytest_collection_modifyitems(config, items):
         if classification is None:
             continue
         relative, tags = classification
+        # Named cases can specify narrower scopes inside mixed-purpose modules.
+        name = getattr(item, "originalname", None) or item.nodeid.split("::")[-1].split("[")[0]
+        for tag, pattern in (("m1", r"(?:^|_)(?:m1|model_1)(?:_|$)"),
+                             ("m2", r"(?:^|_)(?:m2|model_2)(?:_|$)"),
+                             ("eda", r"(?:^|_)eda(?:_|$)"),
+                             ("training", r"(?:^|_)(?:training|train|pretraining|posttraining|pretrain|optuna|cv)(?:_|$)")):
+            if re.search(pattern, name):
+                tags.add(tag)
         existing = {mark.name for mark in item.iter_markers()}
         category = relative.split("/")[1]
         if (existing & CATEGORIES) - {category}:

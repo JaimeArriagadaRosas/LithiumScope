@@ -5,10 +5,12 @@ from types import SimpleNamespace
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from lithiumscope.model_2.training.execution.cv_runner import run_classification_cv
 
 
+@pytest.mark.slow
 def test_real_grouped_rf_cv_preserves_oof_and_does_not_use_gpu():
     rng = np.random.default_rng(20261112)
     n = 90

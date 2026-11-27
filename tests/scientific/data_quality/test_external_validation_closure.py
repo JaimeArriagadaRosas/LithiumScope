@@ -3,6 +3,7 @@ from pathlib import Path
 import json
 import numpy as np
 import pandas as pd
+import pytest
 
 from lithiumscope.experiments.model_2.spatial.leakage_control import threshold
 from lithiumscope.experiments.data_lab.source_studies.georoc.screening.mamani_overlap import near_full_mamani
@@ -31,6 +32,9 @@ def test_label_and_group_never_used_as_features():
     assert 'drop(columns=["Li_icpms","spatial_group"]' in code
 
 
+@pytest.mark.local_artifacts
+@pytest.mark.m2
+@pytest.mark.training
 def test_cv_artifact_has_no_external_accuracy_claim():
     report = Path("results/scientific_simulations/leakage_safe_m2/experiment_manifest.json")
     if report.is_file():

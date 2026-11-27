@@ -107,6 +107,9 @@ def test_bootstrap_refuses_unpaired_inputs():
         )
 
 
+@pytest.mark.local_artifacts
+@pytest.mark.m1
+@pytest.mark.training
 def test_archived_m1_runs_match_by_explicit_observation_keys_if_available():
     from lithiumscope.core.paths import PROJECT_ROOT
     from lithiumscope.experiments.integrated.compare_vnext_trained_runs import (
@@ -124,6 +127,9 @@ def test_archived_m1_runs_match_by_explicit_observation_keys_if_available():
     assert paired.spatial_group_old.nunique()>5
 
 
+@pytest.mark.local_artifacts
+@pytest.mark.m2
+@pytest.mark.training
 def test_archived_m2_runs_reuse_identical_spatial_test_protocol_if_available():
     from lithiumscope.core.paths import PROJECT_ROOT
     from lithiumscope.experiments.integrated.compare_vnext_trained_runs import (
