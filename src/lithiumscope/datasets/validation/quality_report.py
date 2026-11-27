@@ -51,8 +51,14 @@ def assess_quality(frame: pd.DataFrame, policy: QualityPolicy) -> QualityReport:
             reasons[pos].append(reason)
             status[pos] = max(status[pos], severity)
 
-    _, valid, _ = valid_concentration(frame[policy.target], zero_policy=policy.zero_policy)
+    numeric, valid, _ = valid_concentration(frame[policy.target], zero_policy=policy.zero_policy)
     flag(~valid, "invalid_or_missing_target", 2)
+    if policy.review_zero_target:
+        flag(numeric.eq(0), "zero_semantics_review")
+    if policy.review_censored_target and "source_li_raw" in frame:
+        from lithiumscope.datasets.validation.chemistry.analytical import parse_analytical_value
+        censored = frame.source_li_raw.map(lambda value: parse_analytical_value(value, decimal_comma=False)[1] is not None)
+        flag(censored, "censored_target_review")
     if policy.require_coordinates or policy.require_reported_crs or policy.require_reported_precision or policy.max_uncertainty_m is not None:
         _, evidence = assess_coordinate_aliases(frame)
         if policy.require_coordinates:

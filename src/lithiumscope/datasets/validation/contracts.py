@@ -25,6 +25,8 @@ class QualityPolicy:
     unit_column: str | None = None
     method_column: str | None = None
     image_column: str | None = None
+    review_censored_target: bool = False
+    review_zero_target: bool = False
 
     def __post_init__(self):
         if self.model_group not in {"model_1", "model_2"}:
@@ -51,4 +53,5 @@ def candidate_policy(model_group: str, **overrides) -> QualityPolicy:
                     "require_reported_crs": True, "unit_column": "source_li_unit"}
     else:
         raise ValueError("Unknown model group")
-    return QualityPolicy(model_group, **{**defaults, **overrides})
+    return QualityPolicy(model_group, **{"review_censored_target": True, "review_zero_target": True,
+                                         **defaults, **overrides})

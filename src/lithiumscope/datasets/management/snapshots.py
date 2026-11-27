@@ -46,6 +46,16 @@ def verify_snapshot(directory: Path, expected_identity: dict | None = None) -> d
     data = directory / "dataset.csv"
     if not data.is_file() or not data.stat().st_size or file_sha256(data) != metadata["data_sha256"]:
         raise ValueError("Snapshot data integrity mismatch")
+    artifacts = metadata.get("artifacts", {"dataset.csv": metadata["data_sha256"]})
+    if artifacts.get("dataset.csv") != metadata["data_sha256"]:
+        raise ValueError("Snapshot data digest mismatch")
+    actual = {p.name for p in directory.iterdir() if p.name != "manifest.json"}
+    if actual != set(artifacts):
+        raise ValueError("Snapshot artifact inventory mismatch")
+    for name, digest in artifacts.items():
+        path = directory / name
+        if Path(name).name != name or path.is_symlink() or not path.is_file() or file_sha256(path) != digest:
+            raise ValueError(f"Snapshot artifact integrity mismatch: {name}")
     return metadata
 
 
@@ -75,8 +85,13 @@ def materialize_snapshot(root: Path, sources: dict[str, Path], *, policy: dict,
             raise ValueError("Transformation did not produce a dataset")
         if _identity(sources, policy, transform_revision) != identity:
             raise ValueError("Sources or transformation policy changed during snapshot construction")
-        metadata = {"identity": identity, "version_id": version, "data_sha256": file_sha256(data),
-                    "scientific_quality_certified": False}
+        artifacts = {}
+        for path in folder.iterdir():
+            if path.name == "manifest.json" or path.is_symlink() or not path.is_file():
+                raise ValueError(f"Unexpected staged artifact: {path.name}")
+            artifacts[path.name] = file_sha256(path)
+        metadata = {"identity": identity, "version_id": version, "data_sha256": artifacts["dataset.csv"],
+                    "artifacts": artifacts, "scientific_quality_certified": False}
         (folder / "manifest.json").write_text(json.dumps(metadata, indent=2, ensure_ascii=False), encoding="utf-8")
         try:
             folder.rename(destination)
