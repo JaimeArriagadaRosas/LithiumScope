@@ -8,7 +8,7 @@
     ],
     "M1-02": [
       "tests/scientific/shared/treatments/test_integral_eda.py",
-      "tests/integration/test_eda_training_integration.py",
+      "tests/integration/training/test_eda_training_integration.py",
       "tests/results/test_eda_protocol.py",
       "tests/scientific/shared/test_eda_profiles.py"
     ],
@@ -214,7 +214,7 @@
     ],
     "M2-18": [
       "tests/scientific/m2_training/test_m2_full_competition_quality.py",
-      "tests/scientific/m2_training/test_m2_refactored_outer_cv_smoke.py",
+      "tests/integration/training/test_m2_refactored_outer_cv_smoke.py",
       "tests/scientific/m2_training/test_m2_canonical_protocol.py"
     ],
     "M2-19": [
@@ -231,7 +231,7 @@
     ],
     "M2-21": [
       "tests/runtime/test_checkpoints.py",
-      "tests/scientific/m2_training/test_m2_refactored_outer_cv_smoke.py",
+      "tests/integration/training/test_m2_refactored_outer_cv_smoke.py",
       "tests/regression/test_run_resume.py"
     ],
     "M2-22": [
@@ -323,7 +323,7 @@
       "tests/scientific/shared/test_eda_profiles.py"
     ],
     "ARQ-011": [
-      "tests/integration/test_eda_training_integration.py",
+      "tests/integration/training/test_eda_training_integration.py",
       "tests/results/test_eda_protocol.py"
     ],
     "ARQ-012": [
@@ -364,10 +364,10 @@
       "tests/model_1/diagnostics/test_domain_group_intervals.py"
     ],
     "ARQ-018": [
-      "tests/integration/test_eda_training_integration.py",
+      "tests/integration/training/test_eda_training_integration.py",
       "tests/model_1/test_model_1_scientific_guards.py",
       "tests/datasets/management/test_frozen_model_1_input.py",
-      "tests/integration/test_holdout_pipeline_dispatch.py"
+      "tests/integration/training/test_holdout_pipeline_dispatch.py"
     ],
     "ARQ-019": [
       "tests/scientific/shared/treatments/test_integral_eda.py",
@@ -415,7 +415,7 @@
       "tests/scientific/shared/test_eda_profiles.py"
     ],
     "ARQ-028": [
-      "tests/integration/test_eda_training_integration.py",
+      "tests/integration/training/test_eda_training_integration.py",
       "tests/results/test_eda_protocol.py"
     ],
     "ARQ-029": [
@@ -424,7 +424,7 @@
       "tests/scientific/shared/test_nested_protocol.py"
     ],
     "ARQ-030": [
-      "tests/scientific/m2_training/test_m2_refactored_outer_cv_smoke.py",
+      "tests/integration/training/test_m2_refactored_outer_cv_smoke.py",
       "tests/scientific/shared/test_optuna_contract.py",
       "tests/unit/data/test_preprocessing_contracts.py"
     ],
@@ -468,10 +468,10 @@
       "tests/unit/inference/test_applicability.py"
     ],
     "ARQ-038": [
-      "tests/integration/test_eda_training_integration.py",
-      "tests/scientific/m2_training/test_m2_refactored_outer_cv_smoke.py",
-      "tests/integration/test_holdout_pipeline_dispatch.py",
-      "tests/integration/test_pretraining_holdout_reservation.py"
+      "tests/integration/training/test_eda_training_integration.py",
+      "tests/integration/training/test_m2_refactored_outer_cv_smoke.py",
+      "tests/integration/training/test_holdout_pipeline_dispatch.py",
+      "tests/integration/training/test_pretraining_holdout_reservation.py"
     ],
     "ARQ-039": [
       "tests/scientific/m2_training/test_m2_full_competition_diagnostics.py",
@@ -484,7 +484,7 @@
     "ARQ-041": [
       "tests/scientific/m2_training/test_m2_release_closure_comparison.py",
       "tests/scientific/m2_training/test_m2_generalization_protocol.py",
-      "tests/integration/test_pretraining_holdout_reservation.py",
+      "tests/integration/training/test_pretraining_holdout_reservation.py",
       "tests/core/test_historical_parity_preflight.py"
     ],
     "ARQ-042": [
@@ -734,7 +734,7 @@
     "ARQ-090": [
       "tests/architecture/structure/test_architecture.py",
       "tests/performance/test_resource_plan_invariants.py",
-      "tests/integration/test_holdout_pipeline_dispatch.py"
+      "tests/integration/training/test_holdout_pipeline_dispatch.py"
     ],
     "ARQ-091": [
       "tests/architecture/structure/test_architecture.py",
@@ -830,7 +830,7 @@
     "ARQ-109": [
       "tests/development/test_validation.py",
       "tests/scientific/shared/test_scientific_checks.py",
-      "tests/integration/test_pretraining_holdout_reservation.py",
+      "tests/integration/training/test_pretraining_holdout_reservation.py",
       "tests/resources/test_optimization_parallel_policy.py",
       "tests/scientific/shared/test_batched_optuna_contract.py",
       "tests/performance/test_acceleration_benchmark.py",
