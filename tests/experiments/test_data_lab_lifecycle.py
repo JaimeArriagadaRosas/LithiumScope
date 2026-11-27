@@ -41,7 +41,7 @@ def test_eda_does_not_prepare_treatments(monkeypatch,tmp_path):
     evidence=tmp_path/"eda"
     evidence.mkdir()
     (evidence/"manifest.json").write_text('{"state":"completed"}',encoding="utf-8")
-    from lithiumscope.experiments.data_lab import eda_cache
+    from lithiumscope.results import eda_cache
     monkeypatch.setattr(eda_cache,"lookup",lambda *_:None)
     monkeypatch.setattr(eda_cache,"key_for",lambda *_:"test")
     monkeypatch.setattr(eda_cache,"record",lambda *_:None)
@@ -52,7 +52,7 @@ def test_eda_does_not_prepare_treatments(monkeypatch,tmp_path):
 
 
 def test_cached_eda_skips_preparation(monkeypatch,tmp_path):
-    from lithiumscope.experiments.data_lab import eda_cache
+    from lithiumscope.results import eda_cache
     from lithiumscope.model_1.eda import pipeline
     (tmp_path/"manifest.json").write_text('{"state":"completed"}',encoding="utf-8")
     monkeypatch.setattr(eda_cache,"lookup",lambda *_:tmp_path)

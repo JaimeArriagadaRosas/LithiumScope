@@ -62,3 +62,8 @@ def cohort_summary(frame: pd.DataFrame, target: str) -> pd.DataFrame:
                         "target_min": valid.min(), "target_median": valid.median(),
                         "target_q75": valid.quantile(.75), "target_max": valid.max()})
     return pd.DataFrame(records)
+
+
+def missingness_table(frame: pd.DataFrame) -> pd.DataFrame:
+    """Whole-frame missingness; preserve column order and distinguish missing from nonfinite."""
+    return frame.isna().sum().rename("missing").to_frame()

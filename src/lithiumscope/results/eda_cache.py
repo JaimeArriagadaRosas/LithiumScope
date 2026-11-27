@@ -8,18 +8,27 @@ from lithiumscope.core.config import load_config
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import RESULTS_DIR
 from lithiumscope.core.reproducibility import canonical_json_hash
-from lithiumscope.experiments.generalization.prepared import identity
+from lithiumscope.core.run_resume import build_training_signature
+from lithiumscope.core.logging.session import get_logger
 from lithiumscope.results.atomic_exports import write_json
 from lithiumscope.results.eda_artifacts import verify_eda
 
 
 def key_for(group,source):
     from importlib.metadata import version
-    package=Path(__file__).resolve().parents[2]
-    relevant=(package/group/"eda",package/"core"/"scientific",package/"results")
-    return canonical_json_hash({"prepared":identity(group,source,load_config(group)),
+    if group not in {"model_1","model_2"}:
+        raise ValueError("Unknown model group")
+    cfg=load_config(group)
+    if group=="model_1":
+        upstream=build_training_signature(group,source,("app",group))
+    else:
+        from lithiumscope.model_2.preparation.features.v4_inputs import build_scientific_training_signature
+        upstream=build_scientific_training_signature(source,cfg)
+    package=Path(__file__).resolve().parents[1]
+    relevant=(package/group,package/"core"/"scientific",package/"datasets",package/"results",package/"core"/"configuration")
+    return canonical_json_hash({"upstream":upstream,"config":cfg,"source_sha256":file_sha256(source),
         "code":{p.relative_to(package).as_posix():file_sha256(p) for r in relevant for p in sorted(r.rglob("*.py"))},
-        "matplotlib":version("matplotlib")})
+        "versions":{name:version(name) for name in ("matplotlib","numpy","pandas","scikit-learn")}})
 
 
 def index_path(group,key):
@@ -39,7 +48,7 @@ def lookup(group,source):
                 and verify_eda(evidence,record["signature"])):
             return evidence
     except (OSError,ValueError,TypeError,KeyError):
-        pass
+        get_logger("results.eda_cache").warning("Invalid EDA index model=%s key=%s",group,key)
     return None
 
 
@@ -48,7 +57,10 @@ def record(group,source,evidence,key):
     if key_for(group,source)!=key:
         raise ValueError("EDA inputs changed during analysis")
     manifest=json.loads((evidence/"manifest.json").read_text(encoding="utf-8"))
+    if evidence.parent.resolve()!=(RESULTS_DIR/group/"eda").resolve() or manifest.get("model_group")!=group or manifest.get("source_sha256")!=file_sha256(source):
+        raise ValueError("EDA source or owner mismatch")
     if not verify_eda(evidence,manifest["signature"]):
         raise ValueError("EDA integrity failure")
     write_json(index_path(group,key),{"key":key,"eda_run_id":evidence.name,
         "signature":manifest["signature"],"manifest_sha256":file_sha256(evidence/"manifest.json")})
+    get_logger("results.eda_cache").info("Indexed EDA model=%s run=%s",group,evidence.name)

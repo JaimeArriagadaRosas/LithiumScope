@@ -17,7 +17,7 @@ def find_obsolete_imports(root: Path) -> list[str]:
     mapping = json.loads((root / "docs/integral-refactor/module-relocation.json").read_text(encoding="utf-8"))
     retired = {old: new for old, new in mapping.items()
                if old.startswith(("lithiumscope.datasets.", "lithiumscope.experiments.analysis.",
-                                  "lithiumscope.experiments.acquisition.", "lithiumscope.experiments.georoc."))
+                                  "lithiumscope.experiments."))
                and not _exists(src, old)}
     retired_packages = ("lithiumscope.experiments.acquisition", "lithiumscope.experiments.georoc.acquisition")
     findings = set()

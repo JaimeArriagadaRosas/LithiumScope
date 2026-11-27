@@ -11,6 +11,9 @@ import numpy as np
 import pandas as pd
 
 from lithiumscope.core.config import load_config
+from lithiumscope.core.scientific.eda_statistics import missingness_table, feature_profiles, cohort_summary
+from lithiumscope.core.logging.session import get_logger
+from lithiumscope.datasets.management.snapshots import dataset_implementation_revision
 from lithiumscope.core.reproducibility.hashing import file_sha256
 from lithiumscope.core.paths import DATA_DIR, RESULTS_DIR
 from lithiumscope.core.reproducibility import canonical_json_hash
@@ -66,11 +69,14 @@ def profile(spec, paths, receipt, base_path, *, output_root=None):
     paths = tuple(map(Path,paths))
     cfg=load_config("model_1")
     digests={p.name:file_sha256(p) for p in paths}
+    if len(digests)!=len(paths) or not paths:
+        raise ValueError("Candidate source files must have unique names")
     base_digest=file_sha256(base_path)
     from lithiumscope.datasets.adapters.georoc import schema as georoc_ingestion_schema, transformation as georoc_ingestion_transform, ingestion as georoc_ingestion
     from lithiumscope.datasets.readers import georoc_raw_reader
     from importlib.metadata import version
     key=canonical_json_hash({"source":spec.key,"files":digests,"base":base_digest,"cfg":cfg["data_sources"]["georoc"],
+        "implementation":dataset_implementation_revision("candidate-eda-v2"),
         "code":[file_sha256(Path(__file__)),file_sha256(Path(georoc_ingestion_schema.__file__)),
                 file_sha256(Path(georoc_ingestion_transform.__file__)),file_sha256(Path(georoc_ingestion.__file__)),
                 file_sha256(Path(georoc_raw_reader.__file__))],
@@ -120,7 +126,9 @@ def profile(spec, paths, receipt, base_path, *, output_root=None):
             "candidate_qc_no_identity_flag":pd.cut(y[qc&unique],cut).value_counts(sort=False)})
         distribution.index=distribution.index.astype(str)
         distribution.to_csv(tables/"lithium_bands.csv")
-        frame.isna().sum().rename("missing").to_csv(tables/"missingness.csv")
+        missingness_table(frame).to_csv(tables/"missingness.csv")
+        feature_profiles(frame,list(frame.columns),stage="candidate").to_csv(tables/"feature_profiles.csv",index=False)
+        cohort_summary(frame,"Li_icpms").to_csv(tables/"cohort_summary.csv",index=False)
         if "Rock_type" in frame:
             frame.groupby("Rock_type",dropna=False).Li_icpms.agg(["size","min","median","max"]).to_csv(tables/"lithology.csv")
         coverage=pd.DataFrame({"longitude_cell":np.floor(frame.Longitude),
@@ -135,6 +143,7 @@ def profile(spec, paths, receipt, base_path, *, output_root=None):
         summary={"raw_rows":harmonized.rows_read,"candidate_rows":len(frame),"qc_rows":int(qc.sum()),
                  "qc_no_identity_flag_rows":int((qc&unique).sum()),"above_696_qc_no_identity_flag":int((qc&unique&y.gt(696)).sum()),
                  "above_1000_qc_no_identity_flag":int((qc&unique&y.gt(1000)).sum()),"approved_rows":0}
+        get_logger("experiments.data_lab").info("Candidate EDA source=%s rows=%d flagged=%d",spec.key,len(frame),int((~unique).sum()))
         print(pd.DataFrame([summary]).to_string(index=False))
         return complete_run(directory,signature_value=key,details={"model_group":"model_1",
             "source_key":spec.key,"doi":spec.doi,"source_sha256":digests,"base_sha256":base_digest,

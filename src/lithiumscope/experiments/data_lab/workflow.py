@@ -12,7 +12,7 @@ def analyze(group, source, *, include_candidates=True):
         from lithiumscope.model_2.eda.pipeline import run_eda
     else:
         raise ValueError("Unknown model group")
-    from lithiumscope.experiments.data_lab import eda_cache
+    from lithiumscope.results import eda_cache
     evidence=eda_cache.lookup(group,source)
     if evidence is None:
         key=eda_cache.key_for(group,source)
@@ -32,7 +32,7 @@ def analyze(group, source, *, include_candidates=True):
 
 def existing_eda(group, source):
     """Require exact, intact descriptive evidence from the independent EDA stage."""
-    from lithiumscope.experiments.data_lab.eda_cache import lookup
+    from lithiumscope.results.eda_cache import lookup
     path=lookup(group,source)
     if path is not None:
         return path

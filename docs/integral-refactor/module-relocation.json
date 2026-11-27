@@ -190,5 +190,6 @@
   "lithiumscope.experiments.georoc.analyze_georoc_background": "lithiumscope.experiments.georoc.imagery.analysis",
   "lithiumscope.experiments.georoc.diagnose_georoc_grouped": "lithiumscope.experiments.georoc.imagery.diagnostics",
   "lithiumscope.experiments.georoc.georoc_final_evidence_report": "lithiumscope.experiments.reporting.georoc_evidence",
-  "lithiumscope.experiments.acquisition.acquisition": "lithiumscope.tools.acquisition.sentinel2.pilot"
+  "lithiumscope.experiments.acquisition.acquisition": "lithiumscope.tools.acquisition.sentinel2.pilot",
+  "lithiumscope.experiments.data_lab.eda_cache": "lithiumscope.results.eda_cache"
 }
