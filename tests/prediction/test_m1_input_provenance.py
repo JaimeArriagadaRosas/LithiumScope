@@ -31,14 +31,3 @@ def test_incomplete_or_invalid_profile_is_not_certified():
     bundle["applicability_profile"]["K2O"] = {"q01": 0., "q99": 10.}
     out, _ = predict_model_1_frame(raw, bundle=bundle)
     assert out.applicability_warning.iloc[0] == "OK"
-
-
-def test_historical_import_paths_remain_joblib_compatible():
-    import pickle
-    import importlib
-    module = importlib.import_module("lithiumscope.model_1.steps.step_08_preprocessing")
-    assert module.FeatureSchema is FeatureSchema
-    # Protocol 0 GLOBAL resolves the original qualified class name.
-    assert pickle.loads(b"clithiumscope.model_1.steps.step_08_preprocessing\nFeatureSchema\n.") is FeatureSchema
-    from lithiumscope.model_1.training.algorithms.tabnet import TabNetRegressorAdapter
-    assert pickle.loads(b"clithiumscope.model_1.training.tabnet\nTabNetRegressorAdapter\n.") is TabNetRegressorAdapter

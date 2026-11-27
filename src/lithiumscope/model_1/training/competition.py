@@ -16,7 +16,7 @@ from lithiumscope.core.states import RunState
 from lithiumscope.datasets.provenance.manifest import build_tabular_manifest, write_manifest
 from lithiumscope.model_1.evaluation.artifacts import save_dataset_artifacts
 from lithiumscope.model_1.evaluation.baseline import evaluate_baselines
-from lithiumscope.model_1.pipeline import prepare_training_data
+from lithiumscope.model_1.preparation.training_data import prepare_training_data
 from lithiumscope.model_1.validation.training_preflight import run_model_1_preflight
 from lithiumscope.runtime.graceful_shutdown import get_shutdown_manager
 from lithiumscope.model_1.training.execution.candidate_evaluation import evaluate_candidates

@@ -1,5 +1,6 @@
 """Ensure canonical diagnostic moves preserve import identity and API."""
 from importlib import import_module
+from importlib.util import find_spec
 
 import pytest
 
@@ -12,26 +13,6 @@ import pytest
   [
     "lithiumscope.core.presentation.visualization",
     "lithiumscope.core.visualization"
-  ],
-  [
-    "lithiumscope.model_1.evaluation.domain",
-    "lithiumscope.model_1.diagnostics.domain"
-  ],
-  [
-    "lithiumscope.model_1.evaluation.group_intervals",
-    "lithiumscope.model_1.diagnostics.group_intervals"
-  ],
-  [
-    "lithiumscope.model_1.evaluation.high_lithium",
-    "lithiumscope.model_1.diagnostics.high_lithium"
-  ],
-  [
-    "lithiumscope.model_1.evaluation.robustness",
-    "lithiumscope.model_1.diagnostics.robustness"
-  ],
-  [
-    "lithiumscope.model_1.methodology.dual_release_metrics",
-    "lithiumscope.model_1.diagnostics.dual_release_metrics"
   ],
   [
     "lithiumscope.model_2.evaluation.generalization",
@@ -92,3 +73,8 @@ def test_reproducibility_package_api():
     assert canonical_json_hash({"b":2,"a":1})==canonical_json_hash({"a":1,"b":2})
     assert callable(runtime_fingerprint) and callable(set_global_seed)
     assert callable(hashing.file_sha256)
+
+
+@pytest.mark.parametrize("old", ["lithiumscope.model_1.evaluation.domain","lithiumscope.model_1.evaluation.group_intervals","lithiumscope.model_1.evaluation.high_lithium","lithiumscope.model_1.evaluation.robustness","lithiumscope.model_1.methodology.dual_release_metrics"])
+def test_m1_diagnostic_compatibility_modules_retired(old):
+    assert find_spec(old) is None

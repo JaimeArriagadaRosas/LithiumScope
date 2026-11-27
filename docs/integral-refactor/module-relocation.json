@@ -311,5 +311,13 @@
   "lithiumscope.experiments.model_1.augmentation.source_intake": "lithiumscope.experiments.data_lab.source_studies.directed_intake",
   "lithiumscope.experiments.model_1.augmentation.chen_profile": "lithiumscope.experiments.data_lab.source_studies.chen",
   "lithiumscope.experiments.data_lab.candidate_audit": "lithiumscope.experiments.data_lab.screening.audit",
-  "lithiumscope.experiments.data_lab.candidate_screening": "lithiumscope.experiments.data_lab.screening.candidates"
+  "lithiumscope.experiments.data_lab.candidate_screening": "lithiumscope.experiments.data_lab.screening.candidates",
+  "lithiumscope.model_1.preflight": "lithiumscope.model_1.validation.training_preflight",
+  "lithiumscope.model_1.preflight_run_model_1_preflight": "lithiumscope.model_1.validation.training_preflight",
+  "lithiumscope.model_1.steps.step_08_preprocessing": "lithiumscope.model_1.training.preprocessing.tabular",
+  "lithiumscope.model_1.training.tabnet": "lithiumscope.model_1.training.algorithms.tabnet",
+  "lithiumscope.model_1.training.trainer": "lithiumscope.model_1.training.competition",
+  "lithiumscope.model_1.methodology.dataset_comparison_diagnostics": "lithiumscope.model_1.methodology.comparison_diagnostics",
+  "lithiumscope.model_1.evaluation.reports": "lithiumscope.core.scientific.json_reports",
+  "lithiumscope.model_1.prediction.input_parser": "lithiumscope.datasets.readers.tabular"
 }

@@ -22,7 +22,7 @@ from lithiumscope.experiments.model_1.training_methods.fitting import _base_fit
 from lithiumscope.experiments.model_1.treatments.policies import Arm
 from lithiumscope.experiments.model_1.evaluation.targeted_metrics import fold_metrics, summarize
 from lithiumscope.experiments.shared.paired_comparison import paired_group_intervals
-from lithiumscope.model_1.pipeline import prepare_training_data
+from lithiumscope.model_1.preparation.training_data import prepare_training_data
 from lithiumscope.resources.detection.device import detect_device
 from lithiumscope.results.atomic_exports import write_legacy_evidence_json, write_table
 

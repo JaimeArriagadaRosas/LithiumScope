@@ -12,7 +12,7 @@ from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.logging.session import get_logger, run_log
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.core.reproducibility import runtime_fingerprint
-from lithiumscope.model_1.prediction.input_parser import load_prediction_input
+from lithiumscope.datasets.readers.tabular import load_data as load_prediction_input
 from lithiumscope.model_1.prediction.predictor import predict_model_1_frame
 from lithiumscope.prediction.analysis import (
     concordance_table,

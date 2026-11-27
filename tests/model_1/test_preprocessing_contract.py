@@ -9,7 +9,7 @@ from sklearn.pipeline import Pipeline
 from lithiumscope.model_1.training.preprocessing.tabular import FeatureSchema, build_preprocessor
 from lithiumscope.model_1.training.preprocessing.evidence import preprocessing_evidence
 from lithiumscope.model_1.training.preprocessing.variants import feature_variant, ABLATIONS
-from lithiumscope.model_1.pipeline import PreparedModel1Data
+from lithiumscope.model_1.preparation.training_data import PreparedModel1Data
 
 
 def test_fold_empty_feature_and_unseen_categories_are_explicit():

@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
-from lithiumscope.model_1.evaluation.high_lithium import high_lithium_diagnostics
+from lithiumscope.model_1.diagnostics.high_lithium import high_lithium_diagnostics
 
 
 def example():

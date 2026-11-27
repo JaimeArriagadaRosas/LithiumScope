@@ -17,7 +17,8 @@ def test_methodology_has_only_canonical_owner(old,new):
     assert import_module(new).__name__ == new
 
 
-def test_shared_quality_protocol_is_used_by_model_1():
+def test_shared_quality_protocol_has_only_one_owner():
     from lithiumscope.datasets.validation.chemistry.qc_protocols import protocol_masks
-    from lithiumscope.model_1.methodology.qc_protocols import protocol_masks as m1_masks
-    assert m1_masks is protocol_masks
+    from lithiumscope.model_1.methodology import qc_protocols
+    assert protocol_masks.__module__ == "lithiumscope.datasets.validation.chemistry.qc_protocols"
+    assert not hasattr(qc_protocols, "protocol_masks")

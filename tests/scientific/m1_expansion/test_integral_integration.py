@@ -13,7 +13,7 @@ from lithiumscope.experiments.model_1.training_methods import boosting as bm
 from lithiumscope.model_1.training.preprocessing.tabular import (
     FeatureSchema, OXIDES, TRACE_ELEMENTS, SPATIAL_CANDIDATES, DERIVED, CATEGORICAL,
 )
-from lithiumscope.model_1.pipeline import prepare_prediction_data
+from lithiumscope.model_1.preparation.prediction_data import prepare_prediction_data
 from lithiumscope.resources.detection.device import detect_device
 
 

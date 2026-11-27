@@ -1,9 +1,8 @@
 import numpy as np
 import pandas as pd
 
-from lithiumscope.model_1.methodology.dataset_comparison import (
-    harmonize_feot_candidate, heldout_group_masks, IRON_FEOT_TO_FE2O3T,
-)
+from lithiumscope.model_1.methodology.comparison_inputs import harmonize_feot_candidate, IRON_FEOT_TO_FE2O3T
+from lithiumscope.model_1.methodology.dataset_comparison import heldout_group_masks
 
 
 def test_feot_total_conversion_without_double_counting():

@@ -15,75 +15,24 @@ from lithiumscope.persistence.model_deserialization import load_model_artifact
 import numpy as np
 import pandas as pd
 from sklearn.base import clone
-from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sklearn.model_selection import GroupKFold
 
 from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR
-from lithiumscope.datasets.adapters.georoc.schema import infer_georoc_column_map
-from lithiumscope.datasets.adapters.georoc.transformation import harmonize_chunk
 from lithiumscope.datasets.harmonization import (
-    canonicalize_coordinates, merge_harmonized_sources,
+    merge_harmonized_sources,
 )
-from lithiumscope.model_1.methodology.qc_protocols import protocol_masks
-from lithiumscope.model_1.pipeline import prepare_prediction_data
-from lithiumscope.model_1.preparation.detection_limits import clean_detection_limits
-from lithiumscope.model_1.preparation.missing_values import normalize_missing_values
+from lithiumscope.datasets.validation.chemistry.qc_protocols import protocol_masks
+from lithiumscope.model_1.methodology.comparison_inputs import (
+    IRON_FEOT_TO_FE2O3T, comparison_frame, harmonize_feot_candidate, quality_candidate_frames,
+)
+from lithiumscope.model_1.methodology.comparison_diagnostics import comparison_metrics
+from lithiumscope.core.logging.session import get_logger
+from lithiumscope.model_1.preparation.prediction_data import prepare_prediction_data
 from lithiumscope.model_1.validation.spatial import build_spatial_groups
 from lithiumscope.model_1.training.preprocessing.target_transform import wrap_target_regressor
 
 
-IRON_FEOT_TO_FE2O3T = 1.111348
-
-
-def harmonize_feot_candidate(raw: pd.DataFrame, source_file: str) -> pd.DataFrame:
-    """Convert total Fe as FeO to total Fe as Fe2O3 in an experimental copy.
-
-    FEOT is TOTAL iron; never add it to any FE2O3 column. If FEOT is absent,
-    the original Fe2O3 value can be used, but provenance is explicit.
-    """
-    copy = raw.copy(deep=True)
-    feot = pd.to_numeric(copy.get("FEOT(WT%)"), errors="coerce")
-    ferric = pd.to_numeric(copy.get("FE2O3(WT%)"), errors="coerce")
-    if not isinstance(feot, pd.Series) or not isinstance(ferric, pd.Series):
-        raise ValueError("Required raw Fe source columns are not present.")
-    candidate = feot.mul(IRON_FEOT_TO_FE2O3T).where(feot.notna(), ferric)
-    copy["FE2O3T(WT%)"] = candidate
-    mapping = infer_georoc_column_map(copy.columns)
-    if mapping.get("FE2O3T(WT%)") != "Fe2O3":
-        raise RuntimeError("The GEOROC schema did not select the total iron column.")
-    harmonized, _ = harmonize_chunk(
-        copy,
-        column_map=mapping,
-        source_name="GEOROC",
-        source_file=source_file,
-        allowed_material_types=("WHOLE ROCK",),
-        minimum_predictors=8,
-    )
-    harmonized["Fe_total_provenance"] = np.where(
-        feot.reindex(harmonized.index).notna(),
-        "FEOT_CONVERTED_TO_FE2O3T",
-        "ORIGINAL_FE2O3",
-    )
-    return harmonized
-
-
-def quality_candidate_frames(
-    source: pd.DataFrame,
-) -> dict[str, pd.DataFrame]:
-    """Prepare three variants in-memory using the existing preprocessing rules."""
-    frame = canonicalize_coordinates(
-        normalize_missing_values(clean_detection_limits(source))
-    )
-    frame["Li_icpms"] = pd.to_numeric(frame["Li_icpms"], errors="coerce")
-    frame = frame.dropna(subset=["Li_icpms"]).copy()
-    masks = protocol_masks(frame)
-    return {
-        name: frame.loc[masks[flag]].copy()
-        for name, flag in (
-            ("B", "B_reconstructed"),
-            ("C", "C_experimental"),
-        )
-    }
+logger = get_logger("model_1.methodology.dataset_comparison")
 
 
 def heldout_group_masks(
@@ -107,22 +56,6 @@ def heldout_group_masks(
     return pairs
 
 
-def _metrics(y: np.ndarray, prediction: np.ndarray) -> dict[str, float]:
-    residual = np.asarray(prediction) - np.asarray(y)
-    return {
-        "mae": float(mean_absolute_error(y, prediction)),
-        "rmse": float(np.sqrt(mean_squared_error(y, prediction))),
-        "bias": float(residual.mean()),
-        "p90_ae": float(np.quantile(abs(residual), 0.9)),
-    }
-
-
-def _frame(raw: pd.DataFrame) -> pd.DataFrame:
-    return canonicalize_coordinates(
-        normalize_missing_values(clean_detection_limits(raw))
-    )
-
-
 def run_experiments(
     root: Path = PROJECT_ROOT,
     destination: Path | None = None,
@@ -137,7 +70,7 @@ def run_experiments(
     original = pd.read_csv(
         root / "data/processed/model_1/training_combined.csv", low_memory=False
     )
-    original = _frame(original).dropna(subset=["Li_icpms"])
+    original = comparison_frame(original).dropna(subset=["Li_icpms"])
     original_mask = protocol_masks(original)["A_original"]
     a = original.loc[original_mask].copy().reset_index(drop=True)
     assert len(a) and a["source_dataset"].nunique() == 2
@@ -153,6 +86,7 @@ def run_experiments(
     prepared = quality_candidate_frames(merged)
     b = prepared["B"].reset_index(drop=True)
     c = prepared["C"].reset_index(drop=True)
+    logger.info("M1_COMPARISON_COHORTS A=%d B=%d C=%d", len(a), len(b), len(c))
     print(
         "M1_DATASETS", {"A": len(a), "B": len(b), "C": len(c)},
         "GEOROC_MERGE", dedup_audit, flush=True,
@@ -209,12 +143,13 @@ def run_experiments(
             model.fit(x[version].iloc[trainidx], target[version][trainidx])
             values = np.asarray(model.predict(x["A"].iloc[testidx]), dtype=float)
             pred[testidx] = values
-            m = _metrics(target["A"][testidx], values)
+            m = comparison_metrics(target["A"][testidx], values)
             records.append({
                 "variant": label, "fold": fold, "n_train": len(trainidx),
                 "n_test": len(testidx), "source_variant": version,
                 "target_transform": transform, **m,
             })
+            logger.info("M1_COMPARISON_FOLD variant=%s fold=%d rmse=%s", label, fold, m["rmse"])
             print("M1_FOLD",label,fold,"RMSE",round(m["rmse"],4),
                   "TRAIN",len(trainidx),flush=True)
         if not np.isfinite(pred).all():
@@ -232,7 +167,7 @@ def run_experiments(
         for name,g in paired.groupby("source_dataset",sort=True):
             source_metrics.append({
                 "variant":label,"source":name,"n":len(g),
-                **_metrics(g.Li_icpms.to_numpy(),g[label].to_numpy()),
+                **comparison_metrics(g.Li_icpms.to_numpy(),g[label].to_numpy()),
             })
     pd.DataFrame(source_metrics).to_csv(out/"m1_paired_by_source.csv",index=False)
     summary.to_csv(out/"m1_development_rankings.csv",index=False)

@@ -65,7 +65,7 @@ def test_cli_menu_remains_thin():
 def test_trainers_are_thin_entry_points():
     root = Path(__file__).resolve().parents[2]
     paths = [
-        root / "src/lithiumscope/model_1/training/trainer.py",
+        root / "src/lithiumscope/model_1/pipeline.py",
         root / "src/lithiumscope/model_2/training/trainer.py",
     ]
     assert all(len(path.read_text(encoding="utf-8").splitlines()) <= 40 for path in paths)

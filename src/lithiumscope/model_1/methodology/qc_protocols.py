@@ -2,9 +2,8 @@
 from __future__ import annotations
 
 import pandas as pd
-from lithiumscope.datasets.validation.chemistry.qc_protocols import protocol_masks
 
-__all__ = ["protocol_masks", "protocol_summary"]
+__all__ = ["protocol_summary"]
 
 def protocol_summary(frame: pd.DataFrame, masks: pd.DataFrame) -> pd.DataFrame:
     records = []

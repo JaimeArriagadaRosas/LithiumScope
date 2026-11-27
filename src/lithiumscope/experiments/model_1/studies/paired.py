@@ -13,7 +13,7 @@ from lithiumscope.core.paths import RESULTS_DIR
 from lithiumscope.datasets.management.sources.local import local_training_source
 from lithiumscope.experiments.shared.design import budget_arms, choose_algorithms
 from lithiumscope.experiments.shared.paired_suite import Arm, run_paired_suite
-from lithiumscope.model_1.pipeline import prepare_training_data
+from lithiumscope.model_1.preparation.training_data import prepare_training_data
 from lithiumscope.model_1.training.factory import build_pipeline, get_algorithm
 from lithiumscope.model_1.training.optimization.optimizer import optimize_with_optuna
 from lithiumscope.model_1.training.preprocessing.spatial_tabnet import fit_regression_estimator

@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from lithiumscope.experiments.model_1.evaluation.dataset_diagnostics import (
+from lithiumscope.model_1.methodology.comparison_diagnostics import (
     cluster_bootstrap_improvement,
 )
 

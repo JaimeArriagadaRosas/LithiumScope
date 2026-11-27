@@ -18,7 +18,8 @@ from lithiumscope.experiments.model_1.data_expansion.inputs import load_inputs
 from lithiumscope.experiments.model_1.data_expansion.identity import resolve, describe_domain, multivariate_support
 from lithiumscope.experiments.model_1.data_expansion.cohorts import (
     GOOD_STATES, REVIEW_COLUMNS, review_candidates, reserve_holdout, fold_membership)
-from lithiumscope.model_1.pipeline import prepare_training_data, prepare_prediction_data
+from lithiumscope.model_1.preparation.training_data import prepare_training_data
+from lithiumscope.model_1.preparation.prediction_data import prepare_prediction_data
 from lithiumscope.model_1.validation.spatial import build_spatial_groups
 from lithiumscope.results.atomic_exports import write_json, write_table, write_legacy_evidence_json
 

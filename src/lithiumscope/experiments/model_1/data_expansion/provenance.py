@@ -15,7 +15,7 @@ from lithiumscope.core.paths import DATA_DIR, RESULTS_DIR
 from lithiumscope.datasets.management.sources.local import local_training_source
 from lithiumscope.datasets.readers.georoc_raw_reader import detect_georoc_encoding
 from lithiumscope.experiments.data_lab.screening.candidates import CHEM, num, sample, text
-from lithiumscope.model_1.pipeline import prepare_training_data
+from lithiumscope.model_1.preparation.training_data import prepare_training_data
 from lithiumscope.results.atomic_exports import write_json, write_table
 
 REF_MARKER = re.compile(r"^(references|bibliography|citations)\s*:\s*$", re.I)

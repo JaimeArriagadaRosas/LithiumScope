@@ -17,8 +17,8 @@ from sklearn.base import clone
 from sklearn.metrics import average_precision_score, brier_score_loss, roc_auc_score
 
 from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR
-from lithiumscope.model_1.methodology.qc_protocols import protocol_masks
-from lithiumscope.model_1.methodology.dataset_comparison import _frame
+from lithiumscope.datasets.validation.chemistry.qc_protocols import protocol_masks
+from lithiumscope.model_1.methodology.comparison_inputs import comparison_frame as _frame
 from lithiumscope.model_1.preparation.target_filtering import filter_target
 from lithiumscope.core.config import load_config
 from lithiumscope.model_1.validation.spatial import build_spatial_groups

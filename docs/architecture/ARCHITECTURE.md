@@ -47,7 +47,7 @@ La secuencia conceptual es:
 
 Los seis candidatos son Random Forest, XGBoost, SVM-RBF, TabNet, HistGradientBoosting y CatBoost. Las métricas relevantes son **RMSE, MAE y R²**; DummyRegressor proporciona referencia sin competir como modelo final. Una comparación justa exige considerar las mismas observaciones y protocolos de validación.
 
-El código reside en `model_1/steps/`, `training/` y `evaluation/`. La fuente, unidades, variables y recortes están detallados en [datasets](../data/DATASETS_AND_FEATURES.md) y [contratos](../data/INPUT_OUTPUT_VARIABLES.md).
+El código reside en `model_1/preparation/`, `eda/`, `training/`, `validation/`, `evaluation/`, `diagnostics/`, `methodology/` y `prediction/`. `pipeline.py` coordina la ejecución sin reexportar las funciones de preparación. Los consumidores importan directamente del propietario de cada responsabilidad. La compatibilidad con clases serializadas históricas se limita al deserializador de persistencia; no se mantienen módulos puente de `steps/`. La fuente, unidades, variables y recortes están detallados en [datasets](../data/DATASETS_AND_FEATURES.md) y [contratos](../data/INPUT_OUTPUT_VARIABLES.md).
 
 ## Pipeline M2: clasificación y prioridad espacial
 

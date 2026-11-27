@@ -6,7 +6,7 @@ from lithiumscope.datasets.management.sources.local import local_training_source
 
 
 def regression_inputs():
-    from lithiumscope.model_1.pipeline import prepare_training_data
+    from lithiumscope.model_1.preparation.training_data import prepare_training_data
     from lithiumscope.model_1.validation.spatial import materialize_regression_splits
     from lithiumscope.model_1.training.factory import build_pipeline
     from lithiumscope.model_1.training.preprocessing.spatial_tabnet import fit_regression_estimator

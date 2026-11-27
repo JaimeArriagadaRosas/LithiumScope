@@ -3,7 +3,6 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
-import joblib
 from lithiumscope.persistence.model_deserialization import load_model_artifact
 import numpy as np
 import pandas as pd
@@ -12,14 +11,16 @@ from sklearn.model_selection import GroupKFold
 
 from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR
 from lithiumscope.core.config import load_config
-from lithiumscope.model_1.methodology.qc_protocols import protocol_masks
-from lithiumscope.model_1.methodology.dataset_comparison import (
-    _frame, _metrics, quality_candidate_frames,
-)
-from lithiumscope.model_1.methodology.dataset_comparison_diagnostics import (
+from lithiumscope.core.logging.session import get_logger
+
+logger = get_logger("model_1.methodology.feot_expansion")
+from lithiumscope.datasets.validation.chemistry.qc_protocols import protocol_masks
+from lithiumscope.model_1.methodology.comparison_inputs import comparison_frame, quality_candidate_frames
+from lithiumscope.model_1.methodology.comparison_diagnostics import comparison_metrics
+from lithiumscope.model_1.methodology.comparison_diagnostics import (
     cluster_bootstrap_improvement,
 )
-from lithiumscope.model_1.pipeline import prepare_prediction_data
+from lithiumscope.model_1.preparation.prediction_data import prepare_prediction_data
 from lithiumscope.model_1.preparation.target_filtering import filter_target
 from lithiumscope.model_1.validation.spatial import build_spatial_groups
 
@@ -45,7 +46,7 @@ def evaluate(root: Path=PROJECT_ROOT, output: Path=DESTINATION):
     a_path=root/"data/processed/model_1/training_combined.csv"
     b_path=(root/"results/scientific_simulations/vnext_20261106"
             /"stage2_m1/feot_combined_experiment_only.csv")
-    a=_frame(pd.read_csv(a_path,low_memory=False))
+    a=comparison_frame(pd.read_csv(a_path,low_memory=False))
     a,_=filter_target(a,list(load_config("model_1")["data"]["target_candidates"]))
     a=a.loc[protocol_masks(a)["A_original"]].reset_index(drop=True)
     b=quality_candidate_frames(pd.read_csv(b_path,low_memory=False))["B"]
@@ -83,14 +84,15 @@ def evaluate(root: Path=PROJECT_ROOT, output: Path=DESTINATION):
         model_b=clone(est)
         model_b.fit(xb.iloc[train],yb[train])
         pred_b[test]=model_b.predict(xt.iloc[test])
-        ma=_metrics(yt[test],pred_a[test])
-        mb=_metrics(yt[test],pred_b[test])
+        ma=comparison_metrics(yt[test],pred_a[test])
+        mb=comparison_metrics(yt[test],pred_b[test])
         records.append({
             "fold":index,"n_test":len(test),"n_test_groups":len(heldout),
             "n_train_A":len(a),"n_train_B":len(train),
             "RMSE_A":ma["rmse"],"RMSE_B":mb["rmse"],
             "MAE_A":ma["mae"],"MAE_B":mb["mae"],
         })
+        logger.info("M1_FEOT_FOLD fold=%d n_test=%d rmse_a=%s rmse_b=%s", index, len(test), ma["rmse"], mb["rmse"])
         print("M1_NEW_GEO_FOLD",index,"n",len(test),
               "A",round(ma["rmse"],3),"B",round(mb["rmse"],3),flush=True)
     if not np.isfinite(pred_b).all():
@@ -106,8 +108,8 @@ def evaluate(root: Path=PROJECT_ROOT, output: Path=DESTINATION):
         "test_labels":"GEOROC FEOT-B samples: original publications not independently certified",
         "spatial_holdout_groups":int(groups.nunique()),
         "test_samples":len(new),
-        "metrics_A":_metrics(yt,pred_a),
-        "metrics_B":_metrics(yt,pred_b),
+        "metrics_A":comparison_metrics(yt,pred_a),
+        "metrics_B":comparison_metrics(yt,pred_b),
         "gain_ci_by_group":cluster_bootstrap_improvement(
             yt,pred_a,pred_b,groups,repeats=400,seed=123
         ),

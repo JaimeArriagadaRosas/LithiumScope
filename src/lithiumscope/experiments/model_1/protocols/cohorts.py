@@ -3,9 +3,9 @@ from __future__ import annotations
 import pandas as pd
 from lithiumscope.core.config import load_config
 from lithiumscope.experiments.model_1.treatments.balancing import MIN_COHORT_ROWS
-from lithiumscope.model_1.pipeline import prepare_training_data
+from lithiumscope.model_1.preparation.training_data import prepare_training_data
 from lithiumscope.model_1.preparation.detection_limits import clean_detection_limits
-from lithiumscope.model_1.preparation.missing_values import normalize_missing_values
+from lithiumscope.datasets.validation.tabular.missing_values import normalize_missing_values
 from lithiumscope.model_1.preparation.target_filtering import filter_target
 
 def cohort(source):

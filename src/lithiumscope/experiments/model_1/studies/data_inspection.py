@@ -9,12 +9,10 @@ import pandas as pd
 from lithiumscope.core.config import load_config
 from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR
 from lithiumscope.datasets.harmonization import canonicalize_coordinates
-from lithiumscope.model_1.methodology.qc_protocols import (
-    protocol_masks,
-    protocol_summary,
-)
+from lithiumscope.datasets.validation.chemistry.qc_protocols import protocol_masks
+from lithiumscope.model_1.methodology.qc_protocols import protocol_summary
 from lithiumscope.model_1.preparation.detection_limits import clean_detection_limits
-from lithiumscope.model_1.preparation.missing_values import normalize_missing_values
+from lithiumscope.datasets.validation.tabular.missing_values import normalize_missing_values
 from lithiumscope.model_1.preparation.target_filtering import filter_target
 
 

@@ -12,14 +12,13 @@ from sklearn.base import clone
 from sklearn.model_selection import GroupKFold
 
 from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR
-from lithiumscope.model_1.methodology.dataset_comparison import (
-    _frame, _metrics, quality_candidate_frames,
-)
-from lithiumscope.model_1.pipeline import prepare_prediction_data
+from lithiumscope.model_1.methodology.comparison_inputs import comparison_frame as _frame, quality_candidate_frames
+from lithiumscope.model_1.methodology.comparison_diagnostics import comparison_metrics as _metrics
+from lithiumscope.model_1.preparation.prediction_data import prepare_prediction_data
 from lithiumscope.model_1.validation.spatial import build_spatial_groups
 
 
-from lithiumscope.model_1.methodology.dataset_comparison_diagnostics import (
+from lithiumscope.model_1.methodology.comparison_diagnostics import (
     cluster_bootstrap_improvement as cluster_bootstrap_improvement,
 )
 

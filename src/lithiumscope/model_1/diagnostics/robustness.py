@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from lithiumscope.model_1.evaluation.metrics import regression_metrics
+from lithiumscope.core.scientific.regression_metrics import regression_metrics
 from lithiumscope.model_1.preparation.feature_engineering import add_geochemical_features
 from lithiumscope.model_1.training.preprocessing.tabular import OXIDES, TRACE_ELEMENTS, DERIVED
 

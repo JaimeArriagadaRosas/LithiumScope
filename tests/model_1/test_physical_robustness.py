@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.model_1.evaluation.robustness import apply_stress,evaluate_stress,SCENARIOS,SEED_OFFSETS
+from lithiumscope.model_1.diagnostics.robustness import apply_stress,evaluate_stress,SCENARIOS,SEED_OFFSETS
 from lithiumscope.model_1.preparation.feature_engineering import add_geochemical_features
 from lithiumscope.model_1.training.preprocessing.tabular import FeatureSchema,OXIDES,DERIVED
 

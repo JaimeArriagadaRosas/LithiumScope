@@ -7,7 +7,7 @@ from lithiumscope.core.config import load_config
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.paths import RESULTS_DIR
-from lithiumscope.model_1.pipeline import prepare_training_data
+from lithiumscope.model_1.preparation.training_data import prepare_training_data
 from lithiumscope.model_1.validation.spatial import materialize_regression_splits
 from lithiumscope.core.scientific.fold_profiles import fold_profiles
 from lithiumscope.core.scientific.spatial_audit import audit_spatial_folds

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import numpy as np
+from lithiumscope.core.scientific.regression_metrics import regression_metrics
 
 
 def cluster_bootstrap_improvement(
@@ -37,3 +38,8 @@ def cluster_bootstrap_improvement(
         }
         for key, x in values.items()
     }
+
+
+def comparison_metrics(y, prediction) -> dict[str, float]:
+    metrics = regression_metrics(y, prediction)
+    return {name: getattr(metrics, name) for name in ("mae", "rmse", "bias", "p90_ae")}

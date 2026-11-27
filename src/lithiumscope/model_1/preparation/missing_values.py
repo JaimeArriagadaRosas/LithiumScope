@@ -7,7 +7,6 @@ from lithiumscope.core.logging.session import get_logger
 
 logger = get_logger("model_1.missing_values")
 
-from lithiumscope.datasets.validation.tabular.missing_values import normalize_missing_values as normalize_missing_values
 
 
 def find_age_column(frame: pd.DataFrame) -> str | None:
@@ -26,3 +25,21 @@ def should_include_age(frame: pd.DataFrame, max_missing_fraction: float = 0.50) 
     missing_fraction = float(1.0 - valid.mean())
     logger.info("Age column=%s missing_fraction=%.3f", candidate, missing_fraction)
     return missing_fraction <= max_missing_fraction
+
+
+def normalize_numeric_predictors(frame: pd.DataFrame, schema) -> pd.DataFrame:
+    result = frame.copy()
+    version = getattr(schema, "preparation_version", 1)
+    for name in schema.numeric:
+        values = pd.to_numeric(result[name], errors="coerce")
+        if version >= 2:
+            valid = np.isfinite(values)
+            if name == "Longitude":
+                valid &= values.between(-180, 180)
+            elif name == "Latitude":
+                valid &= values.between(-90, 90)
+            else:
+                valid &= values.ge(0)
+            values = values.where(valid)
+        result[name] = values
+    return result

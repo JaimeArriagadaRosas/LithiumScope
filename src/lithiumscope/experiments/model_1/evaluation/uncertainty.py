@@ -12,8 +12,8 @@ from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import RESULTS_DIR
 from lithiumscope.datasets.management.sources.local import local_training_source
 from lithiumscope.experiments.shared.design import choose_algorithms
-from lithiumscope.model_1.evaluation.group_intervals import run_group_interval_study
-from lithiumscope.model_1.pipeline import prepare_training_data
+from lithiumscope.model_1.diagnostics.group_intervals import run_group_interval_study
+from lithiumscope.model_1.preparation.training_data import prepare_training_data
 from lithiumscope.model_1.training.factory import build_pipeline
 from lithiumscope.model_1.training.preprocessing.spatial_tabnet import fit_regression_estimator
 from lithiumscope.resources.detection.device import detect_device

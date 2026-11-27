@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from lithiumscope.core.scientific_checks import assert_group_isolation, assert_partition_coverage
-from lithiumscope.model_1.evaluation.metrics import regression_metrics
+from lithiumscope.core.scientific.regression_metrics import regression_metrics
 from lithiumscope.model_1.validation.spatial import materialize_regression_splits
 
 

@@ -9,8 +9,8 @@ import pandas as pd
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.paths import RESULTS_DIR
-from lithiumscope.model_1.pipeline import prepare_prediction_data
-from lithiumscope.model_1.prediction.input_parser import load_prediction_input
+from lithiumscope.model_1.preparation.prediction_data import prepare_prediction_data
+from lithiumscope.datasets.readers.tabular import load_data
 from lithiumscope.model_1.schema import applicability_fraction
 from lithiumscope.core.scientific.applicability import complete_range_profile
 from lithiumscope.persistence.load_model import load_latest_model
@@ -85,7 +85,7 @@ def predict_model_1_frame(
         output.loc[unresolved & ~invalid_output,"applicability_warning"]="INSUFFICIENT_COORDINATE_EVIDENCE"
     multivariate = bundle.get("multivariate_domain_profile")
     if multivariate is not None:
-        from lithiumscope.model_1.evaluation.domain import evaluate_domain
+        from lithiumscope.model_1.diagnostics.domain import evaluate_domain
         domain = evaluate_domain(x, multivariate)
         for col in domain:
             output[col] = domain[col]
@@ -122,7 +122,7 @@ def predict_model_1(
     destination_dir: Path | None = None,
 ) -> tuple[pd.DataFrame, Path, Path]:
     bundle, model_path = load_latest_model("model_1")
-    frame = load_prediction_input(path)
+    frame = load_data(path)
     output, diagnostics = predict_model_1_frame(frame, bundle=bundle)
 
     destination = (

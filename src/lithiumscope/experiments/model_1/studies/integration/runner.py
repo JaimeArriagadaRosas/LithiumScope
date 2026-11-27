@@ -21,7 +21,7 @@ from lithiumscope.experiments.model_1.training_methods.boosting import archived_
 from lithiumscope.experiments.model_1.training_methods.losses import loss_params,score,summarize_scores
 from lithiumscope.experiments.model_1.evaluation.inference_contract import POLICIES,canonical_columns,fit_bases,predict_bases,fit_ridge,paired_crossfit
 from lithiumscope.experiments.model_1.data_expansion.sensitivity_data import read
-from lithiumscope.model_1.pipeline import prepare_prediction_data
+from lithiumscope.model_1.preparation.prediction_data import prepare_prediction_data
 from lithiumscope.model_1.schema import validate_training_schema
 from lithiumscope.resources.detection.device import detect_device
 from lithiumscope.results.atomic_exports import write_table,write_legacy_evidence_json
