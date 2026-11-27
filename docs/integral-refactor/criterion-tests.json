@@ -147,7 +147,7 @@
     ],
     "M2-04": [
       "tests/integration/acquisition/test_sentinel2_provider.py",
-      "tests/scientific/shared/test_scientific_acquisition.py",
+      "tests/integration/acquisition/test_scientific_acquisition.py",
       "tests/scientific/m2_spectral/test_m2_satellite_quality_radiometry.py",
       "tests/integration/acquisition/test_registered_sentinel_patch.py",
       "tests/scientific/m2_spectral/test_historical_scl_temporal.py"
@@ -391,7 +391,7 @@
     ],
     "ARQ-023": [
       "tests/integration/acquisition/test_sentinel2_provider.py",
-      "tests/scientific/shared/test_scientific_acquisition.py",
+      "tests/integration/acquisition/test_scientific_acquisition.py",
       "tests/unit/inference/test_verified_patch_contract.py",
       "tests/integration/acquisition/test_registered_sentinel_patch.py"
     ],
@@ -554,7 +554,7 @@
     ],
     "ARQ-055": [
       "tests/architecture/structure/test_acquisition_architecture.py",
-      "tests/scientific/shared/test_scientific_acquisition.py",
+      "tests/integration/acquisition/test_scientific_acquisition.py",
       "tests/architecture/boundaries/test_acquisition_provider_relocation.py"
     ],
     "ARQ-056": [
@@ -594,8 +594,8 @@
       "tests/architecture/boundaries/test_historical_report_import_safety.py"
     ],
     "ARQ-062": [
-      "tests/scientific/shared/test_scientific_acquisition.py",
-      "tests/scientific/shared/test_scientific_http_tiles.py",
+      "tests/integration/acquisition/test_scientific_acquisition.py",
+      "tests/integration/acquisition/test_scientific_http_tiles.py",
       "tests/architecture/boundaries/test_acquisition_provider_relocation.py"
     ],
     "ARQ-063": [
