@@ -2,7 +2,7 @@
 import ast
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2] / "src/lithiumscope"
+ROOT = Path(__file__).resolve().parents[3] / "src/lithiumscope"
 
 
 def test_prediction_and_reporting_boundaries():

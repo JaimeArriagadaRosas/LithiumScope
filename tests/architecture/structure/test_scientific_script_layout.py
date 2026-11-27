@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 
 def test_scientific_script_relocation_and_directory_limits():
-    root=Path(__file__).resolve().parents[2]
+    root=Path(__file__).resolve().parents[3]
     mapping=json.loads((root/"docs/integral-refactor/scientific-script-relocation.json").read_text())
     assert len(mapping)==15
     assert all((root/new).is_file() and not (root/old).exists() for old,new in mapping.items())

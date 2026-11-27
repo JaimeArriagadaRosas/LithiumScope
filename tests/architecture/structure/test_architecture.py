@@ -46,24 +46,24 @@ def _tracked_paths(root: Path) -> set[str]:
 
 
 def test_repository_contains_no_notebooks():
-    root = Path(__file__).resolve().parents[2]
+    root = Path(__file__).resolve().parents[3]
     assert not list(root.rglob("*.ipynb"))
 
 
 def test_repository_keeps_runtime_architecture_placeholders():
-    root = Path(__file__).resolve().parents[2]
+    root = Path(__file__).resolve().parents[3]
     actual = _tracked_paths(root)
     assert EXPECTED_GITKEEP_PATHS <= actual
 
 
 def test_cli_menu_remains_thin():
-    root = Path(__file__).resolve().parents[2]
+    root = Path(__file__).resolve().parents[3]
     lines = (root / "src/lithiumscope/cli/menu.py").read_text(encoding="utf-8").splitlines()
     assert len(lines) <= 80
 
 
 def test_trainers_are_thin_entry_points():
-    root = Path(__file__).resolve().parents[2]
+    root = Path(__file__).resolve().parents[3]
     paths = [
         root / "src/lithiumscope/model_1/pipeline.py",
         root / "src/lithiumscope/model_2/pipeline.py",
@@ -72,7 +72,7 @@ def test_trainers_are_thin_entry_points():
 
 
 def test_runtime_lifecycle_is_separated():
-    root = Path(__file__).resolve().parents[2]
+    root = Path(__file__).resolve().parents[3]
     runtime = root / "src/lithiumscope/runtime"
     assert (runtime / "preboot.py").is_file()
     assert (runtime / "graceful_shutdown.py").is_file()
@@ -81,7 +81,7 @@ def test_runtime_lifecycle_is_separated():
 
 
 def test_cli_contains_versioned_model_loader():
-    root = Path(__file__).resolve().parents[2]
+    root = Path(__file__).resolve().parents[3]
     menu = (
         root
         / "src/lithiumscope/cli/menu.py"
@@ -91,7 +91,7 @@ def test_cli_contains_versioned_model_loader():
 
 
 def test_lab_modules_remain_focused():
-    root = Path(__file__).resolve().parents[2]
+    root = Path(__file__).resolve().parents[3]
     paths = [
         root / "src/lithiumscope/tools/inspection/pipeline_inspect.py",
         root / "src/lithiumscope/tools/inspection/pipeline_inspection_reporting.py",
@@ -132,7 +132,7 @@ def test_lab_modules_remain_focused():
 
 
 def test_python_directories_are_focused():
-    root=Path(__file__).resolve().parents[2]
+    root=Path(__file__).resolve().parents[3]
     directories=[p for base in (root/"src/lithiumscope",root/"tests")
                  for p in (base,*base.rglob("*")) if p.is_dir() and "__pycache__" not in p.parts]
     oversized={str(p.relative_to(root)):len(list(p.glob("*.py"))) for p in directories
@@ -142,7 +142,7 @@ def test_python_directories_are_focused():
 
 def test_core_and_renderer_do_not_depend_on_model_execution():
     from lithiumscope.tools.inspection.dependencies import audit_imports
-    root=Path(__file__).resolve().parents[2]
+    root=Path(__file__).resolve().parents[3]
     report=audit_imports(root)
     assert not report["syntax_errors"],report["syntax_errors"]
     assert not report["core_to_model_edges"],report["core_to_model_edges"]
@@ -151,7 +151,7 @@ def test_core_and_renderer_do_not_depend_on_model_execution():
 
 def test_canonical_relocation_destinations_exist():
     import json
-    root=Path(__file__).resolve().parents[2]
+    root=Path(__file__).resolve().parents[3]
     reloc=json.loads((root/"docs/integral-refactor/module-relocation.json").read_text(encoding="utf-8"))
     missing=[]
     for old,new in reloc.items():
@@ -163,7 +163,7 @@ def test_canonical_relocation_destinations_exist():
 
 def test_testing_relocation_catalog_is_consistent():
     import json
-    root = Path(__file__).resolve().parents[2]
+    root = Path(__file__).resolve().parents[3]
     catalog = json.loads((root / "docs/integral-refactor/test-relocation-purpose.json").read_text(encoding="utf-8"))
     categories = ["architecture","functional","integration","performance","regression","reliability","scientific","unit"]
     assert len(set(catalog.values())) == len(catalog)
