@@ -5,7 +5,7 @@ import re
 import pandas as pd
 
 from lithiumscope.core.logging.session import get_logger
-from lithiumscope.datasets.validation.analytical import parse_analytical_value
+from lithiumscope.datasets.validation.chemistry.analytical import parse_analytical_value
 
 logger = get_logger("model_1.detection_limits")
 _LEGACY = re.compile(r"^\s*([<>])\s*(-?\d+(?:\.\d+)?)\s*$")

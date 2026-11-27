@@ -1,7 +1,7 @@
 import json
 import pandas as pd
-from lithiumscope.datasets.georoc_ingestion import ingest_georoc_files
-from lithiumscope.datasets.validation.georoc_source_audit import compare_exports
+from lithiumscope.datasets.adapters.georoc.ingestion import ingest_georoc_files
+from lithiumscope.datasets.validation.georoc.source_audit import compare_exports
 
 
 def test_heterogeneous_files_preserve_units_provenance_and_censoring(tmp_path):

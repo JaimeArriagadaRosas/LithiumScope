@@ -1,4 +1,4 @@
-from lithiumscope.datasets.georoc_filtered_acquisition import (
+from lithiumscope.tools.acquisition.georoc.filtered import (
     CHEMISTRY,
     _best_chemistry_form,
     _default_payload,
@@ -7,7 +7,7 @@ from lithiumscope.datasets.georoc_filtered_acquisition import (
     acquisition_contract,
 )
 
-from lithiumscope.datasets.georoc_query_flow import (
+from lithiumscope.tools.acquisition.georoc.query_flow import (
     _is_chem_location_form,
     _is_direct_batch_form,
     compile_file_form,

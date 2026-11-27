@@ -7,7 +7,7 @@ from lithiumscope.core.logging.session import get_logger
 
 logger = get_logger("model_1.missing_values")
 
-from lithiumscope.datasets.validation.missing_values import normalize_missing_values as normalize_missing_values
+from lithiumscope.datasets.validation.tabular.missing_values import normalize_missing_values as normalize_missing_values
 
 
 def find_age_column(frame: pd.DataFrame) -> str | None:

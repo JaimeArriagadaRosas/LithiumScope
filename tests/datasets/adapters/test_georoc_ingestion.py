@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from lithiumscope.datasets.georoc_ingestion import (
+from lithiumscope.datasets.adapters.georoc.ingestion import (
     ingest_georoc_files,
 )
 
