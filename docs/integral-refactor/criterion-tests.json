@@ -601,13 +601,13 @@
     "ARQ-063": [
       "tests/scientific/data_quality/test_georoc_qc_protocols.py",
       "tests/scientific/data_quality/test_integral_physical_inputs.py",
-      "tests/results/test_atomic_experimental_exports.py",
+      "tests/reliability/persistence/test_atomic_experimental_exports.py",
       "tests/architecture/contracts/test_dataverse_historical_contract.py"
     ],
     "ARQ-064": [
       "tests/regression/historical/test_compare_vnext_trained_runs.py",
       "tests/unit/metrics/test_integrated_prediction_analysis.py",
-      "tests/results/test_atomic_experimental_exports.py"
+      "tests/reliability/persistence/test_atomic_experimental_exports.py"
     ],
     "ARQ-065": [
       "tests/functional/model_lifecycle/test_prospective_holdout.py",
@@ -816,12 +816,12 @@
     ],
     "ARQ-106": [
       "tests/development/test_validation.py",
-      "tests/tools/test_snapshot.py"
+      "tests/reliability/persistence/test_snapshot.py"
     ],
     "ARQ-107": [
       "tests/development/test_validation.py",
       "tests/architecture/boundaries/test_historical_relocation.py",
-      "tests/development/test_protected_artifacts.py"
+      "tests/reliability/persistence/test_protected_artifacts.py"
     ],
     "ARQ-108": [
       "tests/unit/utilities/test_console_status.py",
