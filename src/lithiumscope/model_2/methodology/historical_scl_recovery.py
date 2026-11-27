@@ -11,7 +11,7 @@ import pandas as pd
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR
 from lithiumscope.core.reproducibility import canonical_json_hash
-from lithiumscope.datasets.validation.paths import resolve_image_path
+from lithiumscope.datasets.management.sources.model_2_paths import resolve_image_path
 from lithiumscope.model_2.methodology.satellite_inventory import fetch_metadata
 from lithiumscope.model_2.methodology.spectral.satellite_quality import analyze_arrays, ScientificScenePolicy
 from lithiumscope.tools.acquisition.sentinel2.provider import _read_patch

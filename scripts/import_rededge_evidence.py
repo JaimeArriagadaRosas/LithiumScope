@@ -11,7 +11,7 @@ from uuid import uuid4
 import pandas as pd
 
 from lithiumscope.core.hashing import file_sha256
-from lithiumscope.datasets.validation.paths import resolve_image_path
+from lithiumscope.datasets.management.sources.model_2_paths import resolve_image_path
 
 ROOT = Path(__file__).resolve().parents[1]
 V4 = Path("results/scientific_simulations/m2_rededge_v4_20261113")

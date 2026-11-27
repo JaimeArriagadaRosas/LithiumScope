@@ -12,7 +12,7 @@ import pandas as pd
 
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import PROJECT_ROOT
-from lithiumscope.datasets.validation.paths import resolve_image_path
+from lithiumscope.datasets.management.sources.model_2_paths import resolve_image_path
 from lithiumscope.model_2.prediction.frozen_rededge import CATALOG, MANIFEST_SHA, QUALITY_SHA, V4_DIR
 from lithiumscope.model_2.prediction.spectral_contract import prepare_spectral_input, SpectralAbstention
 from lithiumscope.model_2.prediction.predictor import score_model_2_image

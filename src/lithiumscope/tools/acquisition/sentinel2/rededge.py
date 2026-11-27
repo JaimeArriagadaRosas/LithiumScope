@@ -14,7 +14,7 @@ from pathlib import Path
 import numpy as np
 
 from lithiumscope.core.paths import PROJECT_ROOT
-from lithiumscope.datasets.validation.paths import resolve_image_path
+from lithiumscope.datasets.management.sources.model_2_paths import resolve_image_path
 from lithiumscope.tools.acquisition.sentinel2.patch_io import _read_patch
 from lithiumscope.model_2.preparation.features.rededge import (
     NEW_BANDS,

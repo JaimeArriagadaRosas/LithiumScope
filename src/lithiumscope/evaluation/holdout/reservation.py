@@ -14,7 +14,7 @@ from lithiumscope.evaluation.holdout import registry as reg
 
 
 def _training_overlap(sites, manifest, minimum_distance):
-    from lithiumscope.datasets.validation.paths import resolve_image_path
+    from lithiumscope.datasets.management.sources.model_2_paths import resolve_image_path
     from lithiumscope.evaluation.holdout.registry import normalized
     required={"sample_id","spatial_group","latitude","longitude","image_path"}
     if not required<=set(manifest) or manifest.empty:
