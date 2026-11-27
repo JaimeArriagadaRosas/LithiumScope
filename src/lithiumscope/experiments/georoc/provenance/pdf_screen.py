@@ -1,7 +1,9 @@
 """Historical public-document method scan; no specimen-level verification."""
 from pathlib import Path
 from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
-import requests,hashlib,json
+import hashlib,json
+from lithiumscope.tools.acquisition.publications import fetch_public_pdf
+from lithiumscope.results.atomic_exports import write_json
 from pypdf import PdfReader
 
 
@@ -18,11 +20,7 @@ def main(*, acquire=False):
     for ref,url in urls.items():
      try:
       p=base/(ref+".pdf")
-      if not p.exists():
-       s=requests.get(url,timeout=40)
-       s.raise_for_status()
-       if not s.content.startswith(b"%PDF"):raise ValueError("Not PDF")
-       p.write_bytes(s.content)
+      fetch_public_pdf(url,p,acquire=acquire)
       pdf=PdfReader(str(p))
       hits=[]
       for n,page in enumerate(pdf.pages):
@@ -36,7 +34,7 @@ def main(*, acquire=False):
       result.append(item)
       print("DOC",ref,"pages",len(pdf.pages),"hits",hits[:4],flush=True)
      except Exception as e:result.append({"reference_id":ref,"error":str(e)[:160]});print("ERROR",ref,str(e)[:160],flush=True)
-    (base/"paper_method_scan.json").write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding="utf8")
+    write_json(base/"paper_method_scan.json",result)
 
 if __name__=="__main__":
     from lithiumscope.core.logging.session import run_log

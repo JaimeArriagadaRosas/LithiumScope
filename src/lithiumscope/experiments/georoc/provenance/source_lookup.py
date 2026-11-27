@@ -1,7 +1,9 @@
 """Find legitimate article/supplement URLs for the prioritized 10 GEOROC references."""
 from pathlib import Path
 from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
-import requests,pandas as pd,json,time
+import pandas as pd
+from lithiumscope.tools.acquisition.publications import lookup_doi
+from lithiumscope.results.atomic_exports import write_json,write_table
 BASE=EXPERIMENT_ROOT
 
 
@@ -14,8 +16,7 @@ def main(*, acquire=False):
      doi=str(row.DOI).strip().lower()
      if doi=="nan":continue
      try:
-      res=requests.get("https://api.openalex.org/works/https://doi.org/"+doi,timeout=16)
-      res.raise_for_status();data=res.json()
+      data=lookup_doi(doi,acquire=acquire)
       best=data.get("best_oa_location") or {}
       entry={"citation_number":row.citation_number,"doi":doi,
        "title":data.get("title",""),"is_oa":data.get("open_access",{}).get("is_oa"),
@@ -27,10 +28,10 @@ def main(*, acquire=False):
      except Exception as exc:
       records.append({"citation_number":row.citation_number,"doi":doi,"lookup_error":str(exc)[:120]})
       print("ERROR",row.citation_number,str(exc)[:95],flush=True)
-    pd.DataFrame(records).to_csv(BASE/"top10_open_access_locations.csv",index=False)
-    (BASE/"top10_source_lookup_manifest.json").write_text(json.dumps({"lookups":len(records),
+    write_table(BASE/"top10_open_access_locations.csv",pd.DataFrame(records))
+    write_json(BASE/"top10_source_lookup_manifest.json",{"lookups":len(records),
      "open_access":sum(x.get("is_oa") is True for x in records),
-     "method_verified":0,"note":"Index URLs do not prove specimen-level lithium analytical method."},indent=2),encoding="utf8")
+     "method_verified":0,"note":"Index URLs do not prove specimen-level lithium analytical method."})
 
 if __name__=="__main__":
     from lithiumscope.core.logging.session import run_log

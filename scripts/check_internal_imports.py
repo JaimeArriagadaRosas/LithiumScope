@@ -19,6 +19,7 @@ def find_obsolete_imports(root: Path) -> list[str]:
                if old.startswith(("lithiumscope.datasets.", "lithiumscope.experiments.analysis.",
                                   "lithiumscope.experiments.acquisition.", "lithiumscope.experiments.georoc."))
                and not _exists(src, old)}
+    retired_packages = ("lithiumscope.experiments.acquisition", "lithiumscope.experiments.georoc.acquisition")
     findings = set()
 
     def examine(path, node, name):
@@ -26,6 +27,8 @@ def find_obsolete_imports(root: Path) -> list[str]:
             if name == old or name.startswith(old + "."):
                 findings.add(f"{path.relative_to(root).as_posix()}:{node.lineno}: {name} -> {new}{name[len(old):]}")
                 return
+        if any(name == package or name.startswith(package + ".") for package in retired_packages):
+            findings.add(f"{path.relative_to(root).as_posix()}:{node.lineno}: retired acquisition package: {name}")
         if name == "lithiumscope.experiments.analysis" or name.startswith("lithiumscope.experiments.analysis."):
             findings.add(f"{path.relative_to(root).as_posix()}:{node.lineno}: retired analysis package: {name}")
 
@@ -46,7 +49,7 @@ def find_obsolete_imports(root: Path) -> list[str]:
                     # Prefer concrete imported submodule when it appears in the relocation catalog.
                     for alias in node.names:
                         qualified = node.module + "." + alias.name
-                        if qualified in retired:
+                        if qualified in retired or qualified in retired_packages:
                             examine(path, node, qualified)
                         else:
                             examine(path, node, node.module)

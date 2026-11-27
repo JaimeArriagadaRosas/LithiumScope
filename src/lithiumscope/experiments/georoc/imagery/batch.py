@@ -49,7 +49,7 @@ def _revision():
 
 
 def _hashes(site: Path) -> dict:
-    names = ("patch.npy", "patch.json", "patch.scl.npy", "image_scenario_metrics.csv")
+    names = ("patch.npy", "patch.json", "patch.scl.npy", "patch.scene-audit.json", "image_scenario_metrics.csv")
     return {name: file_sha256(site / name) for name in names}
 
 
@@ -69,6 +69,8 @@ def _recover(site: Path):
     if site.is_symlink():
         raise ValueError("Site directory may not be a symbolic link")
     preserved = site.parent.parent / ".quarantine"
+    if preserved.is_symlink():
+        raise ValueError("Quarantine may not be a symbolic link")
     preserved.mkdir(exist_ok=True)
     site.rename(preserved / (site.name + "." + uuid4().hex))
 
@@ -115,7 +117,7 @@ def _site(site, row, model, provider, identity, seed, *, recover):
 def run(source: Path, *, root: Path = OUT, window="2025-01-01/2025-12-31",
         minimum_distance_km=100, decimals=4, seed=42, limit=0,
         acquire=False, recover=False, provider_factory=Sentinel2Provider):
-    source, root = Path(source), Path(root)
+    source, root = Path(source).resolve(), Path(root).resolve()
     validate_interval(window)
     if not isinstance(limit, int) or limit < 0:
         raise ValueError("Invalid site limit")

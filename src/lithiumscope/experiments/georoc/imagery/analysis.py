@@ -10,18 +10,25 @@ def summarize_registered(directory: Path):
  """Count verified exploratory outputs without estimating external accuracy."""
  from lithiumscope.results.atomic_exports import write_json
  from lithiumscope.core.hashing import file_sha256
+ from lithiumscope.core.reproducibility import canonical_json_hash
+ import re
  directory=Path(directory)
+ plan=json.loads((directory/"plan.json").read_text(encoding="utf-8"))
+ identity=canonical_json_hash(plan)
+ if directory.name!=identity:
+  raise ValueError("Experiment plan identity mismatch")
  sites=pd.read_csv(directory/"coordinate_plan.csv")
  ledger=pd.read_csv(directory/"candidate_ledger.csv")
  manifest=pd.read_csv(directory/"patch_manifest.csv")
- if not manifest.image_id.is_unique or not set(manifest.image_id)<=set(sites.image_id):
+ if not manifest.image_id.is_unique or not set(manifest.image_id)<=set(sites.image_id) or not sites.image_id.map(lambda s:bool(re.fullmatch(r"coord_[0-9a-f]{24}",str(s)))).all():
   raise ValueError("Unexpected image manifest identities")
  verified=manifest.loc[manifest.state.eq("verified")]
  scored=0
  for item in verified.itertuples(index=False):
   site=directory/"sites"/item.image_id
   record=json.loads((site/"result.json").read_text(encoding="utf-8"))
-  if not record.get("hashes") or any(Path(name).name!=name or file_sha256(site/name)!=digest for name,digest in record["hashes"].items()):
+  expected={"patch.npy","patch.json","patch.scl.npy","patch.scene-audit.json","image_scenario_metrics.csv"}
+  if record.get("signature")!=canonical_json_hash({"run":identity,"site":item.image_id}) or set(record.get("hashes",{}))!=expected or any(file_sha256(site/name)!=digest for name,digest in record["hashes"].items()):
    raise ValueError("Registered site evidence changed")
   scored+=record["baseline_status"]=="SCORED"
  selected=ledger.loc[ledger.plan_state.eq("selected")]
