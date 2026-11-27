@@ -9,7 +9,6 @@ logger = get_logger("reporting.figures.charts")
 import numpy as np
 import pandas as pd
 
-from lithiumscope.core.config import load_config
 from lithiumscope.reporting.figures.chart_guides import bar_guides, scatter_guides
 
 
@@ -25,6 +24,7 @@ def _scatter(
     values = (
         frame[[x, y]]
         .apply(pd.to_numeric, errors="coerce")
+        .replace([np.inf, -np.inf], np.nan)
         .dropna()
     )
     if len(values) < 2:
@@ -63,7 +63,7 @@ def _case_bar(
         values[value_column],
         errors="coerce",
     )
-    values = values.dropna()
+    values = values.replace([np.inf, -np.inf], np.nan).dropna()
     if values.empty:
         return None
 

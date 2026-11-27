@@ -99,7 +99,7 @@ def test_integrated_prediction_writes_real_report_and_workbook(monkeypatch, tmp_
     monkeypatch.setattr(outputs, "runtime_fingerprint", lambda: {"git_commit": "fixture"})
     if mode == "demonstration":
         from lithiumscope.prediction.analysis import model_selection_evidence
-        monkeypatch.setattr(model_selection_evidence, "gather_selection_evidence", lambda *args: {"state": "UNAVAILABLE"})
+        monkeypatch.setattr(model_selection_evidence, "gather_selection_evidence", lambda *args: {"state": "NOT_APPLICABLE_TO_SELECTED_PAIR"})
     result = integrated._run_integrated(session=run, model_1_input=frame,
                                         model_2_cases=images, input_info={"fixture": True})
     assert len(result.paired) == 3
