@@ -6,7 +6,7 @@ import pytest
 
 from lithiumscope.cli import model_comparison_command as command
 from lithiumscope.core.logging import session
-from lithiumscope.experiments.shared import registry, version_comparison
+from lithiumscope.experiments.shared import registry, version_comparison, robustness_evidence
 
 
 @pytest.mark.parametrize("answer", ["n", "s"])
@@ -14,6 +14,7 @@ def test_comparison_uses_selected_model_and_never_repeats_saved_oof(monkeypatch,
     calls = []
     monkeypatch.setattr(session, "run_log", lambda *args: nullcontext())
     monkeypatch.setattr(command, "choose", lambda *_: answer)
+    monkeypatch.setattr(robustness_evidence, "find_reusable_robustness", lambda _: (None, "missing"))
     def saved(**kwargs):
         calls.append(("saved", kwargs))
         path = tmp_path / "saved.json"
@@ -43,3 +44,32 @@ def test_saved_comparison_scope_never_discovers_other_model(monkeypatch, tmp_pat
     assert calls == ["model_1"]
     assert list(result["models"]) == ["model_1"]
     assert result["state"] == "partial"
+
+def test_reuses_verified_scenarios_without_prompt_or_rerun(monkeypatch, tmp_path):
+    monkeypatch.setattr(session, "run_log", lambda *args: nullcontext())
+    saved = tmp_path / "saved.json"
+    saved.write_text(json.dumps({"state": "complete", "models": {"model_1": {"state": "complete"}}}))
+    monkeypatch.setattr(version_comparison, "run_version_comparison", lambda **kw: saved)
+    monkeypatch.setattr(robustness_evidence, "find_reusable_robustness", lambda _: (tmp_path / "cached.json", None))
+    def forbidden(*args, **kwargs):
+        pytest.fail("No repeated scenario run or prompt expected")
+    monkeypatch.setattr(command, "choose", forbidden)
+    monkeypatch.setattr(registry, "run_registered_simulations", forbidden)
+    assert command.run(("model_1",))
+
+
+def test_reuse_requires_identity_and_unchanged_output_bytes(monkeypatch, tmp_path):
+    from lithiumscope.experiments.shared import comparison_models
+    folder = tmp_path / "sim_example"
+    folder.mkdir()
+    output = folder / "metrics.csv"
+    output.write_text("score\n1\n")
+    manifest = folder / "manifest.json"
+    manifest.write_text(json.dumps({"state": "COMPLETADO", "groups": ["model_1"],
+        "include_saved_oof": False, "input_identity": "match",
+        "output_hashes": robustness_evidence.output_hashes(folder)}))
+    monkeypatch.setattr(comparison_models, "discover_models", lambda _: ({}, []))
+    monkeypatch.setattr(robustness_evidence, "input_identity", lambda *args: ("match", None))
+    assert robustness_evidence.find_reusable_robustness("model_1", root=tmp_path)[0] == manifest
+    output.write_text("score\n2\n")
+    assert robustness_evidence.find_reusable_robustness("model_1", root=tmp_path)[0] is None

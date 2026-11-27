@@ -10,6 +10,7 @@ import pandas as pd
 from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR
 from lithiumscope.experiments.shared.comparison_models import discover_models
 from lithiumscope.experiments.shared.saved_comparison import compare_saved
+from lithiumscope.experiments.shared.robustness_evidence import image_catalogs, input_identity, output_hashes
 from lithiumscope.experiments.scenarios.scenarios import evaluate_model_1
 from lithiumscope.experiments.scenarios.batch import run_m1_batch,run_m2_batch,summarize
 from lithiumscope.experiments.reporting.reporting import compare_geographies
@@ -37,6 +38,8 @@ def run_registered_simulations(output_root: Path | None = None, *,
         print(f"{name}: {result['state']} {result.get('reason','')}",flush=True)
         return result
     models={group:discover_models(group) for group in groups}
+    cache_group = groups[0] if len(groups) == 1 and not include_saved_oof else None
+    signature, signature_reason = input_identity(cache_group, models[cache_group][0]) if cache_group else (None, None)
     for group,(available,issues) in models.items():
         for issue in issues:
             protocols.append({"protocol":f"{group}: inventario {issue['role']}",**issue})
@@ -78,11 +81,7 @@ def run_registered_simulations(output_root: Path | None = None, *,
         record("M2: verificación de matriz espectral común",common)
     descriptor_outputs={}
     raw_outputs={}
-    pilot=RESULTS_DIR/"scientific_simulations"/"sentinel2_real"/"manifest.csv"
-    # Existing seasonal/shifted catalogs only: no automatic external acquisition.
-    catalogs={"pilot":pilot}
-    for folder in sorted((RESULTS_DIR/"scientific_simulations").glob("**/extended_manifest.csv")):
-        catalogs["extended_"+str(len(catalogs))]=folder
+    catalogs = image_catalogs() if available else {}
     for role,(bundle,identity) in available.items():
         folder=destination/"model_2"/role
         def descriptor():
@@ -131,8 +130,19 @@ def run_registered_simulations(output_root: Path | None = None, *,
             record("M2: comparación pareada de imágenes "+name,pair_raw)
     states={p["state"] for p in protocols}
     state="COMPLETADO" if states=={"COMPLETADO"} else "PARCIAL" if states&{"COMPLETADO","PARCIAL"} else "ERROR" if "ERROR" in states else "BLOQUEADO"
+    hashes = {}
+    if signature and state == "COMPLETADO":
+        current, _ = discover_models(cache_group)
+        after, reason = input_identity(cache_group, current)
+        if signature == after:
+            hashes = output_hashes(destination)
+        else:
+            signature = None
+            signature_reason = reason or "Los datos o modelos cambiaron durante la ejecución"
     return write_json(destination/"manifest.json",{"run_id":destination.name,"state":state,
         "scope":"read_only_robustness_and_saved_oof_not_independent_validation",
-        "models":identities,"protocols":protocols,"groups":list(groups),"training":False,"promotion":False,
+        "models":identities,"protocols":protocols,"groups":list(groups),"include_saved_oof":include_saved_oof,
+        "input_identity":signature if hashes else None,"output_hashes":hashes,"reuse_reason":signature_reason,
+        "training":False,"promotion":False,
         "external_acquisition":False,
         "historical_scripts":"Not automatically replayed: may acquire, fit or depend on old frozen protocols."})
