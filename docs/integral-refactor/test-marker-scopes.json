@@ -1,0 +1,405 @@
+{
+  "tests/architecture/boundaries/test_methodology_relocation.py": [
+    "m1"
+  ],
+  "tests/architecture/contracts/test_configuration_contract.py": [
+    "m2"
+  ],
+  "tests/architecture/structure/test_eda_architecture.py": [
+    "m1",
+    "eda"
+  ],
+  "tests/architecture/structure/test_m1_architecture.py": [
+    "m1"
+  ],
+  "tests/architecture/structure/test_m2_architecture.py": [
+    "m2"
+  ],
+  "tests/functional/cli/test_eda_console.py": [
+    "eda"
+  ],
+  "tests/functional/cli/test_m2_menu_unicode_regression.py": [
+    "m2",
+    "training"
+  ],
+  "tests/functional/cli/test_pretrain_vnext_menu_readiness.py": [
+    "training"
+  ],
+  "tests/integration/acquisition/test_training_georoc_auto_acquisition.py": [
+    "training"
+  ],
+  "tests/integration/reporting/test_eda_figure_evidence_snapshot.py": [
+    "eda"
+  ],
+  "tests/integration/reporting/test_spatial_maps.py": [
+    "m2"
+  ],
+  "tests/integration/training/test_eda_training_integration.py": [
+    "eda",
+    "training"
+  ],
+  "tests/integration/training/test_m2_refactored_outer_cv_smoke.py": [
+    "m2",
+    "training"
+  ],
+  "tests/integration/training/test_pretraining_holdout_reservation.py": [
+    "training"
+  ],
+  "tests/performance/execution/test_batched_optuna_contract.py": [
+    "training"
+  ],
+  "tests/performance/execution/test_optuna_contract.py": [
+    "training"
+  ],
+  "tests/performance/execution/test_tabnet_quiet_output.py": [
+    "m1"
+  ],
+  "tests/regression/historical/test_frozen_m1_comparison.py": [
+    "m1"
+  ],
+  "tests/regression/historical/test_m1_dual_release_diagnostics.py": [
+    "m1"
+  ],
+  "tests/regression/historical/test_m2_historical_706_control.py": [
+    "m2",
+    "training"
+  ],
+  "tests/regression/historical/test_m2_v4_auxiliary.py": [
+    "m2"
+  ],
+  "tests/regression/historical/test_reconstructed_m2_comparison.py": [
+    "m2"
+  ],
+  "tests/regression/recovery/test_checkpoint_contract.py": [
+    "m2"
+  ],
+  "tests/reliability/logging/test_training_diagnostics.py": [
+    "training"
+  ],
+  "tests/reliability/logging/test_training_logging_session.py": [
+    "training"
+  ],
+  "tests/scientific/data_quality/test_conflict_review.py": [
+    "m1"
+  ],
+  "tests/scientific/data_quality/test_coordinate_lineage.py": [
+    "m1"
+  ],
+  "tests/scientific/data_quality/test_frozen_model_1_input.py": [
+    "m1"
+  ],
+  "tests/scientific/data_quality/test_geochemical_contract.py": [
+    "m1"
+  ],
+  "tests/scientific/data_quality/test_model_2_sample_source.py": [
+    "m2"
+  ],
+  "tests/scientific/data_quality/test_observation_audit.py": [
+    "m1"
+  ],
+  "tests/scientific/data_quality/test_pilot_georoc_m2_labels.py": [
+    "m2"
+  ],
+  "tests/scientific/data_quality/test_source_reconciliation.py": [
+    "m1"
+  ],
+  "tests/scientific/data_quality/test_target_and_qc.py": [
+    "m1"
+  ],
+  "tests/scientific/eda/test_eda_profiles.py": [
+    "eda"
+  ],
+  "tests/scientific/eda/test_eda_protocol.py": [
+    "eda"
+  ],
+  "tests/scientific/eda/test_fold_eda_profiles.py": [
+    "eda"
+  ],
+  "tests/scientific/eda/test_integral_eda.py": [
+    "eda"
+  ],
+  "tests/scientific/evaluation/test_development_gate.py": [
+    "m1"
+  ],
+  "tests/scientific/evaluation/test_domain_group_intervals.py": [
+    "m1"
+  ],
+  "tests/scientific/evaluation/test_high_lithium_diagnostics.py": [
+    "m1"
+  ],
+  "tests/scientific/evaluation/test_m2_competition_postprocess.py": [
+    "m2",
+    "training"
+  ],
+  "tests/scientific/evaluation/test_m2_full_competition_diagnostics.py": [
+    "m2",
+    "training"
+  ],
+  "tests/scientific/evaluation/test_m2_full_competition_quality.py": [
+    "m2",
+    "training"
+  ],
+  "tests/scientific/evaluation/test_m2_manual_closure.py": [
+    "m2",
+    "training"
+  ],
+  "tests/scientific/evaluation/test_m2_methodology_phase_b.py": [
+    "m2"
+  ],
+  "tests/scientific/evaluation/test_m2_methodology_phase_c.py": [
+    "m2"
+  ],
+  "tests/scientific/evaluation/test_m2_release_closure_comparison.py": [
+    "m2",
+    "training"
+  ],
+  "tests/scientific/evaluation/test_m2_v4_interactive_path.py": [
+    "m2",
+    "training"
+  ],
+  "tests/scientific/evaluation/test_physical_robustness.py": [
+    "m1"
+  ],
+  "tests/scientific/evaluation/test_saved_oof.py": [
+    "m2"
+  ],
+  "tests/scientific/evaluation/test_sensitivity_contract.py": [
+    "m1"
+  ],
+  "tests/scientific/expansion/test_academic_bridge.py": [
+    "m1"
+  ],
+  "tests/scientific/expansion/test_academic_features.py": [
+    "m1"
+  ],
+  "tests/scientific/expansion/test_academic_final.py": [
+    "m1"
+  ],
+  "tests/scientific/expansion/test_academic_refinement.py": [
+    "m1"
+  ],
+  "tests/scientific/expansion/test_blend_policy.py": [
+    "m1"
+  ],
+  "tests/scientific/expansion/test_chen_profile.py": [
+    "m1"
+  ],
+  "tests/scientific/expansion/test_data_closure.py": [
+    "m1"
+  ],
+  "tests/scientific/expansion/test_directed_intake.py": [
+    "m1"
+  ],
+  "tests/scientific/expansion/test_enriched_augmentation.py": [
+    "m1"
+  ],
+  "tests/scientific/expansion/test_expansion_contract.py": [
+    "m1"
+  ],
+  "tests/scientific/expansion/test_family_transfer.py": [
+    "m1"
+  ],
+  "tests/scientific/expansion/test_feature_audit.py": [
+    "m1"
+  ],
+  "tests/scientific/expansion/test_linked_recovery.py": [
+    "m1"
+  ],
+  "tests/scientific/expansion/test_meixner_audit.py": [
+    "m1"
+  ],
+  "tests/scientific/expansion/test_raw_recovery.py": [
+    "m1"
+  ],
+  "tests/scientific/expansion/test_transfer_preflight.py": [
+    "m1"
+  ],
+  "tests/scientific/expansion/test_transfer_weights.py": [
+    "m1"
+  ],
+  "tests/scientific/expansion/test_whole_rock_audit.py": [
+    "m1"
+  ],
+  "tests/scientific/experiments/test_balanced_treatments.py": [
+    "m1",
+    "training"
+  ],
+  "tests/scientific/experiments/test_integral_boosting_methods.py": [
+    "m1"
+  ],
+  "tests/scientific/experiments/test_integral_integration.py": [
+    "m1"
+  ],
+  "tests/scientific/experiments/test_integral_posttraining.py": [
+    "m1",
+    "training"
+  ],
+  "tests/scientific/experiments/test_integral_spatial_recovery.py": [
+    "m1"
+  ],
+  "tests/scientific/experiments/test_integral_stacking.py": [
+    "m1"
+  ],
+  "tests/scientific/experiments/test_integral_training_losses.py": [
+    "m1",
+    "training"
+  ],
+  "tests/scientific/experiments/test_targeted_treatments.py": [
+    "m1",
+    "training"
+  ],
+  "tests/scientific/experiments/test_validate_feot_expansion_m1.py": [
+    "m1"
+  ],
+  "tests/scientific/experiments/test_vnext_m1_diagnostics.py": [
+    "m1"
+  ],
+  "tests/scientific/experiments/test_vnext_m1.py": [
+    "m1"
+  ],
+  "tests/scientific/features/test_frozen_rededge_lookup.py": [
+    "m2"
+  ],
+  "tests/scientific/features/test_historical_scl_temporal.py": [
+    "m2"
+  ],
+  "tests/scientific/features/test_m2_georoc_coordinate_audit.py": [
+    "m2"
+  ],
+  "tests/scientific/features/test_m2_physical_label_audit.py": [
+    "m2"
+  ],
+  "tests/scientific/features/test_m2_rededge_v4.py": [
+    "m2"
+  ],
+  "tests/scientific/features/test_m2_satellite_quality_radiometry_extended.py": [
+    "m2"
+  ],
+  "tests/scientific/features/test_m2_satellite_quality_radiometry.py": [
+    "m2"
+  ],
+  "tests/scientific/features/test_m2_site_patch_phase_e.py": [
+    "m2"
+  ],
+  "tests/scientific/features/test_m2_spectral_overfit.py": [
+    "m2"
+  ],
+  "tests/scientific/features/test_m2_vnext_expansion.py": [
+    "m2"
+  ],
+  "tests/scientific/features/test_v4_local_integrity_contract.py": [
+    "m2"
+  ],
+  "tests/scientific/features/test_verified_feature_cache.py": [
+    "m2"
+  ],
+  "tests/scientific/features/test_vnext_m2.py": [
+    "m2"
+  ],
+  "tests/scientific/methodology/test_m2_canonical_protocol.py": [
+    "m2",
+    "training"
+  ],
+  "tests/scientific/methodology/test_m2_generalization_protocol.py": [
+    "m2",
+    "training"
+  ],
+  "tests/scientific/methodology/test_m2_regularized_search_profile.py": [
+    "m2",
+    "training"
+  ],
+  "tests/scientific/methodology/test_m2_release_independence_regularization.py": [
+    "m2",
+    "training"
+  ],
+  "tests/scientific/methodology/test_model_1_scientific_guards.py": [
+    "m1"
+  ],
+  "tests/scientific/methodology/test_model_1_spatial_validation.py": [
+    "m1"
+  ],
+  "tests/scientific/methodology/test_scientific_training_protocol.py": [
+    "m2",
+    "training"
+  ],
+  "tests/scientific/methodology/test_spatial_tabnet.py": [
+    "m1"
+  ],
+  "tests/scientific/methodology/test_train_only_operating_policy.py": [
+    "m2",
+    "training"
+  ],
+  "tests/scientific/methodology/test_vnext_m2_threshold.py": [
+    "m2",
+    "training"
+  ],
+  "tests/scientific/treatments/test_m1_integrated_treatments.py": [
+    "m1"
+  ],
+  "tests/scientific/treatments/test_m1_refinement_policies.py": [
+    "m1"
+  ],
+  "tests/scientific/treatments/test_m2_integrated_treatments.py": [
+    "m2"
+  ],
+  "tests/scientific/treatments/test_m2_refinement_policies.py": [
+    "m2"
+  ],
+  "tests/unit/algorithms/test_baselines.py": [
+    "training"
+  ],
+  "tests/unit/algorithms/test_model_2_spectral_features.py": [
+    "m2"
+  ],
+  "tests/unit/algorithms/test_model_2_svm.py": [
+    "m2"
+  ],
+  "tests/unit/algorithms/test_optuna_resume_helpers.py": [
+    "training"
+  ],
+  "tests/unit/algorithms/test_physical_v5.py": [
+    "m2"
+  ],
+  "tests/unit/algorithms/test_statistical_baselines.py": [
+    "m1"
+  ],
+  "tests/unit/algorithms/test_tabnet_adapter.py": [
+    "m1"
+  ],
+  "tests/unit/algorithms/test_texture_geographic_reference.py": [
+    "m2"
+  ],
+  "tests/unit/data/test_censoring_contract.py": [
+    "m1"
+  ],
+  "tests/unit/data/test_detection_limits.py": [
+    "m1"
+  ],
+  "tests/unit/data/test_feature_engineering.py": [
+    "m1"
+  ],
+  "tests/unit/data/test_model_1_category_cleaning.py": [
+    "m1"
+  ],
+  "tests/unit/data/test_model_1_target_transform.py": [
+    "m1"
+  ],
+  "tests/unit/data/test_preprocessing_contract.py": [
+    "m1"
+  ],
+  "tests/unit/data/test_preprocessing_contracts.py": [
+    "m2"
+  ],
+  "tests/unit/inference/test_m1_input_provenance.py": [
+    "m1"
+  ],
+  "tests/unit/inference/test_model_1_prediction_diagnostics.py": [
+    "m1"
+  ],
+  "tests/unit/inference/test_model_2_operating_threshold.py": [
+    "m2"
+  ],
+  "tests/unit/metrics/test_binary_metrics_contract.py": [
+    "m2"
+  ]
+}

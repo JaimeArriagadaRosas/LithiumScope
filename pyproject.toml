@@ -83,7 +83,13 @@ markers = [
   "regression: tests classified by regression purpose",
   "reliability: tests classified by reliability purpose",
   "scientific: tests classified by scientific purpose",
-  "unit: tests classified by unit purpose"
+  "unit: tests classified by unit purpose",
+  "m1: Model 1 scope",
+  "m2: Model 2 scope",
+  "eda: exploratory data analysis",
+  "training: training or optimization scope",
+  "slow: computationally expensive test",
+  "local_artifacts: checks optional locally archived evidence"
 ]
 
 [tool.ruff]
