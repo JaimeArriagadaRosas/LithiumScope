@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from lithiumscope.experiments.model_1.refinement_policies import Policy, POLICIES, decode, encode
+from lithiumscope.experiments.model_1.studies.refinement.policies import Policy, POLICIES, decode, encode
 
 
 def test_bounded_log_avoids_exponential_overflow_and_records_projection():

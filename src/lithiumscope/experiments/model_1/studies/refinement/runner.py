@@ -13,8 +13,8 @@ import pandas as pd
 from lithiumscope.core.paths import RESULTS_DIR
 from lithiumscope.core.scientific.regression_metrics import regression_metrics
 from lithiumscope.core.reproducibility import runtime_fingerprint
-from lithiumscope.experiments.model_1.refinement_evidence import load_protocol
-from lithiumscope.experiments.model_1.refinement_policies import POLICIES, fit_policy
+from lithiumscope.experiments.model_1.studies.refinement.evidence import load_protocol
+from lithiumscope.experiments.model_1.studies.refinement.policies import POLICIES, fit_policy
 from lithiumscope.experiments.shared.paired_comparison import paired_group_intervals
 from lithiumscope.resources.detection.device import detect_device
 from lithiumscope.results.atomic_exports import write_json, write_table, write_legacy_evidence_json

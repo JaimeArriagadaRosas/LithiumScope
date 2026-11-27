@@ -11,7 +11,7 @@ from sklearn.base import clone
 from sklearn.model_selection import GroupKFold
 
 from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR
-from lithiumscope.experiments.model_1.run_vnext_m1 import (
+from lithiumscope.model_1.methodology.dataset_comparison import (
     _frame, _metrics, quality_candidate_frames,
 )
 from lithiumscope.model_1.pipeline import prepare_prediction_data

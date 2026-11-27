@@ -1,7 +1,7 @@
 from importlib import import_module
 import pytest
 
-@pytest.mark.parametrize("name", ["lithiumscope.experiments.model_1.run_vnext_stage1","lithiumscope.experiments.integrated.academic_evidence","lithiumscope.experiments.model_2.seasonal_comparison","lithiumscope.experiments.model_2.sensitivity_analysis","lithiumscope.experiments.model_2.temporal_multiscene_analysis","lithiumscope.experiments.model_2.audit_georoc_m2_candidate_coverage","lithiumscope.experiments.model_2.audit_georoc_source_references","lithiumscope.experiments.model_2.pilot_georoc_m2_labels"])
+@pytest.mark.parametrize("name", ["lithiumscope.experiments.model_1.studies.data_inspection","lithiumscope.experiments.integrated.academic_evidence","lithiumscope.experiments.model_2.seasonal_comparison","lithiumscope.experiments.model_2.sensitivity_analysis","lithiumscope.experiments.model_2.temporal_multiscene_analysis","lithiumscope.experiments.model_2.audit_georoc_m2_candidate_coverage","lithiumscope.experiments.model_2.audit_georoc_source_references","lithiumscope.experiments.model_2.pilot_georoc_m2_labels"])
 def test_canonical_experiment_import(name):
     module = import_module(name)
     assert module.__name__ == name

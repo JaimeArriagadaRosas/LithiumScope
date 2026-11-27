@@ -20,7 +20,7 @@
   "lithiumscope.experiments.analysis.protocols.verify_vnext_data_adequacy_run_m2_learning_curve": "lithiumscope.experiments.model_2.historical.adequacy_learning_curve",
   "lithiumscope.experiments.analysis.recover_oof_evidence": "lithiumscope.experiments.model_2.historical.recover_oof_evidence",
   "lithiumscope.experiments.analysis.run_vnext_m2_run_experiments": "lithiumscope.experiments.model_2.historical.vnext_experiments",
-  "lithiumscope.experiments.analysis.run_vnext_stage1": "lithiumscope.experiments.model_1.run_vnext_stage1",
+  "lithiumscope.experiments.analysis.run_vnext_stage1": "lithiumscope.experiments.model_1.studies.data_inspection",
   "lithiumscope.experiments.analysis.seasonal_comparison": "lithiumscope.experiments.model_2.seasonal_comparison",
   "lithiumscope.experiments.analysis.sensitivity_analysis": "lithiumscope.experiments.model_2.sensitivity_analysis",
   "lithiumscope.experiments.analysis.temporal_multiscene_analysis": "lithiumscope.experiments.model_2.temporal_multiscene_analysis",
@@ -146,7 +146,7 @@
   "lithiumscope.datasets.validator": "lithiumscope.datasets.validation.files",
   "lithiumscope.experiments.analysis.run_vnext_m1": "lithiumscope.model_1.methodology.dataset_comparison",
   "lithiumscope.experiments.analysis.validate_feot_expansion_m1": "lithiumscope.model_1.methodology.feot_expansion",
-  "lithiumscope.experiments.analysis.run_vnext_m1_diagnostics": "lithiumscope.experiments.model_1.run_vnext_m1_diagnostics",
+  "lithiumscope.experiments.analysis.run_vnext_m1_diagnostics": "lithiumscope.experiments.model_1.evaluation.dataset_diagnostics",
   "lithiumscope.experiments.analysis.run_vnext_m2": "lithiumscope.experiments.model_2.run_vnext_m2",
   "lithiumscope.experiments.analysis.run_vnext_m2_threshold": "lithiumscope.experiments.model_2.run_vnext_m2_threshold",
   "lithiumscope.experiments.analysis.m2_generalization_pilot": "lithiumscope.experiments.model_2.m2_generalization_pilot",
@@ -220,5 +220,12 @@
   "lithiumscope.experiments.georoc.studies.single_sample_audit": "lithiumscope.experiments.data_lab.source_studies.georoc.studies.single_sample_audit",
   "lithiumscope.experiments.georoc.workflow": "lithiumscope.experiments.data_lab.source_studies.georoc.workflow",
   "lithiumscope.experiments.data_lab.candidate_eda": "lithiumscope.experiments.data_lab.source_studies.georoc.candidate_eda",
-  "lithiumscope.experiments.validation.unab_source_review": "lithiumscope.experiments.data_lab.source_studies.unab"
+  "lithiumscope.experiments.validation.unab_source_review": "lithiumscope.experiments.data_lab.source_studies.unab",
+  "lithiumscope.experiments.model_1.paired_study": "lithiumscope.experiments.model_1.studies.paired",
+  "lithiumscope.experiments.model_1.refinement": "lithiumscope.experiments.model_1.studies.refinement.runner",
+  "lithiumscope.experiments.model_1.refinement_evidence": "lithiumscope.experiments.model_1.studies.refinement.evidence",
+  "lithiumscope.experiments.model_1.refinement_policies": "lithiumscope.experiments.model_1.studies.refinement.policies",
+  "lithiumscope.experiments.model_1.run_vnext_m1_diagnostics": "lithiumscope.experiments.model_1.evaluation.dataset_diagnostics",
+  "lithiumscope.experiments.model_1.run_vnext_stage1": "lithiumscope.experiments.model_1.studies.data_inspection",
+  "lithiumscope.experiments.model_1.uncertainty_study": "lithiumscope.experiments.model_1.evaluation.uncertainty"
 }

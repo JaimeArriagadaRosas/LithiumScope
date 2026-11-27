@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 
-@pytest.mark.parametrize("name", ["lithiumscope.model_1.methodology.dataset_comparison","lithiumscope.experiments.model_1.run_vnext_m1_diagnostics","lithiumscope.model_1.methodology.feot_expansion","lithiumscope.experiments.model_2.run_vnext_m2","lithiumscope.experiments.model_2.run_vnext_m2_threshold","lithiumscope.experiments.model_2.m2_generalization_pilot","lithiumscope.experiments.model_2.m2_nested_calibration","lithiumscope.experiments.integrated.compare_vnext_trained_runs","lithiumscope.experiments.integrated.verify_vnext_data_adequacy"])
+@pytest.mark.parametrize("name", ["lithiumscope.model_1.methodology.dataset_comparison","lithiumscope.experiments.model_1.evaluation.dataset_diagnostics","lithiumscope.model_1.methodology.feot_expansion","lithiumscope.experiments.model_2.run_vnext_m2","lithiumscope.experiments.model_2.run_vnext_m2_threshold","lithiumscope.experiments.model_2.m2_generalization_pilot","lithiumscope.experiments.model_2.m2_nested_calibration","lithiumscope.experiments.integrated.compare_vnext_trained_runs","lithiumscope.experiments.integrated.verify_vnext_data_adequacy"])
 def test_canonical_experiment_import(name):
     assert import_module(name).__name__ == name
 

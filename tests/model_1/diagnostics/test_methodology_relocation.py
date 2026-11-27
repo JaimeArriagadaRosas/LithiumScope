@@ -1,4 +1,5 @@
 from importlib import import_module
+from importlib.util import find_spec
 import pytest
 
 @pytest.mark.parametrize("old,new",[
@@ -11,8 +12,9 @@ import pytest
     "lithiumscope.model_1.methodology.feot_expansion"
   ]
 ])
-def test_methodology_alias_identity(old,new):
-    assert import_module(old) is import_module(new)
+def test_methodology_has_only_canonical_owner(old,new):
+    assert find_spec(old) is None
+    assert import_module(new).__name__ == new
 
 
 def test_shared_quality_protocol_is_used_by_model_1():
