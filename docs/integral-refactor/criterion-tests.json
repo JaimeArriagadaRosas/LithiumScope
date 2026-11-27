@@ -122,9 +122,9 @@
       "tests/model_1/test_physical_robustness.py"
     ],
     "M1-26": [
-      "tests/prediction/test_applicability.py",
-      "tests/prediction/test_m1_input_provenance.py",
-      "tests/model_1/test_model_1_prediction_diagnostics.py",
+      "tests/unit/inference/test_applicability.py",
+      "tests/unit/inference/test_m1_input_provenance.py",
+      "tests/unit/inference/test_model_1_prediction_diagnostics.py",
       "tests/model_1/diagnostics/test_domain_group_intervals.py"
     ],
     "M1-27": [
@@ -153,7 +153,7 @@
       "tests/scientific/m2_spectral/test_historical_scl_temporal.py"
     ],
     "M2-05": [
-      "tests/prediction/test_verified_patch_contract.py",
+      "tests/unit/inference/test_verified_patch_contract.py",
       "tests/scientific/m2_spectral/test_m2_site_patch_phase_e.py",
       "tests/datasets/integration/test_registered_sentinel_patch.py"
     ],
@@ -164,12 +164,12 @@
       "tests/model_2/test_checkpoint_contract.py"
     ],
     "M2-07": [
-      "tests/prediction/test_verified_patch_contract.py",
-      "tests/prediction/test_spectral_inference_contract.py"
+      "tests/unit/inference/test_verified_patch_contract.py",
+      "tests/unit/inference/test_spectral_inference_contract.py"
     ],
     "M2-08": [
       "tests/unit/algorithms/test_physical_v5.py",
-      "tests/prediction/test_spectral_inference_contract.py",
+      "tests/unit/inference/test_spectral_inference_contract.py",
       "tests/experiments/test_paired_suite.py"
     ],
     "M2-09": [
@@ -248,7 +248,7 @@
       "tests/scientific/m2_training/test_m2_full_competition_quality.py"
     ],
     "M2-25": [
-      "tests/model_2/test_model_2_operating_threshold.py",
+      "tests/unit/inference/test_model_2_operating_threshold.py",
       "tests/model_2/test_train_only_operating_policy.py",
       "tests/scientific/shared/test_nested_protocol.py"
     ],
@@ -262,9 +262,9 @@
       "tests/scientific/m2_training/test_m2_manual_closure.py"
     ],
     "M2-28": [
-      "tests/prediction/test_applicability.py",
-      "tests/prediction/test_spectral_inference_contract.py",
-      "tests/prediction/test_verified_patch_contract.py"
+      "tests/unit/inference/test_applicability.py",
+      "tests/unit/inference/test_spectral_inference_contract.py",
+      "tests/unit/inference/test_verified_patch_contract.py"
     ],
     "M2-29": [
       "tests/scientific/m2_training/test_m2_full_competition_diagnostics.py",
@@ -298,8 +298,8 @@
       "tests/architecture/contracts/test_refactor_menu_contract.py"
     ],
     "ARQ-006": [
-      "tests/prediction/test_m1_input_provenance.py",
-      "tests/prediction/test_spectral_inference_contract.py"
+      "tests/unit/inference/test_m1_input_provenance.py",
+      "tests/unit/inference/test_spectral_inference_contract.py"
     ],
     "ARQ-007": [
       "tests/architecture/structure/test_architecture.py",
@@ -358,9 +358,9 @@
       "tests/architecture/boundaries/test_methodology_relocation.py"
     ],
     "ARQ-017": [
-      "tests/prediction/test_m1_input_provenance.py",
-      "tests/model_1/test_model_1_prediction_diagnostics.py",
-      "tests/prediction/test_applicability.py",
+      "tests/unit/inference/test_m1_input_provenance.py",
+      "tests/unit/inference/test_model_1_prediction_diagnostics.py",
+      "tests/unit/inference/test_applicability.py",
       "tests/model_1/diagnostics/test_domain_group_intervals.py"
     ],
     "ARQ-018": [
@@ -392,7 +392,7 @@
     "ARQ-023": [
       "tests/datasets/integration/test_sentinel2_provider.py",
       "tests/scientific/shared/test_scientific_acquisition.py",
-      "tests/prediction/test_verified_patch_contract.py",
+      "tests/unit/inference/test_verified_patch_contract.py",
       "tests/datasets/integration/test_registered_sentinel_patch.py"
     ],
     "ARQ-024": [
@@ -435,7 +435,7 @@
       "tests/scientific/experiments/test_paired_experiment_design.py"
     ],
     "ARQ-032": [
-      "tests/model_2/test_model_2_operating_threshold.py",
+      "tests/unit/inference/test_model_2_operating_threshold.py",
       "tests/model_2/test_train_only_operating_policy.py",
       "tests/scientific/shared/test_nested_protocol.py"
     ],
@@ -463,9 +463,9 @@
       "tests/unit/algorithms/test_texture_geographic_reference.py"
     ],
     "ARQ-037": [
-      "tests/prediction/test_spectral_inference_contract.py",
-      "tests/prediction/test_verified_patch_contract.py",
-      "tests/prediction/test_applicability.py"
+      "tests/unit/inference/test_spectral_inference_contract.py",
+      "tests/unit/inference/test_verified_patch_contract.py",
+      "tests/unit/inference/test_applicability.py"
     ],
     "ARQ-038": [
       "tests/integration/test_eda_training_integration.py",
@@ -491,7 +491,7 @@
       "tests/architecture/boundaries/test_prediction_pdf_contract.py",
       "tests/unit/metrics/test_integrated_prediction_analysis.py",
       "tests/architecture/boundaries/test_rendering_boundary.py",
-      "tests/reporting/test_precomputed_report_inputs.py"
+      "tests/unit/inference/test_precomputed_report_inputs.py"
     ],
     "ARQ-043": [
       "tests/architecture/structure/test_architecture.py",
@@ -517,7 +517,7 @@
     "ARQ-047": [
       "tests/unit/metrics/test_integrated_prediction_analysis.py",
       "tests/reporting/test_integrated_decision_page.py",
-      "tests/reporting/test_precomputed_report_inputs.py"
+      "tests/unit/inference/test_precomputed_report_inputs.py"
     ],
     "ARQ-048": [
       "tests/prediction/test_candidate_evaluation_gates.py",
