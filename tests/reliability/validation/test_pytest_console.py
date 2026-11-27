@@ -48,7 +48,7 @@ def test_summary_reads_actual_evidence(tmp_path,capsys):
 
 
 def test_observer_subprocess_preserves_junit_and_log(tmp_path,capsys):
-    root = Path(__file__).resolve().parents[2]
+    root = next(parent for parent in Path(__file__).resolve().parents if (parent / "pyproject.toml").is_file())
     fixture = tmp_path / "test_sample.py"
     fixture.write_text("def test_ok():\n    assert True\n\ndef test_fail():\n    assert False\n")
     log, progress, junit = (tmp_path / name for name in ("pytest.log","progress.jsonl","junit.xml"))

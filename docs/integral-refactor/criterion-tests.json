@@ -738,21 +738,21 @@
     ],
     "ARQ-091": [
       "tests/architecture/structure/test_architecture.py",
-      "tests/development/test_validation.py",
-      "tests/development/test_evidence_serialization.py"
+      "tests/reliability/validation/test_validation.py",
+      "tests/reliability/validation/test_evidence_serialization.py"
     ],
     "ARQ-092": [
-      "tests/development/test_validation.py",
+      "tests/reliability/validation/test_validation.py",
       "tests/reliability/persistence/test_pipeline_audit_transaction.py",
-      "tests/development/test_criteria.py",
-      "tests/development/test_failure_context.py"
+      "tests/reliability/validation/test_criteria.py",
+      "tests/reliability/validation/test_failure_context.py"
     ],
     "ARQ-093": [
       "tests/scientific/eda/test_eda_protocol.py",
       "tests/scientific/methodology/test_scientific_checks.py"
     ],
     "ARQ-094": [
-      "tests/development/test_validation.py",
+      "tests/reliability/validation/test_validation.py",
       "tests/functional/model_lifecycle/test_candidate_evidence.py"
     ],
     "ARQ-095": [
@@ -774,7 +774,7 @@
       "tests/performance/execution/test_acceleration_benchmark.py"
     ],
     "ARQ-098": [
-      "tests/development/test_validation.py",
+      "tests/reliability/validation/test_validation.py",
       "tests/architecture/structure/test_architecture.py"
     ],
     "ARQ-099": [
@@ -787,7 +787,7 @@
       "tests/reliability/persistence/test_tracker_atomic.py",
       "tests/integration/acquisition/test_georoc_acquisition.py",
       "tests/reliability/logging/test_worker_logging_isolation.py",
-      "tests/development/test_validation.py",
+      "tests/reliability/validation/test_validation.py",
       "tests/reliability/logging/test_operation_log_layout.py"
     ],
     "ARQ-101": [
@@ -815,11 +815,11 @@
       "tests/reliability/logging/test_scientific_log_context.py"
     ],
     "ARQ-106": [
-      "tests/development/test_validation.py",
+      "tests/reliability/validation/test_validation.py",
       "tests/reliability/persistence/test_snapshot.py"
     ],
     "ARQ-107": [
-      "tests/development/test_validation.py",
+      "tests/reliability/validation/test_validation.py",
       "tests/architecture/boundaries/test_historical_relocation.py",
       "tests/reliability/persistence/test_protected_artifacts.py"
     ],
@@ -828,7 +828,7 @@
       "tests/architecture/contracts/test_refactor_menu_contract.py"
     ],
     "ARQ-109": [
-      "tests/development/test_validation.py",
+      "tests/reliability/validation/test_validation.py",
       "tests/scientific/methodology/test_scientific_checks.py",
       "tests/integration/training/test_pretraining_holdout_reservation.py",
       "tests/performance/execution/test_optimization_parallel_policy.py",
@@ -836,7 +836,7 @@
       "tests/performance/execution/test_acceleration_benchmark.py",
       "tests/reliability/logging/test_operation_log_layout.py",
       "tests/regression/historical/test_historical_parity_preflight.py",
-      "tests/development/test_failure_context.py",
+      "tests/reliability/validation/test_failure_context.py",
       "tests/architecture/structure/test_scientific_script_layout.py"
     ]
   }

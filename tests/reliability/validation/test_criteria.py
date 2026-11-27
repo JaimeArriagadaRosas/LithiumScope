@@ -4,7 +4,7 @@ from lithiumscope.tools.inspection.development.criteria import evaluate_catalog,
 
 
 def test_catalog_associates_all_166_criteria():
-    root = Path(__file__).resolve().parents[2]
+    root = next(parent for parent in Path(__file__).resolve().parents if (parent / "pyproject.toml").is_file())
     assert set(load_catalog(root)) == expected_ids()
     assert len(expected_ids()) == 166
 
@@ -27,7 +27,7 @@ def test_failed_skipped_missing_and_untrusted_are_not_passed():
 
 
 def test_catalog_allows_more_than_three_relevant_modules():
-    root=Path(__file__).resolve().parents[2]
+    root=next(parent for parent in Path(__file__).resolve().parents if (parent / "pyproject.toml").is_file())
     catalog=load_catalog(root)
     assert any(len(modules)>3 for modules in catalog.values())
 
