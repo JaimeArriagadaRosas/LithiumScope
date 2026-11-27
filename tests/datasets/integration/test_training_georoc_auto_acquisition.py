@@ -3,8 +3,8 @@ from types import SimpleNamespace
 import pandas as pd
 import pytest
 
-from lithiumscope.datasets import georoc_filtered_acquisition as georoc
-from lithiumscope.datasets import model_1_sources as sources
+from lithiumscope.tools.acquisition.georoc import filtered as georoc
+from lithiumscope.datasets.management.sources.model_1 import source as sources
 
 
 def setup(monkeypatch, tmp_path):

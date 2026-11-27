@@ -2,7 +2,7 @@ import hashlib
 
 import pytest
 
-from lithiumscope.datasets.management import model_1_sources
+from lithiumscope.datasets.management.sources.model_1 import source as model_1_sources
 
 
 def test_verified_frozen_source_is_reused_without_reconstruction(tmp_path, monkeypatch):

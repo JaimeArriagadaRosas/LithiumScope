@@ -1,6 +1,6 @@
 import pytest
 
-from lithiumscope.datasets import local_sources
+from lithiumscope.datasets.management.sources import local as local_sources
 
 
 def test_m1_diagnostic_uses_existing_combined_snapshot(tmp_path, monkeypatch):

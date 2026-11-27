@@ -1,6 +1,6 @@
 from pathlib import Path
 
-import lithiumscope.datasets.provisioner as provisioner
+import lithiumscope.runtime.dataset_provisioning as provisioner
 
 
 def test_dataset_inspection_does_not_download(monkeypatch, tmp_path: Path):

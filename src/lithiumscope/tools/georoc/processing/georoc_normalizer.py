@@ -2,4 +2,4 @@
 import sys
 from importlib import import_module
 
-sys.modules[__name__] = import_module("lithiumscope.datasets.adapters.georoc_normalizer")
+sys.modules[__name__] = import_module("lithiumscope.datasets.adapters.georoc.normalization")

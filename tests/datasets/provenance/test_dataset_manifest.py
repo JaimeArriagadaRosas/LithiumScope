@@ -1,6 +1,6 @@
 import pandas as pd
 
-from lithiumscope.datasets.manifest import build_tabular_manifest, write_manifest
+from lithiumscope.datasets.provenance.manifest import build_tabular_manifest, write_manifest
 
 
 def test_dataset_manifest_captures_hash_and_shape(tmp_path):
