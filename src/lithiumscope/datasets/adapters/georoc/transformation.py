@@ -17,6 +17,7 @@ def harmonize_chunk(
     minimum_predictors: int,
     iron_total_mode: str = "original",
     censoring: list[dict] | None = None,
+    rejections: dict[int, str] | None = None,
 ) -> tuple[pd.DataFrame, int]:
     if iron_total_mode not in {"original", "feot_equivalent"}:
         raise ValueError(f"Unsupported GEOROC iron_total_mode: {iron_total_mode}")
@@ -37,9 +38,14 @@ def harmonize_chunk(
             frame[name] = frame[source].astype("string")
     frame = convert_chemistry(frame, column_map, source_file, iron_total_mode, censoring)
     if "Sample_type" not in frame.columns and allowed_material_types:
+        if rejections is not None:
+            rejections.update({int(i): "missing_material_column" for i in frame.index})
         return frame.iloc[:0].copy(), before
+    original_index = frame.index
     frame = select_material(frame, allowed_material_types)
-    frame = select_rows(frame, minimum_predictors)
+    if rejections is not None:
+        rejections.update({int(i): "incompatible_material" for i in original_index.difference(frame.index)})
+    frame = select_rows(frame, minimum_predictors, rejections=rejections)
     if not {"Li_icpms", "Longitude", "Latitude"} <= set(frame.columns):
         return frame, before
     if "SUM (no water)" not in frame.columns:

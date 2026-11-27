@@ -84,6 +84,12 @@ def assess_quality(frame: pd.DataFrame, policy: QualityPolicy) -> QualityReport:
     if policy.method_column:
         methods = frame.get(policy.method_column, pd.Series("", index=frame.index)).astype("string").fillna("").str.strip().str.casefold()
         flag(methods.isin(_UNKNOWN), "unknown_analytical_method")
+    if policy.identity_columns:
+        identity = frame.reindex(columns=list(policy.identity_columns)).astype("string").fillna("")
+        identity = identity.apply(lambda column: column.str.strip())
+        complete = ~identity.apply(lambda column: column.str.casefold().isin(_UNKNOWN)).any(axis=1)
+        flag(~complete, "unresolved_observation_identity")
+        flag(complete & identity.duplicated(keep=False), "duplicate_observation_identity")
     if policy.image_column:
         images = frame.get(policy.image_column, pd.Series("", index=frame.index)).astype("string").fillna("").str.strip().str.casefold()
         flag(images.isin(_UNKNOWN), "missing_image_reference", 2)

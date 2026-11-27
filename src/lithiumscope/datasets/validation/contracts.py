@@ -27,6 +27,7 @@ class QualityPolicy:
     image_column: str | None = None
     review_censored_target: bool = False
     review_zero_target: bool = False
+    identity_columns: tuple[str, ...] = ()
 
     def __post_init__(self):
         if self.model_group not in {"model_1", "model_2"}:
@@ -39,6 +40,8 @@ class QualityPolicy:
             raise ValueError("Predictor policy contains target or duplicates")
         if self.max_uncertainty_m is not None and (not np.isfinite(self.max_uncertainty_m) or self.max_uncertainty_m < 0):
             raise ValueError("Invalid maximum uncertainty")
+        if len(set(self.identity_columns)) != len(self.identity_columns):
+            raise ValueError("Duplicate identity columns in policy")
         if self.oxide_total_bounds is not None and not self.oxide_columns:
             raise ValueError("Oxide total policy requires oxide columns")
 

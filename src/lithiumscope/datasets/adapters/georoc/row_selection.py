@@ -4,7 +4,14 @@ import pandas as pd
 from .schema import MAJOR_OXIDES
 
 
-def select_rows(frame, minimum_predictors):
+def select_rows(frame, minimum_predictors, *, rejections=None):
+    def keep(mask, reason):
+        nonlocal frame
+        mask = mask.fillna(False)
+        if rejections is not None:
+            rejections.update({int(index): reason for index in frame.index[~mask]})
+        frame = frame.loc[mask].copy()
+
     numeric_columns = [
         column
         for column in (
@@ -55,18 +62,14 @@ def select_rows(frame, minimum_predictors):
         "Longitude",
         "Latitude",
     )
-    if not all(
-        column in frame.columns
-        for column in required
-    ):
+    if not all(column in frame.columns for column in required):
+        if rejections is not None:
+            rejections.update({int(index): "missing_core_columns" for index in frame.index})
         return frame.iloc[0:0].copy()
 
-    frame = frame.dropna(subset=list(required))
-    frame = frame[np.isfinite(frame["Li_icpms"]) & frame["Li_icpms"].ge(0)].copy()
-    frame = frame[
-        frame["Longitude"].between(-180, 180)
-        & frame["Latitude"].between(-90, 90)
-    ].copy()
+    keep(np.isfinite(frame["Li_icpms"]) & frame["Li_icpms"].ge(0), "invalid_lithium")
+    keep(frame["Longitude"].between(-180, 180) & frame["Latitude"].between(-90, 90),
+         "invalid_coordinates")
 
     predictor_columns = [
         column
@@ -83,8 +86,6 @@ def select_rows(frame, minimum_predictors):
         usable = (np.isfinite(frame[predictor_columns]) & frame[predictor_columns].ge(0)).sum(
             axis=1
         )
-        frame = frame[
-            usable >= minimum_predictors
-        ].copy()
+        keep(usable >= minimum_predictors, "insufficient_predictors")
 
     return frame

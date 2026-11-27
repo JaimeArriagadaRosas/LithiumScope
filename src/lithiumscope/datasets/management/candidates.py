@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 from dataclasses import asdict
 import json
 from pathlib import Path
@@ -11,7 +12,7 @@ import pandas as pd
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import RESULTS_DIR
 from lithiumscope.datasets.adapters.georoc.ingestion import ingest_georoc_files
-from lithiumscope.datasets.management.snapshots import materialize_snapshot, materialize_sources
+from lithiumscope.datasets.management.snapshots import materialize_snapshot, materialize_sources, verify_snapshot
 from lithiumscope.datasets.provenance.comparison import compare_versions
 from lithiumscope.datasets.provenance.identity import observation_ids
 from lithiumscope.datasets.readers.tabular import load_data
@@ -19,7 +20,7 @@ from lithiumscope.datasets.validation.contracts import QualityPolicy, candidate_
 from lithiumscope.datasets.validation.quality_report import assess_quality, write_quality_report
 
 # Bump whenever output-affecting workflow logic changes.
-REVISION = "candidate-workflow-v1"
+REVISION = "candidate-workflow-v2"
 
 
 def _export_quality(frame: pd.DataFrame, policy: QualityPolicy, output: Path) -> None:
@@ -55,16 +56,21 @@ def build_georoc_candidates(sources: list[Path], *, root: Path, policy: QualityP
     ingestion_policy = {"minimum_predictors": minimum_predictors, "iron_total_mode": iron_total_mode}
     def transform(inputs, output):
         _, path = next(iter(inputs.items()))
-        ingest_georoc_files([path], output, audit_path=output.parent / "ingestion_audit.json",
-                            **ingestion_policy)
+        with (output.parent / "raw_exclusions.csv").open("w", encoding="utf-8", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=["source_file", "source_row_position", "reason"])
+            writer.writeheader()
+            ingest_georoc_files([path], output, audit_path=output.parent / "ingestion_audit.json",
+                                exclusion_callback=writer.writerows, **ingestion_policy)
     processed = materialize_sources(root / "sources", named, policy=ingestion_policy,
                                     transform_revision=REVISION + "-georoc", transform=transform)
+    source_digests = {name: verify_snapshot(snapshot.directory)["identity"]["sources"][name]
+                      for name, snapshot in processed.items()}
     def assemble(inputs, output):
         frames = []
         for name, path in inputs.items():
             frame = load_data(path, quiet=True)
             frame["audit_observation_id"] = observation_ids(
-                frame, source=name, source_sha256=file_sha256(named[name]))
+                frame, source=name, source_sha256=source_digests[name])
             frames.append(frame)
         combined = pd.concat(frames, ignore_index=True, sort=False)
         # Preserve observations for review. No automatic cross-source deduplication.

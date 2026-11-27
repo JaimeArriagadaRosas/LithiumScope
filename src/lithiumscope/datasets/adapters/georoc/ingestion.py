@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
+from typing import Callable, Iterable
+from collections import Counter
 from uuid import uuid4
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.datasets.readers.georoc_raw_reader import detect_georoc_encoding
@@ -68,6 +69,7 @@ def ingest_georoc_files(
     minimum_predictors: int = 8,
     iron_total_mode: str = "original",
     allow_incompatible_sources: bool = False,
+    exclusion_callback: Callable[[list[dict]], None] | None = None,
 ) -> GeorocIngestionResult:
     if iron_total_mode not in {"original", "feot_equivalent"}:
         raise ValueError(f"Unsupported GEOROC iron_total_mode: {iron_total_mode}")
@@ -113,6 +115,7 @@ def ingest_georoc_files(
     mappings, output_columns = ingestion_layout(paths, headers.__getitem__, iron_total_mode)
     censoring = []
     source_details = []
+    rejection_counts = Counter()
 
     try:
         for path in paths:
@@ -139,6 +142,7 @@ def ingest_georoc_files(
                 continue
 
             first_read, first_kept = rows_read, rows_kept
+            source_rejections = Counter()
             usecols = list(mapping.keys())
             for chunk in pd.read_csv(
                 path,
@@ -152,6 +156,7 @@ def ingest_georoc_files(
                 encoding=encodings[path],
             ):
                 rows_read += len(chunk)
+                exclusions = {}
                 harmonized, dropped = (
                     harmonize_chunk(
                         chunk,
@@ -166,8 +171,16 @@ def ingest_georoc_files(
                         ),
                         iron_total_mode=iron_total_mode,
                         censoring=censoring,
+                        rejections=exclusions,
                     )
                 )
+                if len(exclusions) != dropped:
+                    raise ValueError("GEOROC rejection accounting mismatch")
+                source_rejections.update(exclusions.values())
+                rejection_counts.update(exclusions.values())
+                if exclusion_callback is not None and exclusions:
+                    exclusion_callback([{"source_file": path.name, "source_row_position": row,
+                                         "reason": reason} for row, reason in exclusions.items()])
                 rejected += dropped
                 if harmonized.empty:
                     continue
@@ -182,7 +195,7 @@ def ingest_georoc_files(
                 rows_kept += len(harmonized)
             source_details.append({"path": str(path), "state": "processed", "encoding": encodings[path],
                                    "mapping": mapping, "rows_read": rows_read - first_read,
-                                   "rows_kept": rows_kept - first_kept})
+                                   "rows_kept": rows_kept - first_kept, "rejection_counts": dict(source_rejections)})
         if any(file_sha256(path) != source_hashes[str(path)] for path in paths):
             raise ValueError("GEOROC source changed during ingestion")
     except BaseException:
@@ -218,6 +231,7 @@ def ingest_georoc_files(
         source_hashes=source_hashes,
         source_details=source_details,
         output_sha256=file_sha256(temporary),
+        rejection_counts=dict(rejection_counts),
         iron_total_mode=iron_total_mode,
         )
         from lithiumscope.datasets.provenance.publication import publish_pair

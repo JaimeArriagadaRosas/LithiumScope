@@ -21,6 +21,7 @@ def write_ingestion_audit(
     source_details: list[dict] | None = None,
     output_sha256: str | None = None,
     iron_total_mode: str = "original",
+    rejection_counts: dict[str, int] | None = None,
 ) -> None:
     audit = {
         "source": source_name,
@@ -28,6 +29,7 @@ def write_ingestion_audit(
         "source_details": source_details or [],
         "output_sha256": output_sha256,
         "iron_total_mode": iron_total_mode,
+        "rejection_counts": rejection_counts or {},
         "complete_source_coverage": not any(s.get("state") != "processed" for s in (source_details or [])),
         "analytical_censoring": censoring,
         "rows_skipped_material_core_or_density": rows_read - rows_kept,
