@@ -717,8 +717,8 @@
       "tests/resources/test_fit_workload.py"
     ],
     "ARQ-086": [
-      "tests/runtime/test_runtime.py",
-      "tests/runtime/test_preboot_dataset_status.py"
+      "tests/functional/operations/test_runtime.py",
+      "tests/functional/operations/test_preboot_dataset_status.py"
     ],
     "ARQ-087": [
       "tests/unit/utilities/test_console_status.py",
