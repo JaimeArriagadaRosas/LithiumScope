@@ -4,6 +4,8 @@ from __future__ import annotations
 import datetime as dt
 import json
 import importlib.util
+import importlib.metadata
+import platform
 import os
 from pathlib import Path
 import subprocess
@@ -42,11 +44,13 @@ def junit_counts(path: Path) -> dict:
         return {}
     try:
         root = ET.parse(path).getroot()
-    except ET.ParseError:
+        suites = [root] if root.tag == "testsuite" else root.findall("testsuite")
+        if not suites:
+            return {}
+        return {key: sum(int(s.get(key, "0")) for s in suites)
+                for key in ("tests", "failures", "errors", "skipped")}
+    except (ET.ParseError, OSError, ValueError):
         return {}
-    suites = [root] if root.tag == "testsuite" else root.findall("testsuite")
-    return {key: sum(int(s.get(key, "0")) for s in suites)
-            for key in ("tests", "failures", "errors", "skipped")}
 
 
 def git_identity() -> dict:
@@ -61,6 +65,18 @@ def git_identity() -> dict:
                                                     "--", "src", "tests", "scripts", "config", "docs/integral-refactor"))}
     except (OSError, subprocess.SubprocessError):
         return {"git_commit": None, "git_branch": None, "tracked_worktree_dirty": None, "untracked_code_present": None}
+
+
+def execution_environment() -> dict:
+    packages = {}
+    for name in ("pytest", "pytest-cov", "coverage", "ruff", "numpy", "pandas",
+                 "scikit-learn", "optuna", "catboost", "xgboost", "torch", "joblib", "rasterio"):
+        try:
+            packages[name] = importlib.metadata.version(name)
+        except importlib.metadata.PackageNotFoundError:
+            packages[name] = None
+    return {"python": platform.python_version(), "system": platform.system(),
+            "machine": platform.machine(), "packages": packages}
 
 
 def coverage_mode(requested: bool) -> str:
@@ -100,6 +116,7 @@ def run(args: list[str]) -> int:
     env.pop("PYTHONPATH", None)
     env.pop("LITHIUMSCOPE_LOG_DIR", None)
     env.pop("PYTEST_ADDOPTS", None)
+    env["PYTHONIOENCODING"] = "utf-8"
     env["LITHIUMSCOPE_DISABLE_AUTO_INSTALL"] = "1"
     env["LITHIUMSCOPE_TEST_SESSION_ID"] = session_id
     env["LITHIUMSCOPE_PYTEST_PROGRESS"] = str(progress_file)
@@ -128,7 +145,7 @@ def run(args: list[str]) -> int:
             protected_before = artifact_snapshot(ROOT, logs, env, "before")
             checks = run_preflight(ROOT, logs, env, show=not json_output)
             architecture = audit(ROOT)
-            (results / "architecture.json").write_text(json.dumps(architecture, indent=2), encoding="utf-8")
+            write_json(results / "architecture.json", architecture)
             checks["test_architecture"] = {"state": architecture["state"],
                 "scope": architecture["scope"], "modules": architecture["modules"],
                 "log": (results / "architecture.json").relative_to(ROOT).as_posix()}
@@ -157,8 +174,10 @@ def run(args: list[str]) -> int:
     collection = collection_evidence(ROOT, progress_file, cases,
         junit_state=details["junit_state"], require_full=preflight_requested)
     details["collection"] = collection
+    protected_ok = not preflight_requested or checks.get("protected_artifacts", {}).get("state") == "OK"
     criteria = criterion_evidence(ROOT, cases, trusted=clean and pytest_code in (0, 1)
-                                  and collection["full_suite_verified"])
+                                  and protected_ok and collection["full_suite_verified"])
+    criteria.update(run_id=run_id, git_commit=before["git_commit"])
     write_json(results / "criterion_evidence.json", criteria)
     details["criterion_summary"] = {"state": criteria["state"], "summary": criteria["summary"],
                                     "by_family": criteria["by_family"]}
@@ -177,11 +196,17 @@ def run(args: list[str]) -> int:
                "preflight_requested": preflight_requested, "checks": checks,
                "coverage_requested": coverage_requested, "coverage_state": mode,
                "log": (logs / "pytest.log").relative_to(ROOT).as_posix(),
-               "arguments": args,
+               "arguments": args, "environment": execution_environment(),
                "progress_log": progress_file.relative_to(ROOT).as_posix(),
                "details": details}
+    try:
+        write_report(results / "verification_report.md", summary, criteria)
+    except (OSError, ValueError, TypeError, KeyError) as exc:
+        summary["report_error"] = type(exc).__name__
+        if preflight_requested and code == 0:
+            state, code = "incomplete", 10
+            summary.update(state=state, exit_code=code)
     write_json(results / "summary.json", summary)
-    write_report(results / "verification_report.md", summary, criteria)
     event(state, exit_code=code, duration_seconds=summary["duration_seconds"], error=error)
     if json_output:
         print(json.dumps(summary, indent=2))

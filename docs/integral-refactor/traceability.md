@@ -6,7 +6,7 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 01. Comparación M1 Historico y M1 Release.md, línea 795.
 - Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Media. Decisión: Conservar y reforzar los contratos de entrada.**
 - Criterio de aceptación (extracto): El criterio de aceptación será que las entradas admitidas produzcan la estructura esperada y que las ambiguas se rechacen o adviertan con diagnóstico reproducible.
-- Componentes / corrección detallada / tests: datasets/readers/tabular.py; tests/datasets/test_tabular_contract.py
+- Componentes / corrección detallada / tests: datasets/readers/tabular.py; tests/unit/data/test_tabular_contract.py
 - Implementación / evidencia: Validacion de encabezados, ancho de filas, delimitador declarado, hoja y codificacion. Excepcion Mamani09 con SHA256 exacto y 4 encabezados vacios documentados; 1788 x 101 leidos. XLSX original no recuperado.
 - Estado: parcialmente verificado.
 
@@ -238,7 +238,7 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 439.
 - Diagnóstico de origen: **Estado: Metodológicamente limitado. Prioridad: Alta. Decisión: Validar el aislamiento espacial efectivo.**
 - Criterio de aceptación (extracto): El criterio de aceptación será demostrar y registrar el aislamiento exigido por el protocolo, no solamente comprobar que los identificadores de grupos difieren.
-- Componentes / corrección detallada / tests: core/scientific/spatial_audit.py; model_2/eda/pipeline.py; tests/scientific/test_spatial_audit_contract.py (daa0921).
+- Componentes / corrección detallada / tests: core/scientific/spatial_audit.py; model_2/eda/pipeline.py; tests/scientific/methodology/test_spatial_audit_contract.py (daa0921).
 - Implementación / evidencia: Auditoria real 706 muestras: distancia minima TRAIN elegible-TEST 1023.33 m, cero posibles solapamientos de parches de 640 m, 547 casos TEST con escena compartida, cero hashes compartidos. Falta sensibilidad a tamano y desplazamiento de celdas y dependencia geologica.
 - Estado: parcialmente verificado.
 
@@ -318,7 +318,7 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 499.
 - Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Alta. Decisión: Establecer un preflight científico para la matriz de entrenamiento.**
 - Criterio de aceptación (extracto): El criterio de aceptación será que el entrenamiento solo comience con un dataset trazable y científicamente elegible, acompañado de un informe de preflight y composición final.
-- Componentes / corrección detallada / tests: model_2/data/feature_cache.py; pipeline.py; core/scientific_checks.py; tests/model_2/test_verified_feature_cache.py; da55aa2, c8f653f, ab50a93.
+- Componentes / corrección detallada / tests: model_2/data/feature_cache.py; pipeline.py; core/scientific_checks.py; tests/scientific/features/test_verified_feature_cache.py; da55aa2, c8f653f, ab50a93.
 - Implementación / evidencia: Matriz congelada v4 de 706 x 170; identidad, hashes, esquema, orden y reconstruccion de 44 descriptores comprobados; QA 690 elegibles; preflight de clases y folds internos documentado. Falta preflight integrado exhaustivo para otras cohortes y nuevas adquisiciones.
 - Estado: parcialmente verificado.
 
@@ -358,7 +358,7 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 529.
 - Diagnóstico de origen: **Estado: Defecto confirmado de control de estados. Prioridad: Alta. Decisión: Separar la validez del entrenamiento de la exportación y ampliar la competencia controlada.**
 - Criterio de aceptación (extracto): El criterio de aceptación será distinguir candidatos válidos, descartados y errores auxiliares sin contradicciones, conservando la comparación completa.
-- Componentes / corrección detallada / tests: core/candidate_evidence.py; training/execution/competition_evaluate_algorithm_candidates.py; tests/runtime/test_candidate_evidence.py (ab50a93).
+- Componentes / corrección detallada / tests: core/candidate_evidence.py; training/execution/competition_evaluate_algorithm_candidates.py; tests/functional/model_lifecycle/test_candidate_evidence.py (ab50a93).
 - Implementación / evidencia: Una fila por candidato; evidencia esencial separada de figuras auxiliares; ranking excluye evidencias numericas incompletas. Pruebas focalizadas aprobadas. Falta comparar pesos de clases y presupuestos con experimentos controlados.
 - Estado: parcialmente verificado.
 
@@ -382,7 +382,7 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 547.
 - Diagnóstico de origen: **Estado: Correcto con mejoras. Prioridad: Alta. Decisión: Fortalecer el runner, los checkpoints y los diagnósticos de aprendizaje.**
 - Criterio de aceptación (extracto): El criterio de aceptación será reproducir la ejecución sin mezclar estados incompatibles y disponer de evidencias suficientes para estudiar las causas de las diferencias de rendimiento.
-- Componentes / corrección detallada / tests: core/checkpoints.py; core/scientific_checks.py; cv_runner.py; tests/runtime/test_checkpoints.py
+- Componentes / corrección detallada / tests: core/checkpoints.py; core/scientific_checks.py; cv_runner.py; tests/regression/recovery/test_checkpoints.py
 - Implementación / evidencia: Checkpoint versionado con SHA256 y escritura atomica; rechaza alteracion, indices invalidos, predicciones incompletas/no finitas. Metricas principales recalculadas al reanudar. OOF cubre cada observacion exactamente una vez. Pendiente curvas de aprendizaje y comparacion real.
 - Estado: parcialmente verificado.
 
@@ -414,7 +414,7 @@ Identificadores según orden de aparición en la sección Diagnostico. Criterios
 - Origen: 04. Diagnostico M2 Release.md, línea 571.
 - Diagnóstico de origen: **Estado: Metodológicamente limitado. Prioridad: Alta. Decisión: Optimizar y evaluar el umbral en conjuntos separados.**
 - Criterio de aceptación (extracto): El criterio de aceptación será comparar BA y demás métricas a 0,5 y al corte optimizado sobre las mismas observaciones independientes, sin presentar el 0,5818 OOF retrospectivo como validación independiente del umbral.
-- Componentes / corrección detallada / tests: training/calibration/operating.py; training/execution/cv_runner*.py; competition_finalize_scientific_winner.py; tests/model_2/test_train_only_operating_policy.py
+- Componentes / corrección detallada / tests: training/calibration/operating.py; training/execution/cv_runner*.py; competition_finalize_scientific_winner.py; tests/scientific/methodology/test_train_only_operating_policy.py
 - Implementación / evidencia: Umbral operativo por fold ajustado exclusivamente con cross-fits internos de TRAIN y evaluado sin reajuste sobre TEST, exporta scores internos, umbral y metricas de ambas politicas. Corte final procede de OOF de desarrollo al corte Li final; no certifica holdout. Pruebas de aislamiento, reanudacion y objetivo. Falta validacion real y externa.
 - Estado: parcialmente verificado.
 

@@ -106,9 +106,11 @@ def input_identity(group, available):
 
 
 def output_hashes(folder):
+    paths = sorted(folder.rglob("*"))
+    if any(path.is_symlink() for path in paths):
+        raise ValueError("Los archivos de robustez no pueden contener enlaces simbólicos")
     return {path.relative_to(folder).as_posix(): file_sha256(path)
-            for path in sorted(folder.rglob("*"))
-            if path.is_file() and path != folder / "manifest.json" and not path.is_symlink()}
+            for path in paths if path.is_file() and path != folder / "manifest.json"}
 
 
 def find_reusable_robustness(group, *, root=None):

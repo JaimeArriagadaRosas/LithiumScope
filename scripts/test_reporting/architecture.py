@@ -6,6 +6,7 @@ import ast
 import json
 from pathlib import Path
 import tomllib
+import shlex
 
 CATEGORIES = ("architecture", "unit", "integration", "functional",
               "scientific", "regression", "performance", "reliability")
@@ -81,8 +82,11 @@ def audit(root: Path) -> dict:
         registered = {m.split(":", 1)[0].strip() for m in config["markers"]}
         if not set(CATEGORIES + SCOPES) <= registered:
             problems.append("Missing registered markers")
+        options = config.get("addopts", "")
+        options = shlex.split(options) if isinstance(options, str) else options
         if config["testpaths"] != ["tests"] or any(
-            token in str(config.get("addopts", "")).split() for token in ("-m", "-k", "--ignore")
+            token.startswith(("-m", "-k", "--ignore", "--deselect", "--lf", "--last-failed", "--collect-only"))
+            for token in options
         ):
             problems.append("Default collection is not the full suite")
     except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:

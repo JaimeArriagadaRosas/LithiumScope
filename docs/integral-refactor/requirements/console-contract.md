@@ -68,7 +68,8 @@ Fuente: Diagnóstico de Repositorio, L39-1261. El transcript original permanece 
 - Entrenamiento 1 M1, 2 M2, 3 ambos, 0 volver; cancelación limpia solo sesión no iniciada.
 - Resultados 1 PDF, 2 Excel, 3 modelos/métricas, 4 EDA, 5 tests/simulaciones, 0 volver.
 - Versiones: confirmación, cancelación y carga verificable.
-- Laboratorio 1 EDA, 2 pruebas/simulaciones, 3 salud read-only, 0 volver. Opción 4 de desarrollo es temporal y debe retirarse.
+- Laboratorio vigente: 1 EDA, 2 preparación y tratamiento, 3 ejecución de tests y simulaciones, 4 salud read-only, 0 volver.
+- En 5 > 3: 1 Validación del software, 2 Comparaciones de modelos, 3 Evaluación de tratamiento de datos, 0 Volver. Sin Ejecutar todo ni entrada OASIS. Las comparaciones reutilizan evidencia verificable y piden autorización para escenarios pendientes; no entrenan ni promueven modelos.
 - Salida y entradas inválidas: sin pérdida de evidencia; contrastar mensajes y transiciones.
 - No reproducir números ilustrativos como resultados reales.
 - Pendiente: pruebas de flujos completos, revisión visual y contraste de todos los mensajes de L39-1261.

@@ -129,7 +129,8 @@ def run_pytest(root: Path, logs: Path, current_commit: str | None) -> dict:
                    and report["matches_current_clean_commit"] is True
                    and current.get("state") == "OK"
                    and current.get("commit") == current_commit
-                   and report["breakdown"]["state"] == "OK")
+                   and report["breakdown"]["state"] == "OK"
+                   and summary.get("details", {}).get("collection", {}).get("full_suite_verified") is True)
         report["state"] = ("OK" if result.returncode == 0
                            and report["state"] == "OK"
                            and report["breakdown"]["state"] == "OK"

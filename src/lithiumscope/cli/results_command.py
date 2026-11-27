@@ -79,6 +79,10 @@ def _tests() -> None:
         print("TESTS")
         print(json.dumps(record, ensure_ascii=False, indent=2))
         print(f"Evidencia: {path}")
+        for name in ("verification_report.md", "architecture.json", "criterion_evidence.json"):
+            evidence = path.parent / name
+            if evidence.is_file():
+                print(f"{name}: {evidence}")
     else:
         print("Tests: N/D — no hay resumen registrado.")
     root = RESULTS_DIR / "scientific_simulations"

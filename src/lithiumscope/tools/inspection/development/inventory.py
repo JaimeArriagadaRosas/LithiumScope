@@ -92,7 +92,7 @@ def latest_test_report(root: Path, current_commit: str | None) -> dict:
         except (ValueError, OSError):
             continue
     if not candidates:
-        return {"state": "MISSING", "reason": "No local regression summary; use option 5.2"}
+        return {"state": "MISSING", "reason": "No local regression summary; use option 5 > 3 > 1"}
     return test_report(root, max(candidates)[2], current_commit)
 
 
@@ -115,8 +115,11 @@ def test_report(root: Path, path: Path, current_commit: str | None) -> dict:
                and report.get("untracked_code_present") is False
                and report.get("git_identity_unchanged") is True
                if isinstance(source_commit, str) and current_commit else None)
+    collection = report.get("details", {}).get("collection")
+    full = collection.get("full_suite_verified") if isinstance(collection, dict) else None
     return {"state": "OK" if report.get("state") == "passed" and not (
-                report.get("coverage_requested") and coverage is None) else "WARNING",
+                report.get("coverage_requested") and coverage is None) and full is not False else "WARNING",
+            "full_suite_verified": full,
             "exit_code": report.get("exit_code"),
             "coverage_state": report.get("coverage_state", "unknown"),
             "test_state": report.get("state"), "counts": selected,
@@ -126,6 +129,9 @@ def test_report(root: Path, path: Path, current_commit: str | None) -> dict:
             "summary": file_record(root, path),
             "junit": file_record(root, path.parent / "junit.xml"),
             "coverage": file_record(root, coverage_path),
+            "architecture": file_record(root, path.parent / "architecture.json"),
+            "criterion_evidence": file_record(root, path.parent / "criterion_evidence.json"),
+            "verification_report": file_record(root, path.parent / "verification_report.md"),
             "log": file_record(root, report["log"]) if isinstance(report.get("log"), str) else None}
 
 
