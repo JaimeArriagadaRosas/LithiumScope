@@ -1,6 +1,6 @@
 import pandas as pd
 import pytest
-from lithiumscope.datasets.adapters.georoc_dataverse import whole_rock_candidates
+from lithiumscope.datasets.adapters.georoc.dataverse import whole_rock_candidates
 from lithiumscope.tools.acquisition.georoc.dataverse import fetch_partition
 from lithiumscope.experiments.georoc.acquisition.download_georoc_andean import run
 

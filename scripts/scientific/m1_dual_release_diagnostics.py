@@ -19,7 +19,7 @@ from sklearn.model_selection import GroupKFold
 
 from lithiumscope.core.device import detect_device
 from lithiumscope.core.paths import PROJECT_ROOT
-from lithiumscope.datasets.georoc_ingestion import ingest_georoc_files
+from lithiumscope.datasets.adapters.georoc.ingestion import ingest_georoc_files
 from lithiumscope.datasets.harmonization import merge_harmonized_sources
 from lithiumscope.datasets.readers.tabular import load_data
 from lithiumscope.model_1.pipeline import prepare_training_data

@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.datasets import provisioner
+from lithiumscope.runtime import dataset_provisioning as provisioner
 from lithiumscope.model_2.training import competition
 from lithiumscope.model_2.training.diagnostic_inputs import loaded_competitions
 from lithiumscope.model_2.training.postprocess import load_predictions

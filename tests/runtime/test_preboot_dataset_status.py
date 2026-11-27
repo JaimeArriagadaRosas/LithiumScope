@@ -1,4 +1,4 @@
-from lithiumscope.datasets.status import DatasetStatus
+from lithiumscope.datasets.management.status import DatasetStatus
 from lithiumscope.runtime.preboot import PrebootReport
 
 

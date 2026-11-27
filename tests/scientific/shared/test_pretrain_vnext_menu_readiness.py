@@ -11,8 +11,8 @@ from sklearn.calibration import CalibratedClassifierCV
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GroupKFold
 
-from lithiumscope.datasets.georoc_ingestion import ingest_georoc_files
-from lithiumscope.datasets import provisioner
+from lithiumscope.datasets.adapters.georoc.ingestion import ingest_georoc_files
+from lithiumscope.runtime import dataset_provisioning as provisioner
 from lithiumscope.core.device import DeviceInfo
 from lithiumscope.model_2.training.factory import create_model, get_algorithm
 

@@ -1,6 +1,6 @@
 """Missing-source authorization and immutable snapshot policy."""
 import pytest
-from lithiumscope.datasets.management.diagnostic_provisioning import prepare_diagnostic_source
+from lithiumscope.datasets.management.sources.diagnostic import prepare_diagnostic_source
 
 
 def test_no_acquisition_by_default(monkeypatch):
