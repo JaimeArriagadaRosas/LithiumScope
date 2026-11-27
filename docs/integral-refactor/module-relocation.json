@@ -10,8 +10,8 @@
   "lithiumscope.experiments.analysis.academic_evidence": "lithiumscope.experiments.integrated.academic_evidence",
   "lithiumscope.experiments.analysis.audit_georoc_m2_candidate_coverage": "lithiumscope.experiments.model_2.audit_georoc_m2_candidate_coverage",
   "lithiumscope.experiments.analysis.audit_georoc_source_references": "lithiumscope.experiments.model_2.audit_georoc_source_references",
-  "lithiumscope.experiments.analysis.compare_vnext_trained_runs_compare_m1": "lithiumscope.experiments.analysis.comparison.compare_vnext_trained_runs_compare_m1",
-  "lithiumscope.experiments.analysis.compare_vnext_trained_runs_compare_m2": "lithiumscope.experiments.analysis.comparison.compare_vnext_trained_runs_compare_m2",
+  "lithiumscope.experiments.analysis.compare_vnext_trained_runs_compare_m1": "lithiumscope.experiments.integrated.comparison.compare_m1",
+  "lithiumscope.experiments.analysis.compare_vnext_trained_runs_compare_m2": "lithiumscope.experiments.integrated.comparison.compare_m2",
   "lithiumscope.experiments.analysis.comparison.recover_oof_evidence": "lithiumscope.experiments.model_2.historical.recover_oof_evidence",
   "lithiumscope.experiments.analysis.georoc_qc_protocols": "lithiumscope.model_1.methodology.qc_protocols",
   "lithiumscope.experiments.analysis.pilot_georoc_m2_labels": "lithiumscope.experiments.model_2.pilot_georoc_m2_labels",
@@ -143,5 +143,16 @@
   "lithiumscope.datasets.provisioner": "lithiumscope.runtime.dataset_provisioning",
   "lithiumscope.datasets.registry": "lithiumscope.datasets.management.registry",
   "lithiumscope.datasets.status": "lithiumscope.datasets.management.status",
-  "lithiumscope.datasets.validator": "lithiumscope.datasets.validation.files"
+  "lithiumscope.datasets.validator": "lithiumscope.datasets.validation.files",
+  "lithiumscope.experiments.analysis.run_vnext_m1": "lithiumscope.model_1.methodology.dataset_comparison",
+  "lithiumscope.experiments.analysis.validate_feot_expansion_m1": "lithiumscope.model_1.methodology.feot_expansion",
+  "lithiumscope.experiments.analysis.run_vnext_m1_diagnostics": "lithiumscope.experiments.model_1.run_vnext_m1_diagnostics",
+  "lithiumscope.experiments.analysis.run_vnext_m2": "lithiumscope.experiments.model_2.run_vnext_m2",
+  "lithiumscope.experiments.analysis.run_vnext_m2_threshold": "lithiumscope.experiments.model_2.run_vnext_m2_threshold",
+  "lithiumscope.experiments.analysis.m2_generalization_pilot": "lithiumscope.experiments.model_2.m2_generalization_pilot",
+  "lithiumscope.experiments.analysis.m2_nested_calibration": "lithiumscope.experiments.model_2.m2_nested_calibration",
+  "lithiumscope.experiments.analysis.compare_vnext_trained_runs": "lithiumscope.experiments.integrated.compare_vnext_trained_runs",
+  "lithiumscope.experiments.analysis.verify_vnext_data_adequacy": "lithiumscope.experiments.integrated.verify_vnext_data_adequacy",
+  "lithiumscope.experiments.analysis.comparison.compare_vnext_trained_runs_compare_m1": "lithiumscope.experiments.integrated.comparison.compare_m1",
+  "lithiumscope.experiments.analysis.comparison.compare_vnext_trained_runs_compare_m2": "lithiumscope.experiments.integrated.comparison.compare_m2"
 }
