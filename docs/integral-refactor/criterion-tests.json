@@ -45,7 +45,7 @@
     "M1-10": [
       "tests/scientific/methodology/test_model_1_spatial_validation.py",
       "tests/scientific/shared/test_spatial_audit_contract.py",
-      "tests/scientific/shared/test_nested_protocol.py"
+      "tests/scientific/methodology/test_nested_protocol.py"
     ],
     "M1-11": [
       "tests/unit/data/test_preprocessing_contract.py",
@@ -87,7 +87,7 @@
     "M1-19": [
       "tests/scientific/methodology/test_model_1_scientific_guards.py",
       "tests/scientific/data_quality/test_coordinate_lineage.py",
-      "tests/scientific/shared/test_nested_protocol.py",
+      "tests/scientific/methodology/test_nested_protocol.py",
       "tests/scientific/data_quality/test_observation_audit.py",
       "tests/scientific/data_quality/test_conflict_review.py"
     ],
@@ -205,7 +205,7 @@
     "M2-16": [
       "tests/scientific/methodology/test_scientific_training_protocol.py",
       "tests/scientific/shared/test_spatial_audit_contract.py",
-      "tests/scientific/shared/test_nested_protocol.py"
+      "tests/scientific/methodology/test_nested_protocol.py"
     ],
     "M2-17": [
       "tests/unit/algorithms/test_baselines.py",
@@ -219,14 +219,14 @@
     ],
     "M2-19": [
       "tests/scientific/shared/test_optuna_contract.py",
-      "tests/scientific/m2_training/test_m2_regularized_search_profile.py",
-      "tests/scientific/shared/test_nested_protocol.py",
+      "tests/scientific/methodology/test_m2_regularized_search_profile.py",
+      "tests/scientific/methodology/test_nested_protocol.py",
       "tests/scientific/experiments/test_paired_experiment_design.py"
     ],
     "M2-20": [
       "tests/unit/algorithms/test_model_2_svm.py",
       "tests/scientific/methodology/test_train_only_operating_policy.py",
-      "tests/scientific/shared/test_nested_protocol.py",
+      "tests/scientific/methodology/test_nested_protocol.py",
       "tests/scientific/experiments/test_paired_experiment_design.py"
     ],
     "M2-21": [
@@ -250,7 +250,7 @@
     "M2-25": [
       "tests/unit/inference/test_model_2_operating_threshold.py",
       "tests/scientific/methodology/test_train_only_operating_policy.py",
-      "tests/scientific/shared/test_nested_protocol.py"
+      "tests/scientific/methodology/test_nested_protocol.py"
     ],
     "M2-26": [
       "tests/functional/model_lifecycle/test_candidate_evaluation_gates.py",
@@ -328,8 +328,8 @@
     ],
     "ARQ-012": [
       "tests/scientific/methodology/test_model_1_spatial_validation.py",
-      "tests/scientific/shared/test_scientific_checks.py",
-      "tests/scientific/shared/test_nested_protocol.py"
+      "tests/scientific/methodology/test_scientific_checks.py",
+      "tests/scientific/methodology/test_nested_protocol.py"
     ],
     "ARQ-013": [
       "tests/unit/data/test_preprocessing_contract.py",
@@ -421,7 +421,7 @@
     "ARQ-029": [
       "tests/scientific/methodology/test_scientific_training_protocol.py",
       "tests/scientific/shared/test_spatial_audit_contract.py",
-      "tests/scientific/shared/test_nested_protocol.py"
+      "tests/scientific/methodology/test_nested_protocol.py"
     ],
     "ARQ-030": [
       "tests/integration/training/test_m2_refactored_outer_cv_smoke.py",
@@ -431,13 +431,13 @@
     "ARQ-031": [
       "tests/unit/algorithms/test_model_2_svm.py",
       "tests/scientific/methodology/test_train_only_operating_policy.py",
-      "tests/scientific/shared/test_nested_protocol.py",
+      "tests/scientific/methodology/test_nested_protocol.py",
       "tests/scientific/experiments/test_paired_experiment_design.py"
     ],
     "ARQ-032": [
       "tests/unit/inference/test_model_2_operating_threshold.py",
       "tests/scientific/methodology/test_train_only_operating_policy.py",
-      "tests/scientific/shared/test_nested_protocol.py"
+      "tests/scientific/methodology/test_nested_protocol.py"
     ],
     "ARQ-033": [
       "tests/unit/metrics/test_binary_metrics_contract.py",
@@ -646,7 +646,7 @@
       "tests/resources/test_runtime_limits.py"
     ],
     "ARQ-072": [
-      "tests/scientific/shared/test_scientific_checks.py",
+      "tests/scientific/methodology/test_scientific_checks.py",
       "tests/core/test_training_diagnostics.py",
       "tests/unit/metrics/test_shared_metrics_contract.py"
     ],
@@ -749,7 +749,7 @@
     ],
     "ARQ-093": [
       "tests/scientific/eda/test_eda_protocol.py",
-      "tests/scientific/shared/test_scientific_checks.py"
+      "tests/scientific/methodology/test_scientific_checks.py"
     ],
     "ARQ-094": [
       "tests/development/test_validation.py",
@@ -763,7 +763,7 @@
       "tests/architecture/structure/test_scientific_script_layout.py"
     ],
     "ARQ-096": [
-      "tests/scientific/shared/test_scientific_checks.py",
+      "tests/scientific/methodology/test_scientific_checks.py",
       "tests/datasets/provenance/test_dataset_manifest.py",
       "tests/scientific/shared/test_spatial_audit_contract.py"
     ],
@@ -829,7 +829,7 @@
     ],
     "ARQ-109": [
       "tests/development/test_validation.py",
-      "tests/scientific/shared/test_scientific_checks.py",
+      "tests/scientific/methodology/test_scientific_checks.py",
       "tests/integration/training/test_pretraining_holdout_reservation.py",
       "tests/resources/test_optimization_parallel_policy.py",
       "tests/scientific/shared/test_batched_optuna_contract.py",
