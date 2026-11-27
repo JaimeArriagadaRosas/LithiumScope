@@ -13,7 +13,7 @@ def test_concurrent_operations_share_session_but_not_operation_logs(tmp_path):
     env["LITHIUMSCOPE_LOG_DIR"] = str(tmp_path)
     env.pop("LITHIUMSCOPE_SESSION_DIR", None)
     env.pop("LITHIUMSCOPE_WORKER_SESSION_DIR", None)
-    env["PYTHONPATH"] = str(Path(__file__).resolve().parents[2] / "src")
+    env["PYTHONPATH"] = str(next(parent for parent in Path(__file__).resolve().parents if (parent / "pyproject.toml").is_file()) / "src")
     code = """
 from concurrent.futures import ThreadPoolExecutor
 from threading import Barrier

@@ -290,7 +290,7 @@
       "tests/functional/cli/test_diagnostic_acquisition_policy.py"
     ],
     "ARQ-004": [
-      "tests/runtime/test_training_logging_session.py",
+      "tests/reliability/logging/test_training_logging_session.py",
       "tests/architecture/contracts/test_refactor_menu_contract.py"
     ],
     "ARQ-005": [
@@ -707,7 +707,7 @@
     ],
     "ARQ-084": [
       "tests/performance/resources/test_resource_manager.py",
-      "tests/runtime/test_session_structured_logs.py",
+      "tests/reliability/logging/test_session_structured_logs.py",
       "tests/performance/execution/test_fit_workload.py"
     ],
     "ARQ-085": [
@@ -779,40 +779,40 @@
     ],
     "ARQ-099": [
       "tests/reliability/logging/test_logging_lifecycle.py",
-      "tests/runtime/test_session_structured_logs.py"
+      "tests/reliability/logging/test_session_structured_logs.py"
     ],
     "ARQ-100": [
       "tests/reliability/logging/test_logging_lifecycle.py",
-      "tests/runtime/test_training_logging_session.py",
+      "tests/reliability/logging/test_training_logging_session.py",
       "tests/reliability/persistence/test_tracker_atomic.py",
       "tests/integration/acquisition/test_georoc_acquisition.py",
-      "tests/runtime/test_worker_logging_isolation.py",
+      "tests/reliability/logging/test_worker_logging_isolation.py",
       "tests/development/test_validation.py",
       "tests/reliability/logging/test_operation_log_layout.py"
     ],
     "ARQ-101": [
-      "tests/runtime/test_session_structured_logs.py",
+      "tests/reliability/logging/test_session_structured_logs.py",
       "tests/reliability/logging/test_experiment_tracker.py",
-      "tests/runtime/test_scientific_log_context.py"
+      "tests/reliability/logging/test_scientific_log_context.py"
     ],
     "ARQ-102": [
-      "tests/runtime/test_session_structured_logs.py",
-      "tests/runtime/test_warning_capture.py",
-      "tests/runtime/test_scientific_log_context.py"
+      "tests/reliability/logging/test_session_structured_logs.py",
+      "tests/reliability/logging/test_warning_capture.py",
+      "tests/reliability/logging/test_scientific_log_context.py"
     ],
     "ARQ-103": [
       "tests/performance/resources/test_resource_manager.py",
-      "tests/runtime/test_session_structured_logs.py"
+      "tests/reliability/logging/test_session_structured_logs.py"
     ],
     "ARQ-104": [
-      "tests/runtime/test_session_structured_logs.py",
-      "tests/runtime/test_training_logging_session.py",
-      "tests/runtime/test_worker_logging_isolation.py"
+      "tests/reliability/logging/test_session_structured_logs.py",
+      "tests/reliability/logging/test_training_logging_session.py",
+      "tests/reliability/logging/test_worker_logging_isolation.py"
     ],
     "ARQ-105": [
       "tests/reliability/logging/test_logging_retention.py",
       "tests/regression/recovery/test_run_recovery.py",
-      "tests/runtime/test_scientific_log_context.py"
+      "tests/reliability/logging/test_scientific_log_context.py"
     ],
     "ARQ-106": [
       "tests/development/test_validation.py",
