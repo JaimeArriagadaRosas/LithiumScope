@@ -102,8 +102,8 @@ def test_validation_clears_screen_before_dispatch(monkeypatch):
 def test_targeted_m1_runs_approved_reference_without_extra_prompts(monkeypatch, tmp_path):
     from contextlib import nullcontext
     from lithiumscope.cli import m1_targeted_command as command
-    from lithiumscope.experiments.model_1.targeted import protocol
-    from lithiumscope.experiments.model_1.balanced import runner
+    from lithiumscope.experiments.model_1.protocols import evidence as protocol
+    from lithiumscope.experiments.model_1.studies.balanced import runner
     from lithiumscope.core.logging import session
 
     calls = []

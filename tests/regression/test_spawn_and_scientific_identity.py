@@ -15,4 +15,5 @@ def test_relocated_scientific_contracts_remain_in_fingerprint():
         for suffix in ("core/reproducibility/__init__.py","core/reproducibility/hashing.py",
                        "core/scientific/regression_metrics.py","core/scientific/classification_metrics.py"):
             assert any(p.endswith(suffix) for p in files)
-        assert any(p.endswith(f"{model}/evaluation/metrics.py") for p in files)
+        assert any(p.endswith(f"{model}/training/competition.py") for p in files)
+        assert any(p.endswith(f"{model}/evaluation/selection.py") for p in files)

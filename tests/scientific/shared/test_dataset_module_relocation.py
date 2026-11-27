@@ -12,7 +12,7 @@ import pytest
   ],
   [
     "lithiumscope.tools.georoc.processing.georoc_material_filter",
-    "lithiumscope.datasets.adapters.georoc.material_filter"
+    "lithiumscope.datasets.adapters.georoc.material"
   ],
   [
     "lithiumscope.tools.georoc.processing.georoc_raw_reader",

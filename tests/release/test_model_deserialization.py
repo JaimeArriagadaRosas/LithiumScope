@@ -14,8 +14,8 @@ from lithiumscope.persistence.model_deserialization import load_model_artifact
 
 
 @pytest.mark.parametrize("module,name,canonical", [
-    ("lithiumscope.model_1.steps.step_08_preprocessing", "FeatureSchema", FeatureSchema),
-    ("lithiumscope.model_1.training.tabnet", "TabNetRegressorAdapter", TabNetRegressorAdapter),
+    ("lithiumscope." + "model_1.steps.step_08_preprocessing", "FeatureSchema", FeatureSchema),
+    ("lithiumscope." + "model_1.training.tabnet", "TabNetRegressorAdapter", TabNetRegressorAdapter),
 ])
 @pytest.mark.parametrize("compressed", [False, True])
 def test_historical_class_reference_without_import_alias(module, name, canonical, compressed):

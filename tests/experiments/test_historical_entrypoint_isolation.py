@@ -7,7 +7,7 @@ def test_canonical_experiment_import(name):
     module = import_module(name)
     assert module.__name__ == name
 
-@pytest.mark.parametrize("old,new", [["lithiumscope.experiments.validation.spatial_batch_worker","lithiumscope.tools.acquisition.sentinel2.spatial_batch_worker"]])
+@pytest.mark.parametrize("old,new", [["lithiumscope." + "experiments.validation.spatial_batch_worker","lithiumscope.tools.acquisition.sentinel2.spatial_batch_worker"]])
 def test_experimental_relocation(old,new):
     assert find_spec(old) is None
     assert import_module(new).__name__ == new

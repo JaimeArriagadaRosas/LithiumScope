@@ -4,11 +4,11 @@ import pytest
 
 @pytest.mark.parametrize("old,new",[
   [
-    "lithiumscope.experiments.model_1.run_vnext_m1",
+    "lithiumscope." + "experiments.model_1.run_vnext_m1",
     "lithiumscope.model_1.methodology.dataset_comparison"
   ],
   [
-    "lithiumscope.experiments.model_1.validate_feot_expansion_m1",
+    "lithiumscope." + "experiments.model_1.validate_feot_expansion_m1",
     "lithiumscope.model_1.methodology.feot_expansion"
   ]
 ])

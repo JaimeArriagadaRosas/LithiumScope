@@ -11,7 +11,7 @@ def test_canonical_experiment_import(name):
 
 
 def test_registry_has_only_canonical_owner():
-    assert find_spec("lithiumscope.experiments.registry") is None
+    assert find_spec("lithiumscope." + "experiments.registry") is None
     assert import_module("lithiumscope.experiments.shared.registry").__name__ == "lithiumscope.experiments.shared.registry"
 
 

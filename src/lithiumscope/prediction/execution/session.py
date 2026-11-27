@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 from uuid import uuid4
 
-import joblib
+from lithiumscope.persistence.model_deserialization import load_model_artifact
 
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import MODELS_DIR, RESULTS_DIR
@@ -126,7 +126,7 @@ def load_model_with_identity(model_group: str, *, candidate_run_id: str | None =
             )
         if local_payload is not None and candidate_status != "pending":
             raise ValueError("El candidato local ya no está pendiente")
-        bundle = joblib.load(BytesIO(local_payload)) if local_payload is not None else joblib.load(model_path)
+        bundle = load_model_artifact(BytesIO(local_payload) if local_payload is not None else model_path, model_group=model_group)
         selected_for = (
             "pinned_published_release_for_demonstration"
             if candidate_status == "promoted"

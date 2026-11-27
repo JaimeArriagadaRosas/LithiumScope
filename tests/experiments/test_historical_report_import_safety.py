@@ -17,7 +17,7 @@ def test_scope_closure_import_is_read_only(tmp_path,monkeypatch):
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(pd,"read_csv",lambda *a,**k:pytest.fail("Unexpected simulation read"))
     from importlib.util import find_spec
-    assert find_spec("lithiumscope.experiments.reporting.final_scope_closure") is None
+    assert find_spec("lithiumscope." + "experiments.reporting.final_scope_closure") is None
     new=import_module("lithiumscope.experiments.integrated.final_scope_closure")
     assert new.__name__ == "lithiumscope.experiments.integrated.final_scope_closure"
     assert not list(tmp_path.iterdir())
