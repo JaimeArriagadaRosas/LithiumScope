@@ -159,3 +159,18 @@ def test_canonical_relocation_destinations_exist():
         if not path.with_suffix(".py").is_file() and not (path/"__init__.py").is_file():
             missing.append((old,new))
     assert not missing,missing
+
+
+def test_testing_relocation_catalog_is_consistent():
+    import json
+    root = Path(__file__).resolve().parents[2]
+    catalog = json.loads((root / "docs/integral-refactor/test-relocation-purpose.json").read_text(encoding="utf-8"))
+    categories = ["architecture","functional","integration","performance","regression","reliability","scientific","unit"]
+    assert len(set(catalog.values())) == len(catalog)
+    for old, new in catalog.items():
+        destination = Path(new)
+        assert destination.parts[0] == "tests"
+        assert destination.parts[1] in categories
+        assert len(destination.parts) == 4
+        assert Path(old).name == destination.name
+        assert sum((root / path).is_file() for path in {old, new}) == 1, (old, new)

@@ -75,6 +75,16 @@ where = ["src"]
 testpaths = ["tests"]
 pythonpath = ["src", "."]
 addopts = "--basetemp=.pytest_tmp"
+markers = [
+  "architecture: tests classified by architecture purpose",
+  "functional: tests classified by functional purpose",
+  "integration: tests classified by integration purpose",
+  "performance: tests classified by performance purpose",
+  "regression: tests classified by regression purpose",
+  "reliability: tests classified by reliability purpose",
+  "scientific: tests classified by scientific purpose",
+  "unit: tests classified by unit purpose"
+]
 
 [tool.ruff]
 line-length = 120
