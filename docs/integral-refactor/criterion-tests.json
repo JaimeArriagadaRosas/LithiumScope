@@ -137,8 +137,8 @@
     ],
     "M2-02": [
       "tests/scientific/data_quality/test_model_2_sample_source.py",
-      "tests/scientific/m2_spectral/test_m2_physical_label_audit.py",
-      "tests/scientific/m2_spectral/test_m2_georoc_coordinate_audit.py"
+      "tests/scientific/features/test_m2_physical_label_audit.py",
+      "tests/scientific/features/test_m2_georoc_coordinate_audit.py"
     ],
     "M2-03": [
       "tests/model_2/test_scientific_training_protocol.py",
@@ -148,9 +148,9 @@
     "M2-04": [
       "tests/integration/acquisition/test_sentinel2_provider.py",
       "tests/integration/acquisition/test_scientific_acquisition.py",
-      "tests/scientific/m2_spectral/test_m2_satellite_quality_radiometry.py",
+      "tests/scientific/features/test_m2_satellite_quality_radiometry.py",
       "tests/integration/acquisition/test_registered_sentinel_patch.py",
-      "tests/scientific/m2_spectral/test_historical_scl_temporal.py"
+      "tests/scientific/features/test_historical_scl_temporal.py"
     ],
     "M2-05": [
       "tests/unit/inference/test_verified_patch_contract.py",
@@ -159,7 +159,7 @@
     ],
     "M2-06": [
       "tests/datasets/provenance/test_dataset_manifest.py",
-      "tests/model_2/test_verified_feature_cache.py",
+      "tests/scientific/features/test_verified_feature_cache.py",
       "tests/architecture/structure/test_management_provenance_architecture.py",
       "tests/model_2/test_checkpoint_contract.py"
     ],
@@ -174,7 +174,7 @@
     ],
     "M2-09": [
       "tests/unit/algorithms/test_model_2_spectral_features.py",
-      "tests/scientific/m2_spectral/test_m2_rededge_v4.py",
+      "tests/scientific/features/test_m2_rededge_v4.py",
       "tests/unit/algorithms/test_physical_v5.py"
     ],
     "M2-10": [
@@ -191,11 +191,11 @@
       "tests/unit/algorithms/test_model_2_spectral_features.py"
     ],
     "M2-13": [
-      "tests/model_2/test_verified_feature_cache.py",
+      "tests/scientific/features/test_verified_feature_cache.py",
       "tests/scientific/m2_spectral/test_v4_local_integrity_contract.py"
     ],
     "M2-14": [
-      "tests/model_2/test_verified_feature_cache.py",
+      "tests/scientific/features/test_verified_feature_cache.py",
       "tests/scientific/m2_spectral/test_v4_local_integrity_contract.py"
     ],
     "M2-15": [
@@ -272,7 +272,7 @@
     ],
     "M2-30": [
       "tests/runtime/test_checkpoints.py",
-      "tests/model_2/test_verified_feature_cache.py",
+      "tests/scientific/features/test_verified_feature_cache.py",
       "tests/datasets/provenance/test_dataset_manifest.py"
     ],
     "ARQ-001": [
@@ -397,7 +397,7 @@
     ],
     "ARQ-024": [
       "tests/scientific/data_quality/test_model_2_sample_source.py",
-      "tests/scientific/m2_spectral/test_m2_physical_label_audit.py",
+      "tests/scientific/features/test_m2_physical_label_audit.py",
       "tests/datasets/provenance/test_dataset_manifest.py",
       "tests/model_2/test_checkpoint_contract.py"
     ],
@@ -406,7 +406,7 @@
       "tests/unit/algorithms/test_model_2_spectral_features.py"
     ],
     "ARQ-026": [
-      "tests/model_2/test_verified_feature_cache.py",
+      "tests/scientific/features/test_verified_feature_cache.py",
       "tests/scientific/m2_spectral/test_v4_local_integrity_contract.py"
     ],
     "ARQ-027": [
@@ -456,7 +456,7 @@
     ],
     "ARQ-036": [
       "tests/scientific/m2_training/test_m2_historical_706_control.py",
-      "tests/scientific/m2_spectral/test_m2_rededge_v4.py",
+      "tests/scientific/features/test_m2_rededge_v4.py",
       "tests/scientific/m2_spectral/test_m2_vnext_expansion.py",
       "tests/scientific/experiments/test_paired_experiment_design.py",
       "tests/experiments/test_paired_suite.py",
@@ -479,7 +479,7 @@
     ],
     "ARQ-040": [
       "tests/architecture/structure/test_canonical_execution_packages.py",
-      "tests/model_2/test_verified_feature_cache.py"
+      "tests/scientific/features/test_verified_feature_cache.py"
     ],
     "ARQ-041": [
       "tests/scientific/evaluation/test_m2_release_closure_comparison.py",
