@@ -237,3 +237,11 @@ sin cambios y protocolo de validación. Si no hay solución viable, elevar
 decisión sobre reformulación de fase 5 (partir del RF conservado y no
 del nuevo HGB/Ridge). No iniciar fine-tuning ni entrenar/guardar un
 candidato definitivo sin resolver este bloqueo. M2 sigue congelado.
+
+
+## 10. Recuperación aprobada e implementada
+El usuario aprobó continuar. Ver [M1_RECUPERACION_ESPACIAL.md](M1_RECUPERACION_ESPACIAL.md):
+10 fits RF de perfil fijo, OOF HGB/Ridge archivados, soporte químico TRAIN y
+respaldo por desacuerdo. Política primaria fija, dos diagnósticas; mismas
+guardas y cohortes. Pendiente ejecución local; 130 pruebas esperadas.
+Fase 5 sigue bloqueada hasta verificar resultados, sin nuevos datos ni M2.
