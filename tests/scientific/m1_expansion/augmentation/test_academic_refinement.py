@@ -2,9 +2,9 @@
 import numpy as np
 import pandas as pd
 import pytest
-from lithiumscope.experiments.model_1.expansion.academic_treatments import (
+from lithiumscope.experiments.model_1.treatments.academic import (
     BASE, PROFILES_HGB, training_weights, fit_profile, select_profile)
-from lithiumscope.experiments.model_1.expansion.academic_refinement import run
+from lithiumscope.experiments.model_1.studies.expansion.academic_refinement import run
 from lithiumscope.model_1.training.preprocessing.tabular import FeatureSchema
 from lithiumscope.resources.detection.device import DeviceInfo
 

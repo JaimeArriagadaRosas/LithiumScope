@@ -9,8 +9,8 @@ REFERENCE_RUN = "training_20261125_115932_m0300_826123c1"
 
 def run():
     from lithiumscope.core.logging.session import run_log
-    from lithiumscope.experiments.model_1.targeted.protocol import available_runs
-    from lithiumscope.experiments.model_1.balanced.runner import run_balanced
+    from lithiumscope.experiments.model_1.protocols.evidence import available_runs
+    from lithiumscope.experiments.model_1.studies.balanced.runner import run_balanced
 
     print("EVALUACIÓN FOCALIZADA DE M1\n")
     print(f"Competencia de referencia: {REFERENCE_RUN}")

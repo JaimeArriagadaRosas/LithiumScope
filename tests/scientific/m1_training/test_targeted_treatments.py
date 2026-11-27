@@ -2,9 +2,9 @@
 import numpy as np
 import pandas as pd
 
-from lithiumscope.experiments.model_1.targeted.features import FoldFeatures, add_ratios
-from lithiumscope.experiments.model_1.targeted.policies import ALGORITHMS, ARMS, Arm, Target, adaptive_positions, weights
-from lithiumscope.experiments.model_1.targeted.runner import select_arm
+from lithiumscope.experiments.model_1.treatments.features import FoldFeatures, add_ratios
+from lithiumscope.experiments.model_1.treatments.policies import ALGORITHMS, ARMS, Arm, Target, adaptive_positions, weights
+from lithiumscope.experiments.model_1.studies.targeted import select_arm
 
 
 def test_predeclared_configurations():
@@ -52,7 +52,7 @@ def test_selection_preserves_mae_and_uses_inner_scores():
 
 
 def test_fit_weighted_rf_smoke():
-    from lithiumscope.experiments.model_1.targeted.fit import fit_arm
+    from lithiumscope.experiments.model_1.training_methods.fitting import fit_arm
     from lithiumscope.resources.detection.device import detect_device
     rng = np.random.default_rng(42)
     x = pd.DataFrame({"Rb_icpms":rng.uniform(1.,100.,60),"Sr_icpms":rng.uniform(1.,50.,60)})
@@ -69,7 +69,7 @@ def test_fit_weighted_rf_smoke():
 
 
 def test_frozen_outer_group_assignment_is_not_recomputed():
-    from lithiumscope.experiments.model_1.targeted.partitions import outer_from_manifest
+    from lithiumscope.experiments.model_1.protocols.partitions import outer_from_manifest
     import pytest
     groups = pd.Series(["g1","g1","g2","g2","g3","g3"])
     pairs = outer_from_manifest([3,3,1,1,2,2],groups,3)

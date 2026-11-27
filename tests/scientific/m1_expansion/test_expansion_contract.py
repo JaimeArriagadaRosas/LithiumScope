@@ -5,10 +5,10 @@ import pandas as pd
 import pytest
 
 from lithiumscope.core.hashing import file_sha256
-from lithiumscope.experiments.data_lab.candidate_screening import CHEM
-from lithiumscope.experiments.model_1.expansion.identity import resolve
-from lithiumscope.experiments.model_1.expansion.inputs import _raw_metadata
-from lithiumscope.experiments.model_1.expansion.cohorts import (
+from lithiumscope.experiments.data_lab.screening.candidates import CHEM
+from lithiumscope.experiments.model_1.data_expansion.identity import resolve
+from lithiumscope.experiments.model_1.data_expansion.inputs import _raw_metadata
+from lithiumscope.experiments.model_1.data_expansion.cohorts import (
     review_candidates, reserve_holdout, fold_membership)
 
 

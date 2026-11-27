@@ -1,5 +1,5 @@
 import pandas as pd
-from lithiumscope.experiments.data_lab.candidate_screening import screen
+from lithiumscope.experiments.data_lab.screening.candidates import screen
 
 
 def test_candidate_screening_flags_cross_source_and_missing_metadata():

@@ -59,3 +59,30 @@ def test_cached_eda_skips_preparation(monkeypatch,tmp_path):
     monkeypatch.setattr(pipeline,"run_eda",lambda *_:pytest.fail("No repeat EDA"))
     path,state,_=workflow.analyze("model_1",Path("source.csv"),include_candidates=False)
     assert path==tmp_path and state=="complete"
+
+
+def test_source_registry_is_model_aware_without_automatic_m2_acquisition(monkeypatch):
+    from lithiumscope.experiments.data_lab.source_studies import registry
+    assert any(s.key=="georoc_candidate_eda" and s.automatic_eda for s in registry.studies_for("model_1"))
+    assert any(s.key=="georoc_external_evidence" for s in registry.studies_for("model_2"))
+    monkeypatch.setattr(registry,"import_module",lambda *_:pytest.fail("Unexpected automatic M2 study"))
+    assert registry.run_candidate_eda("model_2",Path("manifest.csv"))==[]
+
+
+def test_eda_cache_rejects_corruption_and_wrong_owner(monkeypatch,tmp_path):
+    from lithiumscope.results import eda_cache
+    from lithiumscope.results.eda_artifacts import new_run,complete_run
+    monkeypatch.setattr(eda_cache,"RESULTS_DIR",tmp_path)
+    monkeypatch.setattr(eda_cache,"key_for",lambda *_:"source-key")
+    source=tmp_path/"source.csv"
+    source.write_text("Li\n10\n")
+    run=new_run(tmp_path/"model_1"/"eda")
+    (run/"tables"/"summary.csv").write_text("rows\n1\n")
+    complete_run(run,signature_value="signature",details={
+        "model_group":"model_1","source_sha256":file_sha256(source)})
+    eda_cache.record("model_1",source,run,"source-key")
+    assert eda_cache.lookup("model_1",source)==run
+    with pytest.raises(ValueError,match="owner"):
+        eda_cache.record("model_2",source,run,"source-key")
+    (run/"tables"/"summary.csv").write_text("changed")
+    assert eda_cache.lookup("model_1",source) is None

@@ -7,9 +7,9 @@ import pandas as pd
 import pytest
 from sklearn.model_selection import KFold
 
-from lithiumscope.experiments.model_1.integral import inference_contract as ic
-from lithiumscope.experiments.model_1.integral import integration as it
-from lithiumscope.experiments.model_1.integral import boosting_methods as bm
+from lithiumscope.experiments.model_1.evaluation import inference_contract as ic
+from lithiumscope.experiments.model_1.studies.integration import runner as it
+from lithiumscope.experiments.model_1.training_methods import boosting as bm
 from lithiumscope.model_1.training.preprocessing.tabular import (
     FeatureSchema, OXIDES, TRACE_ELEMENTS, SPATIAL_CANDIDATES, DERIVED, CATEGORICAL,
 )

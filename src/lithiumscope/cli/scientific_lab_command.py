@@ -168,7 +168,7 @@ def _compare_versions():
 
 
 def _academic_reference():
-    from lithiumscope.experiments.model_1.balanced.academic import run_academic
+    from lithiumscope.experiments.model_1.studies.balanced.academic import run_academic
     from lithiumscope.core.logging.session import run_log
     with run_log("simulations","m1_oasis_like"):
         run_academic(trials=20)

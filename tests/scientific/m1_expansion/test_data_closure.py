@@ -2,7 +2,7 @@
 import numpy as np
 import pandas as pd
 import pytest
-from lithiumscope.experiments.model_1.augmentation.data_closure import transfer_weights, candidate_features
+from lithiumscope.experiments.model_1.studies.augmentation.data_closure import transfer_weights, candidate_features
 
 
 def test_transfer_cap_per_band_and_tail_boundary():

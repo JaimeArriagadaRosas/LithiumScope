@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import json
 from lithiumscope.core.config import load_config
+from lithiumscope.core.logging.session import get_logger
+from .source_studies.registry import run_candidate_eda, studies_for
 
 
 def analyze(group, source, *, include_candidates=True):
@@ -20,14 +22,12 @@ def analyze(group, source, *, include_candidates=True):
         eda_cache.record(group,source,evidence,key)
     else:
         print(f"[OK] EDA descriptivo vigente, sin repetir análisis: {evidence}")
-    records=[]
-    if group=="model_1" and include_candidates:
-        from lithiumscope.experiments.data_lab.source_studies.georoc.candidate_eda import run_candidates
-        records=run_candidates(source)
+    records=run_candidate_eda(group,source) if include_candidates else []
+    get_logger("experiments.data_lab").info("Descriptive EDA model=%s run=%s candidate_records=%d",group,evidence.name,len(records))
     state="complete" if all(r["state"]=="complete" for r in records) else "partial"
     return evidence,state,{"eda_path":str(evidence),
         "eda_manifest":json.loads((evidence/"manifest.json").read_text(encoding="utf-8")),
-        "candidate_sources":records,"model_fits":0,"treatment_plans_created":False}
+        "candidate_sources":records,"available_source_studies":[s.key for s in studies_for(group)],"model_fits":0,"treatment_plans_created":False}
 
 
 def existing_eda(group, source):

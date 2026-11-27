@@ -39,3 +39,26 @@ def test_source_lab_not_a_second_ordinary_eda():
     assert not list((root / "data_lab" / "eda").rglob("*.py"))
     assert (root / "data_lab/source_studies/georoc/candidate_eda.py").is_file()
     assert (root / "model_2/external_validation/imagery/batch.py").is_file()
+
+
+def test_retired_model_packages_have_no_source():
+    root = Path(__file__).resolve().parents[3] / "src/lithiumscope/experiments"
+    for name in ("model_1/targeted","model_1/balanced","model_1/augmentation","model_1/expansion",
+                 "model_1/integral","model_2/historical","model_2/refinement_support"):
+        assert not list((root/name).rglob("*.py"))
+
+
+def test_source_studies_do_not_import_model_experiment_runners():
+    import ast
+    root = Path(__file__).resolve().parents[3] / "src/lithiumscope/experiments/data_lab/source_studies"
+    forbidden = ("lithiumscope.experiments.model_1", "lithiumscope.experiments.model_2")
+    for path in root.rglob("*.py"):
+        for node in ast.walk(ast.parse(path.read_bytes())):
+            names = [node.module or ""] if isinstance(node, ast.ImportFrom) else (
+                [a.name for a in node.names] if isinstance(node, ast.Import) else [])
+            assert not any(n.startswith(forbidden) for n in names), str(path)
+
+
+def test_m1_shared_cohort_has_canonical_owner():
+    from lithiumscope.experiments.model_1.protocols.cohorts import cohort
+    assert cohort.__module__ == "lithiumscope.experiments.model_1.protocols.cohorts"

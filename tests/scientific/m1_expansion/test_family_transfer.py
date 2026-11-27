@@ -3,8 +3,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.experiments.model_1.expansion.transfer_weights import fit_weighted
-from lithiumscope.experiments.model_1.expansion.sensitivity import run
+from lithiumscope.experiments.model_1.treatments.transfer_weights import fit_weighted
+from lithiumscope.experiments.model_1.studies.expansion.sensitivity import run
 from lithiumscope.resources.detection.device import DeviceInfo
 
 

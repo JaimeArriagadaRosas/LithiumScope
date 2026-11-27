@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.experiments.model_1.expansion.transfer_weights import weighted_positions
+from lithiumscope.experiments.model_1.treatments.transfer_weights import weighted_positions
 from lithiumscope.model_1.training.preprocessing.treatment_policy import POLICIES, rare_group_positions
 
 

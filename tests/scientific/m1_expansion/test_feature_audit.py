@@ -2,7 +2,7 @@
 import numpy as np
 import pandas as pd
 
-from lithiumscope.experiments.model_1.expansion.feature_audit import classify, derived, numeric_measurement, profile
+from lithiumscope.experiments.model_1.data_expansion.feature_audit import classify, derived, numeric_measurement, profile
 
 
 def test_explicit_element_allowlist_excludes_target_and_identifiers():

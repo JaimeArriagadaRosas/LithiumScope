@@ -2,7 +2,7 @@
 import numpy as np
 import pandas as pd
 import pytest
-from lithiumscope.experiments.model_1.augmentation.whole_rock_audit import (
+from lithiumscope.experiments.data_lab.source_studies.whole_rock import (
     PUNA, MAC, CHEM, OXIDES, parse_tables, duplicate_edges, summarize, clean, norm_unit)
 
 

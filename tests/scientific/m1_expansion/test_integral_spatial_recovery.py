@@ -2,9 +2,9 @@
 import numpy as np
 import pandas as pd
 import pytest
-from lithiumscope.experiments.model_1.integral import spatial_support as ss
-from lithiumscope.experiments.model_1.integral import spatial_recovery as sr
-from lithiumscope.experiments.data_lab.candidate_screening import CHEM
+from lithiumscope.experiments.model_1.training_methods import spatial_support as ss
+from lithiumscope.experiments.model_1.studies.integration import spatial_recovery as sr
+from lithiumscope.experiments.data_lab.screening.candidates import CHEM
 from lithiumscope.model_1.training.preprocessing.tabular import FeatureSchema
 from lithiumscope.resources.detection.device import detect_device
 

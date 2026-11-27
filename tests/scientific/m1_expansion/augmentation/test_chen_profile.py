@@ -2,7 +2,7 @@
 import numpy as np
 import pandas as pd
 import pytest
-from lithiumscope.experiments.model_1.augmentation.chen_profile import profile
+from lithiumscope.experiments.data_lab.source_studies.chen import profile
 
 
 def workbook():
@@ -63,7 +63,7 @@ def test_feot_conversion_preserves_both_oxide_bases():
 
 
 def test_chen_overlap_is_target_independent_and_uses_location_bounds():
-    from lithiumscope.experiments.model_1.augmentation.chen_overlap import overlap_edges
+    from lithiumscope.experiments.model_1.data_expansion.chen_overlap import overlap_edges
     rows,_,_,_=profile(workbook())
     q=rows.iloc[[0]].copy()
     q["Latitude_min"]=-24.1
@@ -80,7 +80,7 @@ def test_chen_overlap_is_target_independent_and_uses_location_bounds():
 
 
 def test_bibliography_rejects_ambiguous_and_unresolved_ids():
-    from lithiumscope.experiments.model_1.augmentation.chen_overlap import bibliography,publication_sets
+    from lithiumscope.experiments.model_1.data_expansion.chen_overlap import bibliography,publication_sets
     table=pd.DataFrame([["title"],["CITATIONS"],["[1] Author 2010"],["[2] First"],
                         ["[2] Second"],["[1]"]])
     index=bibliography(table)

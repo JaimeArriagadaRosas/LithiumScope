@@ -2,8 +2,8 @@
 import numpy as np
 import pandas as pd
 import pytest
-from lithiumscope.experiments.model_1.integral.calibration import BASE,POLICIES,fit_calibrators
-from lithiumscope.experiments.model_1.integral import posttraining as pt
+from lithiumscope.experiments.model_1.training_methods.calibration import BASE,POLICIES,fit_calibrators
+from lithiumscope.experiments.model_1.studies.integration import posttraining as pt
 
 
 def dataset():

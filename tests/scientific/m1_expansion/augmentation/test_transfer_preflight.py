@@ -1,7 +1,7 @@
 """Directed transfer must not admit poor spatial precision or source conflicts."""
 import numpy as np
 import pandas as pd
-from lithiumscope.experiments.model_1.augmentation.transfer_preflight import (
+from lithiumscope.experiments.model_1.data_expansion.transfer_preflight import (
     author_year, geographic_ok, static_gate, fold_gate)
 
 
@@ -29,7 +29,7 @@ def test_author_year_alias_is_conservative():
 
 
 def test_fold_gate_blocks_test_groups_publications_and_ood():
-    from lithiumscope.experiments.data_lab.candidate_screening import CHEM
+    from lithiumscope.experiments.data_lab.screening.candidates import CHEM
     fields=list(CHEM[:9])
     train=pd.DataFrame({c:np.linspace(1.,3.,30) for c in fields})
     q=pd.DataFrame({c:[2.,2.,2.,200.] for c in fields})
@@ -44,7 +44,7 @@ def test_fold_gate_blocks_test_groups_publications_and_ood():
 
 
 def test_preflight_summary_counts_only_eligible_tail_rows():
-    from lithiumscope.experiments.model_1.augmentation.transfer_preflight import summarize_plans
+    from lithiumscope.experiments.model_1.data_expansion.transfer_preflight import summarize_plans
     part=pd.DataFrame({"fold":[1,1,1,1,1],"source_dataset":["chen"]*4+["puna"],
         "Li_icpms":[40.,41.,70.,20.,25.],
         "static_review_candidate":[True,True,True,False,True],

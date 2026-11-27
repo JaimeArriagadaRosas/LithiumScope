@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.experiments.model_1.expansion.blend_policy import BASE, POLICIES, combine, select_inner
+from lithiumscope.experiments.model_1.treatments.blend_policy import BASE, POLICIES, combine, select_inner
 
 
 def test_prediction_limits_use_only_predictions_and_train_scale():
@@ -51,6 +51,6 @@ def test_inner_rejects_missing_or_misaligned_oof():
 
 
 def test_nested_requires_explicit_research_metadata_opt_in():
-    from lithiumscope.experiments.model_1.expansion.nested import run
+    from lithiumscope.experiments.model_1.studies.expansion.nested import run
     with pytest.raises(ValueError,match="allow-unverified-metadata"):
         run("nonexistent")

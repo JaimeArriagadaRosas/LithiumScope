@@ -2,8 +2,8 @@
 import numpy as np
 import pandas as pd
 
-from lithiumscope.experiments.model_1.expansion.raw_recovery import (
-    measurement_map,numeric_ppm,unique_matches)
+from lithiumscope.experiments.data_lab.source_studies.geochemistry import measurement_map, numeric_ppm
+from lithiumscope.experiments.model_1.data_expansion.raw_recovery import unique_matches
 
 
 def test_only_explicit_additional_element_units_are_recovered():

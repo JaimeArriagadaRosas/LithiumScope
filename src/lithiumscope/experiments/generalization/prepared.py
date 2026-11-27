@@ -124,22 +124,29 @@ def prepare_version(group, source, *, run_eda=True, root=None):
     key = identity(group, source, cfg)
     root = Path(root) if root is not None else DATA_DIR / "processed" / group / "prepared_versions"
     destination = root / key
+    evidence = None
+    eda_key = None
+    if run_eda:
+        from lithiumscope.results import eda_cache
+        evidence = eda_cache.lookup(group, source)
+        if evidence is None:
+            eda_key = eda_cache.key_for(group, source)
     if destination.exists():
         load_snapshot(destination, key)
-        record = json.loads((destination/"manifest.json").read_text(encoding="utf-8"))
-        if not run_eda:
+        if not run_eda or evidence is not None:
             print(f"[OK] Versión preparada reutilizada: {destination}")
-            return destination, None
-        if record.get("eda_path"):
-            from lithiumscope.results.eda_artifacts import verify_eda
-            evidence = Path(record["eda_path"])
-            try:
-                eda_record = json.loads((evidence/"manifest.json").read_text(encoding="utf-8"))
-                if verify_eda(evidence, eda_record["signature"]):
-                    print(f"[OK] Versión preparada y EDA reutilizados: {destination}")
-                    return destination, evidence
-            except (OSError, ValueError, KeyError, TypeError):
-                pass
+            return destination, evidence
+        # The prepared manifest is immutable; the independent EDA index is
+        # the current authority, not a historical absolute eda_path.
+        if group == "model_1":
+            from lithiumscope.model_1.eda.pipeline import run_eda as eda
+        elif group == "model_2":
+            from lithiumscope.model_2.eda.pipeline import run_eda as eda
+        else:
+            raise ValueError("Unknown model group")
+        evidence = eda(source, config=cfg)
+        eda_cache.record(group, source, evidence, eda_key)
+        return destination, evidence
     if group == "model_1":
         from lithiumscope.model_1.pipeline import prepare_training_data
         from lithiumscope.model_1.eda.pipeline import run_eda as eda
@@ -149,7 +156,8 @@ def prepare_version(group, source, *, run_eda=True, root=None):
         sources = source_series(prepared.frame)
         numeric, categorical = prepared.schema.numeric, prepared.schema.categorical
         eligible = np.ones(len(x), dtype=bool)
-        evidence = eda(source, prepared=prepared, config=cfg) if run_eda else None
+        if run_eda and evidence is None:
+            evidence = eda(source, prepared=prepared, config=cfg)
     else:
         from lithiumscope.model_2.preparation.features.v4_inputs import spectral_v4_enabled, load_spectral_v4_training_frame
         from lithiumscope.model_2.pipeline import load_model_2_training_frame
@@ -166,12 +174,15 @@ def prepare_version(group, source, *, run_eda=True, root=None):
         qa, _ = patch_quality(source, cfg, manifest)
         eligible = qa["train_eligible"].to_numpy(bool) if "train_eligible" in qa else np.ones(len(x), dtype=bool)
         sources = source_series(manifest)
-        evidence = eda(source, frame=frame, config=cfg) if run_eda else None
+        if run_eda and evidence is None:
+            evidence = eda(source, frame=frame, config=cfg)
         if "sample_id" in manifest:
             index = pd.Index(manifest["sample_id"].astype(str))
             x, y, groups, sources = [v.set_axis(index) for v in (x,y,groups,sources)]
     if identity(group, source, cfg) != key:
         raise ValueError("Prepared source changed during processing")
+    if eda_key is not None:
+        eda_cache.record(group, source, evidence, eda_key)
     destination = save_snapshot(root, key, group, source, x, y, groups, sources, eligible,
                                 numeric, categorical, eda_path=evidence)
     summary = json.loads((destination / "manifest.json").read_text(encoding="utf-8"))["summary"]

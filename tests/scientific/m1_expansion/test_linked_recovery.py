@@ -1,6 +1,6 @@
 """Linked recovery must retain unambiguous identities and reject raw mismatches."""
 import pandas as pd
-from lithiumscope.experiments.model_1.expansion.linked_recovery import one_to_one, corroborate, ANDEAN
+from lithiumscope.experiments.model_1.data_expansion.linked_recovery import one_to_one, corroborate, ANDEAN
 
 
 def test_one_to_one_rejects_both_directions_of_ambiguity():

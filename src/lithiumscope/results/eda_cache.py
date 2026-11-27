@@ -42,8 +42,14 @@ def lookup(group,source):
         return None
     try:
         record=json.loads(path.read_text(encoding="utf-8"))
-        evidence=RESULTS_DIR/group/"eda"/record["eda_run_id"]
-        if (record["key"]==key and Path(record["eda_run_id"]).name==record["eda_run_id"]
+        name=record["eda_run_id"]
+        if not isinstance(name,str) or not name.startswith("eda_") or Path(name).name!=name or "/" in name or chr(92) in name:
+            raise ValueError("Invalid EDA run identity")
+        evidence=RESULTS_DIR/group/"eda"/name
+        manifest=json.loads((evidence/"manifest.json").read_text(encoding="utf-8"))
+        if (record["key"]==key and manifest.get("model_group")==group
+                and manifest.get("source_sha256")==file_sha256(source)
+                and manifest.get("training_reusable") is False
                 and file_sha256(evidence/"manifest.json")==record["manifest_sha256"]
                 and verify_eda(evidence,record["signature"])):
             return evidence
@@ -59,7 +65,7 @@ def record(group,source,evidence,key):
     manifest=json.loads((evidence/"manifest.json").read_text(encoding="utf-8"))
     if evidence.parent.resolve()!=(RESULTS_DIR/group/"eda").resolve() or manifest.get("model_group")!=group or manifest.get("source_sha256")!=file_sha256(source):
         raise ValueError("EDA source or owner mismatch")
-    if not verify_eda(evidence,manifest["signature"]):
+    if manifest.get("training_reusable") is not False or not verify_eda(evidence,manifest["signature"]):
         raise ValueError("EDA integrity failure")
     write_json(index_path(group,key),{"key":key,"eda_run_id":evidence.name,
         "signature":manifest["signature"],"manifest_sha256":file_sha256(evidence/"manifest.json")})

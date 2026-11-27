@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.experiments.model_1.balanced.selection import ARMS,balanced_positions,MIN_COHORT_ROWS
+from lithiumscope.experiments.model_1.treatments.balancing import ARMS,balanced_positions,MIN_COHORT_ROWS
 
 
 def test_balance_preserves_tail_and_group_source_strata():
@@ -27,7 +27,7 @@ def test_balance_campaign_count():
 
 
 def test_regime_experts_predict_without_target_column():
-    from lithiumscope.experiments.model_1.balanced.runner import fit_balanced
+    from lithiumscope.experiments.model_1.studies.balanced.runner import fit_balanced
     from lithiumscope.resources.detection.device import detect_device
     rng=np.random.default_rng(42)
     x=pd.DataFrame({"Rb_icpms":rng.uniform(0,300,300),"Sr_icpms":rng.uniform(0,100,300)})

@@ -1,7 +1,7 @@
 """Directed intake preserves raw originals and does not infer sample counts."""
 import pandas as pd
 import pytest
-from lithiumscope.experiments.model_1.augmentation.source_intake import (
+from lithiumscope.experiments.data_lab.source_studies.directed_intake import (
     acquire,check_file,inspect,table_inventory)
 
 def test_header_mentions_are_not_sample_counts():
@@ -39,7 +39,7 @@ def test_csv_intake_no_assumed_header(tmp_path):
 
 def test_selected_source_intake_does_not_reinspect_other_sources(tmp_path,monkeypatch):
     import json
-    from lithiumscope.experiments.model_1.augmentation import source_intake as intake
+    from lithiumscope.experiments.data_lab.source_studies import directed_intake as intake
     monkeypatch.setattr(intake,"ROOT",tmp_path/"raw")
     monkeypatch.setattr(intake,"RESULTS_DIR",tmp_path/"results")
     out=intake.run(selected=["chen_global_arcs_2020"])
@@ -53,7 +53,7 @@ def test_selected_source_intake_does_not_reinspect_other_sources(tmp_path,monkey
 
 
 def test_download_alternatives_record_failure_and_success(tmp_path,monkeypatch):
-    from lithiumscope.experiments.model_1.augmentation import source_intake as intake
+    from lithiumscope.experiments.data_lab.source_studies import directed_intake as intake
     path=tmp_path/"original.xlsx"
     calls=[]
     def fake_acquire(destination,url):
@@ -72,7 +72,7 @@ def test_download_alternatives_record_failure_and_success(tmp_path,monkeypatch):
 
 
 def test_existing_invalid_original_not_replaced(tmp_path,monkeypatch):
-    from lithiumscope.experiments.model_1.augmentation import source_intake as intake
+    from lithiumscope.experiments.data_lab.source_studies import directed_intake as intake
     path=tmp_path/"original.xlsx"
     path.write_bytes(b"<html>failed</html>")
     def no_network(*args):

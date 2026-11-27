@@ -3,9 +3,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.experiments.data_lab.candidate_screening import CHEM
-from lithiumscope.experiments.model_1.expansion.academic_analog import fit_analog
-from lithiumscope.experiments.model_1.expansion.academic_final import BASE, POLICIES, combine, choose, run
+from lithiumscope.experiments.data_lab.screening.candidates import CHEM
+from lithiumscope.experiments.model_1.training_methods.academic_analog import fit_analog
+from lithiumscope.experiments.model_1.studies.expansion.academic_final import BASE, POLICIES, combine, choose, run
 from lithiumscope.model_1.training.factory import build_pipeline
 from lithiumscope.model_1.training.preprocessing.tabular import FeatureSchema
 from lithiumscope.resources.detection.device import DeviceInfo

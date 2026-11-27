@@ -2,8 +2,8 @@
 import numpy as np
 import pandas as pd
 import pytest
-from lithiumscope.experiments.model_1.integral import stacking as st
-from lithiumscope.experiments.model_1.integral import stacking_study as ss
+from lithiumscope.experiments.model_1.training_methods import stacking as st
+from lithiumscope.experiments.model_1.studies.integration import stacking as ss
 from lithiumscope.resources.detection.device import detect_device
 
 

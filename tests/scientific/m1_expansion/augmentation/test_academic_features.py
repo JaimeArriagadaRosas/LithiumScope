@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.experiments.model_1.expansion.academic_features import (
+from lithiumscope.experiments.model_1.studies.expansion.academic_features import (
     ARMS, BASE, measurement_blocks, select_columns, choose, run)
 
 

@@ -4,10 +4,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.experiments.model_1.augmentation.treatments import ARMS, augment, MAX_PARENT, MAX_PAIR
-from lithiumscope.experiments.model_1.augmentation.academic import choose, run
+from lithiumscope.experiments.model_1.treatments.augmentation import ARMS, augment, MAX_PARENT, MAX_PAIR
+from lithiumscope.experiments.model_1.studies.augmentation.academic import choose, run
 from lithiumscope.model_1.preparation.feature_engineering import add_geochemical_features
-from lithiumscope.experiments.model_1.expansion.academic_features import measurement_blocks
+from lithiumscope.experiments.model_1.studies.expansion.academic_features import measurement_blocks
 
 
 def sample_data():

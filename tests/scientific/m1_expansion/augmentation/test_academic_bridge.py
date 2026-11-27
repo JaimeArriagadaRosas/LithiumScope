@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from lithiumscope.experiments.model_1.expansion.academic_bridge import (
+from lithiumscope.experiments.model_1.studies.expansion.academic_bridge import (
     benchmark_status, range_pool, run, PROFILES, ARMS)
 
 

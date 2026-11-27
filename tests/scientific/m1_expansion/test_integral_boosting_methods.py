@@ -2,7 +2,7 @@
 import numpy as np
 import pandas as pd
 import pytest
-from lithiumscope.experiments.model_1.integral import boosting_methods as bm
+from lithiumscope.experiments.model_1.training_methods import boosting as bm
 from lithiumscope.model_1.training.preprocessing.tabular import FeatureSchema
 from lithiumscope.resources.detection.device import detect_device
 

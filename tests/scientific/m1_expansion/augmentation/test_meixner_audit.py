@@ -2,7 +2,8 @@
 import numpy as np
 import pandas as pd
 import pytest
-from lithiumscope.experiments.model_1.augmentation.meixner_audit import match_names, raw_view, parse_a1
+from lithiumscope.experiments.data_lab.source_studies.meixner import match_names, parse_a1
+from lithiumscope.experiments.data_lab.source_studies.geochemistry import raw_view
 
 def query():
     return pd.DataFrame({"excel_row":[41],"source_sample":["QUIS-96h-9"],

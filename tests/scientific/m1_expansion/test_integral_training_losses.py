@@ -2,7 +2,7 @@
 import numpy as np
 import pandas as pd
 import pytest
-from lithiumscope.experiments.model_1.integral import training_losses as tl
+from lithiumscope.experiments.model_1.training_methods import losses as tl
 from lithiumscope.model_1.training.preprocessing.tabular import FeatureSchema
 from lithiumscope.resources.detection.device import detect_device
 
