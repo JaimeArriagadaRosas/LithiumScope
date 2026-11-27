@@ -123,7 +123,10 @@ def write_report(path, summary, criteria):
     lines += ["", "## Incidencias", ""]
     for item in details["nonpassing"]:
         lines.append(f"- {item['state']} ({item['phase']}): `{item['test']}`")
-    lines += ["", "## Evidencias", "", "- summary.json", "- junit.xml (si fue generado)",
+        if item.get("message"):
+            message = " ".join(item["message"].split())[:300].replace("`", "'")
+            lines.append(f"  - Diagnóstico local: `{message}`")
+    lines += ["", "## Evidencias", "", "- summary.json (incluye versiones del entorno y diagnóstico local)", "- junit.xml (si fue generado)",
               "- coverage.xml (si fue generado)", "- architecture.json (validación integral)",
               "- criterion_evidence.json", f"- Log: {summary['log']}", "",
               "Los tests asociados no acreditan por sí solos superioridad predictiva ni cierre científico."]

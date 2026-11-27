@@ -8,12 +8,10 @@ from pathlib import Path
 
 import pytest
 
+from scripts.test_reporting.architecture import CATEGORIES as PRIMARY_CATEGORIES, SCOPES
 
-CATEGORIES = frozenset({
-    "architecture", "unit", "integration", "functional",
-    "scientific", "regression", "performance", "reliability",
-})
-CROSS_MARKERS = frozenset({"m1", "m2", "eda", "training", "slow", "local_artifacts"})
+CATEGORIES = frozenset(PRIMARY_CATEGORIES)
+CROSS_MARKERS = frozenset(SCOPES)
 
 
 @lru_cache(maxsize=None)

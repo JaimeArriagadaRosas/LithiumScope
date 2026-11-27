@@ -287,7 +287,8 @@
     "ARQ-003": [
       "tests/architecture/contracts/test_diagnostic_lab_contract.py",
       "tests/scientific/eda/test_integral_eda.py",
-      "tests/functional/cli/test_diagnostic_acquisition_policy.py"
+      "tests/functional/cli/test_diagnostic_acquisition_policy.py",
+      "tests/functional/cli/test_model_comparison_command.py"
     ],
     "ARQ-004": [
       "tests/reliability/logging/test_training_logging_session.py",
@@ -576,7 +577,8 @@
       "tests/scientific/experiments/test_scientific_scenarios.py",
       "tests/regression/historical/test_compare_vnext_trained_runs.py",
       "tests/architecture/structure/test_experiment_architecture.py",
-      "tests/architecture/boundaries/test_historical_entrypoint_isolation.py"
+      "tests/architecture/boundaries/test_historical_entrypoint_isolation.py",
+      "tests/functional/cli/test_model_comparison_command.py"
     ],
     "ARQ-060": [
       "tests/scientific/experiments/test_scientific_scenarios.py",
@@ -729,7 +731,9 @@
       "tests/performance/resources/test_runtime_limits.py"
     ],
     "ARQ-089": [
-      "tests/architecture/structure/test_architecture.py"
+      "tests/architecture/structure/test_architecture.py",
+      "tests/architecture/contracts/test_test_classification.py",
+      "tests/reliability/validation/test_canonical_test_reporting.py"
     ],
     "ARQ-090": [
       "tests/architecture/structure/test_architecture.py",
@@ -739,13 +743,17 @@
     "ARQ-091": [
       "tests/architecture/structure/test_architecture.py",
       "tests/reliability/validation/test_validation.py",
-      "tests/reliability/validation/test_evidence_serialization.py"
+      "tests/reliability/validation/test_evidence_serialization.py",
+      "tests/architecture/contracts/test_test_classification.py",
+      "tests/reliability/validation/test_canonical_test_reporting.py",
+      "tests/functional/cli/test_model_comparison_command.py"
     ],
     "ARQ-092": [
       "tests/reliability/validation/test_validation.py",
       "tests/reliability/persistence/test_pipeline_audit_transaction.py",
       "tests/reliability/validation/test_criteria.py",
-      "tests/reliability/validation/test_failure_context.py"
+      "tests/reliability/validation/test_failure_context.py",
+      "tests/reliability/validation/test_canonical_test_reporting.py"
     ],
     "ARQ-093": [
       "tests/scientific/eda/test_eda_protocol.py",
@@ -753,14 +761,18 @@
     ],
     "ARQ-094": [
       "tests/reliability/validation/test_validation.py",
-      "tests/functional/model_lifecycle/test_candidate_evidence.py"
+      "tests/functional/model_lifecycle/test_candidate_evidence.py",
+      "tests/architecture/contracts/test_test_classification.py",
+      "tests/reliability/validation/test_canonical_test_reporting.py"
     ],
     "ARQ-095": [
       "tests/architecture/structure/test_architecture.py",
       "tests/architecture/structure/test_canonical_execution_packages.py",
       "tests/architecture/boundaries/test_dependency_audit.py",
       "tests/regression/reproducibility/test_spawn_and_scientific_identity.py",
-      "tests/architecture/structure/test_scientific_script_layout.py"
+      "tests/architecture/structure/test_scientific_script_layout.py",
+      "tests/architecture/contracts/test_test_classification.py",
+      "tests/reliability/validation/test_canonical_test_reporting.py"
     ],
     "ARQ-096": [
       "tests/scientific/methodology/test_scientific_checks.py",
@@ -816,7 +828,8 @@
     ],
     "ARQ-106": [
       "tests/reliability/validation/test_validation.py",
-      "tests/reliability/persistence/test_snapshot.py"
+      "tests/reliability/persistence/test_snapshot.py",
+      "tests/reliability/validation/test_canonical_test_reporting.py"
     ],
     "ARQ-107": [
       "tests/reliability/validation/test_validation.py",
@@ -837,7 +850,8 @@
       "tests/reliability/logging/test_operation_log_layout.py",
       "tests/regression/historical/test_historical_parity_preflight.py",
       "tests/reliability/validation/test_failure_context.py",
-      "tests/architecture/structure/test_scientific_script_layout.py"
+      "tests/architecture/structure/test_scientific_script_layout.py",
+      "tests/reliability/validation/test_canonical_test_reporting.py"
     ]
   }
 }
