@@ -21,12 +21,12 @@
       "tests/unit/data/test_censoring_contract.py"
     ],
     "M1-05": [
-      "tests/model_1/test_target_and_qc.py",
-      "tests/model_1/test_geochemical_contract.py"
+      "tests/scientific/data_quality/test_target_and_qc.py",
+      "tests/scientific/data_quality/test_geochemical_contract.py"
     ],
     "M1-06": [
-      "tests/model_1/test_target_and_qc.py",
-      "tests/model_1/test_geochemical_contract.py",
+      "tests/scientific/data_quality/test_target_and_qc.py",
+      "tests/scientific/data_quality/test_geochemical_contract.py",
       "tests/scientific/m1/test_validate_feot_expansion_m1.py"
     ],
     "M1-07": [
@@ -40,7 +40,7 @@
     ],
     "M1-09": [
       "tests/unit/data/test_feature_engineering.py",
-      "tests/model_1/test_geochemical_contract.py"
+      "tests/scientific/data_quality/test_geochemical_contract.py"
     ],
     "M1-10": [
       "tests/model_1/test_model_1_spatial_validation.py",
@@ -71,25 +71,25 @@
     ],
     "M1-16": [
       "tests/datasets/provenance/test_georoc_provenance_contract.py",
-      "tests/model_1/test_source_reconciliation.py",
-      "tests/datasets/management/test_frozen_model_1_input.py"
+      "tests/scientific/data_quality/test_source_reconciliation.py",
+      "tests/scientific/data_quality/test_frozen_model_1_input.py"
     ],
     "M1-17": [
-      "tests/model_1/test_coordinate_lineage.py",
+      "tests/scientific/data_quality/test_coordinate_lineage.py",
       "tests/core/test_pipeline_audit_transaction.py",
       "tests/scientific/eda/test_integral_eda.py"
     ],
     "M1-18": [
-      "tests/model_1/test_coordinate_lineage.py",
+      "tests/scientific/data_quality/test_coordinate_lineage.py",
       "tests/model_1/test_model_1_spatial_validation.py",
       "tests/scientific/shared/test_spatial_audit_contract.py"
     ],
     "M1-19": [
       "tests/model_1/test_model_1_scientific_guards.py",
-      "tests/model_1/test_coordinate_lineage.py",
+      "tests/scientific/data_quality/test_coordinate_lineage.py",
       "tests/scientific/shared/test_nested_protocol.py",
-      "tests/model_1/diagnostics/test_observation_audit.py",
-      "tests/model_1/diagnostics/test_conflict_review.py"
+      "tests/scientific/data_quality/test_observation_audit.py",
+      "tests/scientific/data_quality/test_conflict_review.py"
     ],
     "M1-20": [
       "tests/unit/algorithms/test_statistical_baselines.py",
@@ -118,7 +118,7 @@
     ],
     "M1-25": [
       "tests/scientific/m1/test_m1_dual_release_diagnostics.py",
-      "tests/model_1/test_source_reconciliation.py",
+      "tests/scientific/data_quality/test_source_reconciliation.py",
       "tests/model_1/test_physical_robustness.py"
     ],
     "M1-26": [
@@ -136,7 +136,7 @@
       "tests/architecture/contracts/test_configuration_contract.py"
     ],
     "M2-02": [
-      "tests/model_2/test_model_2_sample_source.py",
+      "tests/scientific/data_quality/test_model_2_sample_source.py",
       "tests/scientific/m2_spectral/test_m2_physical_label_audit.py",
       "tests/scientific/m2_spectral/test_m2_georoc_coordinate_audit.py"
     ],
@@ -309,13 +309,13 @@
     "ARQ-008": [
       "tests/architecture/structure/test_acquisition_architecture.py",
       "tests/integration/acquisition/test_georoc_acquisition.py",
-      "tests/datasets/management/test_frozen_model_1_input.py",
+      "tests/scientific/data_quality/test_frozen_model_1_input.py",
       "tests/architecture/boundaries/test_acquisition_provider_relocation.py"
     ],
     "ARQ-009": [
       "tests/unit/data/test_censoring_contract.py",
       "tests/unit/data/test_preprocessing_contract.py",
-      "tests/model_1/test_coordinate_lineage.py"
+      "tests/scientific/data_quality/test_coordinate_lineage.py"
     ],
     "ARQ-010": [
       "tests/scientific/eda/test_integral_eda.py",
@@ -366,7 +366,7 @@
     "ARQ-018": [
       "tests/integration/training/test_eda_training_integration.py",
       "tests/model_1/test_model_1_scientific_guards.py",
-      "tests/datasets/management/test_frozen_model_1_input.py",
+      "tests/scientific/data_quality/test_frozen_model_1_input.py",
       "tests/integration/training/test_holdout_pipeline_dispatch.py"
     ],
     "ARQ-019": [
@@ -396,7 +396,7 @@
       "tests/integration/acquisition/test_registered_sentinel_patch.py"
     ],
     "ARQ-024": [
-      "tests/model_2/test_model_2_sample_source.py",
+      "tests/scientific/data_quality/test_model_2_sample_source.py",
       "tests/scientific/m2_spectral/test_m2_physical_label_audit.py",
       "tests/datasets/provenance/test_dataset_manifest.py",
       "tests/model_2/test_checkpoint_contract.py"
@@ -564,7 +564,7 @@
     ],
     "ARQ-057": [
       "tests/architecture/structure/test_management_provenance_architecture.py",
-      "tests/model_2/test_model_2_sample_source.py"
+      "tests/scientific/data_quality/test_model_2_sample_source.py"
     ],
     "ARQ-058": [
       "tests/architecture/boundaries/test_historical_relocation.py",
