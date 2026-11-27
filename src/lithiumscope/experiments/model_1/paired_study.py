@@ -10,7 +10,7 @@ from sklearn.model_selection import GroupKFold
 
 from lithiumscope.core.config import load_config
 from lithiumscope.core.paths import RESULTS_DIR
-from lithiumscope.datasets.management.local_sources import local_training_source
+from lithiumscope.datasets.management.sources.local import local_training_source
 from lithiumscope.experiments.shared.design import budget_arms, choose_algorithms
 from lithiumscope.experiments.shared.paired_suite import Arm, run_paired_suite
 from lithiumscope.model_1.pipeline import prepare_training_data

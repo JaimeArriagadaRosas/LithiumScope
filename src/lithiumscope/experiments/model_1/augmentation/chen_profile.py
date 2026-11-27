@@ -7,7 +7,7 @@ import pandas as pd
 
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import RESULTS_DIR
-from lithiumscope.datasets.adapters.georoc_ingestion_schema import infer_georoc_column_map
+from lithiumscope.datasets.adapters.georoc.schema import infer_georoc_column_map
 from lithiumscope.experiments.data_lab.candidate_screening import CHEM, num, group, sample
 from lithiumscope.experiments.model_1.augmentation.source_intake import ROOT
 from lithiumscope.experiments.model_1.augmentation.meixner_audit import raw_view

@@ -57,7 +57,7 @@ def load_protocol(run_id):
                 ids=x.index[te]
                 if set(r.index)!=set(ids) or not np.array_equal(r.loc[ids,"actual"].to_numpy(float),y.iloc[te].to_numpy(float)):
                     raise ValueError("Previous OOF targets or folds changed")
-    from lithiumscope.datasets.management.diagnostic_provisioning import prepare_diagnostic_source
+    from lithiumscope.datasets.management.sources.diagnostic import prepare_diagnostic_source
     source=prepare_diagnostic_source("model_1")
     prepared=json.loads((snapshot/"manifest.json").read_text(encoding="utf-8"))
     if file_sha256(source)!=prepared["source_sha256"]:

@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import RESULTS_DIR
-from lithiumscope.datasets.management.local_sources import local_training_source
+from lithiumscope.datasets.management.sources.local import local_training_source
 from lithiumscope.experiments.data_lab.candidate_screening import CHEM, num, group
 from lithiumscope.experiments.model_1.balanced.academic import cohort
 from lithiumscope.experiments.model_1.expansion.raw_recovery import EXPANSION, EXPANSION_SHA
