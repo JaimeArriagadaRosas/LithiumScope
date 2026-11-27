@@ -61,7 +61,7 @@
       "tests/unit/algorithms/test_tabnet_adapter.py"
     ],
     "M1-14": [
-      "tests/model_1/test_high_lithium_diagnostics.py",
+      "tests/scientific/evaluation/test_high_lithium_diagnostics.py",
       "tests/functional/model_lifecycle/test_candidate_evidence.py",
       "tests/model_1/test_model_1_scientific_guards.py"
     ],
@@ -104,28 +104,28 @@
       "tests/functional/model_lifecycle/test_candidate_evidence.py",
       "tests/unit/algorithms/test_statistical_baselines.py",
       "tests/functional/model_lifecycle/test_demo_promotion_guard.py",
-      "tests/model_1/diagnostics/test_development_gate.py"
+      "tests/scientific/evaluation/test_development_gate.py"
     ],
     "M1-23": [
-      "tests/model_1/test_physical_robustness.py",
+      "tests/scientific/evaluation/test_physical_robustness.py",
       "tests/model_1/test_model_1_scientific_guards.py",
       "tests/experiments/test_paired_suite.py"
     ],
     "M1-24": [
-      "tests/model_1/test_high_lithium_diagnostics.py",
+      "tests/scientific/evaluation/test_high_lithium_diagnostics.py",
       "tests/scientific/experiments/test_learning_curves.py",
       "tests/scientific/experiments/test_curve_suite.py"
     ],
     "M1-25": [
       "tests/scientific/m1/test_m1_dual_release_diagnostics.py",
       "tests/scientific/data_quality/test_source_reconciliation.py",
-      "tests/model_1/test_physical_robustness.py"
+      "tests/scientific/evaluation/test_physical_robustness.py"
     ],
     "M1-26": [
       "tests/unit/inference/test_applicability.py",
       "tests/unit/inference/test_m1_input_provenance.py",
       "tests/unit/inference/test_model_1_prediction_diagnostics.py",
-      "tests/model_1/diagnostics/test_domain_group_intervals.py"
+      "tests/scientific/evaluation/test_domain_group_intervals.py"
     ],
     "M1-27": [
       "tests/functional/model_lifecycle/test_final_fit_contract.py",
@@ -339,12 +339,12 @@
     "ARQ-014": [
       "tests/unit/algorithms/test_statistical_baselines.py",
       "tests/functional/model_lifecycle/test_candidate_evidence.py",
-      "tests/model_1/test_high_lithium_diagnostics.py",
-      "tests/model_1/diagnostics/test_development_gate.py"
+      "tests/scientific/evaluation/test_high_lithium_diagnostics.py",
+      "tests/scientific/evaluation/test_development_gate.py"
     ],
     "ARQ-015": [
       "tests/scientific/experiments/test_learning_curves.py",
-      "tests/model_1/test_physical_robustness.py",
+      "tests/scientific/evaluation/test_physical_robustness.py",
       "tests/scientific/experiments/test_curve_suite.py",
       "tests/architecture/boundaries/test_diagnostic_module_relocation.py"
     ],
@@ -354,14 +354,14 @@
       "tests/scientific/experiments/test_compare_vnext_trained_runs.py",
       "tests/scientific/experiments/test_paired_experiment_design.py",
       "tests/experiments/test_paired_suite.py",
-      "tests/model_1/diagnostics/test_domain_group_intervals.py",
+      "tests/scientific/evaluation/test_domain_group_intervals.py",
       "tests/architecture/boundaries/test_methodology_relocation.py"
     ],
     "ARQ-017": [
       "tests/unit/inference/test_m1_input_provenance.py",
       "tests/unit/inference/test_model_1_prediction_diagnostics.py",
       "tests/unit/inference/test_applicability.py",
-      "tests/model_1/diagnostics/test_domain_group_intervals.py"
+      "tests/scientific/evaluation/test_domain_group_intervals.py"
     ],
     "ARQ-018": [
       "tests/integration/training/test_eda_training_integration.py",
