@@ -1,4 +1,4 @@
-> **Salud del código (prioridad vigente):** refactorización de `datasets` implementada, validación integral diferida por indicación del usuario. Revisar los siguientes módulos uno por uno. No ejecutar ni consultar workflows; suspender experimentos y mantener main/M2/modelos/datasets congelados. La mejora del menú 5 y la suite completa local quedan para el cierre autorizado de arquitectura. Ver [M1_SALUD_CODIGO_DATASETS.md](M1_SALUD_CODIGO_DATASETS.md).
+> **Salud del código (prioridad vigente):** refactorización de `datasets` implementada sin carpetas `_legacy`, imports canónicos, validación integral diferida por indicación del usuario. Revisar los siguientes módulos uno por uno. No ejecutar ni consultar workflows; suspender experimentos y mantener main/M2/modelos/datasets congelados. La mejora del menú 5 y la suite completa local quedan para el cierre autorizado de arquitectura. Ver [M1_SALUD_CODIGO_DATASETS.md](M1_SALUD_CODIGO_DATASETS.md).
 
 # Continuidad científica — LithiumScope, 26 de noviembre de 2026
 

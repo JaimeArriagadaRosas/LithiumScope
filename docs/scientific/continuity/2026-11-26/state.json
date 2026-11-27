@@ -851,12 +851,19 @@
       "implementation_commit": "7696d308478939d299b1fedb454a2c3aaec00016",
       "root_python_before": 17,
       "root_python_after": 1,
-      "source_python_files": 101,
+      "source_python_files": 60,
       "test_python_files": 30,
       "test_modules": 22,
       "validation": "not_executed",
       "coverage_target": 0.8,
-      "coverage_measured": false
-    }
+      "coverage_measured": false,
+      "legacy_directories": 0,
+      "retired_shim_files": 41,
+      "compatibility_policy": "canonical_imports_only",
+      "path_policy": "project_root_relative_or_explicit_absolute",
+      "historical_imports_may_fail": true,
+      "consumer_migration": "direct_consumers_reviewed_partial_repository_scan_pending"
+    },
+    "compatibility_policy": "remove_pure_legacy_shims_preserve_functional_contracts"
   }
 }

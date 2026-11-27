@@ -71,3 +71,26 @@ rama y crear rama de entrenamiento desde ella, sin merge a main.
 
 Todos los commits de esta intervención incluyen [skip ci] para evitar
 CI automática por push.
+
+
+## Corrección de criterio: retirar rutas históricas de importación
+El usuario prefiere eliminar redirecciones sin funcionalidad propia y corregir
+las referencias reales en lugar de mantener carpetas de compatibilidad.
+Se retiran las cuatro carpetas _legacy (41 archivos: 37 redirecciones/alias
+más cuatro inicializadores) y las extensiones de __path__. El módulo conserva
+60 archivos Python, incluida la API canónica. Se migran consumidores directos
+identificados de runtime, adquisición, preparación, experimentos de M1 y tests.
+Se sustituyen tests de identidad de aliases retirados por comprobaciones de API
+canónica, ausencia de shims y portabilidad entre raíces de proyecto. No se ha
+hecho un barrido exhaustivo de todo el repositorio ni ejecutado la suite; pueden
+persistir imports obsoletos y fallar artefactos pickle antiguos. No restaurar
+shims automáticamente: corregir consumidores en la validación final; evaluar
+artefactos serializados individualmente sin alterar los modelos guardados.
+El catálogo de relocation se conserva como evidencia estática y guía de migración,
+no como redirección de ejecución. Se retira el tratamiento especial de _legacy
+en el auditor de dependencias. Los imports canónicos son explícitos; las rutas
+de archivos se resuelven desde PROJECT_ROOT o la raíz suministrada, con override
+LITHIUMSCOPE_HOME existente. Se conservan rutas absolutas explícitas válidas y
+la resolución de imágenes históricas, que tiene funcionalidad de procedencia y
+seguridad real. No confundir con código muerto. No se modifican datos, M2,
+configuración científica, modelos ni main. Sin workflows ni pruebas ejecutadas.

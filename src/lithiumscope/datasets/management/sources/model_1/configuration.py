@@ -4,8 +4,8 @@ from lithiumscope.core.hashing import file_sha256
 
 
 def project_path(raw, root):
-    path = Path(raw)
-    return path if path.is_absolute() else root / path
+    path = Path(raw).expanduser()
+    return (path if path.is_absolute() else Path(root) / path).resolve()
 
 
 def verified_frozen_source(path, expected, *, hash_file=file_sha256):
