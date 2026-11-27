@@ -82,10 +82,10 @@ def _run_tests() -> bool:
     if not runner.is_file() or not (PROJECT_ROOT / "tests").is_dir():
         print("[BLOQUEADO] Suite local no disponible.")
         return False
-    print("\nValidación del software | Suite completa y cobertura de líneas", flush=True)
+    print("\nValidación del software | Comprobaciones estáticas, suite completa y cobertura", flush=True)
     from lithiumscope.core.logging.session import current_session_directory
     env={**os.environ,"LITHIUMSCOPE_SESSION_DIR":str(current_session_directory())}
-    completed = subprocess.run([sys.executable, str(runner), "--coverage", "--", "-q", "tests"], cwd=PROJECT_ROOT, check=False,env=env)
+    completed = subprocess.run([sys.executable, str(runner), "--preflight", "--coverage", "--", "-q", "tests"], cwd=PROJECT_ROOT, check=False,env=env)
     return completed.returncode == 0
 
 
@@ -173,7 +173,7 @@ def _academic_reference():
 
 def _validation_menu() -> bool | None:
     print("\nEJECUCIÓN DE TESTS Y SIMULACIONES\n")
-    print("1. Tests completos del software")
+    print("1. Validación integral del software (estática, tests y cobertura)")
     print("2. Simulación y comparaciones de modelos")
     print("3. Evaluación experimental de tratamiento de datos")
     print("4. Ejecutar todo")

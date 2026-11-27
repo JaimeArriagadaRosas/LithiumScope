@@ -16,8 +16,10 @@ import xml.etree.ElementTree as ET
 
 if __package__:
     from .pytest_console import monitor, print_summary, report_details
+    from .software_checks import run_preflight, artifact_snapshot, compare_artifacts, validation_outcome
 else:
     from pytest_console import monitor, print_summary, report_details
+    from software_checks import run_preflight, artifact_snapshot, compare_artifacts, validation_outcome
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -66,6 +68,8 @@ def coverage_mode(requested: bool) -> str:
 def run(args: list[str]) -> int:
     json_output = "--json" in args
     args = [arg for arg in args if arg != "--json"]
+    preflight_requested = "--preflight" in args
+    args = [arg for arg in args if arg != "--preflight"]
     coverage_requested = "--coverage" in args
     mode = coverage_mode(coverage_requested)
     coverage = mode == "enabled"
@@ -110,10 +114,16 @@ def run(args: list[str]) -> int:
 
     code = 1
     error = None
+    checks = {}
+    protected_before = None
     event("started", arguments=args, coverage_state=mode)
     if mode == "missing_pytest_cov":
         event("warning", reason="pytest_cov_missing; running regression without coverage")
     try:
+        if preflight_requested:
+            protected_before = artifact_snapshot(ROOT, logs, env, "before")
+            checks = run_preflight(ROOT, logs, env, show=not json_output)
+            event("preflight_finished", checks=checks)
         with tempfile.TemporaryDirectory(prefix="pytest-", dir=results) as tmp:
             command = [sys.executable, "-m", "pytest", "-p", "scripts.pytest_progress", *args,
                        "--basetemp", tmp, "--junitxml", str(report)]
@@ -124,18 +134,30 @@ def run(args: list[str]) -> int:
         error = "KeyboardInterrupt"
     except OSError as exc:
         error = str(exc)
-    state = "passed" if code == 0 else "cancelled" if code == 130 else "failed"
+    pytest_code = code
+    if protected_before is not None:
+        checks["protected_artifacts"] = compare_artifacts(
+            protected_before, artifact_snapshot(ROOT, logs, env, "after"))
     after = git_identity()
+    details = report_details(report, results / "coverage.xml")
+    counts = junit_counts(report)
+    clean = before == after and before["git_commit"] is not None and before["tracked_worktree_dirty"] is False and before["untracked_code_present"] is False
+    if preflight_requested:
+        state, code = validation_outcome(pytest_code, checks, details,
+            coverage_requested=coverage_requested, clean=clean, counts=counts)
+    else:
+        state = "passed" if code == 0 else "cancelled" if code == 130 else "failed"
     summary = {**identity, **before, "git_identity_after": after,
                "git_identity_unchanged": before == after and before["git_commit"] is not None,
                "state": state, "exit_code": code,
                "duration_seconds": round(time.monotonic() - start, 3),
-               "counts": junit_counts(report), "error": error,
+               "counts": counts, "error": error, "pytest_exit_code": pytest_code,
+               "preflight_requested": preflight_requested, "checks": checks,
                "coverage_requested": coverage_requested, "coverage_state": mode,
                "log": (logs / "pytest.log").relative_to(ROOT).as_posix(),
                "arguments": args,
                "progress_log": progress_file.relative_to(ROOT).as_posix(),
-               "details": report_details(report, results / "coverage.xml")}
+               "details": details}
     temporary = results / ".summary.json.tmp"
     temporary.write_text(json.dumps(summary, indent=2), encoding="utf-8")
     temporary.replace(results / "summary.json")

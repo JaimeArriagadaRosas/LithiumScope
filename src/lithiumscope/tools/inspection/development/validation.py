@@ -104,7 +104,7 @@ def run_pytest(root: Path, logs: Path, current_commit: str | None) -> dict:
     from lithiumscope.core.logging.session import current_session_directory
     env["LITHIUMSCOPE_SESSION_DIR"] = str(current_session_directory())
     # This uses the same isolated runner as the canonical test menu.
-    result = subprocess.run([sys.executable, str(runner), "--coverage", "--", "-q"],
+    result = subprocess.run([sys.executable, str(runner), "--json", "--coverage", "--", "-q"],
                             cwd=root, env=env, capture_output=True, check=False)
     (logs / "runner.stdout.log").write_bytes(result.stdout)
     (logs / "runner.stderr.log").write_bytes(result.stderr)

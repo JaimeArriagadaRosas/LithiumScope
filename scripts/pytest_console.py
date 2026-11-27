@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from collections import Counter
 import json
+import re
 import shutil
 import sys
 from pathlib import Path
@@ -174,14 +175,28 @@ def monitor(command, *, cwd, env, log, progress_file, show=True):
 
 
 def report_details(junit, coverage):
-    result = {"line_coverage_pct": None, "groups": {}, "nonpassing": [], "slowest": []}
+    result = {"line_coverage_pct": None, "groups": {}, "nonpassing": [], "slowest": [],
+              "collection_errors": 0, "executed_tests": 0, "collection_causes": {}}
     try:
         root = ET.parse(junit).getroot()
         groups = {}
         timings = []
         for case in root.iter("testcase"):
-            name = case.get("classname", "") + "::" + case.get("name", "")
-            group = ".".join(case.get("classname", "").split(".")[:2])
+            module = case.get("classname", "")
+            case_name = case.get("name", "")
+            name = f"{module}::{case_name}" if module else case_name
+            group = ".".join((module or case_name.replace("/", ".").replace(chr(92), ".")).split(".")[:2]) or "unknown"
+            error = case.find("error")
+            collection = error is not None and (error.get("message", "").lower() == "collection failure")
+            if collection:
+                result["collection_errors"] += 1
+                raw = error.text or ""
+                match = re.search(r"No module named ['\"]([^'\"]+)['\"]", raw)
+                cause = f"ModuleNotFoundError: {match.group(1)}" if match else next(
+                    (line.strip()[:500] for line in reversed(raw.splitlines()) if line.strip()), "collection failure")
+                result["collection_causes"][cause] = result["collection_causes"].get(cause, 0) + 1
+            else:
+                result["executed_tests"] += 1
             counts = groups.setdefault(group, Counter())
             status = "passed"
             for tag in ("error", "failure", "skipped"):
@@ -189,10 +204,13 @@ def report_details(junit, coverage):
                 if child is not None:
                     status = tag
                     message = child.get("message") or (child.text or "").strip().split("\n")[-1]
-                    result["nonpassing"].append({"test": name, "state": status, "message": message[:500]})
+                    if collection:
+                        message = cause
+                    result["nonpassing"].append({"test": name, "state": status, "message": message[:500], "phase": "collection" if collection else "execution"})
                     break
             counts[status] += 1
-            timings.append({"test": name, "seconds": float(case.get("time", "0"))})
+            if not collection:
+                timings.append({"test": name, "seconds": float(case.get("time", "0"))})
         result["groups"] = {key: dict(value) for key, value in sorted(groups.items())}
         result["slowest"] = sorted(timings, key=lambda item: item["seconds"], reverse=True)[:5]
     except (OSError, ET.ParseError, ValueError):
@@ -207,16 +225,22 @@ def report_details(junit, coverage):
 def print_summary(summary, results):
     counts = summary["counts"]
     details = summary["details"]
-    label = {"passed": "APROBADO", "failed": "FALLIDO", "cancelled": "CANCELADO"}.get(summary["state"], "DESCONOCIDO")
+    label = {"passed": "APROBADO", "failed": "FALLIDO", "cancelled": "CANCELADO", "incomplete": "INCOMPLETO"}.get(summary["state"], "DESCONOCIDO")
     print("\n" + "=" * 76)
     print(f"VALIDACIÓN DEL SOFTWARE | {label}")
     print("=" * 76)
     print(f"Rama           : {summary.get('git_branch') or 'N/D'}")
     print(f"Commit         : {(summary.get('git_commit') or 'N/D')[:12]}")
     print(f"Duración       : {elapsed(summary['duration_seconds'])} (min:seg)")
+    if summary.get("checks"):
+        print("\nCOMPROBACIONES DEL SOFTWARE")
+        for name, record in summary["checks"].items():
+            print(f"  {name:<24} {record['state']} | {record.get('log', record.get('scope', ''))}")
     if counts:
         passed = counts["tests"] - counts["failures"] - counts["errors"] - counts["skipped"]
-        print(f"Total          : {counts['tests']}")
+        print(f"Total JUnit    : {counts['tests']}")
+        print(f"Recopilación   : {details.get('collection_errors', 0)} errores")
+        print(f"Casos no colección: {details.get('executed_tests', 0)}")
         print(f"Aprobados      : {max(0, passed)}")
         print(f"Fallidos       : {counts['failures']}")
         print(f"Errores        : {counts['errors']}")
@@ -232,6 +256,10 @@ def print_summary(summary, results):
     print(f"Código salida  : {summary['exit_code']}")
     if summary.get("error"):
         print(f"Incidencia     : {summary['error']}")
+    if details.get("collection_causes"):
+        print("\nCAUSAS DE ERRORES DE RECOPILACIÓN")
+        for cause, count in details["collection_causes"].items():
+            print(f"  {count:4} | {cause}")
     if details["groups"]:
         print("\nRESULTADOS POR GRUPO")
         print(f"{'Grupo':32} {'OK':>7} {'Fallos':>7} {'Errores':>7} {'Omit.':>7}")
@@ -254,7 +282,10 @@ def print_summary(summary, results):
             print(f"  {row['seconds']:7.2f} s | {row['test']}")
     print("\nEVIDENCIAS")
     print(f"  Resumen JSON : {results / 'summary.json'}")
-    print(f"  JUnit XML    : {results / 'junit.xml'}")
+    if (results / "junit.xml").is_file():
+        print(f"  JUnit XML    : {results / 'junit.xml'}")
+    if summary.get("pytest_exit_code") is not None:
+        print(f"  Código pytest: {summary['pytest_exit_code']}")
     if rate is not None:
         print(f"  Cobertura XML: {results / 'coverage.xml'}")
     print(f"  Log completo : {summary['log']}")
