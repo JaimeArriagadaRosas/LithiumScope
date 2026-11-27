@@ -558,7 +558,7 @@
       "tests/architecture/boundaries/test_acquisition_provider_relocation.py"
     ],
     "ARQ-056": [
-      "tests/datasets/adapters/test_georoc_ingestion.py",
+      "tests/integration/data_pipeline/test_georoc_ingestion.py",
       "tests/architecture/structure/test_acquisition_architecture.py",
       "tests/architecture/boundaries/test_dataset_module_relocation.py"
     ],
