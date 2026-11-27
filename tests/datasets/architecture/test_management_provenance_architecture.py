@@ -62,3 +62,15 @@ def test_frozen_cohort_is_read_only_and_rejects_invalid_identity(tmp_path):
         require_frozen_manifest(cfg, tmp_path)
     with pytest.raises(ValueError, match="outside"):
         require_frozen_manifest({**cfg, "manifest_path": "../old.csv"}, tmp_path)
+
+
+def test_source_management_has_no_nested_model_packages_or_runtime_import():
+    root = Path(__file__).resolve().parents[3] / "src/lithiumscope/datasets/management"
+    assert not (root / "sources/model_1").exists()
+    assert not (root / "sources/model_2").exists()
+    assert not (root / "paths.py").exists()
+    tree = ast.parse((root / "sources/diagnostic.py").read_text(encoding="utf-8"))
+    for node in ast.walk(tree):
+        imports = [node.module or ""] if isinstance(node, ast.ImportFrom) else (
+            [alias.name for alias in node.names] if isinstance(node, ast.Import) else [])
+        assert not any(name.startswith("lithiumscope.runtime") for name in imports)

@@ -79,3 +79,9 @@ assembly is independent in `model_1_assembly.py`. M2 frozen and expanded
 contracts share `model_2.py`, with linked imagery resolution in `model_2_paths.py`.
 Image verification is opt-in at the manifest contract boundary and does not certify spectral validity.
 No retired source modules are retained as compatibility shims.
+
+## Source resolution and recovery
+
+Preboot and local diagnostics resolve the configured cohort; expanded M2 is not silently replaced with frozen M2. Acquisition is injected by the caller and requires explicit authorization in diagnostics. Existing frozen hashes are not changed. Unfrozen M1 combined sources are reused only when source bytes, ingestion options, conservative dataset-code fingerprint and output hashes match. Candidate code fingerprints include dataset Python files and selected package versions; arbitrary external transformation dependencies are not automatically tracked.
+
+Candidate CLI: `list` inventories versions, `verify <directory>` verifies their evidence, and `audit` / `georoc` accept `--recover-corrupt` to preserve a damaged matching version under `.quarantine` and rebuild from supplied inputs. Writers use per-version locks and fail clearly when another writer is active. A lock left by a process crash requires manual inspection and removal after ensuring no writer is active. Recovery is maintenance of candidate versions only; do not run recovery while other processes are reading that version. Image link checks verify availability and registered relocation hashes when requested, not spectral content. Full regression is menu 5 > 3 > 1.

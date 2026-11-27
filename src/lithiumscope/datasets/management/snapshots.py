@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from contextlib import contextmanager
+from time import monotonic
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import hashlib
@@ -83,6 +85,24 @@ def verify_snapshot(directory: Path, expected_identity: dict | None = None) -> d
     return metadata
 
 
+@contextmanager
+def _version_lock(root: Path, version_id: str):
+    """Serialize writers and recovery; never remove an unknown writer's lock."""
+    locks = root / ".locks"
+    if locks.is_symlink():
+        raise ValueError("Snapshot locks may not be a symbolic link")
+    locks.mkdir(exist_ok=True)
+    lock = locks / version_id
+    try:
+        lock.mkdir()
+    except FileExistsError as exc:
+        raise RuntimeError(f"Snapshot version busy: {version_id}; retry after writer exits") from exc
+    try:
+        yield
+    finally:
+        lock.rmdir()
+
+
 def materialize_snapshot(root: Path, sources: dict[str, Path], *, policy: dict,
                          transform_revision: str, transform, recover_corrupt: bool = False) -> Snapshot:
     """Build an immutable candidate artifact; reuse only verified matching content.
@@ -96,54 +116,58 @@ def materialize_snapshot(root: Path, sources: dict[str, Path], *, policy: dict,
     identity = _identity(sources, policy, transform_revision)
     version = _digest(identity)
     root.mkdir(parents=True, exist_ok=True)
-    destination = root / version
-    logger = get_logger("datasets.snapshots")
-    if destination.exists() or destination.is_symlink():
-        try:
-            verify_snapshot(destination, identity)
-        except (OSError, ValueError, KeyError, TypeError):
-            logger.warning("Candidate snapshot integrity failure: %s", version)
-            if not recover_corrupt or destination.is_symlink() or not destination.is_dir():
-                raise
-            quarantine = root / ".quarantine"
-            if quarantine.is_symlink():
-                raise ValueError("Snapshot quarantine may not be a symbolic link")
-            quarantine.mkdir(exist_ok=True)
-            damaged = quarantine / f"{version}.{uuid4().hex}"
-            destination.rename(damaged)
-            logger.warning("Corrupted candidate preserved for explicit recovery: %s", damaged)
-        else:
-            logger.info("Candidate snapshot reused: %s", version)
-            return Snapshot(destination, version, True)
-    logger.info("Building candidate snapshot: %s", version)
-    with TemporaryDirectory(prefix=".build-", dir=root) as staging:
-        folder = Path(staging) / version
-        folder.mkdir()
-        data = folder / "dataset.csv"
-        transform(dict(sources), data)
-        if not data.is_file() or not data.stat().st_size:
-            raise ValueError("Transformation did not produce a dataset")
+    with _version_lock(root, version):
+        destination = root / version
+        logger = get_logger("datasets.snapshots")
+        started = monotonic()
         if _identity(sources, policy, transform_revision) != identity:
-            raise ValueError("Sources or transformation policy changed during snapshot construction")
-        artifacts = {}
-        for path in folder.iterdir():
-            if path.name == "manifest.json" or path.is_symlink() or not path.is_file():
-                raise ValueError(f"Unexpected staged artifact: {path.name}")
-            artifacts[path.name] = file_sha256(path)
-        metadata = {"identity": identity, "version_id": version, "data_sha256": artifacts["dataset.csv"],
-                    "artifacts": artifacts, "scientific_quality_certified": False}
-        (folder / "manifest.json").write_text(json.dumps(metadata, indent=2, ensure_ascii=False), encoding="utf-8")
-        try:
-            folder.rename(destination)
-        except OSError:
-            # A concurrent publisher may have won; never overwrite a snapshot.
-            if not destination.exists():
-                raise
-            verify_snapshot(destination, identity)
-            return Snapshot(destination, version, True)
-    verify_snapshot(destination, identity)
-    logger.info("Candidate snapshot published: %s", version)
-    return Snapshot(destination, version, False)
+            raise ValueError("Sources changed before snapshot verification")
+        if destination.exists() or destination.is_symlink():
+            try:
+                verify_snapshot(destination, identity)
+            except (OSError, ValueError, KeyError, TypeError):
+                logger.warning("Candidate snapshot integrity failure: %s", version)
+                if not recover_corrupt or destination.is_symlink() or not destination.is_dir():
+                    raise
+                quarantine = root / ".quarantine"
+                if quarantine.is_symlink():
+                    raise ValueError("Snapshot quarantine may not be a symbolic link")
+                quarantine.mkdir(exist_ok=True)
+                damaged = quarantine / f"{version}.{uuid4().hex}"
+                destination.rename(damaged)
+                logger.warning("Corrupted candidate preserved for explicit recovery: %s", damaged)
+            else:
+                logger.info("Candidate snapshot reused: %s elapsed=%.3fs", version, monotonic() - started)
+                return Snapshot(destination, version, True)
+        logger.info("Building candidate snapshot: %s", version)
+        with TemporaryDirectory(prefix=".build-", dir=root) as staging:
+            folder = Path(staging) / version
+            folder.mkdir()
+            data = folder / "dataset.csv"
+            transform(dict(sources), data)
+            if not data.is_file() or not data.stat().st_size:
+                raise ValueError("Transformation did not produce a dataset")
+            if _identity(sources, policy, transform_revision) != identity:
+                raise ValueError("Sources or transformation policy changed during snapshot construction")
+            artifacts = {}
+            for path in folder.iterdir():
+                if path.name == "manifest.json" or path.is_symlink() or not path.is_file():
+                    raise ValueError(f"Unexpected staged artifact: {path.name}")
+                artifacts[path.name] = file_sha256(path)
+            metadata = {"identity": identity, "version_id": version, "data_sha256": artifacts["dataset.csv"],
+                        "artifacts": artifacts, "scientific_quality_certified": False}
+            (folder / "manifest.json").write_text(json.dumps(metadata, indent=2, ensure_ascii=False), encoding="utf-8")
+            try:
+                folder.rename(destination)
+            except OSError:
+                # A concurrent publisher may have won; never overwrite a snapshot.
+                if not destination.exists():
+                    raise
+                verify_snapshot(destination, identity)
+                return Snapshot(destination, version, True)
+        verify_snapshot(destination, identity)
+        logger.info("Candidate snapshot published: %s elapsed=%.3fs", version, monotonic() - started)
+        return Snapshot(destination, version, False)
 
 
 def materialize_sources(root: Path, sources: dict[str, Path], *, policy: dict,

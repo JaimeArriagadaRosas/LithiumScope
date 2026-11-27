@@ -40,7 +40,10 @@ def resolve_image_path(value: str | Path, *, root: Path | None = None,
     registry = read_relocation(root) if relocation is None else relocation
     mapped = _mapped_record(value, registry)
     if mapped is not None:
-        result = (root / mapped["relative_path"]).resolve()
+        relative = str(mapped["relative_path"])
+        if _windows_absolute(relative) or Path(relative).is_absolute():
+            raise ValueError("Relocated image requires a relative path")
+        result = (root / relative.replace(chr(92), "/")).resolve()
         if not result.is_relative_to(root):
             raise ValueError("Relocated image escapes project root")
         if not result.is_file():
@@ -81,4 +84,4 @@ def inspect_image_links(values, *, root: Path, verify_hash: bool = False) -> dic
                 cache[value] = False
         unavailable += not cache[value]
     return {"total": total, "unavailable": unavailable, "unique_references": len(cache),
-            "relocation_hashes_checked": verify_hash, "spectral_content_verified": False}
+            "relocation_hashes_requested": verify_hash, "spectral_content_verified": False}

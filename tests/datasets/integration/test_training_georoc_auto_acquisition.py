@@ -85,3 +85,26 @@ def test_failed_download_does_not_fallback_to_mamani(monkeypatch, tmp_path):
     with pytest.raises(RuntimeError, match="GEOROC unavailable"):
         sources.prepare_model_1_training_source(base, include_georoc=True)
     assert not (tmp_path / "processed/combined.csv").exists()
+
+
+def test_unfrozen_m1_reuses_only_verified_cache(monkeypatch, tmp_path):
+    base, folder = setup(monkeypatch, tmp_path)
+    stub_merger(monkeypatch, tmp_path)
+    folder.mkdir(parents=True)
+    raw = folder / "approved.csv"
+    raw.write_text("LI\n10\n")
+    ingest = sources.ingest_georoc_files
+    calls = []
+    def counted(*args, **kwargs):
+        calls.append(1)
+        return ingest(*args, **kwargs)
+    monkeypatch.setattr(sources, "ingest_georoc_files", counted)
+    path = sources.prepare_model_1_training_source(base, include_georoc=True)
+    assert sources.prepare_model_1_training_source(base, include_georoc=True) == path
+    assert len(calls) == 1
+    raw.write_text("LI\n11\n")
+    sources.prepare_model_1_training_source(base, include_georoc=True)
+    assert len(calls) == 2
+    path.write_text("corrupt")
+    sources.prepare_model_1_training_source(base, include_georoc=True)
+    assert len(calls) == 3
