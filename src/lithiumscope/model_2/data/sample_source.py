@@ -7,9 +7,9 @@ import pandas as pd
 
 from lithiumscope.core.config import load_config
 from lithiumscope.core.logging.session import get_logger
-from lithiumscope.datasets.validation.concentration import valid_concentration
+from lithiumscope.datasets.validation.chemistry.concentration import valid_concentration
 from lithiumscope.datasets.readers.tabular import load_data
-from lithiumscope.datasets.validation.analytical import parse_analytical_value
+from lithiumscope.datasets.validation.chemistry.analytical import parse_analytical_value
 from lithiumscope.datasets.harmonization.observations import reconcile_observations, stable_disambiguation
 from lithiumscope.datasets.validation.missing_values import normalize_missing_values
 from lithiumscope.datasets.validation.target_column import resolve_target

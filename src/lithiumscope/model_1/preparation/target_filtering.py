@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from lithiumscope.core.logging.session import get_logger
-from lithiumscope.datasets.validation.concentration import valid_concentration
+from lithiumscope.datasets.validation.chemistry.concentration import valid_concentration
 
 logger = get_logger("model_1.target_filtering")
 

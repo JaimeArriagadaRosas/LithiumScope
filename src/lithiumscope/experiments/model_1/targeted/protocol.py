@@ -11,7 +11,7 @@ from lithiumscope.core.checkpoints import read_checkpoint_evidence
 from lithiumscope.core.config import load_config
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import RESULTS_DIR
-from lithiumscope.datasets.management.diagnostic_provisioning import prepare_diagnostic_source
+from lithiumscope.datasets.management.sources.diagnostic import prepare_diagnostic_source
 from lithiumscope.experiments.model_1.targeted.partitions import outer_from_manifest, find_plan
 from lithiumscope.experiments.generalization.prepared import load_snapshot, prepare_version
 from lithiumscope.experiments.model_1.targeted.policies import ALGORITHMS

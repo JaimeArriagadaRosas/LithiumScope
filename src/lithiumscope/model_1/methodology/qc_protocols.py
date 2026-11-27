@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from lithiumscope.datasets.georoc_ingestion_schema import MAJOR_OXIDES
+from lithiumscope.datasets.adapters.georoc.schema import MAJOR_OXIDES
 
 
 def protocol_masks(

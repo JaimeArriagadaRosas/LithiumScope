@@ -18,7 +18,7 @@ from lithiumscope.core.reproducibility import set_global_seed
 from lithiumscope.core.run_context import RunContext
 from lithiumscope.core.scientific.training_diagnostics import save_oof_diagnostics
 from lithiumscope.core.states import RunState
-from lithiumscope.datasets.manifest import build_tabular_manifest, write_manifest
+from lithiumscope.datasets.provenance.manifest import build_tabular_manifest, write_manifest
 from lithiumscope.model_2.evaluation.baseline import evaluate_prior_baseline
 from lithiumscope.model_2.evaluation.thresholds import select_operating_threshold
 from lithiumscope.model_2.evaluation.maps import save_spatial_score_map
