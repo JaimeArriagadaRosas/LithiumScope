@@ -6,6 +6,8 @@ _PATTERN = re.compile(r"^\s*(<=|>=|<|>|≤|≥)\s*([+-]?(?:\d+(?:[.,]\d*)?|[.,]\
 _MARKERS = {"bdl", "nd", "n.d.", "below detection limit", "not detected"}
 
 def parse_analytical_value(value, *, lower_fraction: float = 0.5, decimal_comma: bool = True):
+    if not np.isfinite(lower_fraction) or not 0 <= lower_fraction <= 1:
+        raise ValueError("lower_fraction must be finite and between zero and one")
     if not isinstance(value, str):
         return value, None, None
     stripped = value.strip()

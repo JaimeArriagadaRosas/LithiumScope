@@ -84,10 +84,13 @@ def _normalize(value: str) -> str:
 def infer_georoc_column_map(
     columns: Iterable[str],
 ) -> dict[str, str]:
-    actual = {
-        _normalize(str(column)): str(column)
-        for column in columns
-    }
+    actual = {}
+    for column in columns:
+        name = str(column)
+        key = _normalize(name)
+        if key in actual:
+            raise ValueError(f"Duplicate or ambiguous GEOROC header: {actual[key]!r}, {name!r}")
+        actual[key] = name
     result: dict[str, str] = {}
     for target, aliases in GEOROC_ALIASES.items():
         for alias in aliases:

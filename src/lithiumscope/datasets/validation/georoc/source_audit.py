@@ -61,13 +61,18 @@ def compare_exports(original: Path, filtered: Path) -> tuple[dict, pd.DataFrame,
     comparable = sorted(ids & actual)
     columns = [c for c in raw if c in selected and c.endswith(("(PPM)", "(WT%)"))]
     differences = None
+    raw_token_differences = None
     if comparable and not (expected._identity.duplicated().any() or selected._identity.duplicated().any()):
         left = expected.set_index("_identity").loc[comparable, columns].apply(pd.to_numeric, errors="coerce")
         right = selected.set_index("_identity").loc[comparable, columns].apply(pd.to_numeric, errors="coerce")
+        left_raw = expected.set_index("_identity").loc[comparable, columns].apply(lambda s: s.str.strip())
+        right_raw = selected.set_index("_identity").loc[comparable, columns].apply(lambda s: s.str.strip())
+        raw_token_differences = int(left_raw.ne(right_raw).to_numpy().sum())
         differences = int((~np.isclose(left.to_numpy(float), right.to_numpy(float), rtol=1e-12,
                                        atol=1e-12, equal_nan=True)).sum())
     return {"original": before, "filtered": after, "expected_whole_rock_rows": len(expected),
             "missing_whole_rock_ids": sorted(ids - actual), "unexpected_filtered_ids": sorted(actual - ids),
             "matched_ids": len(comparable), "numeric_chemistry_cell_differences": differences,
             "numeric_chemistry_columns_compared": len(columns),
+            "raw_chemistry_token_differences": raw_token_differences,
             "limitation": "Identity by source ID; analytical technique, zero semantics, CRS and physical duplicate identity are not certified."}, pd.DataFrame(raw_tokens + selected_tokens), extremes
