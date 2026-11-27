@@ -12,45 +12,13 @@ class GeorocRawRead:
     encoding: str
 
 
-_ENCODINGS = (
-    "utf-8-sig",
-    "cp1252",
-    "latin-1",
-)
-
-
-def detect_georoc_encoding(
-    path: Path,
-) -> str:
-    if (
-        not path.is_file()
-        or path.stat().st_size <= 0
-    ):
-        raise RuntimeError(
-            "La descarga GEOROC está vacía."
-        )
-
-    for encoding in _ENCODINGS:
-        try:
-            with path.open(
-                "r",
-                encoding=encoding,
-                newline="",
-            ) as handle:
-                for chunk in iter(
-                    lambda: handle.read(1024 * 1024),
-                    "",
-                ):
-                    if not chunk:
-                        break
-            return encoding
-        except UnicodeDecodeError:
-            continue
-
-    raise RuntimeError(
-        "No se pudo determinar una codificación "
-        "de texto compatible para GEOROC."
-    )
+def detect_georoc_encoding(path: Path) -> str:
+    from lithiumscope.datasets.readers.csv_reader import detect_text_encoding
+    from lithiumscope.core.exceptions import InputValidationError
+    try:
+        return detect_text_encoding(path)
+    except InputValidationError as exc:
+        raise RuntimeError(f"No se pudo determinar una codificación GEOROC compatible: {exc}") from exc
 
 
 def read_georoc_raw(

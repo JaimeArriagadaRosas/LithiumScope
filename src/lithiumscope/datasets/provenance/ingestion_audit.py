@@ -17,10 +17,18 @@ def write_ingestion_audit(
     allowed_material_types: tuple[str, ...],
     minimum_predictors: int,
     censoring: list[dict],
+    source_hashes: dict[str, str] | None = None,
+    source_details: list[dict] | None = None,
+    output_sha256: str | None = None,
+    iron_total_mode: str = "original",
 ) -> None:
     audit = {
         "source": source_name,
-        "source_sha256": {str(item): file_sha256(item) for item in files},
+        "source_sha256": source_hashes if source_hashes is not None else {str(item): file_sha256(item) for item in files},
+        "source_details": source_details or [],
+        "output_sha256": output_sha256,
+        "iron_total_mode": iron_total_mode,
+        "complete_source_coverage": not any(s.get("state") != "processed" for s in (source_details or [])),
         "analytical_censoring": censoring,
         "rows_skipped_material_core_or_density": rows_read - rows_kept,
         "files": [

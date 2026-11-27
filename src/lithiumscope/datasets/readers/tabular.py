@@ -1,6 +1,6 @@
 """Public tabular reading API and source metadata."""
 from __future__ import annotations
-from hashlib import sha256
+from lithiumscope.core.hashing import file_sha256
 from pathlib import Path
 import pandas as pd
 from lithiumscope.core.exceptions import InputValidationError
@@ -19,7 +19,7 @@ def load_data(path: Path, *, quiet: bool = False, delimiter: str = ",",
     if suffix == ".csv":
         frame, used_encoding = _read_csv_with_fallback(path, delimiter=delimiter, encoding=encoding)
         metadata.update(encoding=used_encoding, delimiter=delimiter,
-                        legacy_blank_headers=sorted(_LEGACY_BLANK_HEADERS.get(sha256(path.read_bytes()).hexdigest(), set())))
+                        legacy_blank_headers=sorted(_LEGACY_BLANK_HEADERS.get(file_sha256(path), set())))
         if not quiet:
             print(f"    ✓ CSV: {used_encoding}; delimitador={delimiter!r}")
     elif suffix in {".xlsx", ".xls"}:

@@ -3,6 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
+from uuid import uuid4
+from lithiumscope.core.hashing import file_sha256
+from lithiumscope.datasets.readers.georoc_raw_reader import detect_georoc_encoding
+from lithiumscope.datasets.readers.csv_reader import validate_csv_structure
 
 import pandas as pd
 
@@ -29,17 +33,6 @@ class GeorocIngestionResult:
     rows_rejected_missing_core: int
     mapped_columns: dict[str, str]
     audit_path: Path
-
-
-def _read_header(path: Path) -> list[str]:
-    return [
-        str(column)
-        for column in pd.read_csv(
-            path,
-            nrows=0,
-            encoding="utf-8",
-        ).columns
-    ]
 
 
 def _validate_core_mapping(
@@ -74,19 +67,21 @@ def ingest_georoc_files(
     ),
     minimum_predictors: int = 8,
     iron_total_mode: str = "original",
+    allow_incompatible_sources: bool = False,
 ) -> GeorocIngestionResult:
     if iron_total_mode not in {"original", "feot_equivalent"}:
         raise ValueError(f"Unsupported GEOROC iron_total_mode: {iron_total_mode}")
-    paths = tuple(
-        Path(path)
-        for path in files
-        if Path(path).is_file()
-    )
+    paths = tuple(Path(path).resolve() for path in files)
+    if len(set(paths)) != len(paths):
+        raise ValueError("Duplicate GEOROC source paths")
     if not paths:
         raise ValueError(
             "No GEOROC CSV files were supplied."
         )
 
+    if any(not path.is_file() for path in paths):
+        raise FileNotFoundError("One or more declared GEOROC sources are missing")
+    destination = Path(destination)
     destination.parent.mkdir(
         parents=True,
         exist_ok=True,
@@ -97,10 +92,14 @@ def ingest_georoc_files(
             ".audit.json"
         )
     )
-    temporary = destination.with_suffix(
-        destination.suffix + ".tmp"
-    )
-    temporary.unlink(missing_ok=True)
+    audit_destination = Path(audit_destination)
+    if destination.resolve() == audit_destination.resolve() or any(
+            path in {destination.resolve(), audit_destination.resolve()} for path in paths):
+        raise ValueError("GEOROC input and output paths must be distinct")
+    if len({path.name for path in paths}) != len(paths):
+        raise ValueError("GEOROC source basenames must be unique for row lineage")
+    temporary = destination.with_name(f".{destination.name}.{uuid4().hex}.tmp")
+    audit_temporary = audit_destination.with_name(f".{audit_destination.name}.{uuid4().hex}.tmp")
 
     logger.info("GEOROC ingestion started: source=%s files=%d destination=%s", source_name, len(paths), destination)
     rows_read = 0
@@ -108,8 +107,12 @@ def ingest_georoc_files(
     rejected = 0
     mapped_union: dict[str, str] = {}
     wrote_header = False
-    mappings, output_columns = ingestion_layout(paths, _read_header, iron_total_mode)
+    source_hashes = {str(path): file_sha256(path) for path in paths}
+    encodings = {path: detect_georoc_encoding(path) for path in paths}
+    headers = {path: validate_csv_structure(path, delimiter=",", encoding=encodings[path]) for path in paths}
+    mappings, output_columns = ingestion_layout(paths, headers.__getitem__, iron_total_mode)
     censoring = []
+    source_details = []
 
     try:
         for path in paths:
@@ -120,7 +123,13 @@ def ingest_georoc_files(
             missing = _validate_core_mapping(
                 mapping
             )
+            if allowed_material_types and "Sample_type" not in mapping.values():
+                missing.append("Sample_type")
             if missing:
+                if not allow_incompatible_sources:
+                    raise ValueError(f"GEOROC source {path.name} lacks required columns: {missing}")
+                source_details.append({"path": str(path), "state": "skipped_schema", "missing": missing,
+                                       "encoding": encodings[path], "mapping": mapping})
                 logger.warning(
                     "Skipping GEOROC file without core "
                     "columns %s: %s",
@@ -129,6 +138,7 @@ def ingest_georoc_files(
                 )
                 continue
 
+            first_read, first_kept = rows_read, rows_kept
             usecols = list(mapping.keys())
             for chunk in pd.read_csv(
                 path,
@@ -139,7 +149,7 @@ def ingest_georoc_files(
                 ),
                 low_memory=False,
                 dtype=str,
-                encoding="utf-8",
+                encoding=encodings[path],
             ):
                 rows_read += len(chunk)
                 harmonized, dropped = (
@@ -170,7 +180,12 @@ def ingest_georoc_files(
                 )
                 wrote_header = True
                 rows_kept += len(harmonized)
-    except Exception:
+            source_details.append({"path": str(path), "state": "processed", "encoding": encodings[path],
+                                   "mapping": mapping, "rows_read": rows_read - first_read,
+                                   "rows_kept": rows_kept - first_kept})
+        if any(file_sha256(path) != source_hashes[str(path)] for path in paths):
+            raise ValueError("GEOROC source changed during ingestion")
+    except BaseException:
         logger.exception("GEOROC ingestion failed: destination=%s", destination)
         temporary.unlink(
             missing_ok=True
@@ -185,9 +200,9 @@ def ingest_georoc_files(
             "GEOROC files produced no compatible rows."
         )
 
-    temporary.replace(destination)
-    _write_audit(
-        audit_destination,
+    try:
+        _write_audit(
+            audit_temporary,
         source_name=source_name,
         files=paths,
         rows_read=rows_read,
@@ -200,7 +215,16 @@ def ingest_georoc_files(
         ),
         minimum_predictors=minimum_predictors,
         censoring=censoring,
-    )
+        source_hashes=source_hashes,
+        source_details=source_details,
+        output_sha256=file_sha256(temporary),
+        iron_total_mode=iron_total_mode,
+        )
+        from lithiumscope.datasets.provenance.publication import publish_pair
+        publish_pair(temporary, destination, audit_temporary, audit_destination)
+    finally:
+        temporary.unlink(missing_ok=True)
+        audit_temporary.unlink(missing_ok=True)
 
     logger.info("GEOROC ingestion complete: rows_read=%d rows_kept=%d rejected=%d audit=%s", rows_read, rows_kept, rejected, audit_destination)
     return GeorocIngestionResult(
