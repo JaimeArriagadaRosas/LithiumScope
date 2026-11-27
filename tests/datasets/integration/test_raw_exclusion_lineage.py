@@ -13,7 +13,7 @@ def test_raw_exclusions_have_explicit_reasons_and_positions(tmp_path):
     root = tmp_path / "cache"
     result = build_georoc_candidates([source], root=root, policy=candidate_policy("model_1"), minimum_predictors=0)
     assert len(pd.read_csv(result.data_path)) == 1
-    folder = next((root / "sources").iterdir())
+    folder = next(p for p in (root / "sources").iterdir() if (p / "manifest.json").is_file())
     verify_snapshot(folder)
     excluded = pd.read_csv(folder / "raw_exclusions.csv")
     assert excluded.source_row_position.tolist() == [1, 2, 3]

@@ -105,6 +105,8 @@ def adapt_reference(source: Path, *, key: str, options: dict, root: Path,
         if len(sidecars) != 1:
             raise ValueError("Exactly one patch sidecar required")
         inputs["sidecar"] = sidecars[0]
+        if json.loads(sidecars[0].read_text(encoding="utf-8")).get("scl_sha256") is not None:
+            inputs["scl"] = source.with_suffix(".scl.npy")
     adapter = get_adapter(key)
     def transform(inputs, output):
         archive = inputs["source"]

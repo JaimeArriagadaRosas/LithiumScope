@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy as np
 
 from lithiumscope.core.hashing import file_sha256
+from lithiumscope.datasets.adapters.sentinel2 import validate_metric_raster
 from lithiumscope.model_2.preparation.features.spectral import DEFAULT_BAND_NAMES
 
 
@@ -43,19 +44,6 @@ def verify_metadata(path,contract):
     if not (-90<=lat<=90 and -180<=lon<=180):
         raise ValueError("Invalid patch coordinates")
     return meta,sidecar
-
-
-def validate_metric_raster(dataset):
-    crs=dataset.crs
-    if crs is None or not crs.is_projected:
-        raise ValueError("Raster must use a projected metric CRS")
-    _, factor=crs.linear_units_factor
-    if not np.isclose(factor,1.,rtol=0,atol=1e-9):
-        raise ValueError("Raster linear units must be metres")
-    affine=dataset.transform
-    if not np.isclose(affine.b,0,atol=1e-9) or not np.isclose(affine.d,0,atol=1e-9) or affine.a<=0 or affine.e>=0:
-        raise ValueError("Raster must be north-up, with nonrotated positive pixel width")
-    return affine
 
 
 def load_verified_patch(path,contract):

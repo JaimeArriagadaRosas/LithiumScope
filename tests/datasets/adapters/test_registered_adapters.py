@@ -54,3 +54,19 @@ def test_sentinel_patch_hash_and_band_order(tmp_path):
     assert evidence["joint_valid_fraction"] == 1
     with pytest.raises(ValueError, match="contract"):
         inspect(path,expected_bands=("nir","red"),expected_pixels=2,expected_size_m=40)
+
+
+def test_sentinel_declared_scl_is_verified(tmp_path):
+    path=tmp_path/"a.npy"
+    mask=tmp_path/"a.scl.npy"
+    np.save(path,np.ones((1,2,2)))
+    np.save(mask,np.full((2,2),4))
+    meta={"image_sha256":file_sha256(path),"collection":"sentinel-2-l2a","scene_id":"s",
+          "bands":["red"],"patch_pixels":2,"patch_size_m":40,"scl_sha256":file_sha256(mask)}
+    path.with_suffix(".json").write_text(json.dumps(meta))
+    inspect=get_adapter("sentinel2")
+    _, evidence=inspect(path,expected_bands=("red",),expected_pixels=2,expected_size_m=40)
+    assert evidence["scl"]["classified_fraction"]==1
+    np.save(mask,np.zeros((2,2)))
+    with pytest.raises(ValueError,match="SCL mask hash"):
+        inspect(path,expected_bands=("red",),expected_pixels=2,expected_size_m=40)

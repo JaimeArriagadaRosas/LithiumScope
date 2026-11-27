@@ -12,7 +12,7 @@ import numpy as np
 
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.reproducibility import canonical_json_hash
-from lithiumscope.model_2.preparation.patch_contract import validate_metric_raster
+from lithiumscope.datasets.adapters.sentinel2 import validate_metric_raster
 from lithiumscope.model_2.methodology.spectral.satellite_quality import (
     ScientificScenePolicy, analyze_arrays, scene_metadata, BLOCKING_CLASSES, SPECTRAL_BANDS,
 )

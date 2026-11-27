@@ -18,7 +18,7 @@ def adapt_mamani09(path: Path, *, lithium_unit="unknown"):
         raise ValueError("Mamani09 mirror requires Li_icpms and unique columns")
     reserved = {"source_row_position", "source_dataset", "source_file", "source_li_raw",
                 "source_li_unit", "source_li_censor", "source_li_limit", "source_coordinate_status"}
-    if reserved & set(original):
+    if reserved & set(original) or any(str(name).startswith("source_coordinate_original_") for name in original):
         raise ValueError("Source provenance columns already present")
     frame, coordinates = assess_coordinate_aliases(original)
     if not {"Longitude", "Latitude"} <= set(frame):
@@ -31,6 +31,9 @@ def adapt_mamani09(path: Path, *, lithium_unit="unknown"):
     frame["Li_icpms"] = pd.to_numeric([value if kind is None else None for value, kind, _ in parsed], errors="coerce")
     frame["source_li_unit"] = lithium_unit
     frame["source_coordinate_status"] = coordinates.coordinate_status
+    for name in coordinates.columns:
+        if name.startswith("original_"):
+            frame["source_coordinate_" + name] = coordinates[name]
     frame["source_row_position"] = range(len(frame))
     frame["source_dataset"] = "Mamani09_public_mirror"
     frame["source_file"] = path.name

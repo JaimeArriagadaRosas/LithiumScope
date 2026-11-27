@@ -28,6 +28,8 @@ def _stream_download(url: str, destination: Path) -> Path:
         with requests.get(url, stream=True, timeout=60) as response:
             response.raise_for_status()
             total = int(response.headers.get("content-length", "0") or 0)
+            if response.headers.get("content-encoding", "identity").lower() != "identity":
+                total = 0  # iter_content decodes transport compression
             downloaded = 0
             with temporary.open("wb") as handle:
                 for chunk in response.iter_content(chunk_size=1024 * 1024):
