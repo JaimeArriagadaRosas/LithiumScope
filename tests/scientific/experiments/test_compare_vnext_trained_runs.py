@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.experiments.analysis.compare_vnext_trained_runs import (
+from lithiumscope.experiments.integrated.compare_vnext_trained_runs import (
     check_m2_identical_protocol,
     classification_metrics,
     group_bootstrap_gain,
@@ -109,7 +109,7 @@ def test_bootstrap_refuses_unpaired_inputs():
 
 def test_archived_m1_runs_match_by_explicit_observation_keys_if_available():
     from lithiumscope.core.paths import PROJECT_ROOT
-    from lithiumscope.experiments.analysis.compare_vnext_trained_runs import (
+    from lithiumscope.experiments.integrated.compare_vnext_trained_runs import (
         OLD_M1, NEW_M1, load_m1_oof,
     )
     directory=PROJECT_ROOT/"results/model_1/runs"
@@ -126,7 +126,7 @@ def test_archived_m1_runs_match_by_explicit_observation_keys_if_available():
 
 def test_archived_m2_runs_reuse_identical_spatial_test_protocol_if_available():
     from lithiumscope.core.paths import PROJECT_ROOT
-    from lithiumscope.experiments.analysis.compare_vnext_trained_runs import (
+    from lithiumscope.experiments.integrated.compare_vnext_trained_runs import (
         OLD_M2,NEW_M2,load_m2_oof,check_m2_identical_protocol,
     )
     root=PROJECT_ROOT
@@ -138,3 +138,11 @@ def test_archived_m2_runs_reuse_identical_spatial_test_protocol_if_available():
     a=load_m2_oof(old,"random_forest")
     b=load_m2_oof(new,"random_forest")
     check_m2_identical_protocol(old,new,a,b,pd.read_csv(manifest))
+
+
+def test_comparison_modules_are_canonical():
+    from lithiumscope.experiments.integrated import compare_vnext_trained_runs as runner
+    from lithiumscope.experiments.integrated.comparison.compare_m1 import compare_m1
+    from lithiumscope.experiments.integrated.comparison.compare_m2 import compare_m2
+    assert runner.compare_m1 is compare_m1
+    assert runner.compare_m2 is compare_m2

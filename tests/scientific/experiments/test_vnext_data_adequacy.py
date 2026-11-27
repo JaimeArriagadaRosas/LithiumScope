@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.experiments.analysis.verify_vnext_data_adequacy import (
+from lithiumscope.experiments.integrated.verify_vnext_data_adequacy import (
     sample_keys, group_train_indices,
 )
 
