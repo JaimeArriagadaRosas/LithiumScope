@@ -70,13 +70,13 @@
       "tests/functional/model_lifecycle/test_versioned_model_release.py"
     ],
     "M1-16": [
-      "tests/datasets/provenance/test_georoc_provenance_contract.py",
+      "tests/reliability/persistence/test_georoc_provenance_contract.py",
       "tests/scientific/data_quality/test_source_reconciliation.py",
       "tests/scientific/data_quality/test_frozen_model_1_input.py"
     ],
     "M1-17": [
       "tests/scientific/data_quality/test_coordinate_lineage.py",
-      "tests/core/test_pipeline_audit_transaction.py",
+      "tests/reliability/persistence/test_pipeline_audit_transaction.py",
       "tests/scientific/eda/test_integral_eda.py"
     ],
     "M1-18": [
@@ -158,7 +158,7 @@
       "tests/integration/acquisition/test_registered_sentinel_patch.py"
     ],
     "M2-06": [
-      "tests/datasets/provenance/test_dataset_manifest.py",
+      "tests/reliability/persistence/test_dataset_manifest.py",
       "tests/scientific/features/test_verified_feature_cache.py",
       "tests/architecture/structure/test_management_provenance_architecture.py",
       "tests/regression/recovery/test_checkpoint_contract.py"
@@ -273,7 +273,7 @@
     "M2-30": [
       "tests/regression/recovery/test_checkpoints.py",
       "tests/scientific/features/test_verified_feature_cache.py",
-      "tests/datasets/provenance/test_dataset_manifest.py"
+      "tests/reliability/persistence/test_dataset_manifest.py"
     ],
     "ARQ-001": [
       "tests/functional/cli/test_readonly_results.py",
@@ -398,7 +398,7 @@
     "ARQ-024": [
       "tests/scientific/data_quality/test_model_2_sample_source.py",
       "tests/scientific/features/test_m2_physical_label_audit.py",
-      "tests/datasets/provenance/test_dataset_manifest.py",
+      "tests/reliability/persistence/test_dataset_manifest.py",
       "tests/regression/recovery/test_checkpoint_contract.py"
     ],
     "ARQ-025": [
@@ -743,7 +743,7 @@
     ],
     "ARQ-092": [
       "tests/development/test_validation.py",
-      "tests/core/test_pipeline_audit_transaction.py",
+      "tests/reliability/persistence/test_pipeline_audit_transaction.py",
       "tests/development/test_criteria.py",
       "tests/development/test_failure_context.py"
     ],
@@ -764,7 +764,7 @@
     ],
     "ARQ-096": [
       "tests/scientific/methodology/test_scientific_checks.py",
-      "tests/datasets/provenance/test_dataset_manifest.py",
+      "tests/reliability/persistence/test_dataset_manifest.py",
       "tests/scientific/methodology/test_spatial_audit_contract.py"
     ],
     "ARQ-097": [
@@ -784,7 +784,7 @@
     "ARQ-100": [
       "tests/runtime/test_logging_lifecycle.py",
       "tests/runtime/test_training_logging_session.py",
-      "tests/core/test_tracker_atomic.py",
+      "tests/reliability/persistence/test_tracker_atomic.py",
       "tests/integration/acquisition/test_georoc_acquisition.py",
       "tests/runtime/test_worker_logging_isolation.py",
       "tests/development/test_validation.py",
