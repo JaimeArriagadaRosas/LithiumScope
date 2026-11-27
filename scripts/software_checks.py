@@ -106,6 +106,8 @@ def validation_outcome(pytest_code: int, checks: dict, details: dict, *,
         return "incomplete", 10
     if not clean or (coverage_requested and details.get("line_coverage_pct") is None):
         return "incomplete", 10
+    if details.get("collection") is not None and not details["collection"].get("full_suite_verified"):
+        return "incomplete", 10
     if counts.get("skipped", 0):
         return "incomplete", 10
     return "passed", 0

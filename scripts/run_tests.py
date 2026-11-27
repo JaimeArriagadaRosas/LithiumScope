@@ -16,10 +16,12 @@ import xml.etree.ElementTree as ET
 
 if __package__:
     from .test_reporting.architecture import audit
+    from .test_reporting.evidence import collection_evidence, criterion_evidence, write_json, write_report
     from .pytest_console import monitor, print_summary, report_details
     from .software_checks import run_preflight, artifact_snapshot, compare_artifacts, validation_outcome
 else:
     from test_reporting.architecture import audit
+    from test_reporting.evidence import collection_evidence, criterion_evidence, write_json, write_report
     from pytest_console import monitor, print_summary, report_details
     from software_checks import run_preflight, artifact_snapshot, compare_artifacts, validation_outcome
 
@@ -152,7 +154,17 @@ def run(args: list[str]) -> int:
     cases = details.pop("cases")
     counts = junit_counts(report)
     clean = before == after and before["git_commit"] is not None and before["tracked_worktree_dirty"] is False and before["untracked_code_present"] is False
+    collection = collection_evidence(ROOT, progress_file, cases,
+        junit_state=details["junit_state"], require_full=preflight_requested)
+    details["collection"] = collection
+    criteria = criterion_evidence(ROOT, cases, trusted=clean and pytest_code in (0, 1)
+                                  and collection["full_suite_verified"])
+    write_json(results / "criterion_evidence.json", criteria)
+    details["criterion_summary"] = {"state": criteria["state"], "summary": criteria["summary"],
+                                    "by_family": criteria["by_family"]}
     if preflight_requested:
+        if criteria["state"] == "ERROR":
+            checks["criterion_catalog"] = {"state": "ERROR", "scope": criteria.get("reason", "")}
         state, code = validation_outcome(pytest_code, checks, details,
             coverage_requested=coverage_requested, clean=clean, counts=counts)
     else:
@@ -168,9 +180,8 @@ def run(args: list[str]) -> int:
                "arguments": args,
                "progress_log": progress_file.relative_to(ROOT).as_posix(),
                "details": details}
-    temporary = results / ".summary.json.tmp"
-    temporary.write_text(json.dumps(summary, indent=2), encoding="utf-8")
-    temporary.replace(results / "summary.json")
+    write_json(results / "summary.json", summary)
+    write_report(results / "verification_report.md", summary, criteria)
     event(state, exit_code=code, duration_seconds=summary["duration_seconds"], error=error)
     if json_output:
         print(json.dumps(summary, indent=2))
