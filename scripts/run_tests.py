@@ -148,7 +148,8 @@ def run(args: list[str]) -> int:
         checks["protected_artifacts"] = compare_artifacts(
             protected_before, artifact_snapshot(ROOT, logs, env, "after"))
     after = git_identity()
-    details = report_details(report, results / "coverage.xml")
+    details = report_details(report, results / "coverage.xml", root=ROOT)
+    cases = details.pop("cases")
     counts = junit_counts(report)
     clean = before == after and before["git_commit"] is not None and before["tracked_worktree_dirty"] is False and before["untracked_code_present"] is False
     if preflight_requested:

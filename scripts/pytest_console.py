@@ -3,13 +3,17 @@ from __future__ import annotations
 
 from collections import Counter
 import json
-import re
 import shutil
 import sys
 from pathlib import Path
 import subprocess
 import time
-import xml.etree.ElementTree as ET
+
+
+if __package__:
+    from .test_reporting.outcomes import report_details
+else:
+    from test_reporting.outcomes import report_details
 
 
 def elapsed(seconds):
@@ -172,54 +176,6 @@ def monitor(command, *, cwd, env, log, progress_file, show=True):
         finally:
             if live:
                 live.clear()
-
-
-def report_details(junit, coverage):
-    result = {"line_coverage_pct": None, "groups": {}, "nonpassing": [], "slowest": [],
-              "collection_errors": 0, "executed_tests": 0, "collection_causes": {}}
-    try:
-        root = ET.parse(junit).getroot()
-        groups = {}
-        timings = []
-        for case in root.iter("testcase"):
-            module = case.get("classname", "")
-            case_name = case.get("name", "")
-            name = f"{module}::{case_name}" if module else case_name
-            group = ".".join((module or case_name.replace("/", ".").replace(chr(92), ".")).split(".")[:2]) or "unknown"
-            error = case.find("error")
-            collection = error is not None and (error.get("message", "").lower() == "collection failure")
-            if collection:
-                result["collection_errors"] += 1
-                raw = error.text or ""
-                match = re.search(r"No module named ['\"]([^'\"]+)['\"]", raw)
-                cause = f"ModuleNotFoundError: {match.group(1)}" if match else next(
-                    (line.strip()[:500] for line in reversed(raw.splitlines()) if line.strip()), "collection failure")
-                result["collection_causes"][cause] = result["collection_causes"].get(cause, 0) + 1
-            else:
-                result["executed_tests"] += 1
-            counts = groups.setdefault(group, Counter())
-            status = "passed"
-            for tag in ("error", "failure", "skipped"):
-                child = case.find(tag)
-                if child is not None:
-                    status = tag
-                    message = child.get("message") or (child.text or "").strip().split("\n")[-1]
-                    if collection:
-                        message = cause
-                    result["nonpassing"].append({"test": name, "state": status, "message": message[:500], "phase": "collection" if collection else "execution"})
-                    break
-            counts[status] += 1
-            if not collection:
-                timings.append({"test": name, "seconds": float(case.get("time", "0"))})
-        result["groups"] = {key: dict(value) for key, value in sorted(groups.items())}
-        result["slowest"] = sorted(timings, key=lambda item: item["seconds"], reverse=True)[:5]
-    except (OSError, ET.ParseError, ValueError):
-        pass
-    try:
-        result["line_coverage_pct"] = round(float(ET.parse(coverage).getroot().attrib["line-rate"]) * 100, 2)
-    except (OSError, ET.ParseError, ValueError, KeyError):
-        pass
-    return result
 
 
 def print_summary(summary, results):
