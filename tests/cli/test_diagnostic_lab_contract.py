@@ -120,3 +120,21 @@ def test_targeted_m1_runs_approved_reference_without_extra_prompts(monkeypatch, 
     monkeypatch.setattr(protocol, "available_runs", lambda: ["old"])
     assert command.run() is False
     assert calls == [reference]
+
+
+def test_software_menu_executes_full_preflight_runner(monkeypatch, tmp_path):
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts/run_tests.py").write_text("pass")
+    (tmp_path / "tests").mkdir()
+    monkeypatch.setattr(lab, "PROJECT_ROOT", tmp_path)
+    from lithiumscope.core.logging import session
+    monkeypatch.setattr(session, "current_session_directory", lambda: tmp_path / "logs/sessions/test")
+    captured = {}
+    def run(command, **kwargs):
+        captured.update(command=command, **kwargs)
+        return SimpleNamespace(returncode=1)
+    monkeypatch.setattr(lab.subprocess, "run", run)
+    assert lab._run_tests() is False
+    assert "--preflight" in captured["command"] and "--coverage" in captured["command"]
+    assert "--continue-on-collection-errors" in captured["command"]
+    assert captured["cwd"] == tmp_path

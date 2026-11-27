@@ -1,6 +1,3 @@
-import json
-import sys
-
 from scripts import software_checks
 from scripts.pytest_console import report_details
 
@@ -13,6 +10,7 @@ def test_full_validation_cannot_pass_with_failed_preflight_or_missing_coverage()
     assert software_checks.validation_outcome(0, {"imports": {"state": "OK"}}, details, **args) == ("passed", 0)
     assert software_checks.validation_outcome(0, {}, {**details, "line_coverage_pct": None}, **args) == ("incomplete", 10)
     assert software_checks.validation_outcome(2, {}, details, **args) == ("failed", 2)
+    assert software_checks.validation_outcome(0, {}, {**details, "collection_errors": 1}, **args) == ("failed", 1)
     assert software_checks.validation_outcome(0, {}, details, **{**args, "counts": {"tests": 5, "skipped": 1}}) == ("incomplete", 10)
 
 

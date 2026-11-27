@@ -52,12 +52,12 @@ review; the absence of detected overlap does not establish independence.
 
 ## Validation
 
-Run python scripts/check_internal_imports.py first. This static check scans
+The full software validation menu runs python scripts/check_internal_imports.py automatically. The script can also be invoked independently. This static check scans
 source, scripts and tests for retired dataset and analysis imports from the
 relocation catalog. It does not import packages, resolve every dynamic or
 relative import, run tests, or prove runtime behavior.
 
-Use menu option 5 for full regression and coverage. The additions include
+Use menu 5 > 3 > 1 for integrated software validation. It runs the retired-import check, syntax, dependency graph, code size, startup import smoke, Ruff, full pytest and coverage, and before/after selected protected-artifact hashes. Static failures do not suppress other checks. The full suite continues collecting runnable tests after collection errors, but such a run is never certified as passed. Summary JSON records each check and its log, pytest exit code, collection causes, and coverage. Exit 10 means incomplete evidence (including skips, missing coverage or unverifiable Git identity); nonzero pytest or failed checks mean failure. Missing Ruff is a failed check, not an automatic install. No production training or downloads are launched by the preflight; the test suite itself follows its existing fixtures and contracts. The additions include
 tests for chemistry, coordinate precision, quality decisions, decoding, source
 coverage, rollback, snapshot reuse, version comparison, provenance identity, raw exclusion accounting,
 and M2 manifest evidence. These tests require local execution; no result is

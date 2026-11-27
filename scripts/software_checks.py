@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-import os
 from pathlib import Path
 import subprocess
 import sys
@@ -27,8 +26,20 @@ def _command(root: Path, logs: Path, name: str, arguments: list[str], env: dict,
     result = {"state": "OK" if code == 0 else "ERROR", "exit_code": code,
               "duration_seconds": round(time.monotonic() - start, 3),
               "log": log.relative_to(root).as_posix(), "error": error}
+    if code != 0 and log.is_file():
+        if name == "retired_imports":
+            with log.open(encoding="utf-8", errors="replace") as stream:
+                findings = [line.strip() for line in stream if line.strip()]
+            result["finding_count"] = max(0, len(findings) - 1) if code == 1 and findings and findings[-1].startswith("Retired internal imports") else None
+            result["findings"] = findings[:100]
+        else:
+            from collections import deque
+            with log.open(encoding="utf-8", errors="replace") as stream:
+                result["log_tail"] = [line.rstrip()[:1000] for line in deque(stream, maxlen=20)]
     if show:
         print(f"  [{result['state']}] {name}: {result['log']}", flush=True)
+        if result.get("finding_count") is not None:
+            print(f"    Referencias o errores detectados: {result['finding_count']}", flush=True)
     return result
 
 
@@ -88,6 +99,8 @@ def validation_outcome(pytest_code: int, checks: dict, details: dict, *,
     if pytest_code != 0:
         return "failed", pytest_code
     if any(record.get("state") != "OK" for record in checks.values()):
+        return "failed", 1
+    if details.get("collection_errors", 0) or counts.get("failures", 0) or counts.get("errors", 0):
         return "failed", 1
     if not counts or details.get("executed_tests", 0) <= 0:
         return "incomplete", 10

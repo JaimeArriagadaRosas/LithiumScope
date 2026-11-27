@@ -85,7 +85,7 @@ def _run_tests() -> bool:
     print("\nValidación del software | Comprobaciones estáticas, suite completa y cobertura", flush=True)
     from lithiumscope.core.logging.session import current_session_directory
     env={**os.environ,"LITHIUMSCOPE_SESSION_DIR":str(current_session_directory())}
-    completed = subprocess.run([sys.executable, str(runner), "--preflight", "--coverage", "--", "-q", "tests"], cwd=PROJECT_ROOT, check=False,env=env)
+    completed = subprocess.run([sys.executable, str(runner), "--preflight", "--coverage", "--", "-q", "--continue-on-collection-errors", "tests"], cwd=PROJECT_ROOT, check=False,env=env)
     return completed.returncode == 0
 
 
