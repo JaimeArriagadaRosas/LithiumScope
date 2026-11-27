@@ -50,13 +50,15 @@ def review_independence(candidates: pd.DataFrame, reference: pd.DataFrame, *,
     if reference.empty:
         raise ValueError("Reference cohort is empty")
     def normalized(values):
-        return values.astype("string").fillna("").str.strip().str.casefold()
+        result = values.astype("string").fillna("").str.strip().str.casefold()
+        return result.mask(result.isin({"unknown", "none", "nan", "na", "n/a", "<na>", "not reported"}), "")
     def coordinates(frame):
         lat, lon = (pd.to_numeric(frame[k], errors="coerce") for k in ("latitude", "longitude"))
         return lat, lon, lat.between(-90,90) & lon.between(-180,180)
     rs, ri = normalized(reference.source), normalized(reference.sample_id)
     reference_ids = set(zip(rs[rs.ne("") & ri.ne("")], ri[rs.ne("") & ri.ne("")]))
     cs, ci = normalized(candidates.source), normalized(candidates.sample_id)
+    repeated_candidates = pd.DataFrame({"source": cs, "sample": ci}).duplicated(keep=False)
     rl, rn, rv = coordinates(reference)
     cl, cn, cv = coordinates(candidates)
     ref_lat, ref_lon = np.radians(rl[rv].to_numpy(float)), np.radians(rn[rv].to_numpy(float))
@@ -67,6 +69,8 @@ def review_independence(candidates: pd.DataFrame, reference: pd.DataFrame, *,
         reasons = []
         if not source or not sample:
             reasons.append("missing_identity")
+        if source and sample and repeated_candidates.iloc[pos]:
+            reasons.append("candidate_identity_conflict")
         if (source, sample) in reference_ids:
             reasons.append("known_sample_overlap")
         if publication and publication in publications:

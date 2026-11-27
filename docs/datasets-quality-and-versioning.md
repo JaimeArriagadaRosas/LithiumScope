@@ -17,11 +17,12 @@ No acquisition from the network or production promotion occurs. The GEOROC
 workflow caches independent harmonizations and then combines their observations
 without automatic cross-source deduplication. Its admission report covers the
 harmonized rows, not every raw rejected row; the ingestion audit separately
-records source coverage, totals and censoring evidence.
+records source coverage, totals and censoring evidence. Per-source raw_exclusions.csv
+records each rejected source row position and its first rejection reason.
 
 A candidate version contains dataset.csv, manifest.json, quality_report.json,
 admitted.csv, quarantine.csv and excluded.csv. Per-source snapshots contain
-harmonized dataset.csv and ingestion_audit.json. All artifacts are hashed.
+harmonized dataset.csv, ingestion_audit.json and raw_exclusions.csv. All artifacts are hashed.
 The version identity includes source byte hashes, policy and an explicit
 transformation revision. Change that revision when transformation logic changes.
 A source-scoped audit observation ID identifies a row within exact source bytes;
@@ -58,7 +59,7 @@ relative import, run tests, or prove runtime behavior.
 
 Use menu option 5 for full regression and coverage. The additions include
 tests for chemistry, coordinate precision, quality decisions, decoding, source
-coverage, rollback, snapshot reuse, version comparison, provenance identity,
+coverage, rollback, snapshot reuse, version comparison, provenance identity, raw exclusion accounting,
 and M2 manifest evidence. These tests require local execution; no result is
 asserted in this document.
 

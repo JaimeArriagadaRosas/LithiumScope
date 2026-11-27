@@ -18,7 +18,8 @@ def validate_file_integrity(path: Path, *, expected_sha256: str | None = None,
                             root: Path | None = None) -> Path:
     """Validate a nonempty regular file and optional content identity."""
     from lithiumscope.core.hashing import file_sha256
-    resolved = Path(path).resolve()
+    raw = Path(path).expanduser()
+    resolved = ((Path(root) / raw) if root is not None and not raw.is_absolute() else raw).resolve()
     if root is not None and not resolved.is_relative_to(Path(root).resolve()):
         raise DatasetError("Dataset path escapes declared root")
     validate_nonempty(resolved)
