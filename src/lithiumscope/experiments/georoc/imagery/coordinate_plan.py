@@ -25,10 +25,10 @@ def coordinate_plan(frame: pd.DataFrame, *, minimum_distance_km: float = 100,
     far = np.isfinite(distance) & distance.ge(minimum_distance_km)
     eligible = ledger.candidate_gate.eq("REVIEW_METHOD_AND_SURFACE").fillna(False)
     ledger["plan_reason"] = np.select(
-        [~valid, ~far, ~eligible], ["invalid_coordinates", "distance_missing_or_below_policy", "screening_gate"],
+        [~valid.fillna(False).to_numpy(dtype=bool), ~far.fillna(False).to_numpy(dtype=bool), ~eligible.to_numpy(dtype=bool)], ["invalid_coordinates", "distance_missing_or_below_policy", "screening_gate"],
         default="selected_for_exploratory_imagery")
-    selected = valid & far & eligible
-    ledger["plan_state"] = np.where(selected, "selected", "not_selected")
+    selected = (valid & far & eligible).fillna(False)
+    ledger["plan_state"] = np.where(selected.to_numpy(dtype=bool), "selected", "not_selected")
     ledger["coordinate_key"] = ""
     ledger["image_id"] = ""
     rows = {}

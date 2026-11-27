@@ -32,7 +32,7 @@ def main(root=ROOT, *, candidate_path=None):
     df["method_verified"]=False
     df["bibliographic_independence_verified"]=False
     df["external_holdout_status"]="CANDIDATE_NOT_APPROVED"
-    df["review_priority"]=np.where((df.country=="CHILE")&df.spatial_buffer_100km&(~dup)&df.citation_key.ne(""),"HIGH_PRIORITY_REVIEW","DEFER")
+    df["review_priority"]=np.where(((df.country=="CHILE").fillna(False)&valid&df.spatial_buffer_100km&(~dup)&df.citation_key.ne("")).to_numpy(dtype=bool),"HIGH_PRIORITY_REVIEW","DEFER")
     df.to_csv(root/"georoc_provenance_screen.csv",index=False)
     pilot=df.loc[df.review_priority.eq("HIGH_PRIORITY_REVIEW")].copy()
     pilot=pilot.sort_values(["nearest_training_km","citation_key","sample_key"],ascending=[False,True,True])

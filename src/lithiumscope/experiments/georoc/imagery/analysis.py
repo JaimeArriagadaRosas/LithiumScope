@@ -30,6 +30,8 @@ def summarize_registered(directory: Path):
   expected={"patch.npy","patch.json","patch.scl.npy","patch.scene-audit.json","image_scenario_metrics.csv"}
   if record.get("signature")!=canonical_json_hash({"run":identity,"site":item.image_id}) or set(record.get("hashes",{}))!=expected or any(file_sha256(site/name)!=digest for name,digest in record["hashes"].items()):
    raise ValueError("Registered site evidence changed")
+  if record["baseline_status"]!=item.baseline_status:
+   raise ValueError("Manifest baseline status differs from verified result")
   scored+=record["baseline_status"]=="SCORED"
  selected=ledger.loc[ledger.plan_state.eq("selected")]
  report={"sites_planned":len(sites),"sites_processed":len(manifest),"sites_verified":len(verified),
