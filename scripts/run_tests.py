@@ -15,9 +15,11 @@ import xml.etree.ElementTree as ET
 
 
 if __package__:
+    from .test_reporting.architecture import audit
     from .pytest_console import monitor, print_summary, report_details
     from .software_checks import run_preflight, artifact_snapshot, compare_artifacts, validation_outcome
 else:
+    from test_reporting.architecture import audit
     from pytest_console import monitor, print_summary, report_details
     from software_checks import run_preflight, artifact_snapshot, compare_artifacts, validation_outcome
 
@@ -123,6 +125,13 @@ def run(args: list[str]) -> int:
         if preflight_requested:
             protected_before = artifact_snapshot(ROOT, logs, env, "before")
             checks = run_preflight(ROOT, logs, env, show=not json_output)
+            architecture = audit(ROOT)
+            (results / "architecture.json").write_text(json.dumps(architecture, indent=2), encoding="utf-8")
+            checks["test_architecture"] = {"state": architecture["state"],
+                "scope": architecture["scope"], "modules": architecture["modules"],
+                "log": (results / "architecture.json").relative_to(ROOT).as_posix()}
+            if not json_output:
+                print(f"  [{architecture['state']}] Arquitectura de tests: {architecture['modules']} módulos", flush=True)
             event("preflight_finished", checks=checks)
         with tempfile.TemporaryDirectory(prefix="pytest-", dir=results) as tmp:
             command = [sys.executable, "-m", "pytest", "-p", "scripts.pytest_progress", *args,
