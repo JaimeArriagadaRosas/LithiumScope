@@ -146,3 +146,14 @@ def test_comparison_modules_are_canonical():
     from lithiumscope.experiments.integrated.comparison.compare_m2 import compare_m2
     assert runner.compare_m1 is compare_m1
     assert runner.compare_m2 is compare_m2
+
+
+def test_comparison_default_output_follows_explicit_root(tmp_path, monkeypatch):
+    from contextlib import nullcontext
+    from lithiumscope.experiments.integrated import compare_vnext_trained_runs as runner
+    monkeypatch.setattr(runner, "run_log", lambda *args: nullcontext())
+    monkeypatch.setattr(runner, "compare_m1", lambda root, output: {"root": str(root)})
+    monkeypatch.setattr(runner, "compare_m2", lambda root, output: {"root": str(root)})
+    report = runner.run(tmp_path)
+    assert report["model_1"]["root"] == str(tmp_path.resolve())
+    assert (tmp_path / "results/scientific_simulations/vnext_20261106/stage5_training_comparison/comparison_summary.json").is_file()

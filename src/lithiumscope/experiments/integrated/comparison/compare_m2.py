@@ -3,11 +3,14 @@ from __future__ import annotations
 
 from pathlib import Path
 import logging
+import json
+import numpy as np
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
 def compare_m2(root: Path, output: Path) -> dict:
-    from lithiumscope.experiments.integrated.comparison.evidence import NEW_M2, OLD_M2, Path, check_m2_identical_protocol, classification_metrics, group_bootstrap_gain, json, load_m2_oof, np, pd
+    from lithiumscope.experiments.integrated.comparison.evidence import NEW_M2, OLD_M2, check_m2_identical_protocol, classification_metrics, group_bootstrap_gain, load_m2_oof
     old_run = root / "results/model_2/runs" / OLD_M2
     new_run = root / "results/model_2/runs" / NEW_M2
     old_rf = load_m2_oof(old_run, "random_forest")
@@ -101,7 +104,7 @@ def compare_m2(root: Path, output: Path) -> dict:
     (output / "m2_paired_comparison.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
     )
-    logger.info("M2_SAVED_COMPARISON" + " %s", json.dumps({
+    logger.info("M2_SAVED_COMPARISON %s", json.dumps({
         "max_probability_delta": difference,
         "metrics": metrics,
         "CI": ci_calibrated,
