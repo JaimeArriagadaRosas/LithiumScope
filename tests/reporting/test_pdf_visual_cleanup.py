@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from lithiumscope.prediction.exports.chart_guides import (
+from lithiumscope.reporting.figures.chart_guides import (
     bar_guides, scatter_guides,
 )
 from lithiumscope.reporting.sections.figures import FIGURE_EXPLANATIONS

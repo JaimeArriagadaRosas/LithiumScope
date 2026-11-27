@@ -8,6 +8,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
 from reportlab.platypus import SimpleDocTemplate
 
+from lithiumscope.core.logging.session import get_logger
 from lithiumscope.reporting.context import ReportContext
 from lithiumscope.reporting.sections.cases import build_cases
 from lithiumscope.reporting.sections.figures import build_figures
@@ -86,6 +87,8 @@ def write_pdf_report(
         statistics=statistics,
         decision_previews=dict(decision_previews or {}),
     )
+    logger = get_logger("reporting.pdf")
+    logger.info("PDF generation started run=%s path=%s", run_id, path)
     styles = build_styles()
 
     temporary = path.with_name(f".{path.name}.{uuid4().hex}.tmp")
@@ -114,6 +117,7 @@ def write_pdf_report(
         build_cases,
         build_notes,
     ):
+        logger.debug("Building PDF section %s", builder.__name__)
         story.extend(
             builder(
                 context,
@@ -128,6 +132,10 @@ def write_pdf_report(
             onLaterPages=page_footer,
         )
         temporary.replace(path)
+        logger.info("PDF generated run=%s path=%s", run_id, path)
+    except Exception:
+        logger.exception("PDF generation failed run=%s", run_id)
+        raise
     finally:
         temporary.unlink(missing_ok=True)
     return path

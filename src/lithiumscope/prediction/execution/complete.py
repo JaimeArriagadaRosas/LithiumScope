@@ -1,15 +1,20 @@
-"""Focused integrated prediction phase; stable original public entrypoint."""
+"""Execute a complete prediction using verified input snapshots."""
 from __future__ import annotations
+from pathlib import Path
+from lithiumscope.datasets.readers.tabular import load_data
+from lithiumscope.prediction.inputs.case_identity import ensure_case_ids
+from lithiumscope.prediction.inputs.model_2_cases import _model_2_cases_from_input
+from lithiumscope.prediction.inputs.snapshots import snapshot_input
+from lithiumscope.prediction.execution.session import PredictionSession
+from lithiumscope.prediction.execution.contracts import IntegratedPredictionResult
+from lithiumscope.prediction.execution.integrated import _run_integrated
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from lithiumscope.prediction.execution.integrated import IntegratedPredictionResult, Path
 
 def run_complete_prediction(
     model_1_path: Path,
     model_2_path: Path,
 ) -> IntegratedPredictionResult:
-    from lithiumscope.prediction.execution.integrated import IntegratedPredictionResult, Path, PredictionSession, _model_2_cases_from_input, _run_integrated, ensure_case_ids, file_sha256, load_prediction_input, shutil
+    model_1_path, model_2_path = Path(model_1_path).resolve(), Path(model_2_path).resolve()
     session = PredictionSession.create("complete")
 
     model_1_snapshot = (
@@ -18,28 +23,29 @@ def run_complete_prediction(
     model_2_snapshot = (
         session.inputs / f"model_2_input{model_2_path.suffix.lower()}"
     )
-    shutil.copy2(model_1_path, model_1_snapshot)
-    shutil.copy2(model_2_path, model_2_snapshot)
+    m1_digest = snapshot_input(model_1_path, model_1_snapshot)
+    m2_digest = snapshot_input(model_2_path, model_2_snapshot)
 
     model_1_input = ensure_case_ids(
-        load_prediction_input(model_1_snapshot)
+        load_data(model_1_snapshot)
     )
     model_2_cases, model_2_input_info = _model_2_cases_from_input(
-        model_2_path,
+        model_2_snapshot,
         session,
         model_1_input,
+        reference_dir=model_2_path.parent,
     )
     input_info = {
         "model_1": {
             "original_path": str(model_1_path),
             "snapshot_path": str(model_1_snapshot),
-            "sha256": file_sha256(model_1_snapshot),
+            "sha256": m1_digest,
         },
         "model_2": {
             **model_2_input_info,
             "original_path": str(model_2_path),
             "snapshot_path": str(model_2_snapshot),
-            "snapshot_sha256": file_sha256(model_2_snapshot),
+            "snapshot_sha256": m2_digest,
         },
         "pairing_rule": (
             "case_id; una imagen única se empareja automáticamente "

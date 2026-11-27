@@ -2,8 +2,8 @@ import json
 from pathlib import Path
 import zipfile
 
-from lithiumscope.prediction.release_demo import build_demonstration_release_bundle
-import lithiumscope.prediction.release_demo as release_demo
+from lithiumscope.distribution.demonstration_bundle import build_demonstration_release_bundle
+import lithiumscope.distribution.demonstration_bundle as release_demo
 
 
 def test_release_bundle_requires_pdf_and_sanitizes_local_paths(monkeypatch, tmp_path: Path):

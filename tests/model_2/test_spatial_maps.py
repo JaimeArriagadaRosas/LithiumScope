@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from lithiumscope.prediction.exports.maps import (
+from lithiumscope.reporting.figures.maps import (
     save_spatial_maps,
 )
 

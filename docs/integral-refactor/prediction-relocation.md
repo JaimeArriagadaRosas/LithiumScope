@@ -1,16 +1,15 @@
-# Prediction canonical relocation
+# Canonical Prediction and Reporting architecture
 
-Implementation moved, old module names resolve to the same module object for tests, notebooks and compatibility. No algorithm or historical release changed. Pending local regression and PDF inspection.
+Prediction owns inputs, scientific analysis and integrated execution. Reporting owns PDF and Excel production, maps, charts, preview images and PDF reconstruction. Results owns atomic persistence; Persistence owns trusted artifact loading. Shared pure scientific report calculations live in core/scientific.
 
-- `prediction/demo.py` → `prediction/demonstration/cases.py`
-- `prediction/imagery.py` → `prediction/inputs/imagery.py`
-- `prediction/integrated.py` → `prediction/execution/integrated.py`
-- `prediction/integrated_model_2_cases_from_input.py` → `prediction/inputs/model_2_cases.py`
-- `prediction/integrated_run_automatic_demonstration.py` → `prediction/demonstration/automatic.py`
-- `prediction/integrated_run_complete_prediction.py` → `prediction/execution/complete.py`
-- `prediction/integrated_score_model_2_cases.py` → `prediction/execution/model_2_scoring.py`
-- `prediction/integrated_write_outputs.py` → `prediction/exports/integrated_outputs.py`
-- `prediction/interpretation.py` → `prediction/analysis/interpretation.py`
-- `prediction/interpretation_summary.py` → `prediction/analysis/interpretation_summary.py`
-- `prediction/release_demo.py` → `distribution/demonstration_bundle.py`
-- `prediction/session.py` → `prediction/execution/session.py`
+There are no compatibility aliases under Prediction. The relocation inventory records historical destinations. Use:
+- `lithiumscope.prediction.execution.complete.run_complete_prediction`
+- `lithiumscope.prediction.demonstration.automatic.run_automatic_demonstration`
+- `python -m lithiumscope.reporting.rebuild_pdf --run <run-directory-or-id>`
+- `python -m lithiumscope.evaluation.holdout`
+
+Integrated outputs use typed frames, evidence and threshold contracts, atomic CSV/JSON writes, portable paths relative to the prediction session, hashes for published files and a publication status file. Historical report reconstruction uses saved evidence rather than training or inference. Report titles preserve experimental demonstration identity. The source manifest and imagery provenance must remain verifiable.
+
+Architecture constraints: 300 lines per Python file, 20 direct Python files per directory; no Prediction aliases and no Reporting imports from model execution, Prediction or experiments. Logs use the existing session logger. No new workflow or training artifacts are introduced.
+
+Regression verification must be run via the existing software validation menu. GitHub-only source editing does not prove execution or coverage.

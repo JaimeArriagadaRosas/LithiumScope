@@ -1,33 +1,35 @@
-from importlib import import_module
+"""Prediction has canonical owners rather than compatibility modules."""
+import ast
 from pathlib import Path
 
-import pytest
+ROOT = Path(__file__).resolve().parents[2] / "src/lithiumscope"
 
 
-@pytest.mark.parametrize(("old", "new"), [
-    ("lithiumscope.prediction.report", "lithiumscope.prediction.exports.report_facade"),
-    ("lithiumscope.prediction.rebuild_pdf", "lithiumscope.prediction.exports.rebuild_pdf"),
-    ("lithiumscope.prediction.demo", "lithiumscope.prediction.demonstration.cases"),
-    ("lithiumscope.prediction.imagery", "lithiumscope.prediction.inputs.imagery"),
-    ("lithiumscope.prediction.integrated", "lithiumscope.prediction.execution.integrated"),
-    ("lithiumscope.prediction.integrated_model_2_cases_from_input", "lithiumscope.prediction.inputs.model_2_cases"),
-    ("lithiumscope.prediction.integrated_run_automatic_demonstration", "lithiumscope.prediction.demonstration.automatic"),
-    ("lithiumscope.prediction.integrated_run_complete_prediction", "lithiumscope.prediction.execution.complete"),
-    ("lithiumscope.prediction.integrated_score_model_2_cases", "lithiumscope.prediction.execution.model_2_scoring"),
-    ("lithiumscope.prediction.integrated_write_outputs", "lithiumscope.prediction.exports.integrated_outputs"),
-    ("lithiumscope.prediction.interpretation", "lithiumscope.prediction.analysis.interpretation"),
-    ("lithiumscope.prediction.interpretation_summary", "lithiumscope.prediction.analysis.interpretation_summary"),
-    ("lithiumscope.prediction.release_demo", "lithiumscope.distribution.demonstration_bundle"),
-    ("lithiumscope.prediction.session", "lithiumscope.prediction.execution.session"),
-])
-def test_old_and_new_imports_are_same_module(old, new):
-    assert import_module(old) is import_module(new)
+def test_prediction_and_reporting_boundaries():
+    prediction = ROOT / "prediction"
+    reporting = ROOT / "reporting"
+    assert {p.name for p in prediction.glob("*.py")} == {"__init__.py"}
+    assert not list((prediction / "exports").rglob("*.py"))
+    assert not list((prediction / "candidates").rglob("*.py"))
+    for path in [*prediction.rglob("*.py"), *reporting.rglob("*.py")]:
+        source = path.read_text(encoding="utf-8")
+        assert len(source.splitlines()) <= 300, str(path)
+        assert len(list(path.parent.glob("*.py"))) <= 20
+        tree = ast.parse(source)
+        assert not any(isinstance(n, ast.Attribute) and isinstance(n.value, ast.Name)
+                       and n.value.id == "sys" and n.attr == "modules" for n in ast.walk(tree)), str(path)
+        if path.is_relative_to(reporting):
+            for n in ast.walk(tree):
+                names = [n.module or ""] if isinstance(n, ast.ImportFrom) else (
+                    [a.name for a in n.names] if isinstance(n, ast.Import) else [])
+                assert not any(name.startswith(("lithiumscope.prediction", "lithiumscope.model_1",
+                                               "lithiumscope.model_2", "lithiumscope.experiments"))
+                               for name in names), str(path)
 
 
 def test_prediction_subpackages_are_present():
-    root = Path(__file__).resolve().parents[2] / "src/lithiumscope/prediction"
-    assert all((root / name / "__init__.py").is_file()
-               for name in ("inputs", "execution", "analysis", "demonstration", "exports"))
+    assert all((ROOT / "prediction" / name / "__init__.py").is_file()
+               for name in ("inputs", "execution", "analysis", "demonstration"))
 
 
 def test_demo_publication_implementation_is_in_distribution():

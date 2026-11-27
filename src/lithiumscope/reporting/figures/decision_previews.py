@@ -6,6 +6,9 @@ from pathlib import Path
 from uuid import uuid4
 
 import numpy as np
+from lithiumscope.core.logging.session import get_logger
+
+logger = get_logger("reporting.figures.decision")
 
 
 def prepare_decision_previews(selected, identity: dict, destination: Path) -> dict[str, Path]:
@@ -14,7 +17,7 @@ def prepare_decision_previews(selected, identity: dict, destination: Path) -> di
     if not isinstance(bands, (list, tuple)) or not bands or selected.empty:
         return {}
     from PIL import Image
-    from lithiumscope.prediction.exports.charts import _rgb_preview
+    from lithiumscope.reporting.figures.satellite import _rgb_preview
 
     previews = {}
     for _, row in selected.iterrows():
@@ -39,7 +42,8 @@ def prepare_decision_previews(selected, identity: dict, destination: Path) -> di
             finally:
                 temporary.unlink(missing_ok=True)
             previews[case_id] = path
-        except (OSError, ValueError, RuntimeError):
+        except (OSError, ValueError, RuntimeError) as exc:
+            logger.warning("Decision preview omitted case=%s: %s", case_id, exc)
             # The scientific result survives absent or unreadable illustrations.
             continue
     return previews

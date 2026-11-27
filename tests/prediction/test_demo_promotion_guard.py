@@ -3,8 +3,8 @@ import json
 import pytest
 
 from lithiumscope.cli.candidate_admin import main
-from lithiumscope.prediction.candidates import evaluator
-from lithiumscope.prediction.candidates.gates import model_1_gate, model_2_gate
+from lithiumscope.evaluation.candidates import evaluator
+from lithiumscope.evaluation.candidates.gates import model_1_gate, model_2_gate
 
 
 def test_demo_never_updates_candidate_or_active(tmp_path):
@@ -54,7 +54,7 @@ def test_impossible_m2_metric_cannot_pass():
 
 def test_comparison_requires_same_cases_and_truth():
     import pandas as pd
-    from lithiumscope.prediction.candidates.gates import comparable_cases
+    from lithiumscope.evaluation.candidates.gates import comparable_cases
 
     expected = pd.DataFrame({"case_id": ["a", "b"], "Li_icpms": [10, 20]})
     active = expected.assign(score=[0.2, 0.8])

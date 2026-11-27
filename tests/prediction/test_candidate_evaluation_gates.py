@@ -1,4 +1,4 @@
-from lithiumscope.prediction.candidates.gates import (
+from lithiumscope.evaluation.candidates.gates import (
     model_1_gate,
     model_2_gate,
 )

@@ -9,7 +9,7 @@ import pytest
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, PageBreak
 
-from lithiumscope.prediction.analysis.decision import calculate_decision
+from lithiumscope.core.scientific.decision import calculate_decision
 from lithiumscope.reporting.sections.decision import build_decision_page
 from lithiumscope.reporting.sections.spatial import build_spatial
 from lithiumscope.reporting.styles import build_styles

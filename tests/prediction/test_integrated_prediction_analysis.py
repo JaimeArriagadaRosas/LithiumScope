@@ -1,12 +1,8 @@
 import pandas as pd
 
-from lithiumscope.prediction.analysis import (
-    concordance_table,
-    correlation_table,
-    pair_model_outputs,
-)
-from lithiumscope.prediction.interpretation import (
-    build_overall_interpretation,
+from lithiumscope.prediction.analysis.comparison import concordance_table, correlation_table, pair_model_outputs
+from lithiumscope.prediction.analysis.interpretation_summary import build_overall_interpretation
+from lithiumscope.prediction.analysis.interpretation import (
     integrated_case_text,
     model_2_case_text,
 )

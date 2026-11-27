@@ -7,7 +7,11 @@ from pathlib import Path
 import pandas as pd
 
 from lithiumscope.core.paths import RESULTS_DIR
-from lithiumscope.prediction.exports.report_facade import write_pdf_report
+from lithiumscope.reporting.service import report_title, write_pdf_report
+from lithiumscope.results.atomic_exports import write_legacy_evidence_json
+from lithiumscope.core.logging.session import get_logger
+
+logger = get_logger("reporting.rebuild")
 
 
 def _resolve_run(raw: str) -> Path:
@@ -21,7 +25,10 @@ def _resolve_run(raw: str) -> Path:
 
 
 def _read_csv(path: Path) -> pd.DataFrame:
-    return pd.read_csv(path) if path.is_file() else pd.DataFrame()
+    try:
+        return pd.read_csv(path) if path.is_file() else pd.DataFrame()
+    except pd.errors.EmptyDataError:
+        return pd.DataFrame()
 
 
 def _ordered_session_images(folder: Path, recorded: object) -> list[Path]:
@@ -71,11 +78,8 @@ def rebuild_pdf(run: str | Path) -> Path:
     figures = _ordered_session_images(
         figures_dir, recorded.get("figures")
     )
-    title = (
-        "LithiumScope - Demostración integrada automática"
-        if manifest.get("mode") == "demonstration"
-        else "LithiumScope - Predicción completa"
-    )
+    title = manifest.get("title") or report_title(manifest.get("mode"), *manifest.get("models", {}).values())
+    logger.info("Rebuilding PDF for %s", run_dir)
     destination = write_pdf_report(
         run_dir / "report.pdf",
         title=title,
@@ -113,10 +117,8 @@ def rebuild_pdf(run: str | Path) -> Path:
 
     artifacts = manifest.setdefault("artifacts", {})
     artifacts["report_pdf"] = str(destination)
-    manifest_path.write_text(
-        json.dumps(manifest, indent=2, ensure_ascii=False, default=str),
-        encoding="utf-8",
-    )
+    write_legacy_evidence_json(manifest_path, manifest)
+    logger.info("PDF rebuilt: %s", destination)
     return destination
 
 

@@ -18,7 +18,7 @@ def main(argv: list[str] | None = None) -> int:
         manifest, bundle = prepare_release_candidate_bundle()
         print(f"Manifest: {manifest}\nBundle: {bundle}")
         return 0
-    from lithiumscope.prediction.candidate_evaluation import evaluate_pending_candidates
+    from lithiumscope.evaluation.candidates.evaluator import evaluate_pending_candidates
 
     if args.command == "promote":
         print("Promoción bloqueada: se requiere un holdout independiente.")

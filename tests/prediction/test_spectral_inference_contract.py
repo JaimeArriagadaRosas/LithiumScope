@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 
 from lithiumscope.model_2.prediction.predictor import score_model_2_image
-from lithiumscope.prediction.integrated_score_model_2_cases import _score_model_2_cases
+from lithiumscope.prediction.execution.model_2_scoring import _score_model_2_cases
 from lithiumscope.model_2.preparation.features.spectral import extract_spectral_features
 
 

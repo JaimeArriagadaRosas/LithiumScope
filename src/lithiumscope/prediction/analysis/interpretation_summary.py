@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import pandas as pd
+from lithiumscope.prediction.analysis.text_values import _fmt, _corr_strength
 
 
 def build_overall_interpretation(
@@ -16,7 +17,6 @@ def build_overall_interpretation(
     paired_case_count: int | None = None,
     model_2_predicted_positive_count: int | None = None,
 ) -> str:
-    from lithiumscope.prediction.analysis.interpretation import _fmt, _corr_strength
     lines = [
         "INTERPRETACIÓN CIENTÍFICA INTEGRADA",
         "",

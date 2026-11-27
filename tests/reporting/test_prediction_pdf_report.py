@@ -5,13 +5,13 @@ import numpy as np
 import pandas as pd
 from reportlab.platypus import PageBreak
 
-from lithiumscope.prediction.interpretation import (
+from lithiumscope.prediction.analysis.interpretation import (
     integrated_case_text,
     model_1_case_text,
     model_2_case_text,
 )
-from lithiumscope.prediction.report import write_pdf_report
-from lithiumscope.prediction.exports.charts import (
+from lithiumscope.reporting.service import write_pdf_report
+from lithiumscope.reporting.figures.satellite import (
     _satellite_preview_grid_shape,
     save_satellite_input_preview,
 )
@@ -19,7 +19,7 @@ from lithiumscope.reporting.formatting import (
     nonnegative_interval,
     operating_classification,
 )
-from lithiumscope.prediction.analysis.report_statistics import (
+from lithiumscope.core.scientific.report_context import (
     _out_of_domain_count,
 )
 from lithiumscope.reporting.sections.spatial import (

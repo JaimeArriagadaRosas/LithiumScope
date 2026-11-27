@@ -1,9 +1,9 @@
 {
-  "scope": "Prediction module inventory; responsibility by canonical location and relocation map; runtime verification deferred",
+  "scope": "Canonical Prediction ownership; reporting services reside outside Prediction",
   "entries": [
     {
       "module": "lithiumscope.prediction.__init__",
-      "responsibility": "package_or_compatibility_facade",
+      "responsibility": "__init__",
       "canonical": "lithiumscope.prediction.__init__"
     },
     {
@@ -12,9 +12,14 @@
       "canonical": "lithiumscope.prediction.analysis.__init__"
     },
     {
-      "module": "lithiumscope.prediction.analysis.decision",
+      "module": "lithiumscope.prediction.analysis.comparison",
       "responsibility": "analysis",
-      "canonical": "lithiumscope.prediction.analysis.decision"
+      "canonical": "lithiumscope.prediction.analysis.comparison"
+    },
+    {
+      "module": "lithiumscope.prediction.analysis.current_selection_evidence",
+      "responsibility": "analysis",
+      "canonical": "lithiumscope.prediction.analysis.current_selection_evidence"
     },
     {
       "module": "lithiumscope.prediction.analysis.interpretation",
@@ -27,79 +32,19 @@
       "canonical": "lithiumscope.prediction.analysis.interpretation_summary"
     },
     {
+      "module": "lithiumscope.prediction.analysis.metrics",
+      "responsibility": "analysis",
+      "canonical": "lithiumscope.prediction.analysis.metrics"
+    },
+    {
       "module": "lithiumscope.prediction.analysis.model_selection_evidence",
       "responsibility": "analysis",
       "canonical": "lithiumscope.prediction.analysis.model_selection_evidence"
     },
     {
-      "module": "lithiumscope.prediction.analysis.report_inputs",
+      "module": "lithiumscope.prediction.analysis.text_values",
       "responsibility": "analysis",
-      "canonical": "lithiumscope.prediction.analysis.report_inputs"
-    },
-    {
-      "module": "lithiumscope.prediction.analysis.report_statistics",
-      "responsibility": "analysis",
-      "canonical": "lithiumscope.prediction.analysis.report_statistics"
-    },
-    {
-      "module": "lithiumscope.prediction.candidate_evaluation",
-      "responsibility": "package_or_compatibility_facade",
-      "canonical": "lithiumscope.prediction.candidate_evaluation"
-    },
-    {
-      "module": "lithiumscope.prediction.candidates.__init__",
-      "responsibility": "candidates",
-      "canonical": "lithiumscope.prediction.candidates.__init__"
-    },
-    {
-      "module": "lithiumscope.prediction.candidates.evaluator",
-      "responsibility": "compatibility",
-      "canonical": "lithiumscope.evaluation.candidates.evaluator"
-    },
-    {
-      "module": "lithiumscope.prediction.candidates.evaluator_evaluate_pending_candidates",
-      "responsibility": "compatibility",
-      "canonical": "lithiumscope.evaluation.candidates.evaluator_evaluate_pending_candidates"
-    },
-    {
-      "module": "lithiumscope.prediction.candidates.gates",
-      "responsibility": "compatibility",
-      "canonical": "lithiumscope.evaluation.candidates.gates"
-    },
-    {
-      "module": "lithiumscope.prediction.candidates.holdout.__init__",
-      "responsibility": "candidates",
-      "canonical": "lithiumscope.prediction.candidates.holdout.__init__"
-    },
-    {
-      "module": "lithiumscope.prediction.candidates.holdout.__main__",
-      "responsibility": "compatibility",
-      "canonical": "lithiumscope.evaluation.holdout.__main__"
-    },
-    {
-      "module": "lithiumscope.prediction.candidates.holdout.evaluation",
-      "responsibility": "compatibility",
-      "canonical": "lithiumscope.evaluation.holdout.evaluation"
-    },
-    {
-      "module": "lithiumscope.prediction.candidates.holdout.registry",
-      "responsibility": "compatibility",
-      "canonical": "lithiumscope.evaluation.holdout.registry"
-    },
-    {
-      "module": "lithiumscope.prediction.candidates.holdout.scoring",
-      "responsibility": "compatibility",
-      "canonical": "lithiumscope.evaluation.holdout.scoring"
-    },
-    {
-      "module": "lithiumscope.prediction.candidates.scoring",
-      "responsibility": "compatibility",
-      "canonical": "lithiumscope.prediction.execution.candidate_scoring"
-    },
-    {
-      "module": "lithiumscope.prediction.demo",
-      "responsibility": "package_or_compatibility_facade",
-      "canonical": "lithiumscope.prediction.demo"
+      "canonical": "lithiumscope.prediction.analysis.text_values"
     },
     {
       "module": "lithiumscope.prediction.demonstration.__init__",
@@ -122,14 +67,14 @@
       "canonical": "lithiumscope.prediction.execution.__init__"
     },
     {
-      "module": "lithiumscope.prediction.execution.candidate_scoring",
-      "responsibility": "execution",
-      "canonical": "lithiumscope.prediction.execution.candidate_scoring"
-    },
-    {
       "module": "lithiumscope.prediction.execution.complete",
       "responsibility": "execution",
       "canonical": "lithiumscope.prediction.execution.complete"
+    },
+    {
+      "module": "lithiumscope.prediction.execution.contracts",
+      "responsibility": "execution",
+      "canonical": "lithiumscope.prediction.execution.contracts"
     },
     {
       "module": "lithiumscope.prediction.execution.integrated",
@@ -142,64 +87,24 @@
       "canonical": "lithiumscope.prediction.execution.model_2_scoring"
     },
     {
+      "module": "lithiumscope.prediction.execution.outputs",
+      "responsibility": "execution",
+      "canonical": "lithiumscope.prediction.execution.outputs"
+    },
+    {
       "module": "lithiumscope.prediction.execution.session",
       "responsibility": "execution",
       "canonical": "lithiumscope.prediction.execution.session"
     },
     {
-      "module": "lithiumscope.prediction.exports.__init__",
-      "responsibility": "exports",
-      "canonical": "lithiumscope.prediction.exports.__init__"
-    },
-    {
-      "module": "lithiumscope.prediction.exports.chart_guides",
-      "responsibility": "exports",
-      "canonical": "lithiumscope.prediction.exports.chart_guides"
-    },
-    {
-      "module": "lithiumscope.prediction.exports.charts",
-      "responsibility": "exports",
-      "canonical": "lithiumscope.prediction.exports.charts"
-    },
-    {
-      "module": "lithiumscope.prediction.exports.decision_previews",
-      "responsibility": "exports",
-      "canonical": "lithiumscope.prediction.exports.decision_previews"
-    },
-    {
-      "module": "lithiumscope.prediction.exports.integrated_outputs",
-      "responsibility": "exports",
-      "canonical": "lithiumscope.prediction.exports.integrated_outputs"
-    },
-    {
-      "module": "lithiumscope.prediction.exports.maps",
-      "responsibility": "exports",
-      "canonical": "lithiumscope.prediction.exports.maps"
-    },
-    {
-      "module": "lithiumscope.prediction.exports.rebuild_pdf",
-      "responsibility": "exports",
-      "canonical": "lithiumscope.prediction.exports.rebuild_pdf"
-    },
-    {
-      "module": "lithiumscope.prediction.exports.report_facade",
-      "responsibility": "exports",
-      "canonical": "lithiumscope.prediction.exports.report_facade"
-    },
-    {
-      "module": "lithiumscope.prediction.exports.workbook",
-      "responsibility": "exports",
-      "canonical": "lithiumscope.prediction.exports.workbook"
-    },
-    {
-      "module": "lithiumscope.prediction.imagery",
-      "responsibility": "package_or_compatibility_facade",
-      "canonical": "lithiumscope.prediction.imagery"
-    },
-    {
       "module": "lithiumscope.prediction.inputs.__init__",
       "responsibility": "inputs",
       "canonical": "lithiumscope.prediction.inputs.__init__"
+    },
+    {
+      "module": "lithiumscope.prediction.inputs.case_identity",
+      "responsibility": "inputs",
+      "canonical": "lithiumscope.prediction.inputs.case_identity"
     },
     {
       "module": "lithiumscope.prediction.inputs.imagery",
@@ -212,64 +117,9 @@
       "canonical": "lithiumscope.prediction.inputs.model_2_cases"
     },
     {
-      "module": "lithiumscope.prediction.integrated",
-      "responsibility": "package_or_compatibility_facade",
-      "canonical": "lithiumscope.prediction.integrated"
-    },
-    {
-      "module": "lithiumscope.prediction.integrated_model_2_cases_from_input",
-      "responsibility": "package_or_compatibility_facade",
-      "canonical": "lithiumscope.prediction.integrated_model_2_cases_from_input"
-    },
-    {
-      "module": "lithiumscope.prediction.integrated_run_automatic_demonstration",
-      "responsibility": "package_or_compatibility_facade",
-      "canonical": "lithiumscope.prediction.integrated_run_automatic_demonstration"
-    },
-    {
-      "module": "lithiumscope.prediction.integrated_run_complete_prediction",
-      "responsibility": "package_or_compatibility_facade",
-      "canonical": "lithiumscope.prediction.integrated_run_complete_prediction"
-    },
-    {
-      "module": "lithiumscope.prediction.integrated_score_model_2_cases",
-      "responsibility": "package_or_compatibility_facade",
-      "canonical": "lithiumscope.prediction.integrated_score_model_2_cases"
-    },
-    {
-      "module": "lithiumscope.prediction.integrated_write_outputs",
-      "responsibility": "package_or_compatibility_facade",
-      "canonical": "lithiumscope.prediction.integrated_write_outputs"
-    },
-    {
-      "module": "lithiumscope.prediction.interpretation",
-      "responsibility": "package_or_compatibility_facade",
-      "canonical": "lithiumscope.prediction.interpretation"
-    },
-    {
-      "module": "lithiumscope.prediction.interpretation_summary",
-      "responsibility": "package_or_compatibility_facade",
-      "canonical": "lithiumscope.prediction.interpretation_summary"
-    },
-    {
-      "module": "lithiumscope.prediction.rebuild_pdf",
-      "responsibility": "compatibility",
-      "canonical": "lithiumscope.prediction.exports.rebuild_pdf"
-    },
-    {
-      "module": "lithiumscope.prediction.release_demo",
-      "responsibility": "package_or_compatibility_facade",
-      "canonical": "lithiumscope.prediction.release_demo"
-    },
-    {
-      "module": "lithiumscope.prediction.report",
-      "responsibility": "compatibility",
-      "canonical": "lithiumscope.prediction.exports.report_facade"
-    },
-    {
-      "module": "lithiumscope.prediction.session",
-      "responsibility": "package_or_compatibility_facade",
-      "canonical": "lithiumscope.prediction.session"
+      "module": "lithiumscope.prediction.inputs.snapshots",
+      "responsibility": "inputs",
+      "canonical": "lithiumscope.prediction.inputs.snapshots"
     }
   ]
 }

@@ -8,9 +8,9 @@ from sklearn.dummy import DummyRegressor, DummyClassifier
 
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.model_1.training.preprocessing.tabular import FeatureSchema
-from lithiumscope.prediction.candidates.holdout.registry import register, exposure_audit, verified_registration
-from lithiumscope.prediction.candidates.holdout.scoring import score_registered
-from lithiumscope.prediction.candidates.holdout.evaluation import evaluate_registered
+from lithiumscope.evaluation.holdout.registry import register, exposure_audit, verified_registration
+from lithiumscope.evaluation.holdout.scoring import score_registered
+from lithiumscope.evaluation.holdout.evaluation import evaluate_registered
 
 
 @pytest.fixture

@@ -12,7 +12,9 @@ import joblib
 import pytest
 
 from lithiumscope.cli import predict_command
-from lithiumscope.prediction import integrated, session
+from lithiumscope.prediction.execution import integrated, session
+from lithiumscope.prediction.demonstration import automatic
+from lithiumscope.reporting.service import write_pdf_report
 
 
 def test_pending_model_load_does_not_promote_release(monkeypatch, tmp_path):
@@ -76,7 +78,7 @@ def test_original_demonstration_menu_has_no_extra_choices(monkeypatch, capsys):
     monkeypatch.setattr(predict_command, "choose", lambda *a, **kw: "2")
     monkeypatch.setattr(predict_command, "pick_file", lambda *a, **kw: pytest.fail("Demonstration must not request files"))
     monkeypatch.setattr(
-        integrated, "run_automatic_demonstration",
+        automatic, "run_automatic_demonstration",
         lambda: calls.append("demonstration") or object(),
     )
     monkeypatch.setattr(
@@ -157,11 +159,9 @@ def test_pdf_is_required_and_legacy_pdf_renderer_remains_used():
     assert "render_pdf" not in signature(integrated._run_integrated).parameters
     assert "render_pdf" not in signature(integrated._write_outputs).parameters
     assert "render_pdf" not in signature(
-        integrated.run_automatic_demonstration
+        automatic.run_automatic_demonstration
     ).parameters
-    assert integrated.write_pdf_report.__module__.startswith(
-        "lithiumscope.prediction"
-    )
+    assert write_pdf_report.__module__ == "lithiumscope.reporting.service"
 
 
 def test_latest_local_candidate_is_integrity_verified_without_activation(monkeypatch, tmp_path):

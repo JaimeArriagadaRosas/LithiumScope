@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 
-import lithiumscope.prediction.rebuild_pdf as rebuild_module
+import lithiumscope.reporting.rebuild_pdf as rebuild_module
 
 
 def test_rebuild_pdf_updates_existing_manifest(monkeypatch, tmp_path: Path):

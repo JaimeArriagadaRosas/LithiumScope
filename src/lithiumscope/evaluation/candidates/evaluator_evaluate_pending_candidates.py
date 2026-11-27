@@ -148,13 +148,13 @@ def evaluate_pending_candidates(
                 ]
             ),
         )
-        active_predictions = (
+        active_predictions, _ = (
             score_model_2_cases(
                 imagery,
                 bundle=active_bundle,
             )
         )
-        candidate_predictions = (
+        candidate_predictions, _ = (
             score_model_2_cases(
                 imagery,
                 bundle=candidate_bundle,

@@ -11,6 +11,9 @@ from uuid import uuid4
 from lithiumscope.persistence.model_deserialization import load_model_artifact
 
 from lithiumscope.core.hashing import file_sha256
+from lithiumscope.core.logging.session import get_logger
+
+logger = get_logger("prediction.models")
 from lithiumscope.core.paths import MODELS_DIR, RESULTS_DIR
 from lithiumscope.persistence.candidates import read_candidate_status
 from lithiumscope.persistence.load_model import load_latest_model
@@ -102,6 +105,7 @@ def load_model_with_identity(model_group: str, *, candidate_run_id: str | None =
     """
     if model_group not in {"model_1", "model_2"}:
         raise ValueError(f"Grupo de modelo desconocido: {model_group}")
+    payload_digest = None
     if candidate_run_id is None:
         bundle, model_path = load_latest_model(model_group)
         selected_for = "active_release"
@@ -126,7 +130,9 @@ def load_model_with_identity(model_group: str, *, candidate_run_id: str | None =
             )
         if local_payload is not None and candidate_status != "pending":
             raise ValueError("El candidato local ya no está pendiente")
-        bundle = load_model_artifact(BytesIO(local_payload) if local_payload is not None else model_path, model_group=model_group)
+        payload = local_payload if local_payload is not None else model_path.read_bytes()
+        payload_digest = sha256(payload).hexdigest()
+        bundle = load_model_artifact(BytesIO(payload), model_group=model_group)
         selected_for = (
             "pinned_published_release_for_demonstration"
             if candidate_status == "promoted"
@@ -141,10 +147,12 @@ def load_model_with_identity(model_group: str, *, candidate_run_id: str | None =
         except (OSError, json.JSONDecodeError):
             metadata = {}
 
+    if payload_digest is not None and metadata.get("model_sha256") not in (None, payload_digest):
+        raise ValueError(f"Model artifact hash differs from metadata: {model_path}")
     identity = {
         "model_group": model_group,
         "model_path": str(model_path),
-        "model_sha256": file_sha256(model_path),
+        "model_sha256": payload_digest or file_sha256(model_path),
         "run_id": metadata.get("run_id", model_path.parent.name),
         "algorithm": metadata.get("algorithm", bundle.get("algorithm", "unknown")),
         "training_metrics": metadata.get("metrics", {}),
@@ -159,4 +167,6 @@ def load_model_with_identity(model_group: str, *, candidate_run_id: str | None =
         identity["bands"] = list(bands) if isinstance(bands, (list, tuple)) else None
         identity["feature_extractor_version"] = bundle.get("feature_extractor_version")
         identity["feature_count"] = len(bundle.get("features", [])) or None
+    logger.info("Model selected group=%s run=%s algorithm=%s sha256=%s selection=%s",
+                model_group, identity["run_id"], identity["algorithm"], identity["model_sha256"], selected_for)
     return bundle, model_path, identity

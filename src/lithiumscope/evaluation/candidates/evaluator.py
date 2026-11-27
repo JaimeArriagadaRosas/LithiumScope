@@ -19,24 +19,19 @@ from lithiumscope.persistence.active_models import (
 from lithiumscope.persistence.candidates import (
     latest_pending_candidate,
 )
-from lithiumscope.prediction.analysis import (
-    ensure_case_ids,
-    model_1_external_metrics,
-    model_2_external_metrics,
-)
+from lithiumscope.prediction.inputs.case_identity import ensure_case_ids
+from lithiumscope.prediction.analysis.metrics import model_1_external_metrics, model_2_external_metrics
 from lithiumscope.evaluation.candidates.gates import (
     model_1_gate,
     model_2_gate,
 )
-from lithiumscope.prediction.execution.candidate_scoring import (
-    score_model_2_cases,
-)
-from lithiumscope.prediction.demo import (
+from lithiumscope.prediction.execution.model_2_scoring import _score_model_2_cases as score_model_2_cases
+from lithiumscope.prediction.demonstration.cases import (
     audit_demo_overlap,
     demonstration_imagery_cache,
     load_demonstration_cases,
 )
-from lithiumscope.prediction.imagery import (
+from lithiumscope.prediction.inputs.imagery import (
     prepare_case_images,
 )
 

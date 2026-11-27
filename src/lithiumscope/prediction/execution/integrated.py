@@ -1,88 +1,25 @@
+"""Orchestrate integrated inference and scientific analysis."""
 from __future__ import annotations
-
-from dataclasses import dataclass
-from datetime import datetime, timezone
-from pathlib import Path
-import shutil
-
 import pandas as pd
 
 from lithiumscope.core.config import load_config
-from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.logging.session import get_logger, run_log
-from lithiumscope.core.paths import PROJECT_ROOT
-from lithiumscope.core.reproducibility import runtime_fingerprint
-from lithiumscope.datasets.readers.tabular import load_data as load_prediction_input
 from lithiumscope.model_1.prediction.predictor import predict_model_1_frame
-from lithiumscope.prediction.analysis import (
-    concordance_table,
-    correlation_table,
-    ensure_case_ids,
-    model_1_external_metrics,
-    model_2_external_metrics,
-    pair_model_outputs,
-    training_vs_external_table,
+from lithiumscope.prediction.inputs.case_identity import ensure_case_ids
+from lithiumscope.prediction.analysis.metrics import model_1_external_metrics, model_2_external_metrics
+from lithiumscope.prediction.analysis.comparison import (
+    concordance_table, correlation_table, pair_model_outputs, training_vs_external_table,
 )
-from lithiumscope.prediction.demonstration.cases import (
-    audit_demo_overlap,
-    demonstration_imagery_cache,
-    load_demonstration_cases,
+from lithiumscope.prediction.analysis.interpretation import integrated_case_text, model_1_case_text
+from lithiumscope.prediction.analysis.interpretation_summary import build_overall_interpretation
+from lithiumscope.prediction.execution.session import PredictionSession, load_model_with_identity
+from lithiumscope.prediction.execution.contracts import (
+    IntegratedPredictionResult, PredictionFrames, PredictionEvidence, PredictionThresholds,
 )
-from lithiumscope.prediction.inputs.imagery import prepare_case_images
-from lithiumscope.prediction.analysis.interpretation import (
-    build_overall_interpretation,
-    integrated_case_text,
-    model_1_case_text,
-    model_2_case_text,
-)
-from lithiumscope.prediction.exports.report_facade import (
-    save_integrated_figures,
-    save_satellite_input_preview,
-    save_spatial_maps,
-    write_json,
-    write_pdf_report,
-    write_workbook,
-)
-from lithiumscope.prediction.execution.session import (
-    PredictionSession,
-    load_model_with_identity,
-)
+from lithiumscope.prediction.execution.model_2_scoring import _score_model_2_cases
+from lithiumscope.prediction.execution.outputs import _write_outputs
 
 logger = get_logger("prediction.integrated")
-
-
-@dataclass(frozen=True)
-class IntegratedPredictionResult:
-    session: PredictionSession
-    model_1_predictions: pd.DataFrame
-    model_2_predictions: pd.DataFrame
-    paired: pd.DataFrame
-    correlations: pd.DataFrame
-    concordance: pd.DataFrame
-    model_1_metrics: dict
-    model_2_metrics: dict
-    interpretation: str
-    report_path: Path
-    workbook_path: Path
-    manifest_path: Path
-
-
-_IMAGE_EXTENSIONS = {".tif", ".tiff", ".npy"}
-_TABLE_EXTENSIONS = {".csv", ".xlsx", ".xls"}
-
-
-def _missing_expected_columns(frame: pd.DataFrame, schema) -> list[str]:
-    expected = list(schema.numeric) + list(schema.categorical)
-    return [column for column in expected if column not in frame.columns]
-
-
-from lithiumscope.prediction.execution.model_2_scoring import _score_model_2_cases
-
-
-from lithiumscope.prediction.inputs.model_2_cases import _model_2_cases_from_input
-
-
-from lithiumscope.prediction.exports.integrated_outputs import _write_outputs
 
 
 def _run_integrated(
@@ -233,28 +170,15 @@ def _run_integrated(
             len(correlations),
         )
 
+        frames = PredictionFrames(model_1_predictions, model_2_predictions, model_2_cases,
+                                  paired, correlations, concordance, training_vs_external)
+        evidence = PredictionEvidence(model_1_metrics, model_2_metrics, model_1_identity,
+                                      model_2_identity, model_1_diagnostics, model_2_diagnostics,
+                                      input_info, overlap_audit, interpretation)
+        thresholds = PredictionThresholds(lithium_threshold, probability_threshold,
+                                          model_2_predicted_positive_count)
         report_path, workbook_path, manifest_path = _write_outputs(
-            session=session,
-            model_1_predictions=model_1_predictions,
-            model_2_predictions=model_2_predictions,
-            model_2_cases=model_2_cases,
-            paired=paired,
-            correlations=correlations,
-            concordance=concordance,
-            training_vs_external=training_vs_external,
-            model_1_metrics=model_1_metrics,
-            model_2_metrics=model_2_metrics,
-            model_1_identity=model_1_identity,
-            model_2_identity=model_2_identity,
-            model_1_diagnostics=model_1_diagnostics,
-            model_2_diagnostics=model_2_diagnostics,
-            input_info=input_info,
-            overlap_audit=overlap_audit,
-            interpretation=interpretation,
-            run_log_path=log_path,
-            lithium_threshold=lithium_threshold,
-            probability_threshold=probability_threshold,
-            model_2_predicted_positive_count=model_2_predicted_positive_count,
+            session, frames, evidence, thresholds, log_path,
         )
         logger.info(
             "Integrated prediction finished run=%s report=%s workbook=%s",
@@ -277,7 +201,3 @@ def _run_integrated(
         workbook_path=workbook_path,
         manifest_path=manifest_path,
     )
-
-from lithiumscope.prediction.execution.complete import run_complete_prediction
-
-from lithiumscope.prediction.demonstration.automatic import run_automatic_demonstration

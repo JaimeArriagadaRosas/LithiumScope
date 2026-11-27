@@ -1,12 +1,19 @@
-"""Focused integrated prediction phase; stable original public entrypoint."""
+"""Execute the versioned integrated demonstration."""
 from __future__ import annotations
+from lithiumscope.core.paths import PROJECT_ROOT
+from lithiumscope.core.hashing import file_sha256
+from lithiumscope.core.config import load_config
+from lithiumscope.prediction.inputs.case_identity import ensure_case_ids
+from lithiumscope.prediction.inputs.imagery import prepare_case_images
+from lithiumscope.prediction.demonstration.cases import (
+    audit_demo_overlap, demonstration_imagery_cache, load_demonstration_cases,
+)
+from lithiumscope.prediction.execution.session import PredictionSession
+from lithiumscope.prediction.execution.contracts import IntegratedPredictionResult
+from lithiumscope.prediction.execution.integrated import _run_integrated
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from lithiumscope.prediction.execution.integrated import IntegratedPredictionResult
 
 def run_automatic_demonstration() -> IntegratedPredictionResult:
-    from lithiumscope.prediction.execution.integrated import IntegratedPredictionResult, PROJECT_ROOT, PredictionSession, _run_integrated, audit_demo_overlap, demonstration_imagery_cache, ensure_case_ids, file_sha256, load_config, load_demonstration_cases, prepare_case_images
     session = PredictionSession.create("demonstration")
     cases = ensure_case_ids(load_demonstration_cases())
     demo_snapshot = session.inputs / "demonstration_cases.csv"

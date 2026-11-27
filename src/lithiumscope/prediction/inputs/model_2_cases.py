@@ -1,16 +1,25 @@
-"""Focused integrated prediction phase; stable original public entrypoint."""
+"""Resolve single imagery and manifest inputs without depending on orchestration."""
 from __future__ import annotations
+from pathlib import Path
+import pandas as pd
+from lithiumscope.core.hashing import file_sha256
+from lithiumscope.datasets.readers.tabular import load_data
+from lithiumscope.prediction.inputs.case_identity import ensure_case_ids
+from lithiumscope.prediction.inputs.imagery import prepare_case_images
+from lithiumscope.prediction.execution.session import PredictionSession
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from lithiumscope.prediction.execution.integrated import Path, PredictionSession, pd
+_IMAGE_EXTENSIONS = {".tif", ".tiff", ".npy"}
+_TABLE_EXTENSIONS = {".csv", ".xlsx", ".xls"}
+
 
 def _model_2_cases_from_input(
     path: Path,
     session: PredictionSession,
     model_1_predictions: pd.DataFrame,
+    *, reference_dir: Path | None = None,
 ) -> tuple[pd.DataFrame, dict]:
-    from lithiumscope.prediction.execution.integrated import Path, PredictionSession, _IMAGE_EXTENSIONS, _TABLE_EXTENSIONS, ensure_case_ids, file_sha256, load_prediction_input, pd, prepare_case_images
+    path = Path(path).resolve()
+    reference_dir = Path(reference_dir).resolve() if reference_dir is not None else path.parent
     suffix = path.suffix.lower()
     if suffix in _IMAGE_EXTENSIONS:
         case_id = (
@@ -45,7 +54,7 @@ def _model_2_cases_from_input(
             "La predicción completa requiere una imagen multibanda o un manifest CSV/Excel para Modelo 2."
         )
 
-    frame = ensure_case_ids(load_prediction_input(path))
+    frame = ensure_case_ids(load_data(path))
     image_column = next(
         (name for name in ("image_path", "image", "path") if name in frame.columns),
         None,
@@ -54,7 +63,7 @@ def _model_2_cases_from_input(
         rows: list[dict] = []
         for _, row in frame.iterrows():
             raw = Path(str(row[image_column]))
-            resolved = raw if raw.is_absolute() else path.parent / raw
+            resolved = raw if raw.is_absolute() else reference_dir / raw
             rows.append(
                 {
                     "case_id": str(row["case_id"]),

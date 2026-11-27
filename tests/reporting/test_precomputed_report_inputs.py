@@ -1,6 +1,6 @@
 """Scientific report numbers originate in analysis, not the renderer."""
 import pandas as pd
-from lithiumscope.prediction.analysis.report_inputs import prepare_cases, prepare_selection_evidence
+from lithiumscope.core.scientific.report_context import prepare_cases, prepare_selection_evidence
 
 
 def test_report_inputs_are_precomputed_and_source_frames_unchanged():

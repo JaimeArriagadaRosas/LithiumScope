@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from lithiumscope.prediction.integrated import _model_2_cases_from_input
-from lithiumscope.prediction.session import PredictionSession
+from lithiumscope.prediction.inputs.model_2_cases import _model_2_cases_from_input
+from lithiumscope.prediction.execution.session import PredictionSession
 
 
 def test_model_2_manifest_resolves_relative_images_from_original_directory(

@@ -168,5 +168,5 @@ def _historical_evidence(m1_identity: dict, m2_identity: dict,
         },
         "user_release_approval_required": True,
     }
-    from lithiumscope.prediction.analysis.report_inputs import prepare_selection_evidence
+    from lithiumscope.core.scientific.report_context import prepare_selection_evidence
     return prepare_selection_evidence(out)

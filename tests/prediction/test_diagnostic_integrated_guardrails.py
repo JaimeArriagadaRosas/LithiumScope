@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.prediction.analysis import ensure_case_ids, concordance_table
+from lithiumscope.prediction.inputs.case_identity import ensure_case_ids
+from lithiumscope.prediction.analysis.comparison import concordance_table
 from lithiumscope.prediction.analysis.model_selection_evidence import gather_selection_evidence, M1_RUNS, M2_RUNS
 
 

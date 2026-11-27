@@ -16,7 +16,7 @@ from lithiumscope.reporting.sections.model_selection import (
     build_model_selection,
 )
 from lithiumscope.reporting.styles import build_styles
-from lithiumscope.prediction.session import load_model_with_identity
+from lithiumscope.prediction.execution.session import load_model_with_identity
 
 
 # These optional integration tests require the locally archived release
@@ -187,7 +187,7 @@ def test_versioned_demo_loads_synthetic_model_without_local_artifacts(
     tmp_path, monkeypatch, status, selection
 ):
     """CI verifies both permitted states even without historical .joblib files."""
-    from lithiumscope.prediction import session
+    from lithiumscope.prediction.execution import session
 
     root = tmp_path / "models"
     run_id = "training_20261106_111653_m0300"

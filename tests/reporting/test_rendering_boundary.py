@@ -4,8 +4,8 @@ from types import SimpleNamespace
 import pandas as pd
 import pytest
 
-from lithiumscope.prediction.analysis.decision import calculate_decision
-from lithiumscope.prediction.exports.decision_previews import prepare_decision_previews
+from lithiumscope.core.scientific.decision import calculate_decision
+from lithiumscope.reporting.figures.decision_previews import prepare_decision_previews
 from lithiumscope.reporting.sections.decision import build_decision_page
 from lithiumscope.reporting.styles import build_styles
 
@@ -24,7 +24,7 @@ def test_previews_require_documented_band_order(tmp_path):
 
 def test_previews_use_explicit_band_order(tmp_path, monkeypatch):
     import numpy as np
-    from lithiumscope.prediction.exports import charts
+    from lithiumscope.reporting.figures import satellite as charts
     patch = tmp_path / "patch.npy"
     patch.touch()
     observed = []

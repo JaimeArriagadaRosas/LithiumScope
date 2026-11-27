@@ -4,7 +4,7 @@ from lithiumscope.cli.file_picker import pick_file
 from lithiumscope.cli.prompts import choose
 from lithiumscope.cli.report_viewer import open_report_in_default_browser
 from lithiumscope.core.logging.session import run_log
-from lithiumscope.prediction.interpretation import (
+from lithiumscope.prediction.analysis.interpretation import (
     model_1_case_text,
     model_2_case_text,
 )
@@ -64,7 +64,7 @@ def _run_model_2() -> None:
 
 
 def _run_complete() -> None:
-    from lithiumscope.prediction.integrated import run_complete_prediction
+    from lithiumscope.prediction.execution.complete import run_complete_prediction
 
     model_1_path = pick_file(
         "Predicción completa · seleccione datos tabulares para Modelo 1",
@@ -89,7 +89,7 @@ def _run_complete() -> None:
 
 
 def _run_demonstration() -> None:
-    from lithiumscope.prediction.integrated import run_automatic_demonstration
+    from lithiumscope.prediction.demonstration.automatic import run_automatic_demonstration
 
     print(
         "\nLithiumScope ejecutará automáticamente el conjunto externo versionado, "
