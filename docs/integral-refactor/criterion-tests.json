@@ -278,7 +278,7 @@
     "ARQ-001": [
       "tests/functional/cli/test_readonly_results.py",
       "tests/architecture/contracts/test_pipeline_inspection_reporting.py",
-      "tests/reporting/test_document_integrity.py"
+      "tests/functional/deliverables/test_document_integrity.py"
     ],
     "ARQ-002": [
       "tests/functional/cli/test_readonly_results.py",
@@ -510,7 +510,7 @@
       "tests/architecture/structure/test_canonical_prediction_architecture.py"
     ],
     "ARQ-046": [
-      "tests/end_to_end/test_integrated_demo_fixture.py",
+      "tests/functional/deliverables/test_integrated_demo_fixture.py",
       "tests/integration/reporting/test_prediction_manifest_paths.py",
       "tests/architecture/structure/test_canonical_prediction_architecture.py"
     ],
@@ -526,8 +526,8 @@
       "tests/architecture/boundaries/test_evaluation_relocation.py"
     ],
     "ARQ-049": [
-      "tests/prediction/test_prediction_release_demo.py",
-      "tests/prediction/test_model_selection_release_pdf.py",
+      "tests/functional/deliverables/test_prediction_release_demo.py",
+      "tests/functional/deliverables/test_model_selection_release_pdf.py",
       "tests/architecture/structure/test_canonical_prediction_architecture.py"
     ],
     "ARQ-050": [
