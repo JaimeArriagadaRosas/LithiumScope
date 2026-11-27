@@ -1,106 +1,199 @@
-"""Resumable unattended exploratory Sentinel-2 acquisition for GEOROC candidates.
-
-Does not certify sample independence or produce external accuracy metrics.
-"""
+"""Versioned exploratory imagery; uses registered acquisition and verified model inference."""
 from __future__ import annotations
+
+import argparse
+from dataclasses import asdict, replace
+import json
 from pathlib import Path
-from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
-import json,os,time,traceback
-from datetime import datetime,timezone
+from time import monotonic
+from uuid import uuid4
+
 import pandas as pd
-import numpy as np
-from lithiumscope.tools.acquisition.sentinel2.pilot import acquire_pilot
-from lithiumscope.experiments.scenarios.imagery import evaluate_model_2_image
-from lithiumscope.model_2.preparation.imagery import load_imagery
-from lithiumscope.persistence.load_model import load_latest_model
 
-ROOT=EXPERIMENT_ROOT
-OUT=ROOT/"background_georoc_exploratory"
-STOP=OUT/"STOP"
-STATUS=OUT/"status.json"
+from lithiumscope.core.config import load_config
+from lithiumscope.core.hashing import file_sha256
+from lithiumscope.core.logging.session import get_logger, run_log
+from lithiumscope.core.paths import RESULTS_DIR
+from lithiumscope.core.reproducibility import canonical_json_hash
+from lithiumscope.experiments.scenarios.imagery import image_catalog
+from lithiumscope.experiments.scenarios.verified_imagery import evaluate_verified_image
+from lithiumscope.persistence.load_model import latest_model_path, load_latest_model
+from lithiumscope.results.atomic_exports import write_json, write_table
+from lithiumscope.tools.acquisition.sentinel2.configuration import sentinel_config
+from lithiumscope.tools.acquisition.sentinel2.provider import Sentinel2Provider, SentinelProviderError
+from lithiumscope.tools.acquisition.sentinel2.registered_patch import (
+    download_registered_patch, validate_interval,
+)
+from .coordinate_plan import coordinate_plan
+from ..protocol import EXPERIMENT_ROOT
 
-def snapshot(**kwargs):
-    data={"updated_utc":datetime.now(timezone.utc).isoformat(),"pid":os.getpid(),**kwargs}
-    STATUS.write_text(json.dumps(data,indent=2,ensure_ascii=False),encoding="utf-8")
-    print("STATUS",data,flush=True)
+OUT = RESULTS_DIR / "scientific_simulations" / "georoc_registered_v1"
+LOGGER = get_logger("experiments.georoc.imagery")
+COLUMNS = ["image_id", "latitude", "longitude", "state", "path", "scene_id",
+           "baseline_status", "scenario_rows", "reason"]
 
-def make_plan():
-    src=pd.read_csv(ROOT/"full_mamani_contamination_audit.csv",low_memory=False)
-    sel=src.loc[src.candidate_gate.eq("REVIEW_METHOD_AND_SURFACE") &
-      src.nearest_full_mamani_km.ge(100) & src.latitude.notna() & src.longitude.notna()].copy()
-    sel["coordinate_key"]=sel.latitude.round(4).astype(str)+"_"+sel.longitude.round(4).astype(str)
-    # Use exact reproducible stable coordinate IDs and avoid repeated STAC requests.
-    coords=sel.drop_duplicates("coordinate_key").copy()
-    coords=coords.sort_values(["latitude","longitude"])
-    coords["image_id"]=["external_coord_"+str(i).zfill(4) for i in range(len(coords))]
-    sel=sel.merge(coords[["coordinate_key","image_id"]],on="coordinate_key",validate="many_to_one")
-    sel[["image_id","sample_name","li_ppm","citation_number","latitude","longitude",
-         "nearest_full_mamani_km","coordinate_key"]].to_csv(OUT/"sample_image_map.csv",index=False)
-    coords[["image_id","latitude","longitude","coordinate_key"]].to_csv(OUT/"coordinate_plan.csv",index=False)
-    return coords
+
+def _revision():
+    package = Path(__file__).resolve().parents[3]
+    roots = ("experiments/georoc", "experiments/scenarios", "tools/acquisition/sentinel2",
+             "datasets/adapters", "model_2/preparation", "model_2/prediction", "model_2/methodology/spectral")
+    return canonical_json_hash({p.relative_to(package).as_posix(): file_sha256(p)
+        for folder in roots for p in sorted((package / folder).rglob("*.py"))})
+
+
+def _hashes(site: Path) -> dict:
+    names = ("patch.npy", "patch.json", "patch.scl.npy", "image_scenario_metrics.csv")
+    return {name: file_sha256(site / name) for name in names}
+
+
+def _verify_scores(path: Path, seed: int):
+    table = pd.read_csv(path)
+    if table.scenario.tolist() != [s.name for s in image_catalog(seed)]:
+        raise ValueError("Scenario output is incomplete or has changed ordering")
+    if "status" not in table or "score" not in table:
+        raise ValueError("Scenario output lacks status or score")
+    scored = table.status.eq("SCORED")
+    if not pd.to_numeric(table.loc[scored, "score"], errors="coerce").between(0, 1).all():
+        raise ValueError("Invalid scenario score")
+    return str(table.iloc[0].status), len(table)
+
+
+def _recover(site: Path):
+    if site.is_symlink():
+        raise ValueError("Site directory may not be a symbolic link")
+    preserved = site.parent.parent / ".quarantine"
+    preserved.mkdir(exist_ok=True)
+    site.rename(preserved / (site.name + "." + uuid4().hex))
+
+
+def _site(site, row, model, provider, identity, seed, *, recover):
+    if site.is_symlink():
+        raise ValueError("Site directory may not be a symbolic link")
+    record_path = site / "result.json"
+    patch = site / "patch.npy"
+    signature = canonical_json_hash({"run": identity, "site": row.image_id})
+    if record_path.is_file():
+        try:
+            record = json.loads(record_path.read_text(encoding="utf-8"))
+            if record["signature"] != signature or record["hashes"] != _hashes(site):
+                raise ValueError("Site output integrity mismatch")
+            baseline, count = _verify_scores(site / "image_scenario_metrics.csv", seed)
+            if (baseline, count) != (record["baseline_status"], record["scenario_rows"]):
+                raise ValueError("Site score evidence mismatch")
+            LOGGER.info("Reused verified site %s", row.image_id)
+            return record
+        except (OSError, ValueError, KeyError, TypeError):
+            if not recover:
+                raise
+            _recover(site)
+    elif site.exists() and any(site.iterdir()):
+        # An interrupted scoring attempt can resume a valid registered patch.
+        try:
+            if patch.exists() or patch.with_suffix(".json").exists() or patch.with_suffix(".scl.npy").exists():
+                download_registered_patch(row.image_id, row.latitude, row.longitude, patch, provider, signature)
+        except (OSError, ValueError, RuntimeError):
+            if not recover:
+                raise
+            _recover(site)
+    site.mkdir(parents=True, exist_ok=True)
+    path, meta = download_registered_patch(row.image_id, row.latitude, row.longitude, patch, provider, signature)
+    scores = evaluate_verified_image(model, path, site, seed=seed)
+    baseline, count = _verify_scores(scores, seed)
+    record = {"signature": signature, "hashes": _hashes(site), "baseline_status": baseline,
+              "scenario_rows": count, "scene_id": meta["scene_id"]}
+    write_json(record_path, record)
+    return record
+
+
+def run(source: Path, *, root: Path = OUT, window="2025-01-01/2025-12-31",
+        minimum_distance_km=100, decimals=4, seed=42, limit=0,
+        acquire=False, recover=False, provider_factory=Sentinel2Provider):
+    source, root = Path(source), Path(root)
+    validate_interval(window)
+    if not isinstance(limit, int) or limit < 0:
+        raise ValueError("Invalid site limit")
+    digest = file_sha256(source)
+    sites, ledger = coordinate_plan(pd.read_csv(source), minimum_distance_km=minimum_distance_km, decimals=decimals)
+    if file_sha256(source) != digest:
+        raise ValueError("Candidate source changed during planning")
+    if limit:
+        sites = sites.head(limit)
+    summary = {"state": "preflight", "sites": len(sites), "candidate_rows": len(ledger),
+               "source_sha256": digest, "independent_accuracy_certified": False}
+    if not acquire:
+        return summary
+    if sites.empty:
+        return {**summary, "state": "no_eligible_sites"}
+    model_path = latest_model_path("model_2")
+    model_hash = file_sha256(model_path)
+    model, actual = load_latest_model("model_2")
+    if actual != model_path or file_sha256(actual) != model_hash:
+        raise ValueError("Active model changed during loading")
+    config = replace(sentinel_config(load_config("model_2")), datetime=window)
+    policy = {"source_sha256": digest, "model_sha256": model_hash, "imagery": asdict(config),
+              "minimum_distance_km": minimum_distance_km, "decimals": decimals, "seed": seed,
+              "limit": limit, "revision": _revision(), "sites": sites.to_dict("records")}
+    identity = canonical_json_hash(policy)
+    directory = root / identity
+    directory.mkdir(parents=True, exist_ok=True)
+    lock = directory / ".lock"
+    try:
+        lock.mkdir()
+    except FileExistsError as exc:
+        raise RuntimeError("Experiment already running or interrupted; inspect its lock") from exc
+    started = monotonic()
+    rows = []
+    def checkpoint(state):
+        write_table(directory / "patch_manifest.csv", pd.DataFrame(rows, columns=COLUMNS))
+        result = {**summary, "state": state, "version_id": identity, "directory": str(directory),
+                  "processed": len(rows), "scored": sum(r.get("baseline_status") == "SCORED" for r in rows),
+                  "failed": sum(r["state"] == "error" for r in rows), "elapsed_seconds": monotonic()-started}
+        write_json(directory / "status.json", result)
+        return result
+    try:
+        write_json(directory / "plan.json", policy)
+        write_table(directory / "coordinate_plan.csv", sites)
+        write_table(directory / "candidate_ledger.csv", ledger)
+        provider = provider_factory(config)
+        checkpoint("running")
+        for row in sites.itertuples(index=False):
+            if (directory / "STOP").exists():
+                return checkpoint("stopped")
+            site = directory / "sites" / row.image_id
+            current = {"image_id": row.image_id, "latitude": row.latitude, "longitude": row.longitude}
+            try:
+                record = _site(site, row, model, provider, identity, seed, recover=recover)
+                current.update(state="verified", path=(site / "patch.npy").relative_to(directory).as_posix(),
+                               scene_id=record["scene_id"], baseline_status=record["baseline_status"],
+                               scenario_rows=record["scenario_rows"])
+            except SentinelProviderError:
+                raise
+            except (OSError, ValueError, KeyError, TypeError, RuntimeError) as exc:
+                current.update(state="error", reason=f"{type(exc).__name__}: {exc}")
+                LOGGER.warning("Site failed %s: %s", row.image_id, exc)
+            rows.append(current)
+            checkpoint("running")
+        if file_sha256(source) != digest or file_sha256(model_path) != model_hash:
+            raise ValueError("Protected experiment inputs changed")
+        return checkpoint("complete" if all(r["state"] == "verified" for r in rows) else "incomplete")
+    except BaseException:
+        checkpoint("interrupted")
+        raise
+    finally:
+        lock.rmdir()
+
 
 def main():
-    OUT.mkdir(parents=True,exist_ok=True)
-    coords=make_plan()
-    total=len(coords)
-    model,_=load_latest_model("model_2")
-    existing=OUT/"patch_manifest.csv"
-    records={z["image_id"]:z for z in pd.read_csv(existing).to_dict("records")} if existing.exists() else {}
-    errors_file=OUT/"errors.csv"
-    errors=pd.read_csv(errors_file).to_dict("records") if errors_file.exists() else []
-    snapshot(state="RUNNING",coordinates_total=total,done=0,accepted=0,failed=0,scored=0)
-    for i,row in enumerate(coords.itertuples(),1):
-        if STOP.exists():
-            snapshot(state="STOPPED_BY_USER",coordinates_total=total,done=i-1,accepted=sum(r.get("status")=="ACCEPT" for r in records.values()),failed=len(errors),scored=0)
-            return
-        image_id=row.image_id
-        output=OUT/"patches"/f"{image_id}_2025.npy"
-        result=OUT/"scores"/image_id/"image_scenario_metrics.csv"
-        old=records.get(image_id)
-        if old is not None and old.get("status")=="ACCEPT" and result.exists():
-            continue
-        try:
-            if old is None or not output.exists() or old.get("status")!="ACCEPT":
-                # Each run is restartable, with bounded worker timeouts and independent per-coordinate output.
-                m,_=acquire_pilot(OUT/"patches",years=(2025,),
-                    locations={image_id:(float(row.latitude),float(row.longitude))},
-                    max_patches=1,timeout_seconds=40)
-                raw=pd.read_csv(m)
-                target=raw.loc[raw.image_id.eq(image_id+"_2025")]
-                if target.empty:
-                    records[image_id]={"image_id":image_id,"status":"NO_ACCEPTED_SCENE"}
-                else:
-                    records[image_id]={**target.iloc[0].to_dict(),"image_id":image_id}
-            current=records[image_id]
-            if current["status"]=="ACCEPT" and not result.exists():
-                from pathlib import Path
-                path=Path(str(current["path"]))
-                evaluate_model_2_image(model,load_imagery(path),OUT/"scores"/image_id)
-        except Exception as e:
-            records[image_id]={"image_id":image_id,"status":"ERROR","reason":str(e)[:300]}
-            errors.append({"image_id":image_id,"error":str(e)[:300]})
-        finally:
-            pd.DataFrame(records.values()).to_csv(existing,index=False)
-            pd.DataFrame(errors).to_csv(errors_file,index=False)
-            count=len(list((OUT/"scores").glob("*/image_scenario_metrics.csv"))) if (OUT/"scores").exists() else 0
-            snapshot(state="RUNNING",coordinates_total=total,done=len(records),
-                accepted=sum(v.get("status")=="ACCEPT" for v in records.values()),
-                failed=sum(v.get("status") in ("ERROR","NO_ACCEPTED_SCENE") for v in records.values()),
-                scored=count)
-    snapshot(state="COMPLETE",coordinates_total=total,done=len(records),
-        accepted=sum(v.get("status")=="ACCEPT" for v in records.values()),
-        failed=sum(v.get("status") in ("ERROR","NO_ACCEPTED_SCENE") for v in records.values()),
-        scored=len(list((OUT/"scores").glob("*/image_scenario_metrics.csv"))))
-if __name__=="__main__":
-    import argparse
-    from lithiumscope.core.logging.session import run_log
-    parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--acquire",action="store_true")
-    if not parser.parse_args().acquire:
-        print("Preflight: use --acquire to authorize exploratory acquisition.")
-        raise SystemExit(0)
-    with run_log("simulations","georoc_background"):
-        try: main()
-        except BaseException as err:
-            snapshot(state="FATAL",error=str(err),traceback=traceback.format_exc()[-2000:])
-            raise
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--source", type=Path, default=EXPERIMENT_ROOT / "full_mamani_contamination_audit.csv")
+    parser.add_argument("--window", default="2025-01-01/2025-12-31")
+    parser.add_argument("--limit", type=int, default=0)
+    parser.add_argument("--acquire", action="store_true")
+    parser.add_argument("--recover", action="store_true")
+    args = parser.parse_args()
+    with run_log("simulations", "georoc_registered_imagery"):
+        print(run(args.source, window=args.window, limit=args.limit, acquire=args.acquire, recover=args.recover))
+
+
+if __name__ == "__main__":
+    main()
