@@ -13,7 +13,7 @@ from lithiumscope.datasets.adapters.georoc.normalization import (
 from lithiumscope.datasets.readers.georoc_raw_reader import (
     read_georoc_raw,
 )
-from lithiumscope.datasets.validation.georoc_schema_profile import (
+from lithiumscope.datasets.validation.georoc.schema_profile import (
     profile_georoc_schema,
 )
 

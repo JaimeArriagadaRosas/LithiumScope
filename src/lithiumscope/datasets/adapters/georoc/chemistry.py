@@ -2,7 +2,7 @@
 from __future__ import annotations
 import numpy as np
 import pandas as pd
-from lithiumscope.datasets.validation.analytical import parse_analytical_value
+from lithiumscope.datasets.validation.chemistry.analytical import parse_analytical_value
 from .schema import MAJOR_OXIDES
 
 def quality_sum(

@@ -5,9 +5,9 @@ import numpy as np
 import pandas as pd
 
 from lithiumscope.core.hashing import file_sha256
-from lithiumscope.tools.georoc.processing.georoc_raw_reader import detect_georoc_encoding
-from lithiumscope.tools.georoc.processing.georoc_material_parser import parse_georoc_material
-from lithiumscope.datasets.validation.analytical import parse_analytical_value
+from lithiumscope.datasets.readers.georoc_raw_reader import detect_georoc_encoding
+from lithiumscope.datasets.adapters.georoc.material import parse_georoc_material
+from lithiumscope.datasets.validation.chemistry.analytical import parse_analytical_value
 
 
 def inspect_export(path: Path):

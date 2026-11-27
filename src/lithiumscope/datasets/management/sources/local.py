@@ -36,6 +36,6 @@ def local_training_source(model_group: str) -> Path:
         expansion = training.get("expansion", {})
         if expansion.get("enabled", False):
             return _existing_local(expansion["output_manifest_path"])
-        from lithiumscope.datasets.management.frozen_m2 import require_frozen_manifest
+        from lithiumscope.datasets.management.sources.model_2.frozen import require_frozen_manifest
         return _existing_local(require_frozen_manifest(training, PROJECT_ROOT))
     raise ValueError(f"Unknown model group: {model_group}")

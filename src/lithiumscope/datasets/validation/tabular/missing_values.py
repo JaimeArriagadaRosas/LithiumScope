@@ -6,7 +6,7 @@ from pandas.api.types import is_object_dtype, is_string_dtype
 
 from lithiumscope.core.logging.session import get_logger
 
-logger = get_logger("model_1.missing_values")
+logger = get_logger("datasets.validation.tabular.missing_values")
 
 _MISSING_TEXT = {"", "nan", "none", "null", "na", "n/a", "-"}
 

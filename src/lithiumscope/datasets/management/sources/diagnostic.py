@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 def prepare_diagnostic_source(model_group, *, acquire=False):
-    from lithiumscope.datasets.management.local_sources import local_training_source
+    from lithiumscope.datasets.management.sources.local import local_training_source
     try:
         return local_training_source(model_group)
     except FileNotFoundError:

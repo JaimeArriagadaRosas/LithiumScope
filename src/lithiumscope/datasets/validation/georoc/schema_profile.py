@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import pandas as pd
 
-from lithiumscope.datasets.adapters.georoc_names import norm
+from lithiumscope.datasets.adapters.georoc.names import norm
 
 
 _CANDIDATE_TOKENS = (
