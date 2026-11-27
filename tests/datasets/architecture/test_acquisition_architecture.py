@@ -30,4 +30,4 @@ def test_checksum_reuses_shared_streaming_implementation(tmp_path):
 def test_georoc_adapters_are_fingerprinted():
     from lithiumscope.core.execution.resume import _scientific_code_files
     files = {p.as_posix() for p in _scientific_code_files("model_1")}
-    assert any(p.endswith("datasets/adapters/georoc_ingestion_transform.py") for p in files)
+    assert any(p.endswith("datasets/adapters/georoc/transformation.py") for p in files)

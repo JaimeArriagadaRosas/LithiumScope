@@ -23,7 +23,7 @@ def test_compatibility_identity(old, new):
 
 
 def test_datasets_have_no_direct_model_imports():
-    root = Path(__file__).resolve().parents[2] / "src/lithiumscope/datasets"
+    root = Path(__file__).resolve().parents[3] / "src/lithiumscope/datasets"
     for path in root.rglob("*.py"):
         for node in ast.walk(ast.parse(path.read_text(encoding="utf-8-sig"))):
             modules = [node.module or ""] if isinstance(node, ast.ImportFrom) else (

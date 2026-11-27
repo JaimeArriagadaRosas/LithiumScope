@@ -1,0 +1,1 @@
+"""GEOROC-specific quality contracts."""

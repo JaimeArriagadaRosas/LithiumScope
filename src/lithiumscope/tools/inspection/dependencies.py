@@ -9,6 +9,9 @@ from pathlib import Path
 
 def _module_name(root, path):
     parts = list(path.relative_to(root).with_suffix("").parts)
+    # Dataset shims are imported via the owning package search path.
+    if parts[:2] == ["lithiumscope", "datasets"] and "_legacy" in parts and parts[-1] != "__init__":
+        parts.remove("_legacy")
     if parts[-1] == "__init__":
         parts.pop()
     return ".".join(parts)
