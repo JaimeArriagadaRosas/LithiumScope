@@ -1,12 +1,30 @@
-"""Separated run_model_1_preflight responsibility; preserve prior public API."""
+"""Verify scientific readiness before any Model 1 candidate is fitted."""
 from __future__ import annotations
+
+import numpy as np
+import pandas as pd
+
+from lithiumscope.core.logging.session import get_logger
+from lithiumscope.core.scientific_checks import ScientificValidationError, assert_group_isolation, assert_no_target_leakage
+from lithiumscope.model_1.validation.spatial import materialize_regression_splits
+from lithiumscope.model_1.validation.preflight_evidence import feature_manifest, source_counts, write_preflight_evidence
+
+logger = get_logger("model_1.preflight")
+
+_IDENTIFIER_COLUMNS = {
+    "source_dataset",
+    "source_sample",
+    "sample_id",
+    "sample",
+    "unique_id",
+    "id",
+}
 
 def run_model_1_preflight(
     prepared,
     config: dict,
     run_context,
 ) -> dict:
-    from lithiumscope.model_1.preflight import ScientificValidationError, _IDENTIFIER_COLUMNS, _feature_manifest, _source_counts, assert_group_isolation, assert_no_target_leakage, json, logger, materialize_regression_splits, np, pd
     validation = config["validation"]
     prefer_spatial = bool(
         validation.get("prefer_spatial_groups", False)
@@ -64,9 +82,9 @@ def run_model_1_preflight(
     negative_target = int((np.isfinite(target_values) & (target_values < 0)).sum())
     if negative_target:
         errors.append(f"Target contains {negative_target} negative concentrations.")
-    feature_manifest = _feature_manifest(prepared)
-    all_missing = feature_manifest.loc[
-        feature_manifest["missing_fraction"] >= 1.0,
+    features_table = feature_manifest(prepared)
+    all_missing = features_table.loc[
+        features_table["missing_fraction"] >= 1.0,
         "feature",
     ].astype(str).tolist()
     if all_missing:
@@ -74,8 +92,8 @@ def run_model_1_preflight(
             "Predictors entirely missing: "
             + ", ".join(all_missing)
         )
-    constant = feature_manifest.loc[
-        feature_manifest["unique_non_null"] <= 1,
+    constant = features_table.loc[
+        features_table["unique_non_null"] <= 1,
         "feature",
     ].astype(str).tolist()
     if constant:
@@ -168,7 +186,7 @@ def run_model_1_preflight(
         "feature_count": int(len(features)),
         "numeric_features": list(prepared.schema.numeric),
         "categorical_features": list(prepared.schema.categorical),
-        "source_counts": _source_counts(prepared.frame),
+        "source_counts": source_counts(prepared.frame),
         "coordinate_quality": coordinate,
         "spatial_groups": spatial_groups,
         "validation": {
@@ -188,60 +206,8 @@ def run_model_1_preflight(
         "warnings": warnings,
         "errors": errors,
     }
-    manifest_path = (
-        run_context.manifests
-        / "model_1_preflight.json"
-    )
-    manifest_path.write_text(
-        json.dumps(
-            payload,
-            indent=2,
-            ensure_ascii=False,
-        ),
-        encoding="utf-8",
-    )
-    feature_manifest.to_csv(
-        run_context.tables
-        / "model_1_feature_manifest.csv",
-        index=False,
-    )
+    write_preflight_evidence(prepared, run_context, payload, features_table, outer_splits)
     if outer_splits is not None:
-        fold_assignment = np.full(
-            len(prepared.y),
-            -1,
-            dtype=int,
-        )
-        for fold, (_, test_idx) in enumerate(
-            outer_splits,
-            start=1,
-        ):
-            fold_assignment[test_idx] = fold
-        fold_manifest = pd.DataFrame(
-            {
-                "row_position": np.arange(len(prepared.y)),
-                "row_index": prepared.y.index.astype(str),
-                "outer_fold": fold_assignment,
-            }
-        )
-        if "source_dataset" in prepared.frame.columns:
-            fold_manifest["source_dataset"] = (
-                prepared.frame["source_dataset"].astype("string").to_numpy()
-            )
-        if prepared.groups is not None:
-            fold_manifest["spatial_group"] = (
-                prepared.groups.astype("string").to_numpy()
-            )
-        for coordinate_name in ("Longitude", "Latitude"):
-            if coordinate_name in prepared.frame.columns:
-                fold_manifest[coordinate_name] = pd.to_numeric(
-                    prepared.frame[coordinate_name],
-                    errors="coerce",
-                ).to_numpy()
-        fold_manifest.to_csv(
-            run_context.tables
-            / "outer_fold_manifest.csv",
-            index=False,
-        )
         prepared.outer_splits = outer_splits
         prepared.validation_strategy = strategy
     run_context.tracker.event(

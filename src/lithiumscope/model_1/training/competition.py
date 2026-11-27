@@ -17,7 +17,7 @@ from lithiumscope.datasets.provenance.manifest import build_tabular_manifest, wr
 from lithiumscope.model_1.evaluation.artifacts import save_dataset_artifacts
 from lithiumscope.model_1.evaluation.baseline import evaluate_baselines
 from lithiumscope.model_1.pipeline import prepare_training_data
-from lithiumscope.model_1.preflight import run_model_1_preflight
+from lithiumscope.model_1.validation.training_preflight import run_model_1_preflight
 from lithiumscope.runtime.graceful_shutdown import get_shutdown_manager
 from lithiumscope.model_1.training.execution.candidate_evaluation import evaluate_candidates
 from lithiumscope.model_1.training.execution.winner_finalization import CompetitionOutcome, finalize_winner

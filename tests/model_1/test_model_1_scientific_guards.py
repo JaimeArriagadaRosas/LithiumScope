@@ -86,3 +86,16 @@ def test_semantic_category_cleaning_is_algorithm_independent():
         random_forest,
         svm,
     )
+
+
+def test_preflight_feature_manifest_preserves_duplicate_positions():
+    from types import SimpleNamespace
+    from lithiumscope.model_1.validation.preflight_evidence import feature_manifest
+    prepared = SimpleNamespace(
+        x=pd.DataFrame([[1., None], [2., None]], columns=["SiO2", "SiO2"]),
+        schema=SimpleNamespace(categorical=[]),
+    )
+    result = feature_manifest(prepared)
+    assert result.feature.tolist() == ["SiO2", "SiO2"]
+    assert result.missing_count.tolist() == [0, 2]
+    assert result.order.tolist() == [1, 2]
