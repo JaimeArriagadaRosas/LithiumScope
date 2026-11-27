@@ -3,8 +3,8 @@
   "scope": "Associated regression modules, not criterion closure. Current branch contains new tests not yet executed.",
   "criteria": {
     "M1-01": [
-      "tests/datasets/readers/test_tabular_contract.py",
-      "tests/datasets/readers/test_csv_encoding.py"
+      "tests/unit/data/test_tabular_contract.py",
+      "tests/unit/data/test_csv_encoding.py"
     ],
     "M1-02": [
       "tests/scientific/shared/treatments/test_integral_eda.py",
@@ -548,8 +548,8 @@
     ],
     "ARQ-054": [
       "tests/architecture/structure/test_management_provenance_architecture.py",
-      "tests/datasets/harmonization/test_dataset_harmonization.py",
-      "tests/datasets/harmonization/test_harmonization_conflicts.py",
+      "tests/unit/data/test_dataset_harmonization.py",
+      "tests/unit/data/test_harmonization_conflicts.py",
       "tests/architecture/boundaries/test_dataset_module_relocation.py"
     ],
     "ARQ-055": [
@@ -569,7 +569,7 @@
     "ARQ-058": [
       "tests/architecture/boundaries/test_historical_relocation.py",
       "tests/architecture/structure/test_management_provenance_architecture.py",
-      "tests/datasets/harmonization/test_harmonization_conflicts.py",
+      "tests/unit/data/test_harmonization_conflicts.py",
       "tests/architecture/boundaries/test_dataset_module_relocation.py"
     ],
     "ARQ-059": [
