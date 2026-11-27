@@ -62,12 +62,12 @@
     ],
     "M1-14": [
       "tests/model_1/test_high_lithium_diagnostics.py",
-      "tests/runtime/test_candidate_evidence.py",
+      "tests/functional/model_lifecycle/test_candidate_evidence.py",
       "tests/model_1/test_model_1_scientific_guards.py"
     ],
     "M1-15": [
-      "tests/release/test_final_fit_contract.py",
-      "tests/release/test_versioned_model_release.py"
+      "tests/functional/model_lifecycle/test_final_fit_contract.py",
+      "tests/functional/model_lifecycle/test_versioned_model_release.py"
     ],
     "M1-16": [
       "tests/datasets/provenance/test_georoc_provenance_contract.py",
@@ -97,13 +97,13 @@
     ],
     "M1-21": [
       "tests/model_1/test_model_1_scientific_guards.py",
-      "tests/runtime/test_candidate_evidence.py",
+      "tests/functional/model_lifecycle/test_candidate_evidence.py",
       "tests/scientific/m1/test_vnext_m1.py"
     ],
     "M1-22": [
-      "tests/runtime/test_candidate_evidence.py",
+      "tests/functional/model_lifecycle/test_candidate_evidence.py",
       "tests/unit/algorithms/test_statistical_baselines.py",
-      "tests/prediction/test_demo_promotion_guard.py",
+      "tests/functional/model_lifecycle/test_demo_promotion_guard.py",
       "tests/model_1/diagnostics/test_development_gate.py"
     ],
     "M1-23": [
@@ -128,9 +128,9 @@
       "tests/model_1/diagnostics/test_domain_group_intervals.py"
     ],
     "M1-27": [
-      "tests/release/test_final_fit_contract.py",
-      "tests/release/test_versioned_model_release.py",
-      "tests/persistence/test_candidate_model_lifecycle.py"
+      "tests/functional/model_lifecycle/test_final_fit_contract.py",
+      "tests/functional/model_lifecycle/test_versioned_model_release.py",
+      "tests/functional/model_lifecycle/test_candidate_model_lifecycle.py"
     ],
     "M2-01": [
       "tests/architecture/contracts/test_configuration_contract.py"
@@ -243,8 +243,8 @@
       "tests/scientific/m2_training/test_m2_release_closure_comparison.py"
     ],
     "M2-24": [
-      "tests/runtime/test_candidate_evidence.py",
-      "tests/prediction/test_demo_promotion_guard.py",
+      "tests/functional/model_lifecycle/test_candidate_evidence.py",
+      "tests/functional/model_lifecycle/test_demo_promotion_guard.py",
       "tests/scientific/m2_training/test_m2_full_competition_quality.py"
     ],
     "M2-25": [
@@ -253,12 +253,12 @@
       "tests/scientific/shared/test_nested_protocol.py"
     ],
     "M2-26": [
-      "tests/prediction/test_candidate_evaluation_gates.py",
-      "tests/prediction/test_prospective_holdout.py",
-      "tests/release/test_release_gate_catalog.py"
+      "tests/functional/model_lifecycle/test_candidate_evaluation_gates.py",
+      "tests/functional/model_lifecycle/test_prospective_holdout.py",
+      "tests/functional/model_lifecycle/test_release_gate_catalog.py"
     ],
     "M2-27": [
-      "tests/release/test_final_fit_contract.py",
+      "tests/functional/model_lifecycle/test_final_fit_contract.py",
       "tests/scientific/m2_training/test_m2_manual_closure.py"
     ],
     "M2-28": [
@@ -338,7 +338,7 @@
     ],
     "ARQ-014": [
       "tests/unit/algorithms/test_statistical_baselines.py",
-      "tests/runtime/test_candidate_evidence.py",
+      "tests/functional/model_lifecycle/test_candidate_evidence.py",
       "tests/model_1/test_high_lithium_diagnostics.py",
       "tests/model_1/diagnostics/test_development_gate.py"
     ],
@@ -371,7 +371,7 @@
     ],
     "ARQ-019": [
       "tests/scientific/shared/treatments/test_integral_eda.py",
-      "tests/runtime/test_candidate_evidence.py",
+      "tests/functional/model_lifecycle/test_candidate_evidence.py",
       "tests/functional/cli/test_readonly_results.py"
     ],
     "ARQ-020": [
@@ -441,11 +441,11 @@
     ],
     "ARQ-033": [
       "tests/unit/metrics/test_binary_metrics_contract.py",
-      "tests/runtime/test_candidate_evidence.py"
+      "tests/functional/model_lifecycle/test_candidate_evidence.py"
     ],
     "ARQ-034": [
-      "tests/prediction/test_candidate_evaluation_gates.py",
-      "tests/release/test_release_gate_catalog.py",
+      "tests/functional/model_lifecycle/test_candidate_evaluation_gates.py",
+      "tests/functional/model_lifecycle/test_release_gate_catalog.py",
       "tests/scientific/m2_training/test_m2_full_competition_quality.py"
     ],
     "ARQ-035": [
@@ -475,7 +475,7 @@
     ],
     "ARQ-039": [
       "tests/scientific/m2_training/test_m2_full_competition_diagnostics.py",
-      "tests/runtime/test_candidate_evidence.py"
+      "tests/functional/model_lifecycle/test_candidate_evidence.py"
     ],
     "ARQ-040": [
       "tests/architecture/structure/test_canonical_execution_packages.py",
@@ -520,8 +520,8 @@
       "tests/unit/inference/test_precomputed_report_inputs.py"
     ],
     "ARQ-048": [
-      "tests/prediction/test_candidate_evaluation_gates.py",
-      "tests/prediction/test_demo_promotion_guard.py",
+      "tests/functional/model_lifecycle/test_candidate_evaluation_gates.py",
+      "tests/functional/model_lifecycle/test_demo_promotion_guard.py",
       "tests/architecture/structure/test_canonical_prediction_architecture.py",
       "tests/architecture/boundaries/test_evaluation_relocation.py"
     ],
@@ -610,8 +610,8 @@
       "tests/results/test_atomic_experimental_exports.py"
     ],
     "ARQ-065": [
-      "tests/prediction/test_prospective_holdout.py",
-      "tests/prediction/test_demo_promotion_guard.py",
+      "tests/functional/model_lifecycle/test_prospective_holdout.py",
+      "tests/functional/model_lifecycle/test_demo_promotion_guard.py",
       "tests/architecture/structure/test_experiment_architecture.py",
       "tests/scientific/experiments/test_paired_experiment_design.py",
       "tests/experiments/test_paired_suite.py"
@@ -753,7 +753,7 @@
     ],
     "ARQ-094": [
       "tests/development/test_validation.py",
-      "tests/runtime/test_candidate_evidence.py"
+      "tests/functional/model_lifecycle/test_candidate_evidence.py"
     ],
     "ARQ-095": [
       "tests/architecture/structure/test_architecture.py",
