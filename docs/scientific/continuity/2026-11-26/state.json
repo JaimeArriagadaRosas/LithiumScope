@@ -340,7 +340,7 @@
       }
     },
     "integral_optimization": {
-      "state": "integration_verified_no_eligible_candidate_reference_fit_blocked",
+      "state": "spatial_recovery_implemented_pending_validation",
       "plan": "M1_PLAN_OPTIMIZACION_INTEGRAL.md",
       "approval": {
         "date": "2026-11-26",
@@ -352,13 +352,13 @@
         "1_pretraining": "operationally_closed",
         "2_training": "operationally_closed_hgb_squared_retained",
         "3_posttraining": "operationally_closed_ridge_candidate_for_integration",
-        "4_integration": "evaluation_complete_no_eligible_method",
+        "4_integration": "recovery_implemented_pending_execution",
         "5_reference_candidate": "blocked_by_spatial_eligibility",
         "6_fine_tuning": "not_started_reference_blocked",
         "7_final_validation": "pending"
       },
-      "current_phase": "4_review_spatial_generalization_blocker",
-      "next_document": "M1_INTEGRACION_METODOLOGICA.md",
+      "current_phase": "4B_spatial_recovery_pending_execution",
+      "next_document": "M1_RECUPERACION_ESPACIAL.md",
       "baseline": {
         "academic_control": "A_historical",
         "rmse_mean": 7.074911,
@@ -389,7 +389,7 @@
         "main_merge_authorized": false
       },
       "documentation_commit": "39948bf4ff7e9c5756089b2bbfb685e1a61ade58",
-      "local_command_pending": false,
+      "local_command_pending": true,
       "new_fits": 505,
       "training_audit": {
         "document": "M1_AUDITORIA_ENTRENAMIENTO.md",
@@ -663,6 +663,26 @@
           "remediation_pending_review": true
         },
         "results_commit": "8bf9761fd0b04113fc4e6a9a9c2fc1aa819d158e"
+      },
+      "spatial_recovery": {
+        "state": "implemented_pending_local_validation",
+        "document": "M1_RECUPERACION_ESPACIAL.md",
+        "module": "lithiumscope.experiments.model_1.integral.spatial_recovery",
+        "support_commit": "a62d81730020708988ae6197be687b3450b0bcc2",
+        "runner_commit": "affd31b474624091cdb643bfd6589dece4346480",
+        "tests_commit": "7374739a142866344a6c57ae5872d6f1697a48b7",
+        "primary": "ridge_high_support",
+        "diagnostics": [
+          "ridge_disagreement",
+          "ridge_supported"
+        ],
+        "new_fits": 10,
+        "expected_focused_tests": 130,
+        "expected_oof_rows": 46938,
+        "expected_support_rows": 6683,
+        "executed": false,
+        "independent_holdout": false,
+        "models_saved": false
       }
     }
   },
@@ -688,9 +708,9 @@
     "frozen_for_current_branch": true
   },
   "next": [
-    "review_spatial_support_and_error_concentration_without_new_data",
-    "predeclare_bounded_remediation_if_justified_or_reconsider_reference_anchor",
-    "do_not_fit_reference_until_eligibility_resolved",
+    "run_spatial_recovery_once_and_130_focused_tests",
+    "verify_support_flags_and_dual_protocol_guards",
+    "review_reference_fit_eligibility_without_relaxing_guards",
     "fine_tuning_not_started"
   ],
   "independent_external_holdout": false,
