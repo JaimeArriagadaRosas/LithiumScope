@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from lithiumscope.experiments.analysis.run_vnext_m1 import (
+from lithiumscope.experiments.model_1.run_vnext_m1 import (
     harmonize_feot_candidate, heldout_group_masks, IRON_FEOT_TO_FE2O3T,
 )
 

@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.experiments.analysis.run_vnext_m2 import (
+from lithiumscope.experiments.model_2.run_vnext_m2 import (
     augment_image_training_only, expected_calibration_error, _calibration_splits,
     score_metrics,
 )

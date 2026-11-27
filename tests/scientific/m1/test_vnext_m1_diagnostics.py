@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from lithiumscope.experiments.analysis.run_vnext_m1_diagnostics import (
+from lithiumscope.experiments.model_1.run_vnext_m1_diagnostics import (
     cluster_bootstrap_improvement,
 )
 
