@@ -133,7 +133,7 @@
       "tests/persistence/test_candidate_model_lifecycle.py"
     ],
     "M2-01": [
-      "tests/model_2/test_configuration_contract.py"
+      "tests/architecture/contracts/test_configuration_contract.py"
     ],
     "M2-02": [
       "tests/model_2/test_model_2_sample_source.py",
@@ -277,7 +277,7 @@
     ],
     "ARQ-001": [
       "tests/cli/test_readonly_results.py",
-      "tests/cli/test_pipeline_inspection_reporting.py",
+      "tests/architecture/contracts/test_pipeline_inspection_reporting.py",
       "tests/reporting/test_document_integrity.py"
     ],
     "ARQ-002": [
@@ -285,17 +285,17 @@
       "tests/cli/test_report_viewer.py"
     ],
     "ARQ-003": [
-      "tests/cli/test_diagnostic_lab_contract.py",
+      "tests/architecture/contracts/test_diagnostic_lab_contract.py",
       "tests/scientific/shared/treatments/test_integral_eda.py",
       "tests/cli/test_diagnostic_acquisition_policy.py"
     ],
     "ARQ-004": [
       "tests/runtime/test_training_logging_session.py",
-      "tests/cli/test_refactor_menu_contract.py"
+      "tests/architecture/contracts/test_refactor_menu_contract.py"
     ],
     "ARQ-005": [
       "tests/prediction/test_prediction_menu.py",
-      "tests/cli/test_refactor_menu_contract.py"
+      "tests/architecture/contracts/test_refactor_menu_contract.py"
     ],
     "ARQ-006": [
       "tests/prediction/test_m1_input_provenance.py",
@@ -588,7 +588,7 @@
       "tests/architecture/structure/test_architecture.py",
       "tests/architecture/structure/test_experiment_architecture.py",
       "tests/architecture/boundaries/test_historical_entrypoint_isolation.py",
-      "tests/experiments/test_dataverse_historical_contract.py",
+      "tests/architecture/contracts/test_dataverse_historical_contract.py",
       "tests/architecture/boundaries/test_validation_import_safety.py",
       "tests/architecture/boundaries/test_georoc_provenance_import_safety.py",
       "tests/architecture/boundaries/test_historical_report_import_safety.py"
@@ -602,7 +602,7 @@
       "tests/scientific/provenance/test_georoc_qc_protocols.py",
       "tests/scientific/shared/test_integral_physical_inputs.py",
       "tests/results/test_atomic_experimental_exports.py",
-      "tests/experiments/test_dataverse_historical_contract.py"
+      "tests/architecture/contracts/test_dataverse_historical_contract.py"
     ],
     "ARQ-064": [
       "tests/scientific/experiments/test_compare_vnext_trained_runs.py",
@@ -630,7 +630,7 @@
     ],
     "ARQ-068": [
       "tests/architecture/structure/test_architecture.py",
-      "tests/core/test_visualization_backend.py",
+      "tests/architecture/contracts/test_visualization_backend.py",
       "tests/architecture/boundaries/test_diagnostic_module_relocation.py"
     ],
     "ARQ-069": [
@@ -688,7 +688,7 @@
       "tests/resources/test_resource_manager.py"
     ],
     "ARQ-081": [
-      "tests/model_2/test_configuration_contract.py",
+      "tests/architecture/contracts/test_configuration_contract.py",
       "tests/resources/test_resource_manager.py"
     ],
     "ARQ-082": [
@@ -722,7 +722,7 @@
     ],
     "ARQ-087": [
       "tests/runtime/test_console_status.py",
-      "tests/cli/test_refactor_menu_contract.py"
+      "tests/architecture/contracts/test_refactor_menu_contract.py"
     ],
     "ARQ-088": [
       "tests/core/test_resources.py",
@@ -825,7 +825,7 @@
     ],
     "ARQ-108": [
       "tests/runtime/test_console_status.py",
-      "tests/cli/test_refactor_menu_contract.py"
+      "tests/architecture/contracts/test_refactor_menu_contract.py"
     ],
     "ARQ-109": [
       "tests/development/test_validation.py",
