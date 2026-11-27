@@ -1,9 +1,17 @@
-"""Extracted responsibility; original public entrypoint remains stable."""
+"""Execute outer regression folds without depending on their orchestrator."""
 from __future__ import annotations
 
 
-def _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, groups, label, optimize, outer_splits, outer_strategy, predictions, prepared, pruning, require_groups, seed, spec, target_transform, trials, validation, robustness_records, preprocessing_records, physical_scenarios_enabled, parameter_space=None):
-    from lithiumscope.model_1.training.execution.cv_runner import Spinner, assert_group_isolation, build_pipeline, logger, materialize_regression_splits, np, optimize_with_optuna, regression_metrics
+def evaluate_outer_folds(algorithm, checkpoint, device, folds, groups, label, optimize, outer_splits, outer_strategy, predictions, prepared, pruning, require_groups, seed, spec, target_transform, trials, validation, robustness_records, preprocessing_records, physical_scenarios_enabled, parameter_space=None):
+    import numpy as np
+    from lithiumscope.core.logging.session import get_logger
+    from lithiumscope.runtime.console_status import Spinner
+    from lithiumscope.core.scientific_checks import assert_group_isolation
+    from lithiumscope.core.scientific.regression_metrics import regression_metrics
+    from lithiumscope.model_1.training.factory import build_pipeline
+    from lithiumscope.model_1.validation.spatial import materialize_regression_splits
+    from lithiumscope.model_1.training.optimization.optimizer import optimize_with_optuna
+    logger = get_logger("model_1.cv_runner")
     from lithiumscope.model_1.training.preprocessing.spatial_tabnet import fit_regression_estimator, early_stopping_evidence
     from lithiumscope.core.logging.context import scientific_log_context
     for fold, (train_idx, test_idx) in enumerate(
@@ -191,7 +199,7 @@ def _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, group
                         metrics["stress_noise_evaluated"] = 0.0
                 scenario_records=[]
                 if physical_scenarios_enabled:
-                    from lithiumscope.model_1.evaluation.robustness import evaluate_stress
+                    from lithiumscope.model_1.diagnostics.robustness import evaluate_stress
                     scenario_records=evaluate_stress(estimator,x_test,y_test,fold_predictions,prepared.schema,fold=fold,seed=seed)
                     robustness_records.extend(scenario_records)
                     metrics['stress_physical_scenarios_ok']=sum(row['status']=='ok' for row in scenario_records)

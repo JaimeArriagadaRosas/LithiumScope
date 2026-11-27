@@ -2,10 +2,8 @@ from __future__ import annotations
 
 from lithiumscope.core.scientific.candidate_evidence import eligible_rows
 
-from dataclasses import dataclass
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 from lithiumscope.core.config import load_config
@@ -13,60 +11,22 @@ from lithiumscope.resources.detection.device import DeviceInfo
 from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.reproducibility import set_global_seed
 from lithiumscope.core.run_context import RunContext
-from lithiumscope.core.scientific.training_diagnostics import save_oof_diagnostics
 from lithiumscope.core.run_resume import build_training_signature
 from lithiumscope.core.states import RunState
 from lithiumscope.datasets.provenance.manifest import build_tabular_manifest, write_manifest
-from lithiumscope.model_1.evaluation.artifacts import save_algorithm_artifacts, save_dataset_artifacts
+from lithiumscope.model_1.evaluation.artifacts import save_dataset_artifacts
 from lithiumscope.model_1.evaluation.baseline import evaluate_baselines
-from lithiumscope.model_1.evaluation.importance import save_feature_importance
-from lithiumscope.model_1.evaluation.plots import save_competition_chart
 from lithiumscope.model_1.pipeline import prepare_training_data
 from lithiumscope.model_1.preflight import run_model_1_preflight
-from lithiumscope.model_1.schema import applicability_profile
-from lithiumscope.model_1.training.execution.cv_runner import run_nested_cv
-from lithiumscope.model_1.training.factory import build_pipeline, get_algorithm
-from lithiumscope.persistence.save_model import save_model_bundle
-from lithiumscope.results.dashboard import build_dashboard
-from lithiumscope.results.excel_exporter import export_workbook
 from lithiumscope.runtime.graceful_shutdown import get_shutdown_manager
+from lithiumscope.model_1.training.execution.candidate_evaluation import evaluate_candidates
+from lithiumscope.model_1.training.execution.winner_finalization import CompetitionOutcome, finalize_winner
 
 logger = get_logger("model_1.competition")
 
 
-@dataclass
-class CompetitionOutcome:
-    run_dir: Path
-    ranking: pd.DataFrame
-    winner: str | None
-    successful: list[str]
-    failed: list[str]
 
 
-def _ranking_row(result) -> dict:
-    folds = result.fold_table
-    return {
-        "algorithm": (
-            result.variant_id
-            or result.algorithm
-        ),
-        "base_algorithm": result.algorithm,
-        "target_transform": result.target_transform,
-        "final_treatment_policy": result.final_params.get("treatment_policy","legacy"),
-        "label": result.label,
-        "rmse_mean": float(folds["rmse"].mean(skipna=False)),
-        **{f"oof_{name}": value for name,value in result.overall_metrics.items()},
-        "rmse_std": float(folds["rmse"].std(ddof=0)),
-        "mae_mean": float(folds["mae"].mean()),
-        "mae_std": float(folds["mae"].std(ddof=0)),
-        "r2_mean": float(folds["r2"].mean()),
-        "r2_std": float(folds["r2"].std(ddof=0)),
-        "median_ae_mean": float(folds["median_ae"].mean()),
-        "explained_variance_mean": float(folds["explained_variance"].mean()),
-        "elapsed_seconds": result.elapsed_seconds,
-        "status": "ok",
-        "is_baseline": False,
-    }
 
 
 def _target_experiments(
@@ -117,51 +77,8 @@ def _target_experiments(
     return experiments
 
 
-def _rank(rows: list[dict]) -> pd.DataFrame:
-    ranking = pd.DataFrame(rows)
-    if ranking.empty:
-        return ranking
-
-    baseline = ranking[ranking.get("is_baseline", False) == True].copy()  # noqa: E712
-    candidates = ranking[
-        eligible_rows(ranking)
-        & (ranking.get("is_baseline", False) != True)  # noqa: E712
-    ].copy()
-    failed = ranking[(~eligible_rows(ranking)) & (ranking["is_baseline"] != True)].copy()
-
-    if not candidates.empty:
-        candidates = candidates.sort_values(
-            ["rmse_mean", "mae_mean", "r2_mean", "algorithm"],
-            ascending=[True, True, False, True],
-        ).reset_index(drop=True)
-        candidates.insert(0, "rank", range(1, len(candidates) + 1))
-
-    if not baseline.empty:
-        baseline.insert(0, "rank", pd.NA)
-
-    return pd.concat([candidates, baseline, failed], ignore_index=True, sort=False)
 
 
-def _excel_sheets(prepared, ranking: pd.DataFrame, results: dict[str, tuple], baseline) -> dict[str, pd.DataFrame]:
-    sheets = {
-        "ranking": ranking,
-        "pipeline": prepared.audit.to_frame(),
-        "dataset_summary": prepared.frame.describe(include="all").transpose().reset_index(names="variable"),
-        "correlations": prepared.frame.select_dtypes(include=[np.number]).corr(numeric_only=True).reset_index(),
-        "baseline_folds": baseline[1],
-        "baseline_oof": baseline[2],
-    }
-    eligible=set(ranking.loc[eligible_rows(ranking),"algorithm"].astype(str))
-    for algorithm, (result, algorithm_prepared) in results.items():
-        if algorithm not in eligible:
-            continue
-        sheets[f"folds_{algorithm}"[:31]] = result.fold_table
-        if result.robustness_table is not None and not result.robustness_table.empty:
-            sheets[f"stress_{algorithm}"[:31]]=result.robustness_table
-        from lithiumscope.model_1.evaluation.oof_evidence import regression_oof_table
-        sheets[f"pred_{algorithm}"[:31]] = regression_oof_table(algorithm_prepared,result.predictions,result.outer_splits).rename(
-            columns={"Li_icpms_real":"Li_real","Li_icpms_predicted":"Li_pred"})
-    return sheets
 
 
 def run_model_1_competition(dataset_path: Path, device: DeviceInfo) -> CompetitionOutcome:
@@ -193,6 +110,7 @@ def run_model_1_competition(dataset_path: Path, device: DeviceInfo) -> Competiti
 
     print("\n=== MODELO 1 · COMPETENCIA DE ALGORITMOS ===")
     print(f"Entrenamiento: {context.run_id}")
+    logger.info("M1_COMPETITION_STARTED run=%s candidates=%d", context.run_id, len(experiments))
 
     if context.resumed and context.tracker.state == RunState.COMPLETED:
         ranking_path = context.tables / "competition_ranking.csv"
@@ -256,9 +174,6 @@ def run_model_1_competition(dataset_path: Path, device: DeviceInfo) -> Competiti
     results: dict[str, tuple] = {}
     failed: list[str] = []
 
-    _evaluate_model_1_candidates(config, context, device, experiments, failed, prepared, results, rows)
+    evaluate_candidates(config, context, device, experiments, failed, prepared, results, rows)
 
-    return _finalize_model_1_winner(baseline, config, context, dataset_manifest, device, failed, manifest_path, preflight, prepared, results, rows, seed)
-
-from lithiumscope.model_1.training.execution.competition_evaluate_model_1_candidates import _evaluate_model_1_candidates
-from lithiumscope.model_1.training.execution.competition_finalize_model_1_winner import _finalize_model_1_winner
+    return finalize_winner(baseline, config, context, dataset_manifest, device, failed, manifest_path, preflight, prepared, results, rows, seed)

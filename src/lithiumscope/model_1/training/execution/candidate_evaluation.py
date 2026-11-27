@@ -1,9 +1,13 @@
-"""Extracted responsibility; original public entrypoint remains stable."""
+"""Execute and verify the candidates on the frozen common partition."""
 from __future__ import annotations
 
 
-def _evaluate_model_1_candidates(config, context, device, experiments, failed, prepared, results, rows):
-    from lithiumscope.model_1.training.competition import _ranking_row, get_algorithm, logger, run_nested_cv
+def evaluate_candidates(config, context, device, experiments, failed, prepared, results, rows):
+    from lithiumscope.model_1.evaluation.selection import ranking_row
+    from lithiumscope.model_1.training.factory import get_algorithm
+    from lithiumscope.model_1.training.execution.cv_runner import run_nested_cv
+    from lithiumscope.core.logging.session import get_logger
+    logger = get_logger("model_1.competition")
     from lithiumscope.core.scientific.candidate_evidence import record_evidence, verify_candidate
     from lithiumscope.model_1.evaluation.artifacts import save_algorithm_tables, save_algorithm_figures
     from lithiumscope.resources.allocation.competition_workers import schedule_candidates, candidate_result
@@ -85,7 +89,7 @@ def _evaluate_model_1_candidates(config, context, device, experiments, failed, p
             if result.outer_splits is None or len(result.outer_splits)!=len(prepared.outer_splits) or any(
                 not (array_equal(a,c) and array_equal(b,d)) for (a,b),(c,d) in zip(result.outer_splits,prepared.outer_splits,strict=True)):
                 raise ValueError("Candidate folds differ from frozen common partition")
-            row = _ranking_row(result)
+            row = ranking_row(result)
         except Exception as exc:
             logger.exception("Algorithm failed: %s", algorithm)
             failed.append(variant_id)

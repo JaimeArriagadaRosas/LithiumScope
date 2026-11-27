@@ -1,13 +1,41 @@
-"""Extracted responsibility; original public entrypoint remains stable."""
+"""Select the eligible candidate, freeze the final fit and publish its evidence."""
 from __future__ import annotations
 
+from dataclasses import dataclass
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
 from lithiumscope.core.scientific.candidate_evidence import eligible_rows
+from lithiumscope.core.scientific.training_diagnostics import save_oof_diagnostics
+from lithiumscope.core.states import RunState
+from lithiumscope.core.logging.session import get_logger
+from lithiumscope.model_1.evaluation.artifacts import competition_workbook_sheets
+from lithiumscope.model_1.evaluation.selection import baseline_eligibility, rank_candidates
+from lithiumscope.model_1.evaluation.importance import save_feature_importance
+from lithiumscope.model_1.evaluation.plots import save_competition_chart
+from lithiumscope.model_1.schema import applicability_profile
+from lithiumscope.model_1.training.factory import build_pipeline
+from lithiumscope.persistence.save_model import save_model_bundle
+from lithiumscope.results.dashboard import build_dashboard
+from lithiumscope.results.excel_exporter import export_workbook
+
+logger = get_logger("model_1.competition")
 
 
-def _finalize_model_1_winner(baseline, config, context, dataset_manifest, device, failed, manifest_path, preflight, prepared, results, rows, seed):
-    from lithiumscope.model_1.training.competition import CompetitionOutcome, RunState, _excel_sheets, _rank, applicability_profile, build_dashboard, build_pipeline, export_workbook, np, save_competition_chart, save_feature_importance, save_model_bundle, save_oof_diagnostics
-    from lithiumscope.model_1.evaluation.selection import baseline_eligibility
-    ranking = baseline_eligibility(_rank(rows), preflight_ok=preflight.get("status") == "pass",
+@dataclass
+class CompetitionOutcome:
+    run_dir: Path
+    ranking: pd.DataFrame
+    winner: str | None
+    successful: list[str]
+    failed: list[str]
+
+
+
+def finalize_winner(baseline, config, context, dataset_manifest, device, failed, manifest_path, preflight, prepared, results, rows, seed):
+    ranking = baseline_eligibility(rank_candidates(rows), preflight_ok=preflight.get("status") == "pass",
         minimum_gain=float(config.get("baseline",{}).get("minimum_rmse_gain_ppm",0.0)))
     policy = config.get("competition", {}).get("development_gate")
     if policy is not None:
@@ -22,9 +50,10 @@ def _finalize_model_1_winner(baseline, config, context, dataset_manifest, device
     relative_winner = str(successful.iloc[0]["algorithm"]) if not successful.empty else None
     eligible = successful.loc[successful.scientific_candidate_eligible]
     if eligible.empty:
+        logger.warning("M1_NO_ELIGIBLE_CANDIDATE run=%s", context.run_id)
         export_workbook(
             context.exports / "model_1_results.xlsx",
-            _excel_sheets(prepared, ranking, results, baseline),
+            competition_workbook_sheets(prepared, ranking, results, baseline),
         )
         build_dashboard(context.root, "LithiumScope — Modelo 1")
         context.tracker.set_state(
@@ -103,7 +132,7 @@ def _finalize_model_1_winner(baseline, config, context, dataset_manifest, device
         winner_prepared.schema.numeric,
     )
 
-    from lithiumscope.model_1.evaluation.domain import fit_domain_profile
+    from lithiumscope.model_1.diagnostics.domain import fit_domain_profile
     domain_profile = fit_domain_profile(winner_prepared.x, winner_prepared.schema.numeric,
                                         winner_prepared.schema.categorical)
     metadata = {
@@ -197,7 +226,7 @@ def _finalize_model_1_winner(baseline, config, context, dataset_manifest, device
 
     export_workbook(
         context.exports / "model_1_results.xlsx",
-        _excel_sheets(prepared, ranking, results, baseline),
+        competition_workbook_sheets(prepared, ranking, results, baseline),
     )
     (context.exports / "winner.txt").write_text(
         (
@@ -214,6 +243,7 @@ def _finalize_model_1_winner(baseline, config, context, dataset_manifest, device
         "LithiumScope — Modelo 1 · Competencia",
     )
 
+    logger.info("M1_WINNER_SAVED run=%s variant=%s", context.run_id, winner_variant)
     final_state = RunState.PARTIAL if failed or len(successful)!=len(results) else RunState.COMPLETED
     context.tracker.set_state(
         final_state,

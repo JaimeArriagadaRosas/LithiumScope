@@ -5,6 +5,7 @@ import json
 
 import numpy as np
 import pandas as pd
+from lithiumscope.core.scientific.candidate_evidence import eligible_rows
 
 from lithiumscope.model_1.evaluation.plots import (
     save_correlation_heatmap,
@@ -68,7 +69,7 @@ def save_algorithm_tables(prepared, cv_result, run_context) -> dict[str, Path]:
     predictions.to_csv(prediction_path, index=False)
 
     artifacts={"folds": fold_path, "predictions": prediction_path}
-    from lithiumscope.model_1.evaluation.high_lithium import save_high_lithium_diagnostics
+    from lithiumscope.model_1.diagnostics.high_lithium import save_high_lithium_diagnostics
     confusion_path=run_context.tables/f"high_lithium_confusion_{artifact_key}.csv"
     strata_path=run_context.tables/f"high_lithium_residuals_{artifact_key}.csv"
     save_high_lithium_diagnostics(predictions,confusion_path,strata_path)
@@ -107,3 +108,25 @@ def save_algorithm_figures(prepared, cv_result, run_context) -> dict[str, Path]:
 def save_algorithm_artifacts(prepared, cv_result, run_context) -> dict[str, Path]:
     return {**save_algorithm_tables(prepared, cv_result, run_context),
             **save_algorithm_figures(prepared, cv_result, run_context)}
+
+
+def competition_workbook_sheets(prepared, ranking: pd.DataFrame, results: dict[str, tuple], baseline) -> dict[str, pd.DataFrame]:
+    sheets = {
+        "ranking": ranking,
+        "pipeline": prepared.audit.to_frame(),
+        "dataset_summary": prepared.frame.describe(include="all").transpose().reset_index(names="variable"),
+        "correlations": prepared.frame.select_dtypes(include=[np.number]).corr(numeric_only=True).reset_index(),
+        "baseline_folds": baseline[1],
+        "baseline_oof": baseline[2],
+    }
+    eligible=set(ranking.loc[eligible_rows(ranking),"algorithm"].astype(str))
+    for algorithm, (result, algorithm_prepared) in results.items():
+        if algorithm not in eligible:
+            continue
+        sheets[f"folds_{algorithm}"[:31]] = result.fold_table
+        if result.robustness_table is not None and not result.robustness_table.empty:
+            sheets[f"stress_{algorithm}"[:31]]=result.robustness_table
+        from lithiumscope.model_1.evaluation.oof_evidence import regression_oof_table
+        sheets[f"pred_{algorithm}"[:31]] = regression_oof_table(algorithm_prepared,result.predictions,result.outer_splits).rename(
+            columns={"Li_icpms_real":"Li_real","Li_icpms_predicted":"Li_pred"})
+    return sheets

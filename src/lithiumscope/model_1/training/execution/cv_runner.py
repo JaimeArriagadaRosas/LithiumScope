@@ -16,7 +16,7 @@ from lithiumscope.core.scientific_checks import (
     assert_partition_coverage,
     assert_oof_complete,
 )
-from lithiumscope.model_1.evaluation.metrics import regression_metrics
+from lithiumscope.core.scientific.regression_metrics import regression_metrics
 from lithiumscope.model_1.validation.spatial import (
     materialize_regression_splits,
 )
@@ -27,6 +27,7 @@ from lithiumscope.model_1.training.preprocessing.target_transform import (
     validate_target_transform,
 )
 from lithiumscope.runtime.console_status import Spinner
+from lithiumscope.model_1.training.execution.outer_folds import evaluate_outer_folds
 
 logger = get_logger("model_1.cv_runner")
 
@@ -150,7 +151,7 @@ def run_nested_cv(
         f"{outer_strategy}"
     )
 
-    _evaluate_outer_regression_folds(algorithm, checkpoint, device, folds, groups, label, optimize, outer_splits, outer_strategy, predictions, prepared, pruning, require_groups, seed, spec, target_transform, trials, validation, robustness_records, preprocessing_records, bool(config.get('robustness',{}).get('physical_scenarios_enabled',True)),parameter_space=parameter_space)
+    evaluate_outer_folds(algorithm, checkpoint, device, folds, groups, label, optimize, outer_splits, outer_strategy, predictions, prepared, pruning, require_groups, seed, spec, target_transform, trials, validation, robustness_records, preprocessing_records, bool(config.get('robustness',{}).get('physical_scenarios_enabled',True)),parameter_space=parameter_space)
 
     assert_oof_complete(predictions, len(prepared.y))
     overall = regression_metrics(
@@ -260,5 +261,3 @@ def run_nested_cv(
         robustness_table=pd.DataFrame(robustness_records),
         preprocessing_records=preprocessing_records,
     )
-
-from lithiumscope.model_1.training.execution.cv_runner_evaluate_outer_regression_folds import _evaluate_outer_regression_folds
