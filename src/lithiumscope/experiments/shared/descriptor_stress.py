@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 from lithiumscope.core.config import load_config
-from lithiumscope.datasets.management.diagnostic_provisioning import prepare_diagnostic_source
+from lithiumscope.datasets.management.sources.diagnostic import prepare_diagnostic_source
 from lithiumscope.model_2.preparation.features.v4_inputs import load_spectral_v4_training_frame
 from lithiumscope.results.atomic_exports import write_table
 

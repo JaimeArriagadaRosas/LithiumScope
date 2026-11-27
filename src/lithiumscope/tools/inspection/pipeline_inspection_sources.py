@@ -6,8 +6,8 @@ import pandas as pd
 
 from lithiumscope.core.config import load_config
 from lithiumscope.core.paths import DATA_DIR, PROJECT_ROOT
-from lithiumscope.datasets.downloader import ensure_dataset
-from lithiumscope.datasets.georoc_ingestion import ingest_georoc_files
+from lithiumscope.tools.acquisition.tabular import ensure_dataset
+from lithiumscope.datasets.adapters.georoc.ingestion import ingest_georoc_files
 from lithiumscope.datasets.harmonization import (
     concatenate_harmonized_sources,
     deduplicate_harmonized_sources,

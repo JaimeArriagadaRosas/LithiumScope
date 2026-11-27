@@ -11,11 +11,11 @@ import numpy as np
 import pandas as pd
 
 from lithiumscope.core.config import load_config
-from lithiumscope.core.hashing import file_sha256
+from lithiumscope.core.reproducibility.hashing import file_sha256
 from lithiumscope.core.paths import DATA_DIR, RESULTS_DIR
 from lithiumscope.core.reproducibility import canonical_json_hash
-from lithiumscope.datasets.adapters.georoc_ingestion import ingest_georoc_files
-from lithiumscope.datasets.management.research_sources import M1_RESEARCH_SOURCES
+from lithiumscope.datasets.adapters.georoc.ingestion import ingest_georoc_files
+from lithiumscope.datasets.management.sources.research import M1_RESEARCH_SOURCES
 from lithiumscope.results.eda_artifacts import complete_run, find_compatible, new_run, fail_run
 from lithiumscope.tools.acquisition.georoc.research import acquire
 
@@ -67,7 +67,7 @@ def profile(spec, paths, receipt, base_path, *, output_root=None):
     cfg=load_config("model_1")
     digests={p.name:file_sha256(p) for p in paths}
     base_digest=file_sha256(base_path)
-    from lithiumscope.datasets.adapters import georoc_ingestion_schema, georoc_ingestion_transform, georoc_ingestion
+    from lithiumscope.datasets.adapters.georoc import schema as georoc_ingestion_schema, transformation as georoc_ingestion_transform, ingestion as georoc_ingestion
     from lithiumscope.datasets.readers import georoc_raw_reader
     from importlib.metadata import version
     key=canonical_json_hash({"source":spec.key,"files":digests,"base":base_digest,"cfg":cfg["data_sources"]["georoc"],

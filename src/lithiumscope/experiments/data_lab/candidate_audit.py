@@ -7,10 +7,10 @@ from uuid import uuid4
 
 import pandas as pd
 
-from lithiumscope.core.hashing import file_sha256
+from lithiumscope.core.reproducibility.hashing import file_sha256
 from lithiumscope.core.paths import RESULTS_DIR
-from lithiumscope.datasets.management.local_sources import local_training_source
-from lithiumscope.datasets.management.research_sources import M1_RESEARCH_SOURCES
+from lithiumscope.datasets.management.sources.local import local_training_source
+from lithiumscope.datasets.management.sources.research import M1_RESEARCH_SOURCES
 from lithiumscope.experiments.data_lab.candidate_screening import screen, num, CHEM
 from lithiumscope.results.eda_artifacts import verify_eda
 from lithiumscope.results.atomic_exports import write_json, write_table

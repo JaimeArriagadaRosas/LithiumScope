@@ -13,11 +13,11 @@ import pandas as pd
 from sklearn.model_selection import GroupKFold
 
 from lithiumscope.core.config import load_config
-from lithiumscope.core.hashing import file_sha256
+from lithiumscope.core.reproducibility.hashing import file_sha256
 from lithiumscope.core.paths import RESULTS_DIR
-from lithiumscope.datasets.management.local_sources import local_training_source
+from lithiumscope.datasets.management.sources.local import local_training_source
 from lithiumscope.experiments.shared.design import choose_algorithms
-from lithiumscope.model_2.evaluation.metrics import classification_metrics
+from lithiumscope.core.scientific.classification_metrics import classification_metrics
 from lithiumscope.model_2.training.calibration.operating import fit_policy
 from lithiumscope.model_2.training.calibration.policy import calibration_policy
 from lithiumscope.model_2.training.execution.competition_prepare_scientific_data import _prepare_scientific_data

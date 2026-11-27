@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 
 from lithiumscope.core.config import load_config
-from lithiumscope.core.hashing import file_sha256
+from lithiumscope.core.reproducibility.hashing import file_sha256
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.model_2.data.builder import _sentinel_config
 from lithiumscope.model_2.data.sample_source import _spatial_group
@@ -65,14 +65,14 @@ def source_audit(root: Path, config: dict) -> pd.DataFrame:
     audit = project_path(root, expanded["source_audit_path"])
     if audit.is_file():
         return pd.read_csv(audit)
-    from lithiumscope.datasets.georoc_filtered_acquisition import (
+    from lithiumscope.tools.acquisition.georoc.filtered import (
         acquire_filtered_georoc, GEOROC_FILTERED_NAME,
     )
-    from lithiumscope.datasets.georoc_ingestion import ingest_georoc_files
-    from lithiumscope.experiments.analysis.audit_georoc_source_references import (
+    from lithiumscope.datasets.adapters.georoc.ingestion import ingest_georoc_files
+    from lithiumscope.experiments.model_2.audit_georoc_source_references import (
         classify_record, decimal_places, parse_bibliography,
     )
-    from lithiumscope.experiments.analysis.protocols.georoc_qc_protocols import protocol_masks
+    from lithiumscope.model_1.methodology.qc_protocols import protocol_masks
 
     staged = project_path(root, expanded["state_dir"])
     staged.mkdir(parents=True, exist_ok=True)

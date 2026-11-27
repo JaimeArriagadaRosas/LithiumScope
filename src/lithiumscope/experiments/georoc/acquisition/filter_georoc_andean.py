@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 from sklearn.neighbors import BallTree
 from lithiumscope.core.paths import PROJECT_ROOT,RESULTS_DIR
-from lithiumscope.core.hashing import file_sha256
-from lithiumscope.datasets.adapters.georoc_dataverse import whole_rock_candidates
+from lithiumscope.core.reproducibility.hashing import file_sha256
+from lithiumscope.datasets.adapters.georoc.dataverse import whole_rock_candidates
 from lithiumscope.results.atomic_exports import write_json,write_table
 
 

@@ -102,8 +102,8 @@ def test_repository_refactor_has_no_import_boundary_blockers():
 
 
 def test_shared_helpers_preserve_legacy_imports():
-    from lithiumscope.datasets.validation.missing_values import normalize_missing_values
-    from lithiumscope.datasets.validation.target_column import resolve_target
+    from lithiumscope.datasets.validation.tabular.missing_values import normalize_missing_values
+    from lithiumscope.datasets.validation.tabular.schema import resolve_target
     from lithiumscope.model_1.preparation import missing_values, target_filtering
     from lithiumscope.model_1.evaluation import reports as m1_reports
     from lithiumscope.model_2.evaluation import reports as m2_reports

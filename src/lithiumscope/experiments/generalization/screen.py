@@ -165,7 +165,7 @@ def run_screen(group, source, *, all_families=False, output_root=None, device=No
 
 
 def main():
-    from lithiumscope.datasets.management.diagnostic_provisioning import prepare_diagnostic_source
+    from lithiumscope.datasets.management.sources.diagnostic import prepare_diagnostic_source
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", choices=["model_1", "model_2", "both"], default="both")
     parser.add_argument("--all", action="store_true", help="Evaluate all six families per selected model")

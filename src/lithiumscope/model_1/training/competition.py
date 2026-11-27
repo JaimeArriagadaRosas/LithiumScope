@@ -16,7 +16,7 @@ from lithiumscope.core.run_context import RunContext
 from lithiumscope.core.scientific.training_diagnostics import save_oof_diagnostics
 from lithiumscope.core.run_resume import build_training_signature
 from lithiumscope.core.states import RunState
-from lithiumscope.datasets.manifest import build_tabular_manifest, write_manifest
+from lithiumscope.datasets.provenance.manifest import build_tabular_manifest, write_manifest
 from lithiumscope.model_1.evaluation.artifacts import save_algorithm_artifacts, save_dataset_artifacts
 from lithiumscope.model_1.evaluation.baseline import evaluate_baselines
 from lithiumscope.model_1.evaluation.importance import save_feature_importance

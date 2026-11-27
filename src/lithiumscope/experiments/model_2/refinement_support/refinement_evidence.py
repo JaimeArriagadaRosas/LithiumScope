@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 from lithiumscope.core.config import load_config
-from lithiumscope.core.hashing import file_sha256
+from lithiumscope.core.reproducibility.hashing import file_sha256
 from lithiumscope.core.paths import DATA_DIR, RESULTS_DIR
 from lithiumscope.experiments.generalization.prepared import identity, load_snapshot
 from lithiumscope.experiments.generalization.partitions import partitions, training_target
@@ -29,7 +29,7 @@ def load_protocol(run_id):
     snapshot=DATA_DIR/"processed"/"model_2"/"prepared_versions"/key
     cfg=load_config("model_2")
     data=load_snapshot(snapshot,key)
-    from lithiumscope.datasets.management.diagnostic_provisioning import prepare_diagnostic_source
+    from lithiumscope.datasets.management.sources.diagnostic import prepare_diagnostic_source
     source=prepare_diagnostic_source("model_2")
     if identity("model_2",source,cfg)!=key:
         raise ValueError("Current V4 scientific data/configuration differs from prepared snapshot")

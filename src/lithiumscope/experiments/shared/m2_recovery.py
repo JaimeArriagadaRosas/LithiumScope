@@ -1,9 +1,9 @@
 """Recover the two previously incomplete M2 reports without retraining."""
 from __future__ import annotations
 
-from lithiumscope.core.hashing import file_sha256
+from lithiumscope.core.reproducibility.hashing import file_sha256
 from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR
-from lithiumscope.datasets.management.local_sources import local_training_source
+from lithiumscope.datasets.management.sources.local import local_training_source
 from lithiumscope.results.atomic_exports import write_json
 
 

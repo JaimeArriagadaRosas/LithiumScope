@@ -25,7 +25,7 @@ def curve_summary(plan):
 def inspect_m1(root: Path) -> dict:
     from lithiumscope.core.scientific.learning_curves import build_curve_plan
     from lithiumscope.core.scientific.spatial_audit import audit_spatial_folds
-    from lithiumscope.datasets.local_sources import local_training_source
+    from lithiumscope.datasets.management.sources.local import local_training_source
     from lithiumscope.model_1.evaluation.baseline import baseline_splits
     from lithiumscope.model_1.pipeline import prepare_training_data
 
@@ -63,8 +63,8 @@ def inspect_m2(root: Path) -> dict:
     import pandas as pd
     from lithiumscope.core.scientific.learning_curves import build_curve_plan
     from lithiumscope.core.scientific.spatial_audit import audit_spatial_folds
-    from lithiumscope.datasets.local_sources import local_training_source
-    from lithiumscope.datasets.validation.paths import read_relocation, resolve_image_path
+    from lithiumscope.datasets.management.sources.local import local_training_source
+    from lithiumscope.datasets.management.paths import read_relocation, resolve_image_path
     from lithiumscope.model_2.data.feature_cache import validate_manifest
     from lithiumscope.model_2.validation.configuration import validate_canonical_config
     from lithiumscope.model_2.validation.quality import training_quality_mask

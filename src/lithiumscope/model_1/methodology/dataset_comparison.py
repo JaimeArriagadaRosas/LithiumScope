@@ -19,7 +19,7 @@ from sklearn.model_selection import GroupKFold
 
 from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR
 from lithiumscope.datasets.adapters.georoc.schema import infer_georoc_column_map
-from lithiumscope.datasets.georoc_ingestion_transform import harmonize_chunk
+from lithiumscope.datasets.adapters.georoc.transformation import harmonize_chunk
 from lithiumscope.datasets.harmonization import (
     canonicalize_coordinates, merge_harmonized_sources,
 )

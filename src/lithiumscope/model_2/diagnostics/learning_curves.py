@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from lithiumscope.core.config import load_config
-from lithiumscope.datasets.management.local_sources import local_training_source
+from lithiumscope.datasets.management.sources.local import local_training_source
 from pathlib import Path
 from types import SimpleNamespace
 

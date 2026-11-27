@@ -4,7 +4,7 @@ from pathlib import Path
 from lithiumscope.results.atomic_exports import write_json, write_table
 import pandas as pd
 
-from lithiumscope.datasets.validation.external_geochemistry import REQUIRED, COMPATIBLE_MATERIAL, validate_geochemistry
+from lithiumscope.datasets.validation.chemistry.external_geochemistry import REQUIRED, COMPATIBLE_MATERIAL, validate_geochemistry
 
 
 def initialize_catalog(directory: Path) -> Path:

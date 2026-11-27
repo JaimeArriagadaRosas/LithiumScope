@@ -49,7 +49,7 @@ def compare_saved(group, models, destination):
             from lithiumscope.core.paths import PROJECT_ROOT
             from lithiumscope.experiments.shared.reconstructed_m2_comparison import compare_reconstructed
             return compare_reconstructed(old,new,a,b,destination,root=PROJECT_ROOT)
-        from lithiumscope.datasets.management.diagnostic_provisioning import prepare_diagnostic_source
+        from lithiumscope.datasets.management.sources.diagnostic import prepare_diagnostic_source
         x,y=load_m2_oof(a,old["algorithm"]),load_m2_oof(b,new["algorithm"])
         manifest=pd.read_csv(prepare_diagnostic_source("model_2"))
         check_m2_identical_protocol(a,b,x,y,manifest)

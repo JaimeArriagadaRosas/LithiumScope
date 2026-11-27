@@ -5,7 +5,7 @@ from lithiumscope.cli.prompts import choose
 
 def run():
     from lithiumscope.core.logging.session import run_log
-    from lithiumscope.datasets.management.diagnostic_provisioning import prepare_diagnostic_source
+    from lithiumscope.datasets.management.sources.diagnostic import prepare_diagnostic_source
     from lithiumscope.experiments.data_lab.workflow import prepare
     from lithiumscope.cli.eda_verification import write_verification
 

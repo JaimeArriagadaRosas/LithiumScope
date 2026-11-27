@@ -5,15 +5,15 @@ from pathlib import Path
 
 from lithiumscope.core.config import load_config
 from lithiumscope.core.paths import DATA_DIR, PROJECT_ROOT
-from lithiumscope.datasets.downloader import ensure_dataset
-from lithiumscope.datasets.georoc_filtered_acquisition import (
+from lithiumscope.tools.acquisition.tabular import ensure_dataset
+from lithiumscope.tools.acquisition.georoc.filtered import (
     GEOROC_FILTERED_NAME,
     acquire_filtered_georoc,
     write_acquisition_contract,
 )
-from lithiumscope.datasets.registry import get_dataset_spec
+from lithiumscope.datasets.management.registry import get_dataset_spec
 from lithiumscope.runtime.preboot import run_preboot
-from lithiumscope.tools.georoc.processing.georoc_source_checkpoint import (
+from lithiumscope.tools.acquisition.georoc.source_checkpoint import (
     source_path_for,
 )
 
