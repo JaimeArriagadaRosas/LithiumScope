@@ -3,11 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from lithiumscope.datasets.adapters.georoc_material_filter import (
+from lithiumscope.datasets.adapters.georoc.material_filter import (
     MaterialFilterResult,
     filter_whole_rock,
 )
-from lithiumscope.datasets.adapters.georoc_normalizer import (
+from lithiumscope.datasets.adapters.georoc.normalization import (
     normalize_georoc_frame,
 )
 from lithiumscope.datasets.readers.georoc_raw_reader import (

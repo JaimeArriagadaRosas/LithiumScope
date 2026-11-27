@@ -1,20 +1,19 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import json
 from pathlib import Path
 from typing import Iterable
 
 import pandas as pd
 
 from lithiumscope.core.logging.session import get_logger
-from lithiumscope.core.hashing import file_sha256
-from lithiumscope.datasets.adapters.georoc_ingestion_schema import (
+from lithiumscope.datasets.provenance.ingestion_audit import write_ingestion_audit as _write_audit
+from lithiumscope.datasets.adapters.georoc.ingestion_schema import (
     GEOROC_ALIASES,
     MAJOR_OXIDES,
     infer_georoc_column_map, ingestion_layout,
 )
-from lithiumscope.datasets.adapters.georoc_ingestion_transform import (
+from lithiumscope.datasets.adapters.georoc.ingestion_transform import (
     harmonize_chunk,
 )
 
@@ -63,61 +62,6 @@ def _validate_core_mapping(
     return missing
 
 
-def _write_audit(
-    path: Path,
-    *,
-    source_name: str,
-    files: tuple[Path, ...],
-    rows_read: int,
-    rows_kept: int,
-    rejected: int,
-    mapped_columns: dict[str, str],
-    chunksize: int,
-    allowed_material_types: tuple[str, ...],
-    minimum_predictors: int,
-    censoring: list[dict],
-) -> None:
-    audit = {
-        "source": source_name,
-        "source_sha256": {str(item): file_sha256(item) for item in files},
-        "analytical_censoring": censoring,
-        "rows_skipped_material_core_or_density": rows_read - rows_kept,
-        "files": [
-            str(item)
-            for item in files
-        ],
-        "rows_read": rows_read,
-        "rows_kept": rows_kept,
-        "rows_rejected_missing_core_or_density": (
-            rejected
-        ),
-        "mapped_columns": mapped_columns,
-        "chunksize": chunksize,
-        "allowed_material_types": list(
-            allowed_material_types
-        ),
-        "minimum_predictors": minimum_predictors,
-        "scientific_note": (
-            "FE2O3T(WT%) is accepted as the total-iron "
-            "counterpart for the current Fe2O3 predictor. "
-            "The oxide-sum QC value is calculated only "
-            "when all ten major oxides are available."
-        ),
-    }
-    path.parent.mkdir(
-        parents=True,
-        exist_ok=True,
-    )
-    path.write_text(
-        json.dumps(
-            audit,
-            indent=2,
-            ensure_ascii=False,
-        ),
-        encoding="utf-8",
-    )
-
-
 def ingest_georoc_files(
     files: Iterable[Path],
     destination: Path,
@@ -158,6 +102,7 @@ def ingest_georoc_files(
     )
     temporary.unlink(missing_ok=True)
 
+    logger.info("GEOROC ingestion started: source=%s files=%d destination=%s", source_name, len(paths), destination)
     rows_read = 0
     rows_kept = 0
     rejected = 0
@@ -168,6 +113,7 @@ def ingest_georoc_files(
 
     try:
         for path in paths:
+            logger.debug("GEOROC processing file=%s", path)
             mapping = mappings[path]
             mapped_union.update(mapping)
 
@@ -225,6 +171,7 @@ def ingest_georoc_files(
                 wrote_header = True
                 rows_kept += len(harmonized)
     except Exception:
+        logger.exception("GEOROC ingestion failed: destination=%s", destination)
         temporary.unlink(
             missing_ok=True
         )
@@ -255,6 +202,7 @@ def ingest_georoc_files(
         censoring=censoring,
     )
 
+    logger.info("GEOROC ingestion complete: rows_read=%d rows_kept=%d rejected=%d audit=%s", rows_read, rows_kept, rejected, audit_destination)
     return GeorocIngestionResult(
         path=destination,
         files=tuple(

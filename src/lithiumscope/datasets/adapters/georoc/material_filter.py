@@ -4,10 +4,10 @@ from dataclasses import dataclass
 
 import pandas as pd
 
-from lithiumscope.tools.georoc.processing.georoc_material_parser import (
+from lithiumscope.datasets.adapters.georoc.material import (
     parse_georoc_material,
 )
-from lithiumscope.datasets.adapters.georoc_names import norm
+from lithiumscope.datasets.adapters.georoc.names import norm
 
 
 _MATERIAL_COLUMNS = (
