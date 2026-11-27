@@ -27,7 +27,7 @@ def test_geochemical_collocation_does_not_certify_independence():
 
 
 def test_label_and_group_never_used_as_features():
-    code = (Path(__file__).resolve().parents[3] / "src/lithiumscope/experiments/model_2/spatial/leakage_control.py").read_text(encoding="utf-8")
+    code = (next(parent for parent in Path(__file__).resolve().parents if (parent / "pyproject.toml").is_file()) / "src/lithiumscope/experiments/model_2/spatial/leakage_control.py").read_text(encoding="utf-8")
     assert 'drop(columns=["Li_icpms","spatial_group"]' in code
 
 

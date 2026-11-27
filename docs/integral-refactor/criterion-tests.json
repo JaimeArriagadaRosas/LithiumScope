@@ -599,8 +599,8 @@
       "tests/architecture/boundaries/test_acquisition_provider_relocation.py"
     ],
     "ARQ-063": [
-      "tests/scientific/provenance/test_georoc_qc_protocols.py",
-      "tests/scientific/shared/test_integral_physical_inputs.py",
+      "tests/scientific/data_quality/test_georoc_qc_protocols.py",
+      "tests/scientific/data_quality/test_integral_physical_inputs.py",
       "tests/results/test_atomic_experimental_exports.py",
       "tests/architecture/contracts/test_dataverse_historical_contract.py"
     ],

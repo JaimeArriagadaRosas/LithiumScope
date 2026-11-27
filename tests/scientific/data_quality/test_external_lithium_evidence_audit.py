@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-MODULE = Path(__file__).resolve().parents[3] / "scripts" / "external_lithium_evidence_audit.py"
+MODULE = next(parent for parent in Path(__file__).resolve().parents if (parent / "pyproject.toml").is_file()) / "scripts" / "external_lithium_evidence_audit.py"
 spec = importlib.util.spec_from_file_location("external_lithium_evidence_audit", MODULE)
 assert spec is not None and spec.loader is not None
 audit = importlib.util.module_from_spec(spec)
