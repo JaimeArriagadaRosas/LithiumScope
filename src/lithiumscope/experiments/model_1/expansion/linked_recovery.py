@@ -11,9 +11,9 @@ from sklearn.model_selection import KFold
 
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import RESULTS_DIR, DATA_DIR
-from lithiumscope.datasets.management.local_sources import local_training_source
-from lithiumscope.datasets.adapters.georoc_ingestion_schema import infer_georoc_column_map
-from lithiumscope.datasets.adapters.georoc_ingestion_transform import harmonize_chunk
+from lithiumscope.datasets.management.sources.local import local_training_source
+from lithiumscope.datasets.adapters.georoc.schema import infer_georoc_column_map
+from lithiumscope.datasets.adapters.georoc.transformation import harmonize_chunk
 from lithiumscope.datasets.readers.georoc_raw_reader import detect_georoc_encoding
 from lithiumscope.experiments.data_lab.candidate_screening import sample, num, CHEM
 from lithiumscope.experiments.model_1.balanced.academic import cohort

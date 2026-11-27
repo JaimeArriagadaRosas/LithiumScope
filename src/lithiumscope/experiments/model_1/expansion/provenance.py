@@ -12,7 +12,7 @@ import pandas as pd
 
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import DATA_DIR, RESULTS_DIR
-from lithiumscope.datasets.management.local_sources import local_training_source
+from lithiumscope.datasets.management.sources.local import local_training_source
 from lithiumscope.datasets.readers.georoc_raw_reader import detect_georoc_encoding
 from lithiumscope.experiments.data_lab.candidate_screening import CHEM, num, sample, text
 from lithiumscope.model_1.pipeline import prepare_training_data

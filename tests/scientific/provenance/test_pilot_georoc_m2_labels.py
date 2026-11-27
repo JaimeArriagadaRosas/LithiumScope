@@ -70,7 +70,7 @@ def test_bad_sentinel_band_is_rejected():
 
 
 def test_pilot_dry_run_never_contacts_imagery_provider(monkeypatch, tmp_path):
-    from lithiumscope.experiments.analysis import pilot_georoc_m2_labels as pilot
+    from lithiumscope.experiments.model_2 import pilot_georoc_m2_labels as pilot
     source = tmp_path / "results/scientific_simulations/vnext_20261106/stage2_m1/feot_combined_experiment_only.csv"
     source.parent.mkdir(parents=True)
     _fake_frame().to_csv(source, index=False)

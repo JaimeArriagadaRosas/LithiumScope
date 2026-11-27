@@ -9,8 +9,8 @@ import pandas as pd
 
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import DATA_DIR, RESULTS_DIR
-from lithiumscope.datasets.management.local_sources import local_training_source
-from lithiumscope.datasets.management.research_sources import M1_RESEARCH_SOURCES
+from lithiumscope.datasets.management.sources.local import local_training_source
+from lithiumscope.datasets.management.sources.research import M1_RESEARCH_SOURCES
 from lithiumscope.experiments.data_lab.candidate_audit import FOLD_SHA256, REFERENCE
 from lithiumscope.results.eda_artifacts import verify_eda
 from lithiumscope.datasets.readers.georoc_raw_reader import detect_georoc_encoding
