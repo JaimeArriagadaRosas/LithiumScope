@@ -13,3 +13,17 @@ def validate_nonempty(path: Path) -> Path:
     if path.is_dir() and not any(path.iterdir()):
         raise DatasetError(f"Dataset directory is empty: {path}")
     return path
+
+def validate_file_integrity(path: Path, *, expected_sha256: str | None = None,
+                            root: Path | None = None) -> Path:
+    """Validate a nonempty regular file and optional content identity."""
+    from lithiumscope.core.hashing import file_sha256
+    resolved = Path(path).resolve()
+    if root is not None and not resolved.is_relative_to(Path(root).resolve()):
+        raise DatasetError("Dataset path escapes declared root")
+    validate_nonempty(resolved)
+    if not resolved.is_file():
+        raise DatasetError(f"Expected regular dataset file: {resolved}")
+    if expected_sha256 is not None and file_sha256(resolved) != expected_sha256:
+        raise DatasetError(f"Dataset hash mismatch: {resolved}")
+    return resolved

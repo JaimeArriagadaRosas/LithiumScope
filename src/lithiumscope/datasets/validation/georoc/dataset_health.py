@@ -33,17 +33,19 @@ def assess_dataset_health(frame: pd.DataFrame) -> DatasetHealth:
     if frame.empty:
         raise RuntimeError("La exportación GEOROC está vacía.")
     mapping = infer_georoc_column_map(frame.columns)
-    canonical = frame.rename(columns=mapping)
+    if not frame.columns.is_unique:
+        raise ValueError("Ambiguous GEOROC columns")
+    by_target = {target: raw for raw, target in mapping.items()}
     selected = {}
     for target, options in (("LI", ("Li_icpms",)), ("LONGITUDE", ("Longitude", "Longitude_min")),
                             ("LATITUDE", ("Latitude", "Latitude_min"))):
-        matches = [name for name in options if name in mapping.values()]
+        matches = [name for name in options if name in by_target]
         if matches:
-            selected[target] = matches[0]
+            selected[target] = by_target[matches[0]]
     missing = [name for name in ("LI", "LONGITUDE", "LATITUDE") if name not in selected]
     if missing:
         raise RuntimeError("La exportación obtenida no corresponde al contrato LithiumScope. Faltan: " + ", ".join(missing))
-    li = canonical[selected["LI"]]
+    li = frame[selected["LI"]]
     present = li.notna() & li.astype(str).str.strip().ne("")
     numeric = pd.to_numeric(li, errors="coerce")
     valid = np.isfinite(numeric) & numeric.ge(0)
@@ -52,8 +54,8 @@ def assess_dataset_health(frame: pd.DataFrame) -> DatasetHealth:
         return kind in {"below", "above"} and limit is not None and np.isfinite(limit)
     censored = li.map(quantified)
     usable = valid | censored
-    longitude = pd.to_numeric(canonical[selected["LONGITUDE"]], errors="coerce")
-    latitude = pd.to_numeric(canonical[selected["LATITUDE"]], errors="coerce")
+    longitude = pd.to_numeric(frame[selected["LONGITUDE"]], errors="coerce")
+    latitude = pd.to_numeric(frame[selected["LATITUDE"]], errors="coerce")
     numeric_coordinates = longitude.notna() & latitude.notna()
     coordinates = longitude.between(-180, 180) & latitude.between(-90, 90)
     complete = usable & coordinates

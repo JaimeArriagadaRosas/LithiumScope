@@ -17,6 +17,7 @@ def publish_pair(data_stage: Path, data: Path, evidence_stage: Path, evidence: P
     staged = [(paths[0], paths[1]), (paths[2], paths[3])]
     backups = {}
     replaced = []
+    preserve_backups = set()
     try:
         for source, dest in staged:
             if not source.is_file() or not source.stat().st_size:
@@ -32,10 +33,16 @@ def publish_pair(data_stage: Path, data: Path, evidence_stage: Path, evidence: P
     except BaseException:
         for dest in reversed(replaced):
             if dest in backups:
-                backups[dest].replace(dest)
+                try:
+                    backups[dest].replace(dest)
+                except OSError:
+                    # Do not destroy the only recovery copy if rollback itself fails.
+                    preserve_backups.add(backups[dest])
+                    raise
             else:
                 dest.unlink(missing_ok=True)
         raise
     finally:
         for backup in backups.values():
-            backup.unlink(missing_ok=True)
+            if backup not in preserve_backups:
+                backup.unlink(missing_ok=True)
