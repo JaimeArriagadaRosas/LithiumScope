@@ -8,6 +8,7 @@ import hashlib,json
 from pathlib import Path
 from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
 from lithiumscope.core.paths import PROJECT_ROOT
+from lithiumscope.datasets.validation.spatial.coordinates import assess_coordinate_aliases
 import numpy as np
 import pandas as pd
 from sklearn.neighbors import BallTree
@@ -19,9 +20,9 @@ EARTH_KM=6371.0088
 
 
 def near_full_mamani(candidates: pd.DataFrame, mamani: pd.DataFrame) -> pd.DataFrame:
-    src=mamani.copy()
-    src["_lat"]=pd.to_numeric(src["Latitude (Y)"],errors="coerce")
-    src["_lon"]=pd.to_numeric(src["Longitude (X)"],errors="coerce")
+    src,_=assess_coordinate_aliases(mamani)
+    src["_lat"]=pd.to_numeric(src["Latitude"],errors="coerce")
+    src["_lon"]=pd.to_numeric(src["Longitude"],errors="coerce")
     src["_li"]=pd.to_numeric(src["Li_icpms"],errors="coerce")
     src=src.loc[src._lat.between(-90,90)&src._lon.between(-180,180)]
     if len(src) <= 700:

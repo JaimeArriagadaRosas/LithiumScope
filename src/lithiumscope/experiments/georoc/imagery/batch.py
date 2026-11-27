@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import asdict, replace
+from importlib.metadata import version, PackageNotFoundError
 import json
 from pathlib import Path
 from time import monotonic
@@ -37,8 +38,14 @@ def _revision():
     package = Path(__file__).resolve().parents[3]
     roots = ("experiments/georoc", "experiments/scenarios", "tools/acquisition/sentinel2",
              "datasets/adapters", "model_2/preparation", "model_2/prediction", "model_2/methodology/spectral")
-    return canonical_json_hash({p.relative_to(package).as_posix(): file_sha256(p)
-        for folder in roots for p in sorted((package / folder).rglob("*.py"))})
+    packages={}
+    for name in ("numpy","pandas","scikit-learn","rasterio","pystac-client"):
+        try:
+            packages[name]=version(name)
+        except PackageNotFoundError:
+            packages[name]="missing"
+    return canonical_json_hash({"packages":packages,"code":{p.relative_to(package).as_posix(): file_sha256(p)
+        for folder in roots for p in sorted((package / folder).rglob("*.py"))}})
 
 
 def _hashes(site: Path) -> dict:
@@ -118,6 +125,9 @@ def run(source: Path, *, root: Path = OUT, window="2025-01-01/2025-12-31",
         raise ValueError("Candidate source changed during planning")
     if limit:
         sites = sites.head(limit)
+        outside=ledger.plan_state.eq("selected") & ~ledger.image_id.isin(sites.image_id)
+        ledger.loc[outside,"plan_state"]="not_selected"
+        ledger.loc[outside,"plan_reason"]="site_limit"
     summary = {"state": "preflight", "sites": len(sites), "candidate_rows": len(ledger),
                "source_sha256": digest, "independent_accuracy_certified": False}
     if not acquire:
@@ -135,6 +145,8 @@ def run(source: Path, *, root: Path = OUT, window="2025-01-01/2025-12-31",
               "limit": limit, "revision": _revision(), "sites": sites.to_dict("records")}
     identity = canonical_json_hash(policy)
     directory = root / identity
+    if directory.is_symlink():
+        raise ValueError("Experiment directory may not be a symbolic link")
     directory.mkdir(parents=True, exist_ok=True)
     lock = directory / ".lock"
     try:
@@ -151,7 +163,10 @@ def run(source: Path, *, root: Path = OUT, window="2025-01-01/2025-12-31",
         write_json(directory / "status.json", result)
         return result
     try:
-        write_json(directory / "plan.json", policy)
+        plan_file=directory / "plan.json"
+        if plan_file.is_file() and canonical_json_hash(json.loads(plan_file.read_text(encoding="utf-8")))!=identity:
+            raise ValueError("Experiment plan identity mismatch")
+        write_json(plan_file, policy)
         write_table(directory / "coordinate_plan.csv", sites)
         write_table(directory / "candidate_ledger.csv", ledger)
         provider = provider_factory(config)
@@ -175,6 +190,8 @@ def run(source: Path, *, root: Path = OUT, window="2025-01-01/2025-12-31",
             checkpoint("running")
         if file_sha256(source) != digest or file_sha256(model_path) != model_hash:
             raise ValueError("Protected experiment inputs changed")
+        from .analysis import summarize_registered
+        summarize_registered(directory)
         return checkpoint("complete" if all(r["state"] == "verified" for r in rows) else "incomplete")
     except BaseException:
         checkpoint("interrupted")

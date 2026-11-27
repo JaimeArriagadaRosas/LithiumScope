@@ -6,6 +6,33 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import roc_auc_score,average_precision_score,balanced_accuracy_score
 B=(EXPERIMENT_ROOT / "background_georoc_exploratory")
+def summarize_registered(directory: Path):
+ """Count verified exploratory outputs without estimating external accuracy."""
+ from lithiumscope.results.atomic_exports import write_json
+ from lithiumscope.core.hashing import file_sha256
+ directory=Path(directory)
+ sites=pd.read_csv(directory/"coordinate_plan.csv")
+ ledger=pd.read_csv(directory/"candidate_ledger.csv")
+ manifest=pd.read_csv(directory/"patch_manifest.csv")
+ if not manifest.image_id.is_unique or not set(manifest.image_id)<=set(sites.image_id):
+  raise ValueError("Unexpected image manifest identities")
+ verified=manifest.loc[manifest.state.eq("verified")]
+ scored=0
+ for item in verified.itertuples(index=False):
+  site=directory/"sites"/item.image_id
+  record=json.loads((site/"result.json").read_text(encoding="utf-8"))
+  if not record.get("hashes") or any(Path(name).name!=name or file_sha256(site/name)!=digest for name,digest in record["hashes"].items()):
+   raise ValueError("Registered site evidence changed")
+  scored+=record["baseline_status"]=="SCORED"
+ selected=ledger.loc[ledger.plan_state.eq("selected")]
+ report={"sites_planned":len(sites),"sites_processed":len(manifest),"sites_verified":len(verified),
+         "sites_scored":int(scored),"sites_pending":len(sites)-len(manifest),
+         "sample_rows_selected":len(selected),"sample_rows_scored":int(selected.image_id.isin(verified.loc[verified.baseline_status.eq("SCORED"),"image_id"]).sum()),
+         "external_accuracy_certified":False,"external_accuracy_metrics":None}
+ write_json(directory/"exploratory_summary.json",report)
+ return report
+
+
 def main():
  m=pd.read_csv(B/"patch_manifest.csv")
  samples=pd.read_csv(B/"sample_image_map.csv")

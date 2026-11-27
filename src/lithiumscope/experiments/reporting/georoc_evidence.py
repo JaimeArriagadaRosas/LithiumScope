@@ -7,17 +7,22 @@ from __future__ import annotations
 from pathlib import Path
 from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
 import json,re,hashlib
+from lithiumscope.experiments.georoc.provenance.bibliography import unambiguous_references
+from lithiumscope.results.atomic_exports import write_table, write_json, write_text
 import numpy as np
 import pandas as pd
 
 BASE=EXPERIMENT_ROOT
 DOC=BASE/"GEOCHEMICAL_EXTERNAL_VALIDATION_FINAL.md"
-def main():
-    d=pd.read_csv(BASE/"georoc_extended_evidence_screen.csv",low_memory=False)
-    ref=pd.read_csv(BASE/"georoc_citations_2024.tab",sep="\t",encoding="latin1",low_memory=False)
-    ref["citation_number"]=pd.to_numeric(ref["CITATIONS"],errors="coerce")
+def main(base=BASE, *, candidate_path=None, citations_path=None):
+    base=Path(base)
+    candidate_path=Path(candidate_path) if candidate_path is not None else base/"georoc_extended_evidence_screen.csv"
+    citations_path=Path(citations_path) if citations_path is not None else base/"georoc_citations_2024.tab"
+    d=pd.read_csv(candidate_path,low_memory=False)
+    ref=pd.read_csv(citations_path,sep="\t",encoding="latin1",low_memory=False)
+    ref, ambiguous=unambiguous_references(ref)
     cols=["citation_number","DOI","TITLE","AUTHORS","YEAR","FORMATTED CITATION"]
-    ref=ref[cols].drop_duplicates("citation_number")
+    ref=ref[cols]
     review=d.loc[d.candidate_gate.eq("REVIEW_METHOD_AND_SURFACE")].copy()
     review["coordinate_key"] = list(zip(review.latitude, review.longitude))
     citations=review.groupby("citation_number",dropna=False).agg(
@@ -33,7 +38,7 @@ def main():
     citations["training_source_independence_proven"]=False
     citations["surface_match_confirmed"]=False
     citations["eligibility"]="MANUAL_ARTICLE_AND_SAMPLE_VALIDATION_REQUIRED"
-    citations.to_csv(BASE/"all_reviewable_citations.csv",index=False)
+    write_table(base/"all_reviewable_citations.csv",citations)
     d["distance_gate_pass"]=d.nearest_training_km.ge(100)
     d["citation_metadata_present"]=d.resolved_citation.fillna(False)
     d["element_method_proven"]=False
@@ -43,7 +48,7 @@ def main():
     d["decision_reason"]=d.candidate_gate.where(
         ~d.candidate_gate.eq("REVIEW_METHOD_AND_SURFACE"),
         "PENDING_ELEMENT_METHOD_AND_GEOLOGICAL_SURFACE_MATCH")
-    d.to_csv(BASE/"external_validation_decision_ledger.csv",index=False)
+    write_table(base/"external_validation_decision_ledger.csv",d)
     summary={
         "source":"GEOROC Andean Arc 2026-09",
         "candidate_rows":len(d),
@@ -55,7 +60,8 @@ def main():
         "model2_external_roc_auc":None,
         "model2_external_average_precision":None,
         "model2_external_balanced_accuracy":None,
-        "evidence_hash":hashlib.sha256((BASE/"georoc_extended_evidence_screen.csv").read_bytes()).hexdigest(),
+        "evidence_hash":hashlib.sha256(candidate_path.read_bytes()).hexdigest(),
+        "ambiguous_reference_ids":len(ambiguous),
         "remaining_external_dependencies":[
             "Primary papers or supplementary tables proving Li-specific assay technique for each admitted sample",
             "Verifiable original specimen ID, collection type, and exposure at satellite-observed surface",
@@ -65,7 +71,7 @@ def main():
         ],
         "integrity":"Do not treat any provisional screening candidate as verified external ground truth."
     }
-    (BASE/"final_evidence_status.json").write_text(json.dumps(summary,ensure_ascii=False,indent=2),encoding="utf8")
+    write_json(base/"final_evidence_status.json",summary)
     lines=["# Estado final de la auditoría externa GEOROC para LithiumScope",
         "",f"**Alcance:** revisión reproducible de {len(d)} candidatos de roca total con Li.",
         "",f"- Candidatos totales: **{len(d)}**.",
@@ -88,8 +94,7 @@ def main():
         "","## Trabajo externo no certificable automáticamente",
         "Consulta de artículos completos y suplementos analíticos, identificación de la técnica específica para Li, revisión de equivalencia de afloramiento con los píxeles y auditoría exhaustiva de solapamiento bibliográfico. Estos controles requieren evidencia primaria, no sustitutos o valores inferidos.",
     ]
-    DOC.parent.mkdir(parents=True,exist_ok=True)
-    DOC.write_text("\n".join(lines)+"\n",encoding="utf8")
+    write_text(base/DOC.name,"\n".join(lines)+"\n")
     print("FINAL",json.dumps(summary,ensure_ascii=False),flush=True)
 
 if __name__=="__main__":

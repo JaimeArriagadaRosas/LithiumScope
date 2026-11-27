@@ -11,7 +11,7 @@ ROOT=EXPERIMENT_ROOT
 def main(root=ROOT, *, candidate_path=None):
     root=Path(root)
     candidate_path=Path(candidate_path) if candidate_path is not None else root/"georoc_andean_candidates.csv"
-    df=pd.read_csv(candidate_path)
+    df=pd.read_csv(candidate_path,dtype={"citation_ids":str,"sample_name":str})
     # Preserve missing reference and invalid coordinate cases as review evidence.
     df["nearest_training_km"]=pd.to_numeric(df.nearest_training_km,errors="coerce")
     df["latitude"]=pd.to_numeric(df.latitude,errors="coerce")
@@ -21,7 +21,7 @@ def main(root=ROOT, *, candidate_path=None):
     # Original input path is explicit.
 
     df["country"]=df.location.astype("string").str.extract(r"/ (CHILE|ARGENTINA|BOLIVIA|PERU|ECUADOR|COLOMBIA)(?: /|$)",expand=False)
-    df["citation_key"]=df.citation_ids.fillna("").astype(str).map(lambda x:";".join(sorted(set(re.findall(r"\d+",x)))))
+    df["citation_key"]=df.citation_ids.fillna("").astype(str).str.replace(r"^(\d+)\.0$",r"\1",regex=True).map(lambda x:";".join(sorted(set(re.findall(r"\d+",x)))))
     df["sample_key"]=df.sample_name.astype(str).str.lower().str.replace(r"\s*\[\d+\]","",regex=True).str.strip()
     df["exact_duplicate_key"]=df.sample_key+"|"+df.latitude.round(4).astype(str)+"|"+df.longitude.round(4).astype(str)
     dup=df.duplicated("exact_duplicate_key",keep=False)
