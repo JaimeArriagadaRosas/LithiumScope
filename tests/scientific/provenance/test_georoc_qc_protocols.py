@@ -1,10 +1,8 @@
 import pandas as pd
 import pytest
 
-from lithiumscope.model_1.methodology.qc_protocols import (
-    protocol_masks,
-    protocol_summary,
-)
+from lithiumscope.datasets.validation.chemistry.qc_protocols import protocol_masks
+from lithiumscope.model_1.methodology.qc_protocols import protocol_summary
 
 
 def record(**kwargs):

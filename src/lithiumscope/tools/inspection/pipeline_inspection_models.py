@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from lithiumscope.model_1.pipeline import prepare_training_data
+from lithiumscope.model_1.preparation.training_data import prepare_training_data
 from lithiumscope.model_2.data.sample_source import (
     load_georeferenced_li_samples,
 )

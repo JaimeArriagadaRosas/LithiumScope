@@ -2,7 +2,53 @@
 from __future__ import annotations
 
 
-def evaluate_outer_folds(algorithm, checkpoint, device, folds, groups, label, optimize, outer_splits, outer_strategy, predictions, prepared, pruning, require_groups, seed, spec, target_transform, trials, validation, robustness_records, preprocessing_records, physical_scenarios_enabled, parameter_space=None):
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class OuterFoldOptions:
+    algorithm: str
+    device: object
+    label: str
+    optimize: bool
+    pruning: dict
+    seed: int
+    spec: object
+    target_transform: str
+    trials: int
+    validation: dict
+    physical_scenarios_enabled: bool
+    parameter_space: object = None
+
+
+@dataclass(frozen=True)
+class OuterFoldPartition:
+    splits: list
+    groups: object
+    strategy: str
+    require_groups: bool
+
+
+@dataclass
+class OuterFoldEvidence:
+    predictions: object
+    folds: list
+    robustness_records: list
+    preprocessing_records: list
+
+
+def evaluate_outer_folds(prepared, checkpoint, partition: OuterFoldPartition,
+                         options: OuterFoldOptions, evidence: OuterFoldEvidence):
+    algorithm, device, label = options.algorithm, options.device, options.label
+    optimize, pruning, seed = options.optimize, options.pruning, options.seed
+    spec, target_transform, trials = options.spec, options.target_transform, options.trials
+    validation = options.validation
+    physical_scenarios_enabled = options.physical_scenarios_enabled
+    parameter_space = options.parameter_space
+    outer_splits, groups = partition.splits, partition.groups
+    outer_strategy, require_groups = partition.strategy, partition.require_groups
+    predictions, folds = evidence.predictions, evidence.folds
+    robustness_records = evidence.robustness_records
+    preprocessing_records = evidence.preprocessing_records
     import numpy as np
     from lithiumscope.core.logging.session import get_logger
     from lithiumscope.runtime.console_status import Spinner
