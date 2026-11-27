@@ -78,12 +78,13 @@ def rebuild_pdf(run: str | Path) -> Path:
 
     figures_dir = run_dir / "cross_model" / "figures"
     recorded = manifest.get("artifacts", {})
-    maps = _ordered_session_images(
-        figures_dir / "maps", recorded.get("maps")
-    )
-    figures = _ordered_session_images(
-        figures_dir, recorded.get("figures")
-    )
+    versioned = manifest.get("schema_version", 1) >= 2
+    if versioned:
+        maps = [session_artifact(run_dir, raw) for raw in recorded.get("maps", [])]
+        figures = [session_artifact(run_dir, raw) for raw in recorded.get("figures", [])]
+    else:
+        maps = _ordered_session_images(figures_dir / "maps", recorded.get("maps"))
+        figures = _ordered_session_images(figures_dir, recorded.get("figures"))
     title = manifest.get("title") or report_title(manifest.get("mode"), *manifest.get("models", {}).values())
     logger.info("Rebuilding PDF for %s", run_dir)
     destination = run_dir / "report.pdf"
@@ -93,7 +94,7 @@ def rebuild_pdf(run: str | Path) -> Path:
     if "case_id" in paired:
         for case_id in paired["case_id"].astype(str):
             image = run_dir / "decision_previews" / (sha256(case_id.encode("utf-8")).hexdigest() + ".png")
-            if image.is_file():
+            if image.is_file() and (not versioned or image.relative_to(run_dir).as_posix() in recorded.get("decision_previews", [])):
                 previews[case_id] = image
     try:
         write_pdf_report(

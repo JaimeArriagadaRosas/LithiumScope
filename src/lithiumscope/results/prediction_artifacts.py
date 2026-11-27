@@ -37,6 +37,29 @@ def verify_report_sources(root: Path, manifest: dict) -> None:
         if manifest.get("schema_version", 1) >= 2:
             raise ValueError("Missing integrity hashes for versioned prediction session")
         return
+    if manifest.get("schema_version", 1) >= 2:
+        required = {
+            "model_1_predictions": "model_1/predictions.csv",
+            "model_2_predictions": "model_2/predictions.csv",
+            "joined_cases": "cross_model/joined_cases.csv",
+            "correlations": "cross_model/correlations.csv",
+            "concordance": "cross_model/concordance.csv",
+            "training_vs_external": "training_vs_external.csv",
+            "interpretation": "interpretation.txt",
+            "model_1_diagnostics": "model_1/diagnostics.json",
+            "model_2_diagnostics": "model_2/diagnostics.json",
+        }
+        artifacts = manifest.get("artifacts", {})
+        for name, relative in required.items():
+            if artifacts.get(name) != relative:
+                raise ValueError(f"Missing or invalid report source: {name}")
+        for name, values in artifacts.items():
+            if name == "run_log" or values is None:
+                continue
+            for relative in values if isinstance(values, list) else [values]:
+                session_artifact(root, relative)
+                if relative not in hashes:
+                    raise ValueError(f"Missing artifact hash: {relative}")
     for relative, digest in hashes.items():
         if relative in {"report.pdf", "evaluation.xlsx"}:
             continue
