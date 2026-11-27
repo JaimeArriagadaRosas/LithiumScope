@@ -268,7 +268,7 @@
     ],
     "M2-29": [
       "tests/scientific/m2_training/test_m2_full_competition_diagnostics.py",
-      "tests/model_2/test_spatial_maps.py"
+      "tests/integration/reporting/test_spatial_maps.py"
     ],
     "M2-30": [
       "tests/runtime/test_checkpoints.py",
@@ -495,11 +495,11 @@
     ],
     "ARQ-043": [
       "tests/architecture/structure/test_architecture.py",
-      "tests/reporting/test_prediction_pdf_report.py"
+      "tests/integration/reporting/test_prediction_pdf_report.py"
     ],
     "ARQ-044": [
       "tests/unit/metrics/test_integrated_prediction_analysis.py",
-      "tests/prediction/test_prediction_manifest_paths.py",
+      "tests/integration/reporting/test_prediction_manifest_paths.py",
       "tests/integration/prediction/test_diagnostic_integrated_guardrails.py"
     ],
     "ARQ-045": [
@@ -511,12 +511,12 @@
     ],
     "ARQ-046": [
       "tests/end_to_end/test_integrated_demo_fixture.py",
-      "tests/prediction/test_prediction_manifest_paths.py",
+      "tests/integration/reporting/test_prediction_manifest_paths.py",
       "tests/architecture/structure/test_canonical_prediction_architecture.py"
     ],
     "ARQ-047": [
       "tests/unit/metrics/test_integrated_prediction_analysis.py",
-      "tests/reporting/test_integrated_decision_page.py",
+      "tests/integration/reporting/test_integrated_decision_page.py",
       "tests/unit/inference/test_precomputed_report_inputs.py"
     ],
     "ARQ-048": [
@@ -532,7 +532,7 @@
     ],
     "ARQ-050": [
       "tests/unit/utilities/test_excel_exporter.py",
-      "tests/prediction/test_prediction_manifest_paths.py"
+      "tests/integration/reporting/test_prediction_manifest_paths.py"
     ],
     "ARQ-051": [
       "tests/architecture/structure/test_architecture.py"
