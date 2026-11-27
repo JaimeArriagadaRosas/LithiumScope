@@ -13,6 +13,7 @@ def evaluate_pending_candidates(
     if promote_if_better:
         raise ValueError("Promotion requires an independent holdout; demonstration is comparison only.")
     from lithiumscope.evaluation.candidates.evaluator import CandidateEvaluationResult, RESULTS_DIR, _evaluation_targets, _record_decision, _timestamp_with_offset, audit_demo_overlap, demonstration_imagery_cache, ensure_case_ids, joblib, json, load_config, load_demonstration_cases, model_1_external_metrics, model_1_gate, model_2_external_metrics, model_2_gate, predict_model_1_frame, prepare_case_images, score_model_2_cases
+    from lithiumscope.persistence.model_deserialization import load_model_artifact
     from lithiumscope.evaluation.candidates.gates import comparable_cases
     evaluation_id = (
         "candidate_evaluation_"
@@ -60,12 +61,8 @@ def evaluate_pending_candidates(
         active_path, candidate_path = (
             targets["model_1"]
         )
-        active_bundle = joblib.load(
-            active_path
-        )
-        candidate_bundle = joblib.load(
-            candidate_path
-        )
+        active_bundle = load_model_artifact(active_path, model_group="model_1")
+        candidate_bundle = load_model_artifact(candidate_path, model_group="model_1")
         active_predictions, _ = (
             predict_model_1_frame(
                 cases,

@@ -4,6 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 import joblib
+from lithiumscope.persistence.model_deserialization import load_model_artifact
 import numpy as np
 import pandas as pd
 from sklearn.base import clone
@@ -56,8 +57,8 @@ def evaluate(root: Path=PROJECT_ROOT, output: Path=DESTINATION):
     old_groups=set(build_spatial_groups(a))
     assert not old_groups.intersection(set(groups))
 
-    bundle=joblib.load(
-        root/"models/model_1/trained/training_20261105_204029_m0300/model.joblib"
+    bundle = load_model_artifact(
+        root/"models/model_1/trained/training_20261105_204029_m0300/model.joblib", model_group="model_1"
     )
     schema=bundle["schema"]
     est=bundle["estimator"]

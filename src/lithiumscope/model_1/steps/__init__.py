@@ -1,1 +1,0 @@
-"""LithiumScope package module."""

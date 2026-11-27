@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 import math
 
-import joblib
+from lithiumscope.persistence.model_deserialization import load_model_artifact
 import numpy as np
 import pandas as pd
 
@@ -59,7 +59,7 @@ def score_registered(root, *, trusted_local_bundles=False):
     record,sites=verified_registration(root)
     results={}
     for arm,model in record["models"].items():
-        bundle=joblib.load(verify_artifact(model))
+        bundle=load_model_artifact(verify_artifact(model), model_group=record["model_group"])
         if record["model_group"]=="model_1":
             frame=_predict_m1(sites,bundle)
         else:

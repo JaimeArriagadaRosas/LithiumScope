@@ -4,7 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 import json
 
-import joblib
+from lithiumscope.persistence.model_deserialization import load_model_artifact
 
 from lithiumscope.core.exceptions import ModelNotReadyError
 from lithiumscope.core.hashing import file_sha256
@@ -38,4 +38,4 @@ def load_latest_model(model_group: str, prefix: str | None = None):
         if expected and file_sha256(path)!=expected:
             raise ModelNotReadyError("Active model integrity check failed.")
     # An active model was explicitly selected via a trusted local/release workflow.
-    return joblib.load(path),path
+    return load_model_artifact(path, model_group=model_group),path

@@ -9,7 +9,7 @@ import shutil
 import tempfile
 import zipfile
 
-import joblib
+from lithiumscope.persistence.model_deserialization import load_model_artifact
 
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import MODELS_DIR
@@ -207,8 +207,8 @@ def _validate_deserialization(
 ) -> None:
     for model_group, (artifact_dir, _) in artifacts.items():
         try:
-            payload = joblib.load(
-                artifact_dir / "model.joblib"
+            payload = load_model_artifact(
+                artifact_dir / "model.joblib", model_group=model_group
             )
         except Exception as exc:
             raise RuntimeError(

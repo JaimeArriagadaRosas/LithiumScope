@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 import joblib
+from lithiumscope.persistence.model_deserialization import load_model_artifact
 import numpy as np
 import pandas as pd
 from sklearn.base import clone
@@ -53,8 +54,8 @@ def run_diagnostics(
     combined = pd.read_csv(out / "feot_combined_experiment_only.csv", low_memory=False)
     versions = quality_candidate_frames(_frame(combined))
     b_df = versions["B"].reset_index(drop=True)
-    bundle = joblib.load(
-        root / "models/model_1/trained/training_20261105_204029_m0300/model.joblib"
+    bundle = load_model_artifact(
+        root / "models/model_1/trained/training_20261105_204029_m0300/model.joblib", model_group="model_1"
     )
     b_groups = build_spatial_groups(b_df)
     test_fold = int(paired.fold.min())

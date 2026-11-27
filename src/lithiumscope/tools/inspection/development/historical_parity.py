@@ -87,7 +87,7 @@ def verify(root, output):
         if meta.get("image_sha256") and meta["image_sha256"]!=hashes[path]:
             raise ValueError("Historical imagery hash mismatch")
         images[row.case_id]=path
-    import joblib
+    from lithiumscope.persistence.model_deserialization import load_model_artifact
     from lithiumscope.model_1.prediction.predictor import predict_model_1_frame
     from lithiumscope.model_2.prediction.predictor import score_model_2_image
     bundles={}
@@ -99,7 +99,7 @@ def verify(root, output):
         payload=path.read_bytes()
         if sha256(payload).hexdigest()!=digest:
             raise ValueError("Historical model bytes changed")
-        bundles[group]=joblib.load(BytesIO(payload))
+        bundles[group]=load_model_artifact(BytesIO(payload), model_group=group)
     one,_=predict_model_1_frame(cases,bundle=bundles["model_1"])
     two=[]
     for sid,path in images.items():
