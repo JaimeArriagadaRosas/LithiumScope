@@ -1,3 +1,5 @@
+> **Salud del código (prioridad vigente):** refactorización de `datasets` implementada, validación integral diferida por indicación del usuario. Revisar los siguientes módulos uno por uno. No ejecutar ni consultar workflows; suspender experimentos y mantener main/M2/modelos/datasets congelados. La mejora del menú 5 y la suite completa local quedan para el cierre autorizado de arquitectura. Ver [M1_SALUD_CODIGO_DATASETS.md](M1_SALUD_CODIGO_DATASETS.md).
+
 # Continuidad científica — LithiumScope, 26 de noviembre de 2026
 
 > **Estado vigente M1 — optimización integral:** [Plan](M1_PLAN_OPTIMIZACION_INTEGRAL.md) aprobado; fases 1–3 cerradas. [Integración](M1_INTEGRACION_METODOLOGICA.md): 124 pruebas, 90 ajustes y 6 hashes verificados; ningún candidato elegible. [Recuperación espacial](M1_RECUPERACION_ESPACIAL.md) fase 4B implementada: soporte químico TRAIN y respaldo RF, 10 fits nuevos, 130 pruebas esperadas. Pendiente `lithiumscope.experiments.model_1.integral.spatial_recovery`. Fase 5 bloqueada hasta revisión, fine-tuning no iniciado. [state.json](state.json) → `m1.integral_optimization`. M2, datos, producción y main congelados.

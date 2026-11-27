@@ -389,7 +389,7 @@
         "main_merge_authorized": false
       },
       "documentation_commit": "39948bf4ff7e9c5756089b2bbfb685e1a61ade58",
-      "local_command_pending": true,
+      "local_command_pending": false,
       "new_fits": 505,
       "training_audit": {
         "document": "M1_AUDITORIA_ENTRENAMIENTO.md",
@@ -665,7 +665,7 @@
         "results_commit": "8bf9761fd0b04113fc4e6a9a9c2fc1aa819d158e"
       },
       "spatial_recovery": {
-        "state": "implemented_pending_local_validation",
+        "state": "implemented_execution_paused_for_code_health",
         "document": "M1_RECUPERACION_ESPACIAL.md",
         "module": "lithiumscope.experiments.model_1.integral.spatial_recovery",
         "support_commit": "a62d81730020708988ae6197be687b3450b0bcc2",
@@ -708,10 +708,11 @@
     "frozen_for_current_branch": true
   },
   "next": [
-    "run_spatial_recovery_once_and_130_focused_tests",
-    "verify_support_flags_and_dual_protocol_guards",
-    "review_reference_fit_eligibility_without_relaxing_guards",
-    "fine_tuning_not_started"
+    "review_next_user_selected_module",
+    "complete_architecture_before_validation",
+    "after_user_authorizes_improve_local_diagnostic_menu_5",
+    "run_full_local_suite_and_coverage_then_fix_by_component",
+    "close_current_branch_then_create_training_branch_without_main_merge"
   ],
   "independent_external_holdout": false,
   "main_merge_authorized": false,
@@ -831,5 +832,31 @@
     "duration_seconds": 8.69,
     "scope": "tests/scientific/m1_expansion",
     "full_suite_after_expansion": false
+  },
+  "code_health": {
+    "state": "architecture_in_progress_validation_deferred",
+    "approved_scope": "module_by_module",
+    "branch": "feat/m1-targeted-data-refinement",
+    "completed_implementation": [
+      "datasets"
+    ],
+    "pending_validation": [
+      "datasets"
+    ],
+    "workflows": "do_not_run_or_consult_until_authorized",
+    "training_experiments": "paused",
+    "menu_5_improvement": "deferred_until_user_closes_architecture_review",
+    "datasets": {
+      "baseline_commit": "1fbd354ae90300c219ab4b393466cc3b2a1eebb5",
+      "implementation_commit": "7696d308478939d299b1fedb454a2c3aaec00016",
+      "root_python_before": 17,
+      "root_python_after": 1,
+      "source_python_files": 101,
+      "test_python_files": 30,
+      "test_modules": 22,
+      "validation": "not_executed",
+      "coverage_target": 0.8,
+      "coverage_measured": false
+    }
   }
 }
