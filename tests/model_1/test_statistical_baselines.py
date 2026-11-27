@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 from lithiumscope.model_1.evaluation.baseline import evaluate_baselines, evaluate_baseline
-from lithiumscope.model_1.evaluation.metrics import regression_metrics
+from lithiumscope.core.scientific.regression_metrics import regression_metrics
 from lithiumscope.model_1.evaluation.selection import baseline_eligibility
 
 
@@ -79,8 +79,7 @@ def test_relative_rank_does_not_imply_scientific_eligibility():
 
 
 def test_finalizer_does_not_fit_when_no_candidate_beats_baseline(tmp_path,monkeypatch):
-    from lithiumscope.model_1.training import competition
-    from lithiumscope.model_1.training.execution.competition_finalize_model_1_winner import _finalize_model_1_winner
+    from lithiumscope.model_1.training.execution import winner_finalization
     from lithiumscope.core.states import RunState
 
     p=prepared()
@@ -90,15 +89,15 @@ def test_finalizer_does_not_fit_when_no_candidate_beats_baseline(tmp_path,monkey
     rows=[*baseline[0],{"algorithm":"svm__identity","label":"SVM","is_baseline":False,
                        "status":"ok","eligible_for_selection":True,"rmse_mean":3.,"mae_mean":2.,"r2_mean":.1}]
     events=[]
-    context=SimpleNamespace(root=tmp_path,tables=tmp_path,exports=tmp_path,
+    context=SimpleNamespace(root=tmp_path,tables=tmp_path,exports=tmp_path,run_id="test_run",
                             tracker=SimpleNamespace(set_state=lambda state,**kw:events.append((state,kw))))
-    monkeypatch.setattr(competition,"_excel_sheets",lambda *a:{})
-    monkeypatch.setattr(competition,"export_workbook",lambda *a:None)
-    monkeypatch.setattr(competition,"build_dashboard",lambda *a:None)
+    monkeypatch.setattr(winner_finalization,"competition_workbook_sheets",lambda *a:{})
+    monkeypatch.setattr(winner_finalization,"export_workbook",lambda *a:None)
+    monkeypatch.setattr(winner_finalization,"build_dashboard",lambda *a:None)
     def forbidden(*a,**kw):
         raise AssertionError("No final fit allowed")
-    monkeypatch.setattr(competition,"build_pipeline",forbidden)
-    outcome=_finalize_model_1_winner(baseline,CONFIG,context,None,None,[],None,
+    monkeypatch.setattr(winner_finalization,"build_pipeline",forbidden)
+    outcome=winner_finalization.finalize_winner(baseline,CONFIG,context,None,None,[],None,
         {"status":"pass"},p,{},rows,42)
     assert outcome.winner is None
     assert outcome.successful==["svm__identity"]
@@ -119,6 +118,8 @@ def test_cv_runner_records_train_metrics_and_uses_bound_resume(tmp_path,monkeypa
     def factory(*a,**kw):
         calls.append(1)
         return DummyRegressor(strategy="mean")
+    from lithiumscope.model_1.training import factory as factory_module
+    monkeypatch.setattr(factory_module,"build_pipeline",factory)
     monkeypatch.setattr(cv_runner,"build_pipeline",factory)
     device=DeviceInfo("cpu","CPU",1,False,False,False)
     first=cv_runner.run_nested_cv(p,"svm",device,config,checkpoint_root=tmp_path)

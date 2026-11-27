@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.model_1.evaluation.domain import fit_domain_profile, evaluate_domain
-from lithiumscope.model_1.evaluation.group_intervals import group_calibration_radius, run_group_interval_study
+from lithiumscope.model_1.diagnostics.domain import fit_domain_profile, evaluate_domain
+from lithiumscope.model_1.diagnostics.group_intervals import group_calibration_radius, run_group_interval_study
 
 
 def test_joint_domain_detects_incompatible_combination_and_missingness():
