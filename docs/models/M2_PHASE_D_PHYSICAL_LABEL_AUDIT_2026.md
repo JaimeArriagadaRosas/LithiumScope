@@ -88,9 +88,9 @@ No se declara inválido el conjunto completo; se prohíbe la certificación auto
 
 ## Artefactos y reproducción
 
-El módulo de auditoría está en src/lithiumscope/model_2/methodology/physical_label_audit.py. Se ejecuta con:
+El módulo de auditoría está en src/lithiumscope/experiments/model_2/external_validation/physical_label_audit.py. Se ejecuta con:
 
-    python -m lithiumscope.model_2.methodology.physical_label_audit --output results/scientific_simulations/m2_phase_d_20261112/physical_label_audit --strict
+    python -m lithiumscope.experiments.model_2.external_validation.physical_label_audit --output results/scientific_simulations/m2_phase_d_20261112/physical_label_audit --strict
 
 El modo estricto produce evidencia completa y termina con código 2 por motivos científicos pendientes, sin editar los datos, modelos ni menú. Sus archivos incluyen:
 

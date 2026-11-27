@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 
 from lithiumscope.core.paths import PROJECT_ROOT
-from lithiumscope.model_2.training.postprocess import load_predictions
+from lithiumscope.model_2.evaluation.saved_oof import load_predictions
 
 RELEASE_RUN = "training_20260920_195933_m0300"
 OLDER_RUN = "training_20261111_170832_m0300"

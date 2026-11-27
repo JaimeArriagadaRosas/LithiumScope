@@ -8,7 +8,7 @@ from lithiumscope.core.hashing import file_sha256
 from lithiumscope.experiments.integrated.compare_vnext_trained_runs import (
     classification_metrics, group_bootstrap_gain,
 )
-from lithiumscope.model_2.training.postprocess import (
+from lithiumscope.model_2.diagnostics.prior_release_evidence import (
     OLD_OOF, EXPECTED_OLD_REFERENCE_SHA256, PREVIOUS_ARM,
 )
 from lithiumscope.results.atomic_exports import write_table, write_json

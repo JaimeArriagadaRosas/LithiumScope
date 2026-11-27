@@ -5,10 +5,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.experiments.model_2.external_validation.label_candidates import (
-    _quality_of_patch, _stable_sample_id, collect_eligible_label_pairs,
-    select_small_pilot,
-)
+from lithiumscope.experiments.model_2.external_validation.label_candidates import _quality_of_patch, collect_eligible_label_pairs, select_small_pilot
+from lithiumscope.model_2.data.source_screening import stable_sample_id as _stable_sample_id
 
 
 def _fake_frame():

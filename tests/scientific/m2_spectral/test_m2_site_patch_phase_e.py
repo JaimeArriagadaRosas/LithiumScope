@@ -9,16 +9,7 @@ import pytest
 from pandas.testing import assert_frame_equal
 
 from lithiumscope.model_2.methodology.validation.contracts import sample_contract
-from lithiumscope.model_2.methodology.site_patch_lab import (
-    ARMS,
-    aggregate_training_sites,
-    finite_quality_filter,
-    half_patch_predictors,
-    historical_train_groups,
-    irreducible_identical_input_minority,
-    describe_sample_subsets,
-    site_level_evaluation,
-)
+from lithiumscope.experiments.model_2.representation.site_patch_features import ARMS, aggregate_training_sites, finite_quality_filter, half_patch_predictors, historical_train_groups, irreducible_identical_input_minority, describe_sample_subsets, site_level_evaluation
 
 
 @pytest.fixture
@@ -118,7 +109,7 @@ def test_predefined_quality_filter_never_excludes_test_samples():
 def test_irreducible_mixed_site_errors_use_fold_train_q75(
     contract,image_hashes,monkeypatch
 ):
-    from lithiumscope.model_2.methodology import site_patch_lab as lab
+    from lithiumscope.experiments.model_2.representation import site_patch_features as lab
     monkeypatch.setattr(lab,"define_outer_fold",
         lambda fold,manifest:(np.array([0,1,2,3,4,5]),
           np.array([0,1,2,3]),np.array([4,5,6,7]),25.))
@@ -194,7 +185,7 @@ def test_quality_subgroups_have_same_test_rows_per_arm():
 
 
 
-from lithiumscope.model_2.diagnostics.patch_missingness import inspect_mask
+from lithiumscope.experiments.model_2.representation.patch_missingness import inspect_mask
 
 
 def test_missing_mask_anatomy_distinguishes_shared_footprint_from_band_issue():

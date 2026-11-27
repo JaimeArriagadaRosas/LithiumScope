@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.model_2.training import closure
+from lithiumscope.experiments.model_2.studies import closure_protocol as closure, closure as closure_runner
 from lithiumscope.model_2.methodology.evaluation.three_zone_ranking import ranking_evaluation
 
 
@@ -127,7 +127,7 @@ def test_manual_preflight_is_no_training_and_preserves_original_folds(
     def fake_prepare(root):
         marker.append("preflight");return (values,)*8
     monkeypatch.setattr(closure,"prepare",fake_prepare)
-    output=closure.train(tmp_path,preflight_only=True,output=tmp_path/"out")
+    output=closure_runner.train(tmp_path,preflight_only=True,output=tmp_path/"out")
     assert output["release_authorized"] is False
     assert marker==["preflight"]
     assert json.loads((tmp_path/"out/preflight.json").read_text())==values
@@ -151,7 +151,8 @@ def test_smoke_trains_only_bounded_subset_without_persisting_a_model(
     monkeypatch.setattr(closure,"prepare",
         lambda root:({"state":"ready"},base,x,folds,qa,
                      np.arange(690),{},pd.DataFrame()))
-    monkeypatch.setattr(closure,"define_outer_fold",
+    from lithiumscope.experiments.model_2.studies.refinement import ablation_protocol
+    monkeypatch.setattr(ablation_protocol,"define_outer_fold",
         lambda fold,contract:(
             np.arange(200),np.arange(200),np.arange(200,240),8.))
     fit=[]
@@ -160,7 +161,7 @@ def test_smoke_trains_only_bounded_subset_without_persisting_a_model(
         return np.full(len(xte),.37)
     monkeypatch.setattr(closure,"_model_from_params",fake_fit)
     dest=tmp_path/"smoke"
-    result=closure.train(tmp_path,smoke=True,output=dest)
+    result=closure_runner.train(tmp_path,smoke=True,output=dest)
     assert result["state"]=="smoke_only"
     assert fit==[(125,16)]
     assert result["candidate_created"] is False if "candidate_created" in result else True
@@ -289,7 +290,7 @@ def test_complete_comparison_writes_all_metrics_without_real_training(
     assert len(pd.read_csv(tmp_path/"all_reference_paired_oof.csv"))==706*4
     assert len(pd.read_csv(tmp_path/"per_fold_comparison.csv"))==10
     assert len(pd.read_csv(tmp_path/"three_zone_cases.csv"))>1500
-    from lithiumscope.model_2.training.closure_report import write_closure_report
+    from lithiumscope.experiments.model_2.studies.closure_report import write_closure_report
     report=write_closure_report(tmp_path,{"state":"ready"},result)
     assert "passes_descriptive_internal_criteria" in report
     assert (tmp_path/"INFORME_ENTRENAMIENTO_MODELO2_EXPERIMENTAL.md").exists()

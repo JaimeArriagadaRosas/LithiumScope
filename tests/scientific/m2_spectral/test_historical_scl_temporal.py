@@ -3,7 +3,7 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from lithiumscope.model_2.methodology.historical_scl_recovery import identity
+from lithiumscope.experiments.model_2.external_validation.imagery.historical_scl_recovery import identity
 from lithiumscope.experiments.model_2.temporal.comparison import compare_cubes
 
 
@@ -41,7 +41,7 @@ def test_historical_recovery_persists_mask_without_mutating_source(tmp_path):
     import json
     import pandas as pd
     from lithiumscope.core.hashing import file_sha256
-    from lithiumscope.model_2.methodology.historical_scl_recovery import recover
+    from lithiumscope.experiments.model_2.external_validation.imagery.historical_scl_recovery import recover
 
     patch=tmp_path/"patch.npy"
     np.save(patch,np.ones((6,32,32)))

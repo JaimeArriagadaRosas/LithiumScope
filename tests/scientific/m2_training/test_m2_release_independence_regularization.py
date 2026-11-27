@@ -12,12 +12,7 @@ from lithiumscope.model_2.evaluation.release_gate import (
     ExternalGatePolicy,
     assess_release,
 )
-from lithiumscope.model_2.methodology.regularization_study import (
-    _apply_calibrator,
-    _calibrator,
-    _inner_scores,
-    _metrics as experiment_metrics,
-)
+from lithiumscope.experiments.model_2.studies.refinement.regularization import _apply_calibrator, _calibrator, _inner_scores, _metrics as experiment_metrics
 
 
 def test_geographic_and_lithium_duplicate_check():

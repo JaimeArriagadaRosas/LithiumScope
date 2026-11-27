@@ -12,7 +12,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from lithiumscope.model_2.methodology.regularization_study import _load_inputs
+import joblib
+from lithiumscope.model_2.validation.spatial import make_anchored_scientific_folds
 
 INPUTS = {
     "manifest": "data/processed/model_2/vnext_expanded/training_manifest.csv",
@@ -89,10 +90,47 @@ def validate_folds(
     return row_info
 
 
+def load_historical_inputs(root: Path):
+    manifest = pd.read_csv(
+        root / INPUTS["manifest"]
+    )
+    features = pd.read_csv(
+        root / INPUTS["features"]
+    )
+    audit = pd.read_csv(
+        root / INPUTS["quality"]
+    )
+    legacy = json.loads(
+        (root / INPUTS["frozen_folds"]).read_text(
+            encoding="utf-8"
+        )
+    )
+    bundle = joblib.load(
+        root / INPUTS["reference_model"]
+    )
+    if not (len(manifest) == len(features) == len(audit) == 783):
+        raise ValueError("Dataset drift: expected the verified 783-row snapshot")
+    if not np.array_equal(manifest.sample_id.astype(str), audit.sample_id.astype(str)):
+        raise ValueError("QA rows are not aligned with source samples")
+    if not np.array_equal(
+        manifest.spatial_group.astype(str), features.spatial_group.astype(str)
+    ):
+        raise ValueError("Cached features have inconsistent spatial groups")
+    if not np.allclose(manifest.Li_icpms, features.Li_icpms):
+        raise ValueError("Geochemistry cache differs from training manifest")
+    if not set(bundle["features"]).issubset(features):
+        raise ValueError("Missing spectral features")
+    folds = make_anchored_scientific_folds(
+        manifest.Li_icpms, manifest.spatial_group, legacy, baseline_count=706,
+        quantile=0.75,
+    )
+    return manifest, features[bundle["features"]], audit, bundle, folds
+
+
 def load_protocol(root: Path):
     """Return frozen inputs and their immutable, inspectable contract."""
     root = root.resolve()
-    manifest, features, quality, bundle, folds = _load_inputs(root)
+    manifest, features, quality, bundle, folds = load_historical_inputs(root)
     eligible = quality.train_quality_pass_95.to_numpy(dtype=bool)
     if len(bundle["features"]) != 126 or len(features.columns) != 126:
         raise ValueError("Canonical protocol requires all 126 spectral features")

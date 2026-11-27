@@ -52,6 +52,6 @@ La conclusión defensible para la memoria es: *«La metodología corregida reduc
 
 ## 5. Cierre técnico
 
-Se implementó `src/lithiumscope/model_2/methodology/release_closure_comparison.py` y la prueba `tests/scientific/test_m2_release_closure_comparison.py`. Resultados producidos en `results/scientific_simulations/m2_release_closeout_20261112/`: `paired_release_706.csv` y `closure_decision.json`. Ningún modelo, release activo, menú, imagen ni dato del Modelo 1 fue modificado. Los experimentos anteriores de radiometría y sobreajuste permanecen disponibles para auditoría, sin repetir entrenamientos costosos.
+Se implementó `src/lithiumscope/experiments/model_2/studies/release_closure_comparison.py` y la prueba `tests/scientific/test_m2_release_closure_comparison.py`. Resultados producidos en `results/scientific_simulations/m2_release_closeout_20261112/`: `paired_release_706.csv` y `closure_decision.json`. Ningún modelo, release activo, menú, imagen ni dato del Modelo 1 fue modificado. Los experimentos anteriores de radiometría y sobreajuste permanecen disponibles para auditoría, sin repetir entrenamientos costosos.
 
 **Decisión final:** mantener el release anterior activo hasta contar con un conjunto externo realmente independiente. **La fase de corrección y comparación queda cerrada; no seguir ajustando estos cinco folds en busca de un resultado forzado.** Si se exige un nuevo release científicamente superior en las tres métricas, su aprobación continúa bloqueada por la evidencia, no por falta de refactorizaciones o datasets indiscriminados.

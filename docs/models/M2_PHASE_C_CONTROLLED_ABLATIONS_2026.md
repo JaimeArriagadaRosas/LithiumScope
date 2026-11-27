@@ -68,4 +68,4 @@ Las diferencias de score entre brazos no estiman por sí mismas la probabilidad 
 - `regional_metrics_descriptive.csv`
 Los archivos `inner_frozen_thresholds_*.csv` y `decision_probe_summary.json` están en el subdirectorio del primer piloto de siete brazos; su alineación con los resultados finales fue comprobada numéricamente.
 
-El código que reproduce la ejecución reside en `src/lithiumscope/model_2/methodology/ablations.py` y `decision_probe.py`. No se ha hecho push ni se ha alterado el menú o los modelos activos.
+El código que reproduce la ejecución reside en `src/lithiumscope/experiments/model_2/studies/refinement/ablations.py` y `decision_probe.py`. No se ha hecho push ni se ha alterado el menú o los modelos activos.

@@ -122,5 +122,41 @@ def main() -> None:
         })
 
 
+
+def bootstrap_group_delta(predictions:pd.DataFrame,reference:str,arm:str,
+                          *,repeats=320, seed=20261112):
+    # Group bootstrap is descriptive; models were chosen in another development
+    # competition. Multiple comparisons and dependence remain.
+    df=predictions[predictions.arm.isin((reference,arm))]
+    pv=df.pivot(index="test_index",columns="arm",values="score").sort_index()
+    ref=pv[reference].to_numpy(float)
+    alternative=pv[arm].to_numpy(float)
+    md=df[df.arm==reference].set_index("test_index").loc[pv.index]
+    y=md.y_true.to_numpy(int)
+    gr=md.spatial_group.astype(str).to_numpy()
+    unique=np.unique(gr)
+    by_group=[np.flatnonzero(gr==g) for g in unique]
+    rng=np.random.default_rng(seed)
+    deltas={"auc":[],"ap":[],"brier":[]}
+    for _ in range(repeats):
+        sampled=rng.integers(0,len(unique),len(unique))
+        ix=np.concatenate([by_group[j] for j in sampled])
+        if np.unique(y[ix]).size<2:
+            continue
+        deltas["auc"].append(float(roc_auc_score(y[ix],alternative[ix])
+                                  -roc_auc_score(y[ix],ref[ix])))
+        deltas["ap"].append(float(average_precision_score(y[ix],alternative[ix])
+                                 -average_precision_score(y[ix],ref[ix])))
+        deltas["brier"].append(float(brier_score_loss(y[ix],alternative[ix])
+                                    -brier_score_loss(y[ix],ref[ix])))
+    out={"reference":reference,"arm":arm,"iterations_requested":repeats,
+         "groups":len(unique)}
+    for key,values in deltas.items():
+        out[key+"_delta_ci95_low"]=float(np.quantile(values,.025))
+        out[key+"_delta_ci95_high"]=float(np.quantile(values,.975))
+        out[key+"_bootstrap_valid"]=len(values)
+    return out
+
+
 if __name__ == "__main__":
     main()

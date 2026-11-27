@@ -86,10 +86,10 @@ La investigación siguiente debe revisar las huellas de píxeles no válidos y l
 
 ## Evidencia reproducible
 
-El runner opt-in es src/lithiumscope/model_2/methodology/site_patch_lab.py y produce experiment_design.json, central_16x16_features.csv, train_site_aggregation_decisions.csv, all_arms_paired_oof.csv, fold_metrics.csv, sample_quality_site_subgroups.csv, site_level_metrics.csv, identical_patch_label_error_bounds.csv, group_bootstrap_deltas.csv, paired_model_comparison.csv y experiment_summary.json.
+El runner opt-in es src/lithiumscope/experiments/model_2/representation/site_patch.py y produce experiment_design.json, central_16x16_features.csv, train_site_aggregation_decisions.csv, all_arms_paired_oof.csv, fold_metrics.csv, sample_quality_site_subgroups.csv, site_level_metrics.csv, identical_patch_label_error_bounds.csv, group_bootstrap_deltas.csv, paired_model_comparison.csv y experiment_summary.json.
 
 Ejecutar desde la raíz:
 
-    python -m lithiumscope.model_2.methodology.site_patch_lab --output results/scientific_simulations/m2_phase_e_20261112/pilot
+    python -m lithiumscope.experiments.model_2.representation.site_patch --output results/scientific_simulations/m2_phase_e_20261112/pilot
 
 El runner coteja manifiesto, 126 características, folds, línea base y hashes de imágenes originales con Fases C/D antes de entrenar los candidatos temporales. No utiliza datos GEOROC provisionales, no cambia la función de inferencia del release, no guarda modelos de producción, no hace push.

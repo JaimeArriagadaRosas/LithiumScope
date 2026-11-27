@@ -37,7 +37,7 @@ Para ejecutar desde la raíz (Windows CMD):
 
 ```cmd
 set "PYTHONPATH=%CD%\src"
-"D:\Librerias\Python312\python.exe" -m lithiumscope.model_2.methodology.canonical_rf_comparison --root "%CD%" --output "results\scientific_simulations\m2_canonical_rf_20261112" --trials 16
+"D:\Librerias\Python312\python.exe" -m lithiumscope.experiments.model_2.studies.refinement.canonical_rf_comparison --root "%CD%" --output "results\scientific_simulations\m2_canonical_rf_20261112" --trials 16
 ```
 
 ## 4. Interpretación y límites

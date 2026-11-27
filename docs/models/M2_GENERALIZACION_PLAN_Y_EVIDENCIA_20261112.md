@@ -80,8 +80,8 @@ Desde la raíz del repositorio:
 
 ```cmd
 set "PYTHONPATH=%CD%\src"
-"D:\Librerias\Python312\python.exe" -m lithiumscope.model_2.methodology.regularization_study --output "results\scientific_simulations\m2_generalization_20261112\repeat_regularization"
-"D:\Librerias\Python312\python.exe" -m lithiumscope.model_2.methodology.data_ablation_study --output "results\scientific_simulations\m2_generalization_20261112\repeat_ablation"
+"D:\Librerias\Python312\python.exe" -m lithiumscope.experiments.model_2.studies.refinement.regularization --output "results\scientific_simulations\m2_generalization_20261112\repeat_regularization"
+"D:\Librerias\Python312\python.exe" -m lithiumscope.experiments.model_2.studies.refinement.data_ablation --output "results\scientific_simulations\m2_generalization_20261112\repeat_ablation"
 "D:\Librerias\Python312\python.exe" -m pytest tests -q
 "D:\Librerias\Python312\python.exe" -m ruff check src tests main.py
 ```

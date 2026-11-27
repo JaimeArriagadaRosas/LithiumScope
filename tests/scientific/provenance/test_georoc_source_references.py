@@ -1,6 +1,4 @@
-from lithiumscope.experiments.model_2.external_validation.source_references import (
-    parse_bibliography, decimal_places, classify_record,
-)
+from lithiumscope.model_2.data.source_screening import parse_bibliography, decimal_places, classify_record
 
 def test_catalogue_parses_id_and_doi():
     data='"[4065] A: PAPER doi: 10.11/x"\n"[24044] B: PAPER doi: 10.22/y"\n'

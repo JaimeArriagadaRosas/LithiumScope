@@ -26,6 +26,8 @@ from lithiumscope.core.config import load_config
 from lithiumscope.model_2.data.sample_source import load_georeferenced_li_samples
 from lithiumscope.core.logging.session import get_logger
 import pandas as pd
+
+
 def ensure_model_2_dataset(
     model_1_dataset: Path,
     force: bool = False,
@@ -232,12 +234,7 @@ def ensure_model_2_dataset(
                 )
             )
             if sample_number % checkpoint_every == 0:
-                _persist_progress(
-                    rows,
-                    failures,
-                    partial_manifest_path,
-                    failures_path,
-                )
+                _persist_progress(rows, failures, partial_manifest_path, failures_path)
             if (
                 sample_number % progress_every == 0
                 or sample_number == total
@@ -280,12 +277,7 @@ def ensure_model_2_dataset(
         )
         raise
     finally:
-        _persist_progress(
-            rows,
-            failures,
-            partial_manifest_path,
-            failures_path,
-        )
+        _persist_progress(rows, failures, partial_manifest_path, failures_path)
     spinner.succeed(f"Modelo 2 · dataset listo: {len(rows)}/{total} muestras")
     logger.info(
         "Model 2 manifest generated: %s ready=%d failed=%d resumed=%d",

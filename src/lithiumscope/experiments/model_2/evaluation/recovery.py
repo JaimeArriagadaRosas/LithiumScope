@@ -9,9 +9,9 @@ from lithiumscope.results.atomic_exports import write_json
 
 def recover_m2_reports(identity,destination):
     import pandas as pd
-    from lithiumscope.model_2.training.postprocess import (
-        load_predictions,fixed_old_release_comparison,science_report,
-    )
+    from lithiumscope.model_2.evaluation.saved_oof import load_predictions
+    from lithiumscope.model_2.diagnostics.prior_release_evidence import fixed_old_release_comparison
+    from lithiumscope.model_2.diagnostics.science_evidence import science_report
     source=local_training_source("model_2")
     if file_sha256(source)!=identity.get("dataset_sha256"):
         raise ValueError("M2 recovery source differs from candidate dataset")

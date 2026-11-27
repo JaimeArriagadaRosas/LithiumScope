@@ -7,9 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.model_2.methodology.release_closure_comparison import (
-    LEGACY_OOF, NEW_OOF, RELEASE_ID, metric_summary, read_paired,
-)
+from lithiumscope.experiments.model_2.studies.release_closure_comparison import LEGACY_OOF, NEW_OOF, RELEASE_ID, metric_summary, read_paired
 
 
 def _create_synthetic_files(tmp_path, *, mismatch=False, release=RELEASE_ID):

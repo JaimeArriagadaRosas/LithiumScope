@@ -4,8 +4,9 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 import pytest
+from lithiumscope.model_2.diagnostics.paired_uncertainty import bootstrap_group_delta
 
-from lithiumscope.model_2.methodology import ablations as a
+from lithiumscope.experiments.model_2.studies.refinement import ablation_protocol as a
 from lithiumscope.model_2.methodology.validation.contracts import sample_contract
 
 
@@ -111,7 +112,7 @@ def test_bootstrap_uses_common_held_out_rows_and_groups():
         for i,(y,score) in enumerate(zip([0,1,0,1,0,1],sc)):
             rows.append({"arm":arm,"test_index":i,"y_true":y,
                          "score":score,"spatial_group":f"g{i//2}"})
-    result=a.bootstrap_group_delta(pd.DataFrame(rows),
+    result=bootstrap_group_delta(pd.DataFrame(rows),
         "legacy_all","expanded_all",repeats=20,seed=1)
     assert result["auc_bootstrap_valid"]>0
     assert "ap_delta_ci95_high" in result

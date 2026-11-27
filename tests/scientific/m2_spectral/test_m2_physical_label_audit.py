@@ -10,10 +10,8 @@ import pytest
 from pandas.testing import assert_frame_equal
 
 from lithiumscope.model_2.methodology.validation.contracts import sample_contract
-from lithiumscope.model_2.methodology.physical_label_audit import (
-    conflicting_site_dossier, georoc_links, historical_links, patch_quality,
-    safe_sample_id,
-)
+from lithiumscope.experiments.model_2.external_validation.physical_label_contract import conflicting_site_dossier, historical_links, patch_quality, safe_sample_id
+from lithiumscope.experiments.model_2.external_validation.physical_label_georoc_links import georoc_links
 
 
 @pytest.fixture
@@ -181,7 +179,7 @@ def test_missing_patch_is_reported_without_writing_original(tmp_path,sample_cont
     assert not (tmp_path/"missing.npy").exists()
 
 
-from lithiumscope.model_2.methodology.physical_label_audit import scientific_readiness_gate
+from lithiumscope.experiments.model_2.external_validation.physical_label_contract import scientific_readiness_gate
 
 
 def test_scientific_gate_blocks_uncertified_physical_label_without_deleting_rows():

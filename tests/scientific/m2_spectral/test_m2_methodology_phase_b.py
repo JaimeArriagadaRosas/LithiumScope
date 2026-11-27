@@ -16,7 +16,7 @@ from lithiumscope.model_2.methodology.validation.spatial import (
 from lithiumscope.model_2.diagnostics.domain import (
     training_domain_profile, score_domain,
 )
-from lithiumscope.model_2.methodology.audit import run_audit
+from lithiumscope.experiments.model_2.evaluation.phase_b_audit import run_audit
 
 
 @pytest.fixture

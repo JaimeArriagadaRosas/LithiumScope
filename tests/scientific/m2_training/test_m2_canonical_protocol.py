@@ -8,7 +8,7 @@ import pandas as pd
 import pytest
 
 from lithiumscope.model_2.evaluation.canonical_protocol import validate_folds
-from lithiumscope.model_2.methodology.canonical_rf_comparison import _metrics
+from lithiumscope.experiments.model_2.studies.refinement.canonical_rf_comparison import _metrics
 
 
 def _fixture():
@@ -61,7 +61,7 @@ def test_frozen_data_snapshot_has_no_release_approval_fields():
         "manifest", "features", "quality", "frozen_folds",
         "reference_model", "active_registry",
     }
-    from lithiumscope.model_2.methodology.canonical_rf_comparison import PROFILES
+    from lithiumscope.experiments.model_2.studies.refinement.canonical_rf_comparison import PROFILES
     assert PROFILES == ("legacy", "regularized_v2")
 
 
@@ -131,7 +131,7 @@ def test_geographic_proximity_audit_is_measured_in_km():
 def test_outer_test_labels_cannot_change_training_or_predictions(
     monkeypatch, tmp_path,
 ):
-    import lithiumscope.model_2.methodology.canonical_rf_comparison as study
+    import lithiumscope.experiments.model_2.studies.refinement.canonical_rf_comparison as study
 
     rng = np.random.default_rng(42)
     size = 60

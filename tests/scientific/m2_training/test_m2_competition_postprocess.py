@@ -12,6 +12,8 @@ import pandas as pd
 import pytest
 
 from lithiumscope.model_2.training import postprocess as pp
+from lithiumscope.model_2.evaluation.saved_oof import load_predictions, get_json
+from lithiumscope.model_2.diagnostics import prior_release_evidence as prior
 from lithiumscope.model_2.evaluation.artifacts import competition_workbook_sheets
 
 
@@ -53,7 +55,7 @@ def test_ambiguous_oof_is_rejected_before_reporting(tmp_path):
     tables=tmp_path/"tables"
     create_oof(tables,manifest,mismatch=True)
     with pytest.raises(ValueError,match="disagree"):
-        pp.load_predictions(manifest,tables)
+        load_predictions(manifest,tables)
 
 
 def test_recovery_status_is_persisted_and_reports_retry_without_retraining(
@@ -94,7 +96,7 @@ def test_recovery_status_is_persisted_and_reports_retry_without_retraining(
     assert two["state"]=="complete"
     assert all(v["state"]=="complete" for v in two["reports"].values())
     assert len(requested)==6
-    assert pp.get_json(output/"evidence_report_status.json")["runs_no_training"]
+    assert get_json(output/"evidence_report_status.json")["runs_no_training"]
 
 
 def test_release_comparator_rejects_mismatched_frozen_folds(tmp_path,monkeypatch):
@@ -108,7 +110,7 @@ def test_release_comparator_rejects_mismatched_frozen_folds(tmp_path,monkeypatch
     }),encoding="utf-8")
     manifest=create_manifest(root/"manifest.csv")
     old=pd.DataFrame({
-        "arm":[pp.PREVIOUS_ARM]*706,"test_index":range(706),
+        "arm":[prior.PREVIOUS_ARM]*706,"test_index":range(706),
         "sample_id":manifest.sample_id.iloc[:706],
         "li_ppm":manifest.Li_icpms.iloc[:706],
         "fold":np.ones(706,int),
@@ -116,9 +118,9 @@ def test_release_comparator_rejects_mismatched_frozen_folds(tmp_path,monkeypatch
     })
     old.to_csv(old_dir/"all_reference_paired_oof.csv",index=False)
     from lithiumscope.core.hashing import file_sha256
-    monkeypatch.setattr(pp,"EXPECTED_OLD_REFERENCE_SHA256",
+    monkeypatch.setattr(prior,"EXPECTED_OLD_REFERENCE_SHA256",
                         file_sha256(old_dir/"all_reference_paired_oof.csv"))
-    monkeypatch.setattr(pp,"EXPECTED_OLD_METADATA_SHA256",
+    monkeypatch.setattr(prior,"EXPECTED_OLD_METADATA_SHA256",
                         file_sha256(meta_dir/"metadata.json"))
     with pytest.raises(ValueError,match="heldout folds"):
         pp.fixed_old_release_comparison(

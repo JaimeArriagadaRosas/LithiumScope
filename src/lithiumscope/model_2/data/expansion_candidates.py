@@ -11,6 +11,7 @@ import json
 import re
 from collections import Counter
 from pathlib import Path
+from lithiumscope.model_2.data.source_screening import stable_sample_id
 from lithiumscope.core.paths import resolve_project_path
 
 import numpy as np
@@ -59,7 +60,7 @@ def source_audit(root: Path, config: dict) -> pd.DataFrame:
         acquire_filtered_georoc, GEOROC_FILTERED_NAME,
     )
     from lithiumscope.datasets.adapters.georoc.ingestion import ingest_georoc_files
-    from lithiumscope.experiments.model_2.external_validation.source_references import (
+    from lithiumscope.model_2.data.source_screening import (
         classify_record, decimal_places, parse_bibliography,
     )
     from lithiumscope.datasets.validation.chemistry.qc_protocols import protocol_masks
@@ -131,9 +132,6 @@ def source_audit(root: Path, config: dict) -> pd.DataFrame:
     return result
 
 
-def stable_sample_id(ref, name, lat, lon) -> str:
-    key = f"GEOROC|{ref}|{name}|{float(lat):.6f}|{float(lon):.6f}"
-    return "GEOROC_" + hashlib.sha256(key.encode()).hexdigest()[:16]
 
 
 def candidates(audit: pd.DataFrame, old: pd.DataFrame,

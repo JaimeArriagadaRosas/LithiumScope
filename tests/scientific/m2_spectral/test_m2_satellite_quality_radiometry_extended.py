@@ -66,7 +66,7 @@ def test_scientific_selector_requires_frozen_temporal_range():
 
 
 def test_local_manifest_inventory_is_exact_and_read_only(tmp_path):
-    from lithiumscope.model_2.methodology.satellite_inventory import local_inventory,sha
+    from lithiumscope.experiments.model_2.external_validation.imagery.scene_inventory import local_inventory, sha
     arr=np.ones((6,32,32),dtype=np.float32)
     arr[:,:4,:]=np.nan
     file=tmp_path/"sample.npy"
@@ -113,7 +113,7 @@ def test_radiometry_handles_pre_2022_zero_offset_and_post_2022_shift():
 def test_cached_scientific_features_use_stac_per_scene_and_not_original_model(
     monkeypatch,tmp_path
 ):
-    from lithiumscope.model_2.methodology import radiometric_comparison as c
+    from lithiumscope.experiments.model_2.representation import radiometric_comparison as c
     import pandas as pd
     monkeypatch.setattr(c,"ROOT_CACHE","cache")
     cache=tmp_path/"cache";cache.mkdir()
@@ -150,8 +150,8 @@ def test_explicit_scientific_candidate_acquisition_does_not_overwrite(
     tmp_path,monkeypatch,scene
 ):
     import pandas as pd
-    from lithiumscope.model_2.methodology import acquire_validated_candidate as q
-    from lithiumscope.model_2.methodology.satellite_inventory import sha
+    from lithiumscope.experiments.model_2.external_validation.imagery import acquire_validated_candidate as q
+    from lithiumscope.experiments.model_2.external_validation.imagery.scene_inventory import sha
     folder=tmp_path/"data";folder.mkdir()
     old=folder/"old.npy"
     np.save(old,np.full((6,32,32),1200.,dtype=np.float32),allow_pickle=False)

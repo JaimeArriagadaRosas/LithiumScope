@@ -89,9 +89,9 @@ El paquete científico opt-in contiene satellite_quality.py, satellite_inventory
 
 Comandos reproducibles (ejecutar desde la raíz del repositorio):
 
-    python -m lithiumscope.model_2.methodology.satellite_inventory --output results/scientific_simulations/sentinel_methodology_20261112/inventory --online-metadata --alternatives
-    python -m lithiumscope.model_2.methodology.scl_inventory --output results/scientific_simulations/sentinel_methodology_20261112/local_scl
-    python -m lithiumscope.model_2.methodology.radiometric_comparison --output results/scientific_simulations/sentinel_methodology_20261112/experiments
+    python -m lithiumscope.experiments.model_2.external_validation.imagery.satellite_inventory --output results/scientific_simulations/sentinel_methodology_20261112/inventory --online-metadata --alternatives
+    python -m lithiumscope.experiments.model_2.external_validation.imagery.scl_inventory --output results/scientific_simulations/sentinel_methodology_20261112/local_scl
+    python -m lithiumscope.experiments.model_2.representation.radiometric_comparison --output results/scientific_simulations/sentinel_methodology_20261112/experiments
 
 Carpeta de evidencias: results/scientific_simulations/sentinel_methodology_20261112. Incluye manifest original auditado, 111 respuestas STAC cacheadas, decisiones mismas fechas, tres tablas espectrales, estimaciones OOF pareadas, incertidumbre y logs.
 

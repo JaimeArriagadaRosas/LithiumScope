@@ -25,7 +25,7 @@ Los componentes son **opt-in** y están preparados para la Fase C. No están con
 Desde la raíz del repositorio:
 
 ```powershell
-python -m lithiumscope.model_2.methodology.audit `
+python -m lithiumscope.experiments.model_2.evaluation.phase_b_audit `
   --manifest data/processed/model_2/vnext_expanded/training_manifest.csv `
   --features data/processed/model_2/vnext_expanded/spectral_features.csv `
   --folds results/model_2/runs/training_20261111_170832_m0300/manifests/scientific_folds.json `

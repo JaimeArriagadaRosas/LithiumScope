@@ -1,16 +1,13 @@
-﻿"""Conservative citation and site audit for GEOROC-to-Sentinel-2 labels."""
+"""Conservative citation and site audit for GEOROC-to-Sentinel-2 labels."""
 from __future__ import annotations
-import csv
 import hashlib
-import io
 import json
 import re
 from pathlib import Path
-import numpy as np
 import pandas as pd
 from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR
 from lithiumscope.datasets.validation.chemistry.qc_protocols import protocol_masks
-from lithiumscope.experiments.model_2.external_validation.label_candidates import _stable_sample_id
+from lithiumscope.model_2.data.source_screening import parse_bibliography, decimal_places, classify_record, stable_sample_id as _stable_sample_id
 
 OUT = RESULTS_DIR/"scientific_simulations"/"vnext_20261106"/"georoc_source_validation"
 REF_URL = "https://georoc.mpch-mainz.gwdg.de/georoc/reference_list.csv"
@@ -19,33 +16,10 @@ REF_LINE = re.compile(r"^\[(\d+)\]\s*(.*)$",re.S)
 DOI = re.compile(r"doi:\s*(10\.\d+/\S+)",re.I)
 
 
-def parse_bibliography(text: str) -> dict[str,str]:
-    found={}
-    for line in csv.reader(io.StringIO(text)):
-        if line:
-            m=REF_LINE.match(line[0])
-            if m:found[m[1]]=m[2].strip()
-    return found
 
 
-def decimal_places(value) -> int:
-    if pd.isna(value):return 0
-    s=str(value).strip()
-    return len(s.split(".")[1]) if re.fullmatch(r"[-+]?\d+\.\d+",s) else 0
 
 
-def classify_record(bibliography_complete: bool, decimal_lat: int,
-                    decimal_lon: int, repeated_site: int,
-                    comment: str, ambiguous_id: bool=False) -> str:
-    note=str(comment)
-    if re.search(r"\b(?:DRILL CORE|DRILL HOLE|BOREHOLE|UNDERGROUND)\b",
-                 note,re.I):
-        return "EXCLUDE_SUBSURFACE_LABEL"
-    if (not bibliography_complete or decimal_lat<=2 or decimal_lon<=2
-            or repeated_site>=4 or ambiguous_id
-            or re.search(r"\b(?:MINE|LITHIUM PROJECT|OPEN PIT)\b",note,re.I)):
-        return "MANUAL_SOURCE_REVIEW"
-    return "PROVISIONAL_SITE_REVIEW"
 
 
 def audit(root: Path=PROJECT_ROOT, output: Path=OUT) -> dict:

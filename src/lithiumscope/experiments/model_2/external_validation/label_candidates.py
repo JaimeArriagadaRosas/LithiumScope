@@ -10,6 +10,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+from lithiumscope.model_2.data.source_screening import stable_sample_id as _stable_sample_id
 
 import numpy as np
 import pandas as pd
@@ -34,9 +35,6 @@ PILOT_OUTPUT = (
 )
 
 
-def _stable_sample_id(citation: str, source_id: str, lat: float, lon: float) -> str:
-    key = f"GEOROC|{citation}|{source_id}|{lat:.6f}|{lon:.6f}"
-    return "GEOROC_" + hashlib.sha256(key.encode("utf-8")).hexdigest()[:16]
 
 
 def collect_eligible_label_pairs(
