@@ -1,0 +1,1 @@
+"""Tabular input quality contracts."""

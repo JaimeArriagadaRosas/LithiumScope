@@ -8,12 +8,12 @@ import pandas as pd
 
 from lithiumscope.core.logging.session import get_logger
 from lithiumscope.datasets.provenance.ingestion_audit import write_ingestion_audit as _write_audit
-from lithiumscope.datasets.adapters.georoc.ingestion_schema import (
+from lithiumscope.datasets.adapters.georoc.schema import (
     GEOROC_ALIASES,
     MAJOR_OXIDES,
     infer_georoc_column_map, ingestion_layout,
 )
-from lithiumscope.datasets.adapters.georoc.ingestion_transform import (
+from lithiumscope.datasets.adapters.georoc.transformation import (
     harmonize_chunk,
 )
 
