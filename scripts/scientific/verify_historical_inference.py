@@ -6,15 +6,15 @@ import json
 from pathlib import Path
 import shutil
 
-import joblib
 import numpy as np
 import pandas as pd
 
 from lithiumscope.core.hashing import file_sha256
+from lithiumscope.persistence.model_deserialization import load_model_artifact
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.model_1.prediction.predictor import predict_model_1_frame
 from lithiumscope.model_2.prediction.predictor import score_model_2_image
-from lithiumscope.prediction.analysis.decision import calculate_decision
+from lithiumscope.core.scientific.decision import calculate_decision
 
 RUN="demonstration_20261113_212844_m0300"
 EXPECTED={
@@ -62,7 +62,7 @@ def run(old,output,*,trust_local_bundles=False):
         if metadata["model_sha256"]!=sha or metadata["dataset_sha256"]!=identity["dataset_sha256"]:
             raise ValueError("Historical metadata mismatch")
         binary=verified_copy(source/"model.joblib",copies/model/"model.joblib",records,sha)
-        bundles[model]=joblib.load(binary)
+        bundles[model]=load_model_artifact(binary, model_group=model)
         identities[model]={"run_id":run_id,"sha256":sha,"algorithm":bundles[model]["algorithm"]}
     source_cases=verified_copy(old/"examples/integrated_demo/cases.csv",copies/"source_cases.csv",records,CASE_SHA)
     cases_file=verified_copy(archive/"inputs/demonstration_cases.csv",copies/"cases.csv",records)

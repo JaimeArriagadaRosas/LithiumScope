@@ -32,7 +32,7 @@ def test_single_image_snapshot_keeps_provenance(monkeypatch, tmp_path):
 def test_manifest_snapshot_resolves_original_relative_path(monkeypatch, tmp_path):
     monkeypatch.setattr(session, "RESULTS_DIR", tmp_path / "results")
     model_1 = tmp_path / "samples.csv"
-    pd.DataFrame({"case_id": ["a"]}).to_csv(model_1, index=False)
+    pd.DataFrame({"case_id": ["a"], "SiO2": [50.0]}).to_csv(model_1, index=False)
     image = tmp_path / "image.npy"
     np.save(image, np.ones((6, 32, 32), dtype=np.float32))
     manifest = tmp_path / "manifest.csv"
@@ -48,6 +48,7 @@ def test_manifest_snapshot_resolves_original_relative_path(monkeypatch, tmp_path
     monkeypatch.setattr(complete, "snapshot_input", snapshot)
     monkeypatch.setattr(complete, "_run_integrated", lambda **kwargs: kwargs)
     result = complete.run_complete_prediction(model_1, manifest)
+    assert result["model_1_input"]["SiO2"].tolist() == [50.0]
     cases = result["model_2_cases"]
     assert cases.iloc[0]["case_id"] == "a"
     assert Path(cases.iloc[0]["image_path"]) == image

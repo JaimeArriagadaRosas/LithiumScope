@@ -8,15 +8,15 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import joblib
 import numpy as np
 import pandas as pd
 
 from lithiumscope.core.hashing import file_sha256
+from lithiumscope.persistence.model_deserialization import load_model_artifact
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.model_1.prediction.predictor import predict_model_1_frame
 from lithiumscope.model_2.prediction.predictor import score_model_2_image
-from lithiumscope.prediction.demo import (
+from lithiumscope.prediction.demonstration.cases import (
     audit_demo_overlap,
     demonstration_imagery_cache,
     load_demonstration_cases,
@@ -33,7 +33,8 @@ def integrate(*, output: Path = OUT) -> dict:
     cases = load_demonstration_cases()
     if len(cases) != 10 or cases.case_id.duplicated().any():
         raise ValueError("Expected ten distinct pre-existing demonstration cases")
-    m1, m2 = joblib.load(M1), joblib.load(M2)
+    m1 = load_model_artifact(M1, model_group="model_1")
+    m2 = load_model_artifact(M2, model_group="model_2")
     if m1["algorithm"] != "svm" or m2["algorithm"] != "catboost":
         raise ValueError("Unexpected M1/M2 model identities")
     if len(m2["features"]) != 126:
