@@ -53,12 +53,12 @@
     ],
     "M1-12": [
       "tests/scientific/shared/test_optuna_contract.py",
-      "tests/training/test_optuna_resume_helpers.py",
+      "tests/unit/algorithms/test_optuna_resume_helpers.py",
       "tests/scientific/experiments/test_paired_experiment_design.py"
     ],
     "M1-13": [
       "tests/model_1/test_spatial_tabnet.py",
-      "tests/model_1/test_tabnet_adapter.py"
+      "tests/unit/algorithms/test_tabnet_adapter.py"
     ],
     "M1-14": [
       "tests/model_1/test_high_lithium_diagnostics.py",
@@ -92,8 +92,8 @@
       "tests/model_1/diagnostics/test_conflict_review.py"
     ],
     "M1-20": [
-      "tests/model_1/test_statistical_baselines.py",
-      "tests/training/test_baselines.py"
+      "tests/unit/algorithms/test_statistical_baselines.py",
+      "tests/unit/algorithms/test_baselines.py"
     ],
     "M1-21": [
       "tests/model_1/test_model_1_scientific_guards.py",
@@ -102,7 +102,7 @@
     ],
     "M1-22": [
       "tests/runtime/test_candidate_evidence.py",
-      "tests/model_1/test_statistical_baselines.py",
+      "tests/unit/algorithms/test_statistical_baselines.py",
       "tests/prediction/test_demo_promotion_guard.py",
       "tests/model_1/diagnostics/test_development_gate.py"
     ],
@@ -143,7 +143,7 @@
     "M2-03": [
       "tests/model_2/test_scientific_training_protocol.py",
       "tests/scientific/shared/test_spatial_audit_contract.py",
-      "tests/model_2/test_texture_geographic_reference.py"
+      "tests/unit/algorithms/test_texture_geographic_reference.py"
     ],
     "M2-04": [
       "tests/datasets/integration/test_sentinel2_provider.py",
@@ -168,27 +168,27 @@
       "tests/prediction/test_spectral_inference_contract.py"
     ],
     "M2-08": [
-      "tests/model_2/test_physical_v5.py",
+      "tests/unit/algorithms/test_physical_v5.py",
       "tests/prediction/test_spectral_inference_contract.py",
       "tests/experiments/test_paired_suite.py"
     ],
     "M2-09": [
-      "tests/model_2/test_model_2_spectral_features.py",
+      "tests/unit/algorithms/test_model_2_spectral_features.py",
       "tests/scientific/m2_spectral/test_m2_rededge_v4.py",
-      "tests/model_2/test_physical_v5.py"
+      "tests/unit/algorithms/test_physical_v5.py"
     ],
     "M2-10": [
-      "tests/model_2/test_physical_v5.py",
-      "tests/model_2/test_model_2_spectral_features.py"
+      "tests/unit/algorithms/test_physical_v5.py",
+      "tests/unit/algorithms/test_model_2_spectral_features.py"
     ],
     "M2-11": [
-      "tests/model_2/test_physical_v5.py",
-      "tests/model_2/test_model_2_spectral_features.py",
-      "tests/model_2/test_texture_geographic_reference.py"
+      "tests/unit/algorithms/test_physical_v5.py",
+      "tests/unit/algorithms/test_model_2_spectral_features.py",
+      "tests/unit/algorithms/test_texture_geographic_reference.py"
     ],
     "M2-12": [
-      "tests/model_2/test_physical_v5.py",
-      "tests/model_2/test_model_2_spectral_features.py"
+      "tests/unit/algorithms/test_physical_v5.py",
+      "tests/unit/algorithms/test_model_2_spectral_features.py"
     ],
     "M2-13": [
       "tests/model_2/test_verified_feature_cache.py",
@@ -208,9 +208,9 @@
       "tests/scientific/shared/test_nested_protocol.py"
     ],
     "M2-17": [
-      "tests/training/test_baselines.py",
+      "tests/unit/algorithms/test_baselines.py",
       "tests/model_2/test_scientific_training_protocol.py",
-      "tests/model_2/test_texture_geographic_reference.py"
+      "tests/unit/algorithms/test_texture_geographic_reference.py"
     ],
     "M2-18": [
       "tests/scientific/m2_training/test_m2_full_competition_quality.py",
@@ -224,7 +224,7 @@
       "tests/scientific/experiments/test_paired_experiment_design.py"
     ],
     "M2-20": [
-      "tests/model_2/test_model_2_svm.py",
+      "tests/unit/algorithms/test_model_2_svm.py",
       "tests/model_2/test_train_only_operating_policy.py",
       "tests/scientific/shared/test_nested_protocol.py",
       "tests/scientific/experiments/test_paired_experiment_design.py"
@@ -337,7 +337,7 @@
       "tests/scientific/shared/test_optuna_contract.py"
     ],
     "ARQ-014": [
-      "tests/model_1/test_statistical_baselines.py",
+      "tests/unit/algorithms/test_statistical_baselines.py",
       "tests/runtime/test_candidate_evidence.py",
       "tests/model_1/test_high_lithium_diagnostics.py",
       "tests/model_1/diagnostics/test_development_gate.py"
@@ -402,8 +402,8 @@
       "tests/model_2/test_checkpoint_contract.py"
     ],
     "ARQ-025": [
-      "tests/model_2/test_physical_v5.py",
-      "tests/model_2/test_model_2_spectral_features.py"
+      "tests/unit/algorithms/test_physical_v5.py",
+      "tests/unit/algorithms/test_model_2_spectral_features.py"
     ],
     "ARQ-026": [
       "tests/model_2/test_verified_feature_cache.py",
@@ -429,7 +429,7 @@
       "tests/model_2/test_preprocessing_contracts.py"
     ],
     "ARQ-031": [
-      "tests/model_2/test_model_2_svm.py",
+      "tests/unit/algorithms/test_model_2_svm.py",
       "tests/model_2/test_train_only_operating_policy.py",
       "tests/scientific/shared/test_nested_protocol.py",
       "tests/scientific/experiments/test_paired_experiment_design.py"
@@ -460,7 +460,7 @@
       "tests/scientific/m2_spectral/test_m2_vnext_expansion.py",
       "tests/scientific/experiments/test_paired_experiment_design.py",
       "tests/experiments/test_paired_suite.py",
-      "tests/model_2/test_texture_geographic_reference.py"
+      "tests/unit/algorithms/test_texture_geographic_reference.py"
     ],
     "ARQ-037": [
       "tests/prediction/test_spectral_inference_contract.py",
@@ -668,7 +668,7 @@
       "tests/scientific/shared/test_optuna_contract.py"
     ],
     "ARQ-076": [
-      "tests/model_2/test_model_2_svm.py",
+      "tests/unit/algorithms/test_model_2_svm.py",
       "tests/model_1/test_model_1_target_transform.py"
     ],
     "ARQ-077": [
