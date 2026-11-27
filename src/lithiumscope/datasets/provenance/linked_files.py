@@ -1,5 +1,6 @@
 """Ordered content digests for files linked from a dataset manifest."""
 from pathlib import Path
+from typing import Any
 import pandas as pd
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.reproducibility import canonical_json_hash

@@ -5,21 +5,17 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from lithiumscope.datasets.management.frozen_m2 import require_frozen_manifest
+from lithiumscope.datasets.management.sources.model_2.frozen import require_frozen_manifest
 from lithiumscope.datasets.provenance.manifest import build_tabular_manifest
 
 
-@pytest.mark.parametrize(("old", "new"), [
-    ("datasets.registry", "datasets.management.registry"),
-    ("datasets.status", "datasets.management.status"),
-    ("datasets.local_sources", "datasets.management.local_sources"),
-    ("datasets.model_1_sources", "datasets.management.model_1_sources"),
-    ("datasets.provisioner", "runtime.dataset_provisioning"),
-    ("datasets.manifest", "datasets.provenance.manifest"),
-    ("datasets.validator", "datasets.validation.files"),
+@pytest.mark.parametrize("name", [
+    "datasets.management.registry", "datasets.management.status",
+    "datasets.management.sources.local", "datasets.management.sources.model_1.source",
+    "runtime.dataset_provisioning", "datasets.provenance.manifest", "datasets.validation.files",
 ])
-def test_compatibility_identity(old, new):
-    assert import_module(f"lithiumscope.{old}") is import_module(f"lithiumscope.{new}")
+def test_canonical_management_imports(name):
+    assert import_module(f"lithiumscope.{name}")
 
 
 def test_datasets_have_no_direct_model_imports():

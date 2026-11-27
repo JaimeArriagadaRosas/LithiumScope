@@ -7,16 +7,12 @@ import pytest
 
 @pytest.mark.parametrize("old,new", [
   [
-    "lithiumscope.datasets.harmonization_deduplication",
-    "lithiumscope.datasets.harmonization.deduplication"
-  ],
-  [
     "lithiumscope.tools.georoc.processing.georoc_normalizer",
-    "lithiumscope.datasets.adapters.georoc_normalizer"
+    "lithiumscope.datasets.adapters.georoc.normalization"
   ],
   [
     "lithiumscope.tools.georoc.processing.georoc_material_filter",
-    "lithiumscope.datasets.adapters.georoc_material_filter"
+    "lithiumscope.datasets.adapters.georoc.material_filter"
   ],
   [
     "lithiumscope.tools.georoc.processing.georoc_raw_reader",
@@ -24,15 +20,15 @@ import pytest
   ],
   [
     "lithiumscope.tools.georoc.processing.georoc_schema_profile",
-    "lithiumscope.datasets.validation.georoc_schema_profile"
+    "lithiumscope.datasets.validation.georoc.schema_profile"
   ],
   [
     "lithiumscope.tools.georoc.processing.georoc_dataset_health",
-    "lithiumscope.datasets.validation.georoc_dataset_health"
+    "lithiumscope.datasets.validation.georoc.dataset_health"
   ],
   [
     "lithiumscope.tools.georoc.processing.georoc_postprocess",
-    "lithiumscope.datasets.adapters.georoc_postprocess"
+    "lithiumscope.datasets.adapters.georoc.postprocessing"
   ],
   [
     "lithiumscope.tools.georoc.processing.georoc_download_finalize",
@@ -56,7 +52,7 @@ def test_harmonization_public_api():
 
 
 def test_shared_name_normalization():
-    from lithiumscope.datasets.adapters.georoc_names import norm
+    from lithiumscope.datasets.adapters.georoc.names import norm
     from lithiumscope.tools.georoc.query.georoc_query_html import norm as legacy
 
     assert legacy is norm
