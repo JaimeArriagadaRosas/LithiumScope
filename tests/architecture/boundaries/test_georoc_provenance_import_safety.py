@@ -22,7 +22,7 @@ def test_generated_final_report_stays_in_experiment_results():
 
 def test_acquisition_packages_retired():
     from pathlib import Path
-    root = Path(__file__).resolve().parents[2] / "src/lithiumscope/experiments"
+    root = next(parent for parent in Path(__file__).resolve().parents if (parent / "pyproject.toml").is_file()) / "src/lithiumscope/experiments"
     assert not list((root / "acquisition").rglob("*.py"))
     assert not list((root / "georoc").rglob("*.py"))
 

@@ -304,13 +304,13 @@
     "ARQ-007": [
       "tests/architecture/structure/test_architecture.py",
       "tests/model_1/test_model_1_scientific_guards.py",
-      "tests/model_1/diagnostics/test_methodology_relocation.py"
+      "tests/architecture/boundaries/test_methodology_relocation.py"
     ],
     "ARQ-008": [
       "tests/architecture/structure/test_acquisition_architecture.py",
       "tests/datasets/integration/test_georoc_acquisition.py",
       "tests/datasets/management/test_frozen_model_1_input.py",
-      "tests/core/test_acquisition_provider_relocation.py"
+      "tests/architecture/boundaries/test_acquisition_provider_relocation.py"
     ],
     "ARQ-009": [
       "tests/model_1/test_censoring_contract.py",
@@ -346,7 +346,7 @@
       "tests/scientific/experiments/test_learning_curves.py",
       "tests/model_1/test_physical_robustness.py",
       "tests/scientific/experiments/test_curve_suite.py",
-      "tests/core/test_diagnostic_module_relocation.py"
+      "tests/architecture/boundaries/test_diagnostic_module_relocation.py"
     ],
     "ARQ-016": [
       "tests/scientific/m1/test_vnext_m1.py",
@@ -355,7 +355,7 @@
       "tests/scientific/experiments/test_paired_experiment_design.py",
       "tests/experiments/test_paired_suite.py",
       "tests/model_1/diagnostics/test_domain_group_intervals.py",
-      "tests/model_1/diagnostics/test_methodology_relocation.py"
+      "tests/architecture/boundaries/test_methodology_relocation.py"
     ],
     "ARQ-017": [
       "tests/prediction/test_m1_input_provenance.py",
@@ -452,7 +452,7 @@
       "tests/scientific/experiments/test_learning_curves.py",
       "tests/scientific/m2_spectral/test_m2_spectral_overfit.py",
       "tests/scientific/experiments/test_curve_suite.py",
-      "tests/core/test_diagnostic_module_relocation.py"
+      "tests/architecture/boundaries/test_diagnostic_module_relocation.py"
     ],
     "ARQ-036": [
       "tests/scientific/m2_training/test_m2_historical_706_control.py",
@@ -488,9 +488,9 @@
       "tests/core/test_historical_parity_preflight.py"
     ],
     "ARQ-042": [
-      "tests/reporting/test_prediction_pdf_contract.py",
+      "tests/architecture/boundaries/test_prediction_pdf_contract.py",
       "tests/prediction/test_integrated_prediction_analysis.py",
-      "tests/reporting/test_rendering_boundary.py",
+      "tests/architecture/boundaries/test_rendering_boundary.py",
       "tests/reporting/test_precomputed_report_inputs.py"
     ],
     "ARQ-043": [
@@ -505,8 +505,8 @@
     "ARQ-045": [
       "tests/architecture/structure/test_architecture.py",
       "tests/prediction/test_integrated_prediction_analysis.py",
-      "tests/core/test_dependency_audit.py",
-      "tests/release/test_evaluation_relocation.py",
+      "tests/architecture/boundaries/test_dependency_audit.py",
+      "tests/architecture/boundaries/test_evaluation_relocation.py",
       "tests/architecture/structure/test_canonical_prediction_architecture.py"
     ],
     "ARQ-046": [
@@ -523,7 +523,7 @@
       "tests/prediction/test_candidate_evaluation_gates.py",
       "tests/prediction/test_demo_promotion_guard.py",
       "tests/architecture/structure/test_canonical_prediction_architecture.py",
-      "tests/release/test_evaluation_relocation.py"
+      "tests/architecture/boundaries/test_evaluation_relocation.py"
     ],
     "ARQ-049": [
       "tests/prediction/test_prediction_release_demo.py",
@@ -539,44 +539,44 @@
     ],
     "ARQ-052": [
       "tests/architecture/structure/test_architecture.py",
-      "tests/core/test_dependency_audit.py"
+      "tests/architecture/boundaries/test_dependency_audit.py"
     ],
     "ARQ-053": [
       "tests/architecture/structure/test_management_provenance_architecture.py",
       "tests/architecture/structure/test_acquisition_architecture.py",
-      "tests/scientific/shared/test_dataset_module_relocation.py"
+      "tests/architecture/boundaries/test_dataset_module_relocation.py"
     ],
     "ARQ-054": [
       "tests/architecture/structure/test_management_provenance_architecture.py",
       "tests/datasets/harmonization/test_dataset_harmonization.py",
       "tests/datasets/harmonization/test_harmonization_conflicts.py",
-      "tests/scientific/shared/test_dataset_module_relocation.py"
+      "tests/architecture/boundaries/test_dataset_module_relocation.py"
     ],
     "ARQ-055": [
       "tests/architecture/structure/test_acquisition_architecture.py",
       "tests/scientific/shared/test_scientific_acquisition.py",
-      "tests/core/test_acquisition_provider_relocation.py"
+      "tests/architecture/boundaries/test_acquisition_provider_relocation.py"
     ],
     "ARQ-056": [
       "tests/datasets/adapters/test_georoc_ingestion.py",
       "tests/architecture/structure/test_acquisition_architecture.py",
-      "tests/scientific/shared/test_dataset_module_relocation.py"
+      "tests/architecture/boundaries/test_dataset_module_relocation.py"
     ],
     "ARQ-057": [
       "tests/architecture/structure/test_management_provenance_architecture.py",
       "tests/model_2/test_model_2_sample_source.py"
     ],
     "ARQ-058": [
-      "tests/datasets/validation/test_historical_relocation.py",
+      "tests/architecture/boundaries/test_historical_relocation.py",
       "tests/architecture/structure/test_management_provenance_architecture.py",
       "tests/datasets/harmonization/test_harmonization_conflicts.py",
-      "tests/scientific/shared/test_dataset_module_relocation.py"
+      "tests/architecture/boundaries/test_dataset_module_relocation.py"
     ],
     "ARQ-059": [
       "tests/scientific/shared/test_scientific_scenarios.py",
       "tests/scientific/experiments/test_compare_vnext_trained_runs.py",
       "tests/architecture/structure/test_experiment_architecture.py",
-      "tests/experiments/test_historical_entrypoint_isolation.py"
+      "tests/architecture/boundaries/test_historical_entrypoint_isolation.py"
     ],
     "ARQ-060": [
       "tests/scientific/shared/test_scientific_scenarios.py",
@@ -587,16 +587,16 @@
       "tests/scientific/shared/test_scientific_scenarios.py",
       "tests/architecture/structure/test_architecture.py",
       "tests/architecture/structure/test_experiment_architecture.py",
-      "tests/experiments/test_historical_entrypoint_isolation.py",
+      "tests/architecture/boundaries/test_historical_entrypoint_isolation.py",
       "tests/experiments/test_dataverse_historical_contract.py",
-      "tests/experiments/test_validation_import_safety.py",
-      "tests/experiments/test_georoc_provenance_import_safety.py",
-      "tests/experiments/test_historical_report_import_safety.py"
+      "tests/architecture/boundaries/test_validation_import_safety.py",
+      "tests/architecture/boundaries/test_georoc_provenance_import_safety.py",
+      "tests/architecture/boundaries/test_historical_report_import_safety.py"
     ],
     "ARQ-062": [
       "tests/scientific/shared/test_scientific_acquisition.py",
       "tests/scientific/shared/test_scientific_http_tiles.py",
-      "tests/core/test_acquisition_provider_relocation.py"
+      "tests/architecture/boundaries/test_acquisition_provider_relocation.py"
     ],
     "ARQ-063": [
       "tests/scientific/provenance/test_georoc_qc_protocols.py",
@@ -619,19 +619,19 @@
     "ARQ-066": [
       "tests/architecture/structure/test_canonical_execution_packages.py",
       "tests/architecture/structure/test_architecture.py",
-      "tests/core/test_dependency_audit.py",
+      "tests/architecture/boundaries/test_dependency_audit.py",
       "tests/core/test_shared_metrics_contract.py",
       "tests/regression/test_spawn_and_scientific_identity.py"
     ],
     "ARQ-067": [
       "tests/architecture/structure/test_canonical_execution_packages.py",
       "tests/scientific/shared/test_scientific_fingerprint.py",
-      "tests/core/test_diagnostic_module_relocation.py"
+      "tests/architecture/boundaries/test_diagnostic_module_relocation.py"
     ],
     "ARQ-068": [
       "tests/architecture/structure/test_architecture.py",
       "tests/core/test_visualization_backend.py",
-      "tests/core/test_diagnostic_module_relocation.py"
+      "tests/architecture/boundaries/test_diagnostic_module_relocation.py"
     ],
     "ARQ-069": [
       "tests/architecture/structure/test_canonical_execution_packages.py",
@@ -653,9 +653,9 @@
     "ARQ-073": [
       "tests/architecture/structure/test_canonical_execution_packages.py",
       "tests/architecture/structure/test_architecture.py",
-      "tests/core/test_dependency_audit.py",
+      "tests/architecture/boundaries/test_dependency_audit.py",
       "tests/regression/test_spawn_and_scientific_identity.py",
-      "tests/experiments/test_historical_report_import_safety.py",
+      "tests/architecture/boundaries/test_historical_report_import_safety.py",
       "tests/architecture/structure/test_scientific_script_layout.py",
       "tests/core/test_historical_parity_preflight.py"
     ],
@@ -758,7 +758,7 @@
     "ARQ-095": [
       "tests/architecture/structure/test_architecture.py",
       "tests/architecture/structure/test_canonical_execution_packages.py",
-      "tests/core/test_dependency_audit.py",
+      "tests/architecture/boundaries/test_dependency_audit.py",
       "tests/regression/test_spawn_and_scientific_identity.py",
       "tests/architecture/structure/test_scientific_script_layout.py"
     ],
@@ -820,7 +820,7 @@
     ],
     "ARQ-107": [
       "tests/development/test_validation.py",
-      "tests/datasets/validation/test_historical_relocation.py",
+      "tests/architecture/boundaries/test_historical_relocation.py",
       "tests/development/test_protected_artifacts.py"
     ],
     "ARQ-108": [

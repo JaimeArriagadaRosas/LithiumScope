@@ -18,6 +18,6 @@ def test_evaluation_canonical_owner(name):
 
 
 def test_no_candidate_compatibility_sources():
-    root = Path(__file__).resolve().parents[2] / "src/lithiumscope/prediction"
+    root = next(parent for parent in Path(__file__).resolve().parents if (parent / "pyproject.toml").is_file()) / "src/lithiumscope/prediction"
     assert not list((root / "candidates").rglob("*.py"))
     assert not (root / "candidate_evaluation.py").is_file()

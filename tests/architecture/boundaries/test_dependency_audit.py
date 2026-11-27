@@ -94,7 +94,7 @@ def test_retired_from_import_and_script_reference_detected(tmp_path):
 
 def test_repository_refactor_has_no_import_boundary_blockers():
     from pathlib import Path
-    report = audit_imports(Path(__file__).resolve().parents[2])
+    report = audit_imports(next(parent for parent in Path(__file__).resolve().parents if (parent / "pyproject.toml").is_file()))
     for key in ("syntax_errors", "eager_cycles", "cross_model_edges",
                 "core_to_model_edges", "reporting_to_science_edges",
                 "unresolved_local_imports", "retired_external_references"):

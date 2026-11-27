@@ -3,7 +3,7 @@ import ast
 
 
 def test_integrated_prediction_uses_pdf_not_html():
-    root = Path(__file__).resolve().parents[2] / "src/lithiumscope"
+    root = next(parent for parent in Path(__file__).resolve().parents if (parent / "pyproject.toml").is_file()) / "src/lithiumscope"
     integrated = (root / "prediction/execution/integrated.py").read_text(encoding="utf-8")
     output = (root / "prediction/execution/outputs.py").read_text(encoding="utf-8")
     assert "prediction.execution.outputs import _write_outputs" in integrated
@@ -14,7 +14,7 @@ def test_integrated_prediction_uses_pdf_not_html():
 
 
 def test_report_service_does_not_import_reportlab_eagerly():
-    root = Path(__file__).resolve().parents[2] / "src/lithiumscope/reporting"
+    root = next(parent for parent in Path(__file__).resolve().parents if (parent / "pyproject.toml").is_file()) / "src/lithiumscope/reporting"
     tree = ast.parse((root / "service.py").read_bytes())
     for node in tree.body:
         if isinstance(node, ast.ImportFrom):

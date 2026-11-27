@@ -41,14 +41,14 @@ def test_previews_use_explicit_band_order(tmp_path, monkeypatch):
 
 
 def test_renderer_does_not_import_raw_patch_extractors():
-    source = Path(__file__).resolve().parents[2] / "src/lithiumscope/reporting/sections/decision.py"
+    source = next(parent for parent in Path(__file__).resolve().parents if (parent / "pyproject.toml").is_file()) / "src/lithiumscope/reporting/sections/decision.py"
     assert "load_imagery" not in source.read_text()
     assert "_rgb_preview" not in source.read_text()
 
 
 def test_reporting_has_no_imports_of_model_prediction_or_experiment_layers():
     from lithiumscope.tools.inspection.dependencies import audit_imports
-    root=Path(__file__).resolve().parents[2]
+    root=next(parent for parent in Path(__file__).resolve().parents if (parent / "pyproject.toml").is_file())
     audit=audit_imports(root)
     assert audit["reporting_to_science_edges"]==[]
 
