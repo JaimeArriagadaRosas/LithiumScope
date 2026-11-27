@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
+import json
+from lithiumscope.datasets.management.snapshots import dataset_implementation_revision
 
 
 from lithiumscope.core.config import load_config
@@ -69,6 +71,23 @@ def _project_path(raw: str) -> Path:
     return project_path(raw, PROJECT_ROOT)
 
 
+def _source_identity(base_dataset, georoc_files, options):
+    return {"base_sha256": file_sha256(base_dataset),
+            "sources": {str(path.name): file_sha256(path) for path in georoc_files},
+            "options": json.loads(json.dumps(options)),
+            "revision": dataset_implementation_revision("m1-source-v1")}
+
+
+def _reusable_merge(path, harmonized, audit_path, identity):
+    try:
+        audit = json.loads(audit_path.read_text(encoding="utf-8"))
+        return (audit.get("cache_identity") == identity and path.is_file() and
+                harmonized.is_file() and file_sha256(path) == audit["combined_sha256"] and
+                file_sha256(harmonized) == audit["harmonized_sha256"])
+    except (OSError, ValueError, KeyError, TypeError):
+        return False
+
+
 def prepare_model_1_training_source(
     base_dataset: Path,
     *,
@@ -131,27 +150,29 @@ def prepare_model_1_training_source(
         )
     )
 
-    ingestion = ingest_georoc_files(
-        georoc_files,
-        harmonized_path,
-        chunksize=int(
-            georoc.get("chunksize", 100_000)
-        ),
-        allowed_material_types=tuple(
-            str(value)
-            for value in georoc.get(
-                "allowed_material_types",
-                ["WHOLE ROCK"],
-            )
-        ),
-        minimum_predictors=int(
-            georoc.get("minimum_predictors", 8)
-        ),
-        iron_total_mode=str(georoc.get("iron_total_mode", "original")),
-    )
-
+    options = {
+        "chunksize": int(georoc.get("chunksize", 100_000)),
+        "allowed_material_types": tuple(str(value) for value in georoc.get("allowed_material_types", ["WHOLE ROCK"])),
+        "minimum_predictors": int(georoc.get("minimum_predictors", 8)),
+        "iron_total_mode": str(georoc.get("iron_total_mode", "original")),
+    }
+    if len({path.name for path in georoc_files}) != len(georoc_files):
+        raise ValueError("Duplicate GEOROC source filenames")
+    input_paths = {Path(path).resolve() for path in [base_dataset, *georoc_files]}
+    output_paths = {path.resolve() for path in (harmonized_path, merge_path, audit_path)}
+    if len(output_paths) != 3 or input_paths & output_paths:
+        raise ValueError("M1 source and output paths must be distinct")
+    identity = _source_identity(base_dataset, georoc_files, options)
+    if _reusable_merge(merge_path, harmonized_path, audit_path, identity):
+        logger.info("Reusing verified unfrozen M1 source: %s", merge_path)
+        return merge_path
+    logger.info("M1 source cache miss: %s; sources=%d", merge_path, len(georoc_files))
+    ingestion = ingest_georoc_files(georoc_files, harmonized_path, **options)
+    if _source_identity(base_dataset, georoc_files, options) != identity:
+        raise ValueError("M1 source or transformation changed during ingestion")
     merged, merge_audit = assemble_sources(base_dataset, ingestion, merge_path, audit_path, georoc,
-                                           load_data=load_data, merge_harmonized_sources=merge_harmonized_sources)
+                                           load_data=load_data, merge_harmonized_sources=merge_harmonized_sources,
+                                           cache_identity=identity)
 
     logger.info(
         "Model 1 multi-source dataset ready: %s rows=%d "

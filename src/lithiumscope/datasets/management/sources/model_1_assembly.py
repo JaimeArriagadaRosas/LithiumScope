@@ -12,7 +12,7 @@ def _source_name(frame: pd.DataFrame, fallback: str) -> pd.DataFrame:
     return result
 
 
-def assemble_sources(base_dataset, ingestion, merge_path, audit_path, georoc, *, load_data, merge_harmonized_sources):
+def assemble_sources(base_dataset, ingestion, merge_path, audit_path, georoc, *, load_data, merge_harmonized_sources, cache_identity=None):
     base_digest = file_sha256(base_dataset)
     external_digest = file_sha256(ingestion.path)
     base = _source_name(
@@ -38,6 +38,7 @@ def assemble_sources(base_dataset, ingestion, merge_path, audit_path, georoc, *,
     if len({p.resolve() for p in (base_dataset, ingestion.path, merge_path, audit_path)}) != 4:
         raise ValueError("Source and assembly output paths must be distinct")
     audit = {
+        "cache_identity": cache_identity,
         "base_dataset": str(base_dataset),
         "base_sha256": base_digest,
         "harmonized_sha256": external_digest,
