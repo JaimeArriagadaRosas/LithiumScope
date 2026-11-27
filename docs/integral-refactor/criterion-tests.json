@@ -573,18 +573,18 @@
       "tests/architecture/boundaries/test_dataset_module_relocation.py"
     ],
     "ARQ-059": [
-      "tests/scientific/shared/test_scientific_scenarios.py",
+      "tests/scientific/experiments/test_scientific_scenarios.py",
       "tests/scientific/experiments/test_compare_vnext_trained_runs.py",
       "tests/architecture/structure/test_experiment_architecture.py",
       "tests/architecture/boundaries/test_historical_entrypoint_isolation.py"
     ],
     "ARQ-060": [
-      "tests/scientific/shared/test_scientific_scenarios.py",
+      "tests/scientific/experiments/test_scientific_scenarios.py",
       "tests/scientific/experiments/test_vnext_m1.py",
       "tests/scientific/experiments/test_curve_suite.py"
     ],
     "ARQ-061": [
-      "tests/scientific/shared/test_scientific_scenarios.py",
+      "tests/scientific/experiments/test_scientific_scenarios.py",
       "tests/architecture/structure/test_architecture.py",
       "tests/architecture/structure/test_experiment_architecture.py",
       "tests/architecture/boundaries/test_historical_entrypoint_isolation.py",
