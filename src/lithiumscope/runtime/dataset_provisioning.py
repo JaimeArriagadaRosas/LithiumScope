@@ -9,7 +9,6 @@ from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.paths import DATA_DIR, PROJECT_ROOT
 from lithiumscope.core.states import DatasetState
 from lithiumscope.tools.acquisition.tabular import ensure_dataset
-from lithiumscope.datasets.management.registry import get_dataset_spec
 from lithiumscope.datasets.management.status import DatasetStatus
 from lithiumscope.datasets.management.sources.model_1 import (
     prepare_model_1_training_source,
@@ -42,55 +41,21 @@ def _project_path(raw: str) -> Path:
 
 
 def inspect_required_datasets() -> list[DatasetStatus]:
-    """Inspect only local dataset state. This function never downloads data."""
-    model_1_spec = get_dataset_spec("mamani09_public_mirror")
-    model_1_path = (
-        DATA_DIR
-        / "raw"
-        / model_1_spec.model
-        / model_1_spec.destination_name
-    )
-    model_1_ready = (
-        model_1_path.exists()
-        and model_1_path.is_file()
-        and model_1_path.stat().st_size > 0
-    )
-
-    model_2_cfg = load_config("model_2")
-    manifest_path = _project_path(
-        str(model_2_cfg["training"]["manifest_path"])
-    )
-    model_2_ready = (
-        manifest_path.exists()
-        and manifest_path.is_file()
-        and manifest_path.stat().st_size > 0
-    )
-
-    return [
-        DatasetStatus(
-            key="model_1_geochemistry",
-            ready=model_1_ready,
-            path=str(model_1_path) if model_1_ready else None,
-            detail=(
-                "Dataset geoquímico local disponible."
-                if model_1_ready
-                else "No preparado todavía; se descargará al iniciar entrenamiento."
-            ),
-            state=DatasetState.READY if model_1_ready else DatasetState.MISSING,
-        ),
-        DatasetStatus(
-            key="model_2_sentinel2",
-            ready=model_2_ready,
-            path=str(manifest_path) if model_2_ready else None,
-            detail=(
-                "Manifest espacial local disponible."
-                if model_2_ready
-                else "No preparado todavía; se construirá al iniciar entrenamiento."
-            ),
-            state=DatasetState.READY if model_2_ready else DatasetState.MISSING,
-        ),
-    ]
-
+    """Resolve the configured cohort without downloading or reconstructing it."""
+    from lithiumscope.datasets.management.sources.local import local_training_source
+    statuses = []
+    for model, key in (("model_1", "model_1_geochemistry"), ("model_2", "model_2_sentinel2")):
+        try:
+            path = local_training_source(model, config=load_config(model), root=PROJECT_ROOT, data_dir=DATA_DIR)
+            statuses.append(DatasetStatus(key, True, str(path), "Fuente configurada verificada.",
+                                          DatasetState.READY))
+        except FileNotFoundError as exc:
+            statuses.append(DatasetStatus(key, False, None, str(exc), DatasetState.MISSING))
+        except (ValueError, RuntimeError) as exc:
+            statuses.append(DatasetStatus(key, False, None, str(exc), DatasetState.CORRUPTED))
+        except (OSError, KeyError) as exc:
+            statuses.append(DatasetStatus(key, False, None, str(exc), DatasetState.FAILED))
+    return statuses
 
 def provision_required_datasets(
     prepare_model_2: bool = True,
@@ -244,7 +209,8 @@ def require_model_2_expanded_manifest() -> Path:
     path = ensure_expanded_m2_manifest()
     if path is None:
         raise RuntimeError("M2 expansion not ready; nothing will be trained")
-    return path
+    from lithiumscope.datasets.management.sources.model_2 import require_expanded_manifest
+    return require_expanded_manifest(config["training"], PROJECT_ROOT)
 
 
 def require_model_2_dataset(
@@ -252,6 +218,8 @@ def require_model_2_dataset(
     include_georoc: bool | None = None,
 ) -> Path:
     training = load_config("model_2")["training"]
+    if training.get("expansion", {}).get("enabled"):
+        return require_model_2_expanded_manifest()
     if training.get("frozen_manifest_sha256"):
         return require_frozen_model_2_manifest()
     statuses = _status_map(

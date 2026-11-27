@@ -32,7 +32,10 @@ def _eda_source(model_group):
         print(f"{model_group}: faltan datos locales. Las cohortes congeladas no se reconstruyen.")
         if choose("¿Autorizar adquisición de fuentes configuradas? [s/n]: ", {"s","n"}) != "s":
             raise
-        return prepare_diagnostic_source(model_group,acquire=True)
+        from lithiumscope.runtime.dataset_provisioning import require_model_1_dataset, require_model_2_dataset
+        def acquire_source(group):
+            return (require_model_1_dataset if group == "model_1" else require_model_2_dataset)()
+        return prepare_diagnostic_source(model_group, acquire=True, acquire_source=acquire_source)
 
 
 def _eda_menu() -> bool | None:
