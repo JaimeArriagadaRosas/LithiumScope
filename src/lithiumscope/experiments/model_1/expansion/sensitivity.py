@@ -12,7 +12,7 @@ import pandas as pd
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import RESULTS_DIR
 from lithiumscope.core.scientific.regression_metrics import regression_metrics
-from lithiumscope.datasets.management.local_sources import local_training_source
+from lithiumscope.datasets.management.sources.local import local_training_source
 from lithiumscope.experiments.model_1.balanced.selection import balanced_positions
 from lithiumscope.experiments.data_lab.candidate_audit import REFERENCE as HISTORICAL_REFERENCE, FOLD_SHA256
 from lithiumscope.experiments.model_1.expansion.sensitivity_data import load_evidence, historical_tokens, reserve, fold_pools

@@ -11,8 +11,8 @@ import pandas as pd
 
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import RESULTS_DIR
-from lithiumscope.datasets.management.local_sources import local_training_source
-from lithiumscope.datasets.validation.analytical import parse_analytical_value
+from lithiumscope.datasets.management.sources.local import local_training_source
+from lithiumscope.datasets.validation.chemistry.analytical import parse_analytical_value
 from lithiumscope.experiments.data_lab.candidate_screening import CHEM, sample, num, group
 from lithiumscope.experiments.model_1.balanced.academic import cohort
 from lithiumscope.experiments.model_1.expansion.raw_recovery import EXPANSION, EXPANSION_SHA
