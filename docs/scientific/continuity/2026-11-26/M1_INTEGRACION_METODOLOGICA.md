@@ -136,3 +136,104 @@ formato legado reordenado, formato moderno con campos redundantes, rechazo
 de IDs/verdad/manifiesto incorrectos. 124 pruebas esperadas. Mismo comando
 y presupuesto 80 bases +10 Ridge; pendiente ejecución local. Sin cambios
 metodológicos, ni nuevos datos, ni modelos productivos/M2.
+
+
+## 7. Integración ejecutada, verificada y no elegible
+
+Run 20261126T232226_c7612b4d, commit a2832985584d439a4492112ff1e15ea0a25475d4.
+124/124 pruebas focalizadas aprobadas en 8.69 s; 80 fits base +10 Ridge.
+ZIP Evidencias(10).zip SHA256 4a8226c17ddd0729c93d7f707f6c8a69f65ba21dd37623baf4db4400305e40bf.
+Manifest SHA256 0ec679dfe7c15a318869bbcdb65bbb5e148dfba089ade5d993da5649db9b5d72.
+CRC correcto, 6/6 hashes de salidas recalculados.
+33415 OOF de evaluación (5 políticas por protocolo, 3420 espaciales y 3263
+académicas), 26732 OOF de calibración y 40 trazas de pares base.
+50 métricas por fold y diez resúmenes recalculados. Identidades, verdad,
+fold, grupo, predicciones finitas, cobertura y disjunción por identidad
+de todos los TRAIN/TEST y subfolds; disjunción de grupos en protocolo
+espacial. Diez correctores Ridge reconstruidos a partir de los OOF de
+TRAIN exportados: reproducen las predicciones corregidas con tolerancia
+numérica. No se volvieron a ajustar los 80 modelos base. La paridad
+sin objetivo de 3420x33 está registrada en el manifiesto y el preflight
+local; no se inspeccionó el CSV histórico bruto en chat.
+
+Fuente y ambos manifiestos exteriores coinciden con los hashes congelados.
+OOF SVM SHA256 9573fdd444696be16439debb0cd9b7b2f955ee004fe8af74d5cff46f6a6842c3;
+RF SHA256 4496741fbaf28d710af22e9b2568d10e139768e515b9171853c42d950656b4c9.
+Sin mediciones recuperadas ni enlace asistido por objetivo en los nuevos
+modelos, sin filas nuevas, sin modificación de contrato de producción.
+
+| Académico | RMSE medio | R² medio | MAE global | RMSE cola >40 |
+|---|---:|---:|---:|---:|
+| HGB enriquecido (histórico descriptivo) | 7.074911 | .631231 | 3.892448 | 24.888575 |
+| Ridge enriquecido (histórico descriptivo) | 7.034486 | .635544 | 3.865885 | 24.844553 |
+| HGB canónico | 7.239729 | .611629 | 4.025531 | 25.398793 |
+| Ridge canónico | 7.185906 | .617830 | 3.993663 | 25.237865 |
+| XGB canónico | 7.265974 | .610501 | 4.036117 | 25.229835 |
+
+Ridge reduce RMSE medio ~.74% frente a HGB canónico, y pasa guardas
+académicas de comparación, pero no objetivo absoluto OASIS. Diferentes
+poblaciones y protocolo; no afirmar superioridad directa.
+
+| Espacial completo | RMSE medio | RMSE global | R² medio | R² global | MAE global | RMSE >40 | RMSE >696 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| SVM release OOF | 87.448705 | 159.846300 | .246772 | .042980 | 16.320391 | 635.179289 | 3067.144820 |
+| RF conservado OOF | 82.310168 | 152.302214 | .251477 | .131184 | 15.303595 | 604.981485 | 2932.717138 |
+| HGB canónico | 109.262477 | 150.269621 | -7.098508 | .154219 | 17.969185 | 549.250259 | 2568.500470 |
+| XGB canónico | 107.920694 | 151.691814 | -5.952006 | .138134 | 17.937807 | 563.709175 | 2659.647019 |
+| Ridge canónico | 118.718659 | 156.647097 | -8.117336 | .080905 | 19.742290 | 572.688238 | 2544.342308 |
+
+## 8. Diagnóstico del bloqueo espacial
+
+Todos los folds tienen 684 filas. HGB reduce error de los nueve casos
+>696, pero crea sobreestimaciones graves donde el valor real es bajo:
+row_id 1191, fold 1, g_143_221: real 9.2 ppm; HGB 3413.126085,
+XGB 3106.281006, Ridge 3557.789520, RF 25.908126, SVM 74.257802.
+Una sola fila representa ~98.5% del SSE HGB del fold 1.
+En fold 3 g_151_219 concentra 98.63% del SSE HGB y 99.00% del
+SSE Ridge. HGB: 91→1058.813, 77→908.041, 282→1066.164 ppm.
+No se elimina ninguna fila ni se asigna causa química sin datos brutos.
+
+Diagnóstico por bandas de Li real (solo para análisis, nunca para
+seleccionar rama de inferencia):
+| Banda | n | RMSE RF | RMSE HGB | RMSE Ridge | RMSE XGB |
+|---|---:|---:|---:|---:|---:|
+| <=40 | 3204 | 9.241475 | 61.364268 | 63.891483 | 56.027724 |
+| 40–126.12 | 135 | 51.330466 | 115.521252 | 163.998844 | 108.755187 |
+| 126.12–696 | 72 | 134.029041 | 235.278627 | 352.528638 | 216.591552 |
+| >696 | 9 | 2932.717138 | 2568.500470 | 2544.342308 | 2659.647019 |
+
+RMSE diagnóstico de las 3411 observaciones <=696: RF 23.742053,
+SVM 28.225520, HGB 72.344270, XGB 66.384827, Ridge 86.730120.
+Los nueve extremos representan 97.58% del SSE RF y 76.88% del SSE HGB.
+La mejora global HGB (-1.33% frente a RF) no implica robustez territorial:
+RMSE medio y MAE incumplen guardas. Ridge mejora académico pero empeora
+espacial. En particular, Ridge no es un detector de extrapolación.
+No recortar la evaluación espacial ni usar Li real como regla de predicción.
+
+## 9. Decisión y continuidad
+
+El experimento de fase 4 terminó correctamente, pero HGB y Ridge no son
+elegibles para revisión de candidato. No modificar los criterios ni
+declarar un nuevo modelo superior. Se conserva RF como candidato previo
+y SVM como release; no se cambia el estado de producción. Fase 5
+bloqueada por calidad de generalización, no por fallo técnico. Fases
+6 y 7 no iniciadas. 505 ajustes ejecutados en fases 2–4 (195 +120 +100 +90);
+no incluye cálculos analíticos. No hay CMD pendiente ni nuevo fit autorizado
+por este cierre. Última suite focalizada 124/124, no suite completa.
+
+Siguiente ruta recomendada: una revisión dirigida del soporte espacial
+de predicciones extremas, no otra búsqueda general ni adquisición de datos.
+Identificar si los modelos aprenden relaciones dependientes de pocos
+grupos ricos en Li y si existe un criterio inferible de aplicabilidad.
+Examinar los predictores canónicos y proximidad multivariada de los
+grupos problemáticos, sin utilizar sus etiquetas para entrenar su
+evaluación. Evaluar si una corrección o fallback hacia RF basado
+exclusivamente en predicciones/soporte TRAIN podría evitar falsas
+concentraciones elevadas conservando detección de altas. No utilizar
+IDs/grupos de los TEST como reglas de corrección. No confundir diagnóstico
+retrospectivo con selección interna o certificación independiente.
+Antes de un nuevo experimento, declarar presupuesto, hipótesis, guardas
+sin cambios y protocolo de validación. Si no hay solución viable, elevar
+decisión sobre reformulación de fase 5 (partir del RF conservado y no
+del nuevo HGB/Ridge). No iniciar fine-tuning ni entrenar/guardar un
+candidato definitivo sin resolver este bloqueo. M2 sigue congelado.
