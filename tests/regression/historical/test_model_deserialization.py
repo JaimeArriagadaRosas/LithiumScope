@@ -38,6 +38,6 @@ def test_canonical_bundle_preserves_schema_and_arrays(tmp_path, compression):
 
 
 def test_retired_source_modules_do_not_exist():
-    root = Path(__file__).resolve().parents[2] / "src/lithiumscope/model_1"
+    root = next(parent for parent in Path(__file__).resolve().parents if (parent / "pyproject.toml").is_file()) / "src/lithiumscope/model_1"
     assert not list((root / "steps").rglob("*.py"))
     assert not (root / "training/tabnet.py").exists()
