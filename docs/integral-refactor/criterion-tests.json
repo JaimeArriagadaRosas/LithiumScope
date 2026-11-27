@@ -161,7 +161,7 @@
       "tests/datasets/provenance/test_dataset_manifest.py",
       "tests/scientific/features/test_verified_feature_cache.py",
       "tests/architecture/structure/test_management_provenance_architecture.py",
-      "tests/model_2/test_checkpoint_contract.py"
+      "tests/regression/recovery/test_checkpoint_contract.py"
     ],
     "M2-07": [
       "tests/unit/inference/test_verified_patch_contract.py",
@@ -230,9 +230,9 @@
       "tests/scientific/experiments/test_paired_experiment_design.py"
     ],
     "M2-21": [
-      "tests/runtime/test_checkpoints.py",
+      "tests/regression/recovery/test_checkpoints.py",
       "tests/integration/training/test_m2_refactored_outer_cv_smoke.py",
-      "tests/regression/test_run_resume.py"
+      "tests/regression/recovery/test_run_resume.py"
     ],
     "M2-22": [
       "tests/unit/metrics/test_binary_metrics_contract.py"
@@ -271,7 +271,7 @@
       "tests/integration/reporting/test_spatial_maps.py"
     ],
     "M2-30": [
-      "tests/runtime/test_checkpoints.py",
+      "tests/regression/recovery/test_checkpoints.py",
       "tests/scientific/features/test_verified_feature_cache.py",
       "tests/datasets/provenance/test_dataset_manifest.py"
     ],
@@ -399,7 +399,7 @@
       "tests/scientific/data_quality/test_model_2_sample_source.py",
       "tests/scientific/features/test_m2_physical_label_audit.py",
       "tests/datasets/provenance/test_dataset_manifest.py",
-      "tests/model_2/test_checkpoint_contract.py"
+      "tests/regression/recovery/test_checkpoint_contract.py"
     ],
     "ARQ-025": [
       "tests/unit/algorithms/test_physical_v5.py",
@@ -621,11 +621,11 @@
       "tests/architecture/structure/test_architecture.py",
       "tests/architecture/boundaries/test_dependency_audit.py",
       "tests/unit/metrics/test_shared_metrics_contract.py",
-      "tests/regression/test_spawn_and_scientific_identity.py"
+      "tests/regression/reproducibility/test_spawn_and_scientific_identity.py"
     ],
     "ARQ-067": [
       "tests/architecture/structure/test_canonical_execution_packages.py",
-      "tests/scientific/shared/test_scientific_fingerprint.py",
+      "tests/regression/reproducibility/test_scientific_fingerprint.py",
       "tests/architecture/boundaries/test_diagnostic_module_relocation.py"
     ],
     "ARQ-068": [
@@ -654,7 +654,7 @@
       "tests/architecture/structure/test_canonical_execution_packages.py",
       "tests/architecture/structure/test_architecture.py",
       "tests/architecture/boundaries/test_dependency_audit.py",
-      "tests/regression/test_spawn_and_scientific_identity.py",
+      "tests/regression/reproducibility/test_spawn_and_scientific_identity.py",
       "tests/architecture/boundaries/test_historical_report_import_safety.py",
       "tests/architecture/structure/test_scientific_script_layout.py",
       "tests/regression/historical/test_historical_parity_preflight.py"
@@ -701,7 +701,7 @@
       "tests/scientific/shared/test_optuna_contract.py",
       "tests/resources/test_adaptive_scheduler.py",
       "tests/resources/test_competition_parallel_contract.py",
-      "tests/regression/test_spawn_and_scientific_identity.py",
+      "tests/regression/reproducibility/test_spawn_and_scientific_identity.py",
       "tests/resources/test_optimization_parallel_policy.py",
       "tests/scientific/shared/test_batched_optuna_contract.py"
     ],
@@ -711,8 +711,8 @@
       "tests/resources/test_fit_workload.py"
     ],
     "ARQ-085": [
-      "tests/scientific/shared/test_scientific_fingerprint.py",
-      "tests/runtime/test_checkpoints.py",
+      "tests/regression/reproducibility/test_scientific_fingerprint.py",
+      "tests/regression/recovery/test_checkpoints.py",
       "tests/resources/test_runtime_limits.py",
       "tests/resources/test_fit_workload.py"
     ],
@@ -759,7 +759,7 @@
       "tests/architecture/structure/test_architecture.py",
       "tests/architecture/structure/test_canonical_execution_packages.py",
       "tests/architecture/boundaries/test_dependency_audit.py",
-      "tests/regression/test_spawn_and_scientific_identity.py",
+      "tests/regression/reproducibility/test_spawn_and_scientific_identity.py",
       "tests/architecture/structure/test_scientific_script_layout.py"
     ],
     "ARQ-096": [
@@ -811,7 +811,7 @@
     ],
     "ARQ-105": [
       "tests/runtime/test_logging_retention.py",
-      "tests/runtime/test_run_recovery.py",
+      "tests/regression/recovery/test_run_recovery.py",
       "tests/runtime/test_scientific_log_context.py"
     ],
     "ARQ-106": [

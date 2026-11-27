@@ -4,7 +4,7 @@ from pathlib import Path
 from lithiumscope.core.execution.resume import _scientific_code_files
 
 def test_spawn_entrypoint_does_not_bootstrap_dependencies_on_import():
-    root=Path(__file__).resolve().parents[2]
+    root=next(parent for parent in Path(__file__).resolve().parents if (parent / "pyproject.toml").is_file())
     tree=ast.parse((root/"main.py").read_bytes())
     assert not any(isinstance(node,ast.ImportFrom) and node.module=="lithiumscope.runtime.dependencies" for node in tree.body)
     assert any(isinstance(node,ast.FunctionDef) and node.name=="launch" for node in tree.body)
