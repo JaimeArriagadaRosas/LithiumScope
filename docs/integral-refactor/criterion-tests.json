@@ -13,12 +13,12 @@
       "tests/scientific/shared/test_eda_profiles.py"
     ],
     "M1-03": [
-      "tests/model_1/test_censoring_contract.py",
-      "tests/model_1/test_detection_limits.py"
+      "tests/unit/data/test_censoring_contract.py",
+      "tests/unit/data/test_detection_limits.py"
     ],
     "M1-04": [
-      "tests/model_1/test_preprocessing_contract.py",
-      "tests/model_1/test_censoring_contract.py"
+      "tests/unit/data/test_preprocessing_contract.py",
+      "tests/unit/data/test_censoring_contract.py"
     ],
     "M1-05": [
       "tests/model_1/test_target_and_qc.py",
@@ -30,16 +30,16 @@
       "tests/scientific/m1/test_validate_feot_expansion_m1.py"
     ],
     "M1-07": [
-      "tests/model_1/test_model_1_category_cleaning.py",
-      "tests/model_1/test_preprocessing_contract.py"
+      "tests/unit/data/test_model_1_category_cleaning.py",
+      "tests/unit/data/test_preprocessing_contract.py"
     ],
     "M1-08": [
-      "tests/model_1/test_preprocessing_contract.py",
+      "tests/unit/data/test_preprocessing_contract.py",
       "tests/model_1/test_model_1_scientific_guards.py",
       "tests/scientific/experiments/test_paired_experiment_design.py"
     ],
     "M1-09": [
-      "tests/model_1/test_feature_engineering.py",
+      "tests/unit/data/test_feature_engineering.py",
       "tests/model_1/test_geochemical_contract.py"
     ],
     "M1-10": [
@@ -48,8 +48,8 @@
       "tests/scientific/shared/test_nested_protocol.py"
     ],
     "M1-11": [
-      "tests/model_1/test_preprocessing_contract.py",
-      "tests/model_1/test_model_1_target_transform.py"
+      "tests/unit/data/test_preprocessing_contract.py",
+      "tests/unit/data/test_model_1_target_transform.py"
     ],
     "M1-12": [
       "tests/scientific/shared/test_optuna_contract.py",
@@ -313,8 +313,8 @@
       "tests/architecture/boundaries/test_acquisition_provider_relocation.py"
     ],
     "ARQ-009": [
-      "tests/model_1/test_censoring_contract.py",
-      "tests/model_1/test_preprocessing_contract.py",
+      "tests/unit/data/test_censoring_contract.py",
+      "tests/unit/data/test_preprocessing_contract.py",
       "tests/model_1/test_coordinate_lineage.py"
     ],
     "ARQ-010": [
@@ -332,7 +332,7 @@
       "tests/scientific/shared/test_nested_protocol.py"
     ],
     "ARQ-013": [
-      "tests/model_1/test_preprocessing_contract.py",
+      "tests/unit/data/test_preprocessing_contract.py",
       "tests/model_1/test_spatial_tabnet.py",
       "tests/scientific/shared/test_optuna_contract.py"
     ],
@@ -387,7 +387,7 @@
     "ARQ-022": [
       "tests/architecture/structure/test_architecture.py",
       "tests/model_2/test_scientific_training_protocol.py",
-      "tests/model_2/test_preprocessing_contracts.py"
+      "tests/unit/data/test_preprocessing_contracts.py"
     ],
     "ARQ-023": [
       "tests/datasets/integration/test_sentinel2_provider.py",
@@ -426,7 +426,7 @@
     "ARQ-030": [
       "tests/scientific/m2_training/test_m2_refactored_outer_cv_smoke.py",
       "tests/scientific/shared/test_optuna_contract.py",
-      "tests/model_2/test_preprocessing_contracts.py"
+      "tests/unit/data/test_preprocessing_contracts.py"
     ],
     "ARQ-031": [
       "tests/unit/algorithms/test_model_2_svm.py",
@@ -664,12 +664,12 @@
       "tests/scientific/m2_training/test_m2_canonical_protocol.py"
     ],
     "ARQ-075": [
-      "tests/model_1/test_preprocessing_contract.py",
+      "tests/unit/data/test_preprocessing_contract.py",
       "tests/scientific/shared/test_optuna_contract.py"
     ],
     "ARQ-076": [
       "tests/unit/algorithms/test_model_2_svm.py",
-      "tests/model_1/test_model_1_target_transform.py"
+      "tests/unit/data/test_model_1_target_transform.py"
     ],
     "ARQ-077": [
       "tests/resources/test_resource_manager.py",
