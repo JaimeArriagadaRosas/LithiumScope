@@ -2,7 +2,7 @@
 import numpy as np
 from unittest.mock import Mock
 
-from lithiumscope.experiments.acquisition.http_tiles import _interpolate
+from lithiumscope.tools.acquisition.sentinel2.http_tiles import _interpolate
 
 
 def _raster(data):

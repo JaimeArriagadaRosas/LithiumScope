@@ -1,7 +1,7 @@
 from importlib import import_module
 import pytest
 
-@pytest.mark.parametrize("name",["provenance.georoc_bibliography_audit","provenance.georoc_primary_li_crosswalk","provenance.georoc_provenance_screen","provenance.publication_pdf_screen","provenance.publication_source_lookup","background_georoc_exploratory"])
+@pytest.mark.parametrize("name",["provenance.bibliography","provenance.primary_li_crosswalk","screening.provenance_screen","provenance.pdf_screen","provenance.source_lookup","imagery.batch"])
 def test_historical_georoc_import_has_no_acquisition_or_data_read(name,tmp_path,monkeypatch):
     import pandas as pd
     import requests
@@ -17,15 +17,23 @@ def test_historical_georoc_import_has_no_acquisition_or_data_read(name,tmp_path,
 
 
 def test_generated_final_report_stays_in_experiment_results():
-    from lithiumscope.experiments.georoc import georoc_final_evidence_report as report
+    from lithiumscope.experiments.reporting import georoc_evidence as report
     assert report.DOC.is_relative_to(report.BASE)
 
-def test_remaining_georoc_scripts_use_scoped_cli_logs():
+def test_acquisition_packages_retired():
     from pathlib import Path
-    root=Path(__file__).resolve().parents[2]/"src/lithiumscope/experiments/georoc"
-    for name in ("analyze_georoc_background","diagnose_georoc_grouped","georoc_20576_final_gate",
-                 "georoc_eligibility_gate","georoc_extended_screen","georoc_final_evidence_report",
-                 "georoc_sample_method_audit","publication_first_review","unab_source_review"):
-        source=(root/(name+".py")).read_text(encoding="utf-8-sig")
-        assert f'run_log("simulations","{name}")' in source
-    assert '--acquire' in (root/"unab_source_review.py").read_text(encoding="utf-8-sig")
+    root = Path(__file__).resolve().parents[2] / "src/lithiumscope/experiments"
+    assert not list((root / "acquisition").rglob("*.py"))
+    assert not list((root / "georoc/acquisition").rglob("*.py"))
+
+def test_network_studies_require_authorization(tmp_path, monkeypatch):
+    import requests
+    from lithiumscope.experiments.georoc.studies import single_sample_audit
+    from lithiumscope.experiments.georoc.provenance import pdf_screen, source_lookup
+    from lithiumscope.experiments.validation import unab_source_review
+    monkeypatch.setattr(requests, "get", lambda *a, **k: pytest.fail("Unexpected network"))
+    assert single_sample_audit.main()["state"] == "preflight"
+    assert pdf_screen.main()["state"] == "preflight"
+    assert source_lookup.main()["state"] == "preflight"
+    assert unab_source_review.audit(tmp_path)["state"] == "preflight"
+    assert not list(tmp_path.iterdir())

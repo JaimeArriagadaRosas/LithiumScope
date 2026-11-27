@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from lithiumscope.experiments.acquisition.acquisition import PILOT_LOCATIONS, acquire_pilot
+from lithiumscope.tools.acquisition.sentinel2.pilot import PILOT_LOCATIONS, acquire_pilot
 from lithiumscope.experiments.scenarios.batch import run_m2_batch, summarize
 from lithiumscope.persistence.load_model import load_latest_model
 

@@ -1,7 +1,7 @@
 """Reproducible additional seasonal sampling in 2024; no model fitting."""
 from pathlib import Path
 import pandas as pd
-from lithiumscope.experiments.acquisition.acquisition import acquire_pilot, PILOT_LOCATIONS
+from lithiumscope.tools.acquisition.sentinel2.pilot import acquire_pilot, PILOT_LOCATIONS
 from lithiumscope.experiments.scenarios.batch import run_m2_batch, summarize
 from lithiumscope.persistence.load_model import load_latest_model
 

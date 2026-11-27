@@ -1,23 +1,27 @@
 """Acquire a four-location external-candidate imagery PILOT only (no accuracy claims)."""
 from pathlib import Path
+from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
 import pandas as pd
-from lithiumscope.experiments.acquisition.acquisition import acquire_pilot
+from lithiumscope.tools.acquisition.sentinel2.pilot import acquire_pilot
 from lithiumscope.experiments.scenarios.batch import run_m2_batch,summarize
 from lithiumscope.persistence.load_model import load_latest_model
 
 
 
 def main():
-    base=Path("results/scientific_simulations/external_geochemistry_audit")
+    base=EXPERIMENT_ROOT
     candidates=pd.read_csv(base/"georoc_provenance_screen.csv")
     references=["27313","29268","29484","23382"]
     chosen=[]
     for reference in references:
-        row=candidates.loc[(candidates.country=="CHILE")&
+        matches=candidates.loc[(candidates.country=="CHILE")&
             (candidates.citation_key==reference)&
             (candidates.nearest_training_km>=100)&
-            (~candidates.duplicate_identifier_location)].iloc[0]
-        chosen.append(row)
+            (~candidates.duplicate_identifier_location)]
+        if matches.empty:
+            raise ValueError(f"No eligible pilot candidate for reference {reference}")
+        # Preserve historical ordering explicitly, not an implicit index error.
+        chosen.append(matches.iloc[0])
     pilot=pd.DataFrame(chosen)
     pilot["image_id"]=["georoc_"+reference for reference in references]
     pilot.to_csv(base/"pilot_target_metadata.csv",index=False)

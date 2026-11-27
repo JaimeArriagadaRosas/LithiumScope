@@ -1,11 +1,11 @@
 """Conservative reference/location audit before any external validation."""
 from pathlib import Path
+from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
 import hashlib,json,re
 import pandas as pd
-from sklearn.cluster import DBSCAN
 import numpy as np
 
-ROOT=Path("results/scientific_simulations/external_geochemistry_audit")
+ROOT=EXPERIMENT_ROOT
 
 
 def main():
@@ -34,7 +34,7 @@ def main():
         if any(abs(rec["latitude"]-x)<.45 and abs(rec["longitude"]-y)<.45 for x,y in coords):continue
         chosen.append(rec);refs.add(ref);coords.append((rec["latitude"],rec["longitude"]))
         if len(chosen)==8:break
-    pd.DataFrame(chosen).to_csv(ROOT/"pilot_priority_candidates.csv",index=False)
+    pd.DataFrame(chosen, columns=df.columns).to_csv(ROOT/"pilot_priority_candidates.csv",index=False)
     payload={
      "raw_candidates":len(df),"country_counts":df.country.fillna("UNCLASSIFIED").value_counts().to_dict(),
      "exact_identifier_location_duplicate_rows":int(dup.sum()),
@@ -48,7 +48,7 @@ def main():
      "source_sha256":hashlib.sha256((ROOT/"georoc_andean_candidates.csv").read_bytes()).hexdigest()}
     (ROOT/"provenance_screen_summary.json").write_text(json.dumps(payload,ensure_ascii=False,indent=2),encoding="utf8")
     print("SUMMARY",payload,flush=True)
-    print("PILOT",pd.DataFrame(chosen)[["sample_name","citation_ids","latitude","longitude","li_ppm","nearest_training_km"]].to_string(index=False),flush=True)
+    print("PILOT",pd.DataFrame(chosen, columns=df.columns)[["sample_name","citation_ids","latitude","longitude","li_ppm","nearest_training_km"]].to_string(index=False),flush=True)
 
 if __name__=="__main__":
     from lithiumscope.core.logging.session import run_log

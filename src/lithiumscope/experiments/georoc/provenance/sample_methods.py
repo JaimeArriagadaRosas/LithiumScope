@@ -7,11 +7,12 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
 
 import numpy as np
 import pandas as pd
 
-BASE = Path("results/scientific_simulations/external_geochemistry_audit")
+BASE = EXPERIMENT_ROOT
 EVIDENCE = {
     "27313": {
         "source": "https://doi.org/10.1016/j.oregeorev.2018.08.034",
@@ -51,13 +52,12 @@ def sample_surface_gate(depth: object, rock_type: str) -> str:
 
 def run(base: Path = BASE) -> tuple[Path, Path]:
     pilot = pd.read_csv(base / "pilot_target_metadata.csv")
-    training = pd.read_csv(
-        r"D:\Descargas\LithiumScope\data\processed\model_2\training_manifest.csv"
-    )
     source_cache: dict[str, pd.DataFrame] = {}
     results = []
     for item in pilot.to_dict("records"):
         part = str(item["source_file"])
+        if Path(part).name != part or "/" in part or chr(92) in part:
+            raise ValueError("Invalid partition filename")
         if part not in source_cache:
             source_cache[part] = pd.read_csv(
                 base / "georoc_andean_raw" / part, encoding="latin1", low_memory=False

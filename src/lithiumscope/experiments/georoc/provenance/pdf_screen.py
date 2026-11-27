@@ -1,11 +1,14 @@
 """Historical public-document method scan; no specimen-level verification."""
 from pathlib import Path
+from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
 import requests,hashlib,json
 from pypdf import PdfReader
 
 
-def main():
-    base=Path("results/scientific_simulations/external_geochemistry_audit/publication_sources")
+def main(*, acquire=False):
+    if not acquire:
+        return {"state": "preflight"}
+    base=(EXPERIMENT_ROOT / "publication_sources")
     base.mkdir(parents=True,exist_ok=True)
     urls={
      "18365":"https://oceanrep.geomar.de/id/eprint/23604/1/jacques-csvz-cg2014onlinefirst.pdf",
@@ -44,4 +47,4 @@ if __name__=="__main__":
         print("Preflight: use --acquire to authorize network requests.")
         raise SystemExit(0)
     with run_log("simulations","publication_pdf_screen"):
-        main()
+        main(acquire=True)

@@ -1,12 +1,13 @@
 """Reproduce bibliography verification and training/source overlap for GEOROC pilot."""
 from pathlib import Path
+from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
 import re,json,hashlib
 import pandas as pd
 
-ROOT=Path("results/scientific_simulations/external_geochemistry_audit")
+ROOT=EXPERIMENT_ROOT
 from lithiumscope.core.paths import PROJECT_ROOT
 TRAIN=PROJECT_ROOT/"data/processed/model_2/training_manifest.csv"
-SOURCE_DOC=Path("docs/data/DATASETS_AND_FEATURES.md")
+SOURCE_DOC=PROJECT_ROOT / "docs/data/DATASETS_AND_FEATURES.md"
 
 
 def main():

@@ -1,10 +1,11 @@
-﻿"""Expand external whole-rock provenance screening using original GEOROC rows."""
+"""Expand external whole-rock provenance screening using original GEOROC rows."""
 from pathlib import Path
+from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
 import json,re,hashlib
 import numpy as np
 import pandas as pd
 
-ROOT=Path("results/scientific_simulations/external_geochemistry_audit")
+ROOT=EXPERIMENT_ROOT
 SECTIONS=ROOT/"georoc_andean_raw"
 CITATIONS=ROOT/"georoc_citations_2024.tab"
 def run():

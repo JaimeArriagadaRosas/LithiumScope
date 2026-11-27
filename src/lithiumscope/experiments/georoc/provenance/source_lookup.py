@@ -1,10 +1,13 @@
 """Find legitimate article/supplement URLs for the prioritized 10 GEOROC references."""
 from pathlib import Path
+from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
 import requests,pandas as pd,json,time
-BASE=Path("results/scientific_simulations/external_geochemistry_audit")
+BASE=EXPERIMENT_ROOT
 
 
-def main():
+def main(*, acquire=False):
+    if not acquire:
+        return {"state": "preflight"}
     frame=pd.read_csv(BASE/"publication_priority_top10.csv")
     records=[]
     for row in frame.itertuples():
@@ -38,4 +41,4 @@ if __name__=="__main__":
         print("Preflight: use --acquire to authorize network requests.")
         raise SystemExit(0)
     with run_log("simulations","publication_source_lookup"):
-        main()
+        main(acquire=True)

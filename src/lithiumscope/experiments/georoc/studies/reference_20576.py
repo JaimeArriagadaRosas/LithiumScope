@@ -1,8 +1,9 @@
 """Final 20576 source-specific validation gate (no proxy ground-truth inflation)."""
 from pathlib import Path
+from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
 import json,hashlib
 import pandas as pd
-BASE=Path("results/scientific_simulations/external_geochemistry_audit")
+BASE=EXPERIMENT_ROOT
 def main():
     cross=pd.read_csv(BASE/"georoc_20576_primary_li_crosswalk.csv")
     all_=pd.read_csv(BASE/"full_mamani_contamination_audit.csv",low_memory=False)

@@ -9,7 +9,7 @@ def test_georoc_query_alias(name):
 
 
 def test_raster_alias():
-    assert import_module("lithiumscope.experiments.acquisition.http_tiles") is import_module("lithiumscope.tools.acquisition.sentinel2.http_tiles")
-    from lithiumscope.experiments.acquisition.acquisition import read_asset_isolated
+    assert callable(import_module("lithiumscope.tools.acquisition.sentinel2.http_tiles").extract_http_patch)
+    from lithiumscope.tools.acquisition.sentinel2.pilot import read_asset_isolated
     from lithiumscope.tools.acquisition.sentinel2.isolated import read_asset_isolated as canonical
     assert read_asset_isolated is canonical

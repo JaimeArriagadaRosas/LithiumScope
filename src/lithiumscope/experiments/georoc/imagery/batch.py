@@ -4,16 +4,17 @@ Does not certify sample independence or produce external accuracy metrics.
 """
 from __future__ import annotations
 from pathlib import Path
+from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
 import json,os,time,traceback
 from datetime import datetime,timezone
 import pandas as pd
 import numpy as np
-from lithiumscope.experiments.acquisition.acquisition import acquire_pilot
+from lithiumscope.tools.acquisition.sentinel2.pilot import acquire_pilot
 from lithiumscope.experiments.scenarios.imagery import evaluate_model_2_image
 from lithiumscope.model_2.preparation.imagery import load_imagery
 from lithiumscope.persistence.load_model import load_latest_model
 
-ROOT=Path("results/scientific_simulations/external_geochemistry_audit")
+ROOT=EXPERIMENT_ROOT
 OUT=ROOT/"background_georoc_exploratory"
 STOP=OUT/"STOP"
 STATUS=OUT/"status.json"

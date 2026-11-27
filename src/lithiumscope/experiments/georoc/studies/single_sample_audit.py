@@ -1,5 +1,6 @@
 """One verifiable geochemistry candidate, NOT eligible without full independence/method audit."""
 from pathlib import Path
+from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
 from lithiumscope.core.paths import PROJECT_ROOT
 from datetime import datetime,timezone
 from math import radians, sin, cos, asin, sqrt
@@ -10,10 +11,12 @@ import requests
 
 URL="https://georoc.mpch-mainz.gwdg.de/georoc/navdat_sampleinfo.asp?unique_id=302366"
 TRAIN=(PROJECT_ROOT/"data/processed/model_2/training_manifest.csv")
-OUT=Path("results/scientific_simulations/external_geochemistry_audit")
+OUT=EXPERIMENT_ROOT
 
 
-def main():
+def main(*, acquire=False):
+    if not acquire:
+        return {"state": "preflight", "url": URL}
     OUT.mkdir(parents=True,exist_ok=True)
     response=requests.get(URL,timeout=25)
     response.raise_for_status()
@@ -22,7 +25,8 @@ def main():
     coords=re.search(r"Latitude\s*(-?\d+(?:\.\d+)?)\s*\|\s*Longitude\s*(-?\d+(?:\.\d+)?)",text)
     li=re.search(r"\bLI\s+(\d+(?:\.\d+)?)\s+PPM\b",text)
     rock=re.search(r"Analyzed:\s*WHOLE ROCK",text)
-    assert coords and li and rock,"Missing required evidence in GEOROC page"
+    if not (coords and li and rock):
+        raise ValueError("Missing required evidence in GEOROC page")
     lat,lon=map(float,coords.groups())
     lithium=float(li.group(1))
     training=pd.read_csv(TRAIN)
@@ -70,5 +74,11 @@ def main():
     print("AUDIT",json.dumps(report,indent=2),flush=True)
 
 
-if __name__=="__main__":main()
+if __name__=="__main__":
+    import argparse
+    from lithiumscope.core.logging.session import run_log
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--acquire", action="store_true")
+    with run_log("simulations", "external_geochemistry_audit"):
+        print(main(acquire=parser.parse_args().acquire))
 

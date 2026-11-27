@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 
 from lithiumscope.core.config import load_config
-from lithiumscope.model_2.data.builder import _sentinel_config
+from .configuration import sentinel_config
 from lithiumscope.tools.acquisition.sentinel2.provider import Sentinel2Provider, _asset_href
 
 PILOT_LOCATIONS = {
@@ -42,7 +42,7 @@ def acquire_pilot(destination: Path, *, years=YEARS, locations=PILOT_LOCATIONS,
                   date_window: tuple[str, str] | None = None) -> tuple[Path, Path]:
     """Download genuine scenes, checking SCL before retrieving six spectral bands."""
     destination.mkdir(parents=True, exist_ok=True)
-    cfg = _sentinel_config(load_config("model_2"))
+    cfg = sentinel_config(load_config("model_2"))
     manifest = destination / "manifest.csv"
     failures_file = destination / "failures.csv"
     existing = pd.read_csv(manifest) if manifest.is_file() else pd.DataFrame(columns=COLUMNS)

@@ -1,7 +1,8 @@
-﻿"""Read-only audit for a public candidate dataset with explicit Li exclusion."""
+"""Read-only audit for a public candidate dataset with explicit Li exclusion."""
 from __future__ import annotations
 from datetime import datetime, timezone
 from pathlib import Path
+from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
 import hashlib
 import io
 import json
@@ -14,7 +15,9 @@ DOI = "doi:10.60483/UNAB/PLCJLQ"
 TABLE_ID = 592
 
 
-def audit(destination: Path) -> Path:
+def audit(destination: Path, *, acquire=False):
+    if not acquire:
+        return {"state": "preflight", "doi": DOI}
     destination.mkdir(parents=True, exist_ok=True)
     session = requests.Session()
     metadata_response = session.get(
@@ -26,7 +29,7 @@ def audit(destination: Path) -> Path:
     table = pd.read_csv(io.BytesIO(original.content), sep="\t", low_memory=False)
     first_column = table.iloc[:, 0].astype(str).str.strip()
     # This dataset stores chemical analyte names as rows, not columns.
-    has_li = first_column.str.fullmatch(r"Li|Lithium|Li\\s*\\(ppm\\)", case=False).any()
+    has_li = first_column.str.fullmatch(r"Li|Lithium|Li\s*\(ppm\)", case=False).any()
     has_coordinates = {"Latitude", "Longitude"}.issubset(set(first_column))
     result = {
         "source": metadata.get("persistentUrl"),
@@ -55,4 +58,4 @@ if __name__=="__main__":
         print("Preflight: use --acquire to authorize network requests.")
         raise SystemExit(0)
     with run_log("simulations","unab_source_review"):
-        audit(Path("results/scientific_simulations/external_geochemistry_audit"))
+        audit(EXPERIMENT_ROOT, acquire=True)

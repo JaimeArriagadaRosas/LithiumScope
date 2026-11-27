@@ -1,8 +1,9 @@
 """Publication-first evidence registry for GEOROC: 59 citations, sample gates, auditable decisions."""
 from pathlib import Path
+from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
 import json,hashlib,re
 import pandas as pd
-BASE=Path("results/scientific_simulations/external_geochemistry_audit")
+BASE=EXPERIMENT_ROOT
 def main():
  refs=pd.read_csv(BASE/"all_reviewable_citations.csv")
  samples=pd.read_csv(BASE/"full_mamani_contamination_audit.csv",low_memory=False)

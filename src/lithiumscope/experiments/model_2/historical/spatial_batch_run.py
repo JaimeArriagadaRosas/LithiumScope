@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from lithiumscope.experiments.model_2.historical.spatial_control import plan
-from lithiumscope.experiments.acquisition.acquisition import quality_from_scl
+from lithiumscope.tools.acquisition.sentinel2.pilot import quality_from_scl
 from lithiumscope.tools.acquisition.sentinel2.provider import _asset_href
 from lithiumscope.core.config import load_config
 

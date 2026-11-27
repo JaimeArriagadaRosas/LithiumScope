@@ -5,11 +5,12 @@ downloaded public GEOROC data. Does not alter, fit, or evaluate trained models.
 """
 from __future__ import annotations
 from pathlib import Path
+from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
 import json,re,hashlib
 import numpy as np
 import pandas as pd
 
-BASE=Path("results/scientific_simulations/external_geochemistry_audit")
+BASE=EXPERIMENT_ROOT
 DOC=BASE/"GEOCHEMICAL_EXTERNAL_VALIDATION_FINAL.md"
 def main():
     d=pd.read_csv(BASE/"georoc_extended_evidence_screen.csv",low_memory=False)
@@ -18,13 +19,14 @@ def main():
     cols=["citation_number","DOI","TITLE","AUTHORS","YEAR","FORMATTED CITATION"]
     ref=ref[cols].drop_duplicates("citation_number")
     review=d.loc[d.candidate_gate.eq("REVIEW_METHOD_AND_SURFACE")].copy()
+    review["coordinate_key"] = list(zip(review.latitude, review.longitude))
     citations=review.groupby("citation_number",dropna=False).agg(
         samples=("sample_name","size"),country_count=("country","nunique"),
         countries=("country",lambda x:";".join(sorted(set(x.dropna().astype(str))))),
         minimum_distance_km=("nearest_training_km","min"),
         maximum_distance_km=("nearest_training_km","max"),
         median_li_ppm=("li_ppm","median"),
-        distinct_coordinates=("latitude","nunique"),
+        distinct_coordinates=("coordinate_key","nunique"),
         example_sample=("sample_name","first"),
     ).reset_index().merge(ref,on="citation_number",how="left",validate="one_to_one")
     citations["primary_method_confirmed_for_li"]=False
@@ -65,7 +67,7 @@ def main():
     }
     (BASE/"final_evidence_status.json").write_text(json.dumps(summary,ensure_ascii=False,indent=2),encoding="utf8")
     lines=["# Estado final de la auditoría externa GEOROC para LithiumScope",
-        "","**Alcance:** revisión reproducible de los 3.220 candidatos de roca total con Li en la compilación oficial del arco andino.",
+        "",f"**Alcance:** revisión reproducible de {len(d)} candidatos de roca total con Li.",
         "",f"- Candidatos totales: **{len(d)}**.",
         f"- Superaron filtros automáticos preliminares: **{len(review)}**.",
         f"- Publicaciones/códigos de referencia distintos en ese subconjunto: **{len(citations)}**.",
@@ -79,7 +81,7 @@ def main():
         "Una ubicación a más de 100 km del entrenamiento es solo un filtro de proximidad, no un criterio suficiente de independencia.",
         "No se calculan AUC, AP ni BA externas hasta cumplir las condiciones de evidencia. Cuatro inferencias piloto no son una prueba de generalización.",
         "","## Archivos",
-        "- `external_validation_decision_ledger.csv`: decisión individual de 3.220 registros.",
+        f"- `external_validation_decision_ledger.csv`: decisión individual de {len(d)} registros.",
         "- `all_reviewable_citations.csv`: referencias distintas de los candidatos con metadatos disponibles.",
         "- `final_evidence_status.json`: resumen, bloqueos y SHA-256.",
         "- Los CSV originales GEOROC, fuentes PDF descargadas, el catálogo Mamani09 y simulaciones M2 se conservan sin alteraciones.",

@@ -1,10 +1,11 @@
 """Consolidate exploratory external batch without making verified accuracy claims."""
 from pathlib import Path
+from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
 import json
 import numpy as np
 import pandas as pd
 from sklearn.metrics import roc_auc_score,average_precision_score,balanced_accuracy_score
-B=Path("results/scientific_simulations/external_geochemistry_audit/background_georoc_exploratory")
+B=(EXPERIMENT_ROOT / "background_georoc_exploratory")
 def main():
  m=pd.read_csv(B/"patch_manifest.csv")
  samples=pd.read_csv(B/"sample_image_map.csv")
@@ -20,7 +21,7 @@ def main():
       "scenario_rows":len(x),"scenario_scored":int(x.status.eq("SCORED").sum()),
       "scenario_abstained":int(x.status.ne("SCORED").sum()),
       "scenario_mean_abs_shift":float(pd.to_numeric(x.absolute_score_shift,errors="coerce").mean())})
- scores=pd.DataFrame(records)
+ scores=pd.DataFrame(records,columns=["image_id","score","ood_fraction","scenario_rows","scenario_scored","scenario_abstained","scenario_mean_abs_shift"])
  sm=samples.merge(m[["image_id","status","scene_id","scene_datetime","local_cloud_fraction"]],on="image_id",validate="many_to_one").merge(scores,on="image_id",how="left",validate="many_to_one")
  sm["label_21_6"]=sm.li_ppm.ge(21.6).astype(int)
  sm["scored"]=sm.score.notna()
@@ -32,8 +33,8 @@ def main():
      contains_high=("label_21_6","max"),contains_low=("label_21_6",lambda s:int(s.eq(0).any())),
      n_samples=("sample_name","size")).reset_index()
  summary={"coordinates_total":len(m),"coordinates_scored":len(scores),
- "coordinates_unscored":int(m.status.ne("ACCEPT").sum()),
- "unscored_reason_counts":m.loc[m.status.ne("ACCEPT"),"status"].value_counts().to_dict(),
+ "coordinates_unscored":int((~m.image_id.isin(scores.image_id)).sum()),
+ "unscored_reason_counts":m.loc[~m.image_id.isin(scores.image_id),"status"].value_counts().to_dict(),
  "sample_rows_total":len(sm),"sample_rows_scored":len(valid),
  "sample_rows_not_scored":int((~sm.scored).sum()),
  "class_balance_all":sm.label_21_6.value_counts().sort_index().to_dict(),

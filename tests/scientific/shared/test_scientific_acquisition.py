@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 import subprocess
-from lithiumscope.experiments.acquisition.acquisition import (
+from lithiumscope.tools.acquisition.sentinel2.pilot import (
     AssetTimeoutError, quality_from_scl, read_asset_isolated,
 )
 

@@ -1,10 +1,11 @@
 """Evidence gate for GEOROC pilot references: no external test until provenance verified."""
 from pathlib import Path
+from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
 import hashlib
 import json
 import pandas as pd
 
-BASE=Path("results/scientific_simulations/external_geochemistry_audit")
+BASE=EXPERIMENT_ROOT
 SOURCES={
  "27313":{"publisher_url":"https://doi.org/10.1016/j.oregeorev.2018.08.034",
           "title":"Lithological and structural controls on the genesis of the Candelaria-Punta del Cobre Iron Oxide Copper Gold district, Northern Chile",
