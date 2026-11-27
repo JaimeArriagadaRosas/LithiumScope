@@ -500,7 +500,7 @@
     "ARQ-044": [
       "tests/unit/metrics/test_integrated_prediction_analysis.py",
       "tests/prediction/test_prediction_manifest_paths.py",
-      "tests/prediction/test_diagnostic_integrated_guardrails.py"
+      "tests/integration/prediction/test_diagnostic_integrated_guardrails.py"
     ],
     "ARQ-045": [
       "tests/architecture/structure/test_architecture.py",
