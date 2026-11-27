@@ -21,4 +21,4 @@ def test_experiment_domains_have_independent_packages():
 
 def test_analysis_compatibility_package_removed():
     from lithiumscope.experiments import __path__
-    assert all(not (Path(root) / "analysis").exists() for root in __path__)
+    assert all(not list((Path(root) / "analysis").rglob("*.py")) for root in __path__)

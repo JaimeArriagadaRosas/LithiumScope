@@ -41,7 +41,6 @@ CHEM=[c for c in MAJOR_OXIDES if c!="Fe2O3"]+[
 # Elements not already represented by the canonical trace predictor set.
 EXTRA=ELEMENTS-set("th u rb cs nb ta pb ba sr zr v hf".split())
 
-
 def measurement_map(header):
     found={}
     for name in header:
@@ -53,7 +52,6 @@ def measurement_map(header):
     # Never choose arbitrarily between multiple fields for the same element.
     return {key:items[0] for key,items in found.items() if len(items)==1}
 
-
 def numeric_ppm(values,unit):
     if unit not in {"ppm","ppb"}:
         raise ValueError("Unsupported measurement unit")
@@ -61,10 +59,8 @@ def numeric_ppm(values,unit):
     x=pd.to_numeric(parsed,errors="coerce").astype(float)
     return x.where(np.isfinite(x)&x.ge(0))*(.001 if unit=="ppb" else 1.)
 
-
 def normalized_sample(values):
     return values.astype("string").fillna("").str.strip().str.casefold()
-
 
 def unique_matches(base,raw):
     """Require sample, coordinates, Li, >=5 agreeing independent predictors.
@@ -107,7 +103,6 @@ def unique_matches(base,raw):
         result.loc[repeated,"state"]="raw_row_reused"
         result.loc[repeated,"raw_position"]=np.nan
     return result
-
 
 def run():
     source=local_training_source("model_1")

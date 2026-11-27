@@ -72,7 +72,7 @@ def source_audit(root: Path, config: dict) -> pd.DataFrame:
     from lithiumscope.experiments.model_2.audit_georoc_source_references import (
         classify_record, decimal_places, parse_bibliography,
     )
-    from lithiumscope.model_1.methodology.qc_protocols import protocol_masks
+    from lithiumscope.datasets.validation.chemistry.qc_protocols import protocol_masks
 
     staged = project_path(root, expanded["state_dir"])
     staged.mkdir(parents=True, exist_ok=True)

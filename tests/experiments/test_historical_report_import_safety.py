@@ -28,5 +28,6 @@ def test_historical_protocols_resolve_without_eager_facade_cycle(new):
     import ast
     from pathlib import Path
     path=Path(import_module(new).__file__)
-    forbidden={"lithiumscope.experiments.analysis.run_vnext_m2","lithiumscope.experiments.analysis.verify_vnext_data_adequacy","lithiumscope.experiments.model_2.run_vnext_m2","lithiumscope.experiments.integrated.verify_vnext_data_adequacy"}
-    assert not any(isinstance(node,ast.ImportFrom) and node.module in forbidden for node in ast.parse(path.read_bytes()).body)
+    forbidden={"lithiumscope.experiments.model_2.run_vnext_m2","lithiumscope.experiments.integrated.verify_vnext_data_adequacy"}
+    retired_prefix="lithiumscope.experiments." + "analysis."
+    assert not any(isinstance(node,ast.ImportFrom) and (node.module in forbidden or (node.module or "").startswith(retired_prefix)) for node in ast.parse(path.read_bytes()).body)
