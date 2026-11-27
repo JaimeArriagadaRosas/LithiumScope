@@ -52,7 +52,7 @@
       "tests/unit/data/test_model_1_target_transform.py"
     ],
     "M1-12": [
-      "tests/scientific/shared/test_optuna_contract.py",
+      "tests/performance/execution/test_optuna_contract.py",
       "tests/unit/algorithms/test_optuna_resume_helpers.py",
       "tests/scientific/experiments/test_paired_experiment_design.py"
     ],
@@ -218,7 +218,7 @@
       "tests/scientific/methodology/test_m2_canonical_protocol.py"
     ],
     "M2-19": [
-      "tests/scientific/shared/test_optuna_contract.py",
+      "tests/performance/execution/test_optuna_contract.py",
       "tests/scientific/methodology/test_m2_regularized_search_profile.py",
       "tests/scientific/methodology/test_nested_protocol.py",
       "tests/scientific/experiments/test_paired_experiment_design.py"
@@ -334,7 +334,7 @@
     "ARQ-013": [
       "tests/unit/data/test_preprocessing_contract.py",
       "tests/scientific/methodology/test_spatial_tabnet.py",
-      "tests/scientific/shared/test_optuna_contract.py"
+      "tests/performance/execution/test_optuna_contract.py"
     ],
     "ARQ-014": [
       "tests/unit/algorithms/test_statistical_baselines.py",
@@ -425,7 +425,7 @@
     ],
     "ARQ-030": [
       "tests/integration/training/test_m2_refactored_outer_cv_smoke.py",
-      "tests/scientific/shared/test_optuna_contract.py",
+      "tests/performance/execution/test_optuna_contract.py",
       "tests/unit/data/test_preprocessing_contracts.py"
     ],
     "ARQ-031": [
@@ -665,7 +665,7 @@
     ],
     "ARQ-075": [
       "tests/unit/data/test_preprocessing_contract.py",
-      "tests/scientific/shared/test_optuna_contract.py"
+      "tests/performance/execution/test_optuna_contract.py"
     ],
     "ARQ-076": [
       "tests/unit/algorithms/test_model_2_svm.py",
@@ -694,27 +694,27 @@
     "ARQ-082": [
       "tests/performance/resources/test_resource_manager.py",
       "tests/performance/resources/test_runtime_limits.py",
-      "tests/resources/test_fit_workload.py"
+      "tests/performance/execution/test_fit_workload.py"
     ],
     "ARQ-083": [
       "tests/performance/resources/test_runtime_limits.py",
-      "tests/scientific/shared/test_optuna_contract.py",
+      "tests/performance/execution/test_optuna_contract.py",
       "tests/performance/resources/test_adaptive_scheduler.py",
-      "tests/resources/test_competition_parallel_contract.py",
+      "tests/performance/execution/test_competition_parallel_contract.py",
       "tests/regression/reproducibility/test_spawn_and_scientific_identity.py",
-      "tests/resources/test_optimization_parallel_policy.py",
-      "tests/scientific/shared/test_batched_optuna_contract.py"
+      "tests/performance/execution/test_optimization_parallel_policy.py",
+      "tests/performance/execution/test_batched_optuna_contract.py"
     ],
     "ARQ-084": [
       "tests/performance/resources/test_resource_manager.py",
       "tests/runtime/test_session_structured_logs.py",
-      "tests/resources/test_fit_workload.py"
+      "tests/performance/execution/test_fit_workload.py"
     ],
     "ARQ-085": [
       "tests/regression/reproducibility/test_scientific_fingerprint.py",
       "tests/regression/recovery/test_checkpoints.py",
       "tests/performance/resources/test_runtime_limits.py",
-      "tests/resources/test_fit_workload.py"
+      "tests/performance/execution/test_fit_workload.py"
     ],
     "ARQ-086": [
       "tests/functional/operations/test_runtime.py",
@@ -770,8 +770,8 @@
     "ARQ-097": [
       "tests/performance/resources/test_runtime_limits.py",
       "tests/performance/resources/test_resource_manager.py",
-      "tests/performance/test_pipeline_benchmark_contract.py",
-      "tests/performance/test_acceleration_benchmark.py"
+      "tests/performance/execution/test_pipeline_benchmark_contract.py",
+      "tests/performance/execution/test_acceleration_benchmark.py"
     ],
     "ARQ-098": [
       "tests/development/test_validation.py",
@@ -831,9 +831,9 @@
       "tests/development/test_validation.py",
       "tests/scientific/methodology/test_scientific_checks.py",
       "tests/integration/training/test_pretraining_holdout_reservation.py",
-      "tests/resources/test_optimization_parallel_policy.py",
-      "tests/scientific/shared/test_batched_optuna_contract.py",
-      "tests/performance/test_acceleration_benchmark.py",
+      "tests/performance/execution/test_optimization_parallel_policy.py",
+      "tests/performance/execution/test_batched_optuna_contract.py",
+      "tests/performance/execution/test_acceleration_benchmark.py",
       "tests/runtime/test_operation_log_layout.py",
       "tests/regression/historical/test_historical_parity_preflight.py",
       "tests/development/test_failure_context.py",
