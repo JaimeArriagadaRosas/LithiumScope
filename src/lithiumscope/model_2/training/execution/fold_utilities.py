@@ -1,9 +1,8 @@
-"""Isolated responsibility with unchanged original API."""
+"""Spatial split selection and estimator fitting."""
 from __future__ import annotations
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from lithiumscope.model_2.training.execution.cv_runner import DeviceInfo, np, pd
+import numpy as np
+import pandas as pd
+from lithiumscope.resources.detection.device import DeviceInfo
 
 
 def _splitter(
@@ -14,7 +13,11 @@ def _splitter(
     *,
     announce: bool = False,
 ):
-    from lithiumscope.model_2.training.execution.cv_runner import StratifiedGroupKFold, StratifiedKFold, logger, pd
+    from sklearn.model_selection import StratifiedGroupKFold
+    from sklearn.model_selection import StratifiedKFold
+    from lithiumscope.core.logging.session import get_logger
+    logger = get_logger("model_2.fold_utilities")
+    import pandas as pd
     if groups is not None and groups.nunique() >= folds:
         if announce:
             print(
@@ -60,7 +63,7 @@ def _materialize_splits(
     folds: int,
     seed: int,
 ) -> list[tuple[np.ndarray, np.ndarray]]:
-    from lithiumscope.model_2.training.execution.cv_runner import _splitter, np
+    import numpy as np
     splitter, split_groups = _splitter(
         y,
         groups,
@@ -94,7 +97,11 @@ def _fit_estimator(
     *,
     strict_spatial: bool = False,
 ):
-    from lithiumscope.model_2.training.execution.cv_runner import DeviceInfo, GroupKFold, _materialize_splits, create_model, np, pd
+    from lithiumscope.resources.detection.device import DeviceInfo
+    from sklearn.model_selection import GroupKFold
+    from lithiumscope.model_2.training.factory import create_model
+    import numpy as np
+    import pandas as pd
     calibration_cv = None
     if algorithm in {"svm_rbf", "random_forest_spatial_calibrated"}:
         if strict_spatial:

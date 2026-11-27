@@ -52,7 +52,7 @@ def test_harmonization_public_api():
 
 
 def test_shared_name_normalization():
-    from lithiumscope.datasets.adapters.georoc.names import norm
+    from lithiumscope.datasets.adapters.georoc.normalization import norm
     from lithiumscope.tools.georoc.query.georoc_query_html import norm as legacy
 
     assert legacy is norm

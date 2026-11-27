@@ -8,7 +8,7 @@ from types import SimpleNamespace
 
 
 def classification_inputs(preflight_directory: Path):
-    from lithiumscope.model_2.training.execution.competition_prepare_scientific_data import _prepare_scientific_data
+    from lithiumscope.model_2.training.execution.scientific_data import prepare_scientific_data
     from lithiumscope.model_2.training.calibration.operating import fit_policy
     from lithiumscope.model_2.training.calibration.policy import calibration_policy
 
@@ -23,7 +23,7 @@ def classification_inputs(preflight_directory: Path):
     # Reuse canonical preparation, including the frozen 706/783 outer split rule.
     preflight_directory.mkdir(parents=True, exist_ok=False)
     context = SimpleNamespace(manifests=preflight_directory)
-    _, frame, groups, _, _, mask, folds, _, x, _, _ = _prepare_scientific_data(
+    _, frame, groups, _, _, mask, folds, _, x, _, _ = prepare_scientific_data(
         config, context, model.get("fixed_threshold_ppm"), target, source,
         float(model["high_lithium_quantile"]), int(validation["folds"]), seed, group)
     mode = calibration_policy(config["optimization"])

@@ -17,6 +17,12 @@ def _project_root() -> Path:
 
 PROJECT_ROOT = _project_root()
 
+def resolve_project_path(raw: str | Path, root: Path = PROJECT_ROOT) -> Path:
+    """Resolve configuration paths against the selected runtime root."""
+    path = Path(raw).expanduser()
+    return path if path.is_absolute() else root / path
+
+
 DATA_DIR = PROJECT_ROOT / "data"
 MODELS_DIR = PROJECT_ROOT / "models"
 RESULTS_DIR = PROJECT_ROOT / "results"

@@ -4,8 +4,8 @@ import json
 import numpy as np
 import pandas as pd
 
-from lithiumscope.experiments.validation.leakage_safe_m2 import threshold
-from lithiumscope.experiments.georoc.georoc_full_mamani_audit import near_full_mamani
+from lithiumscope.experiments.model_2.spatial.leakage_control import threshold
+from lithiumscope.experiments.data_lab.source_studies.georoc.screening.mamani_overlap import near_full_mamani
 
 
 def test_threshold_uses_only_supplied_inner_examples():

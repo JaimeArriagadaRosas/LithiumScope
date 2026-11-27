@@ -1,49 +1,46 @@
-"""Extracted responsibility; original public entrypoint remains stable."""
+"""Independent M2 scientific training component."""
 
 from __future__ import annotations
+from lithiumscope.model_2.training.execution.contracts import ScientificData, ScientificManifests, CompetitionOptions, CandidateEvidence
+from lithiumscope.core.logging.session import get_logger
 
 
-def _finalize_scientific_winner(
-    baseline,
-    candidates,
-    cfg,
-    context,
-    dataset_manifest,
-    dataset_manifest_path,
-    device,
-    failed,
-    fixed_threshold,
-    frame,
-    groups,
-    inner_folds,
-    q,
-    quality_audit,
-    quality_cfg,
-    quality_mask,
-    ranking,
-    results,
-    seed,
-    threshold,
-    x,
-    y,
-    y_full,
-):
-    from lithiumscope.model_2.training.competition import (
-        CompetitionOutcome,
-        FEATURE_EXTRACTOR_VERSION,
-        RunState,
-        _excel_sheets,
-        build_dashboard,
-        export_workbook,
-        feature_range_profile,
-        get_label,
-        np,
-        pd,
-        save_model_bundle,
-        save_oof_diagnostics,
-    )
+def finalize_winner(cfg, context, device, data: ScientificData, manifests: ScientificManifests,
+                    options: CompetitionOptions, evidence: CandidateEvidence, ranking, candidates):
+    frame = data.frame
+    groups = data.groups
+    quality_audit = data.quality_audit
+    quality_cfg = data.quality_cfg
+    quality_mask = data.quality_mask
+    threshold = data.threshold
+    x = data.x
+    y = data.y
+    y_full = data.y_full
+    baseline = manifests.baseline
+    dataset_manifest = manifests.dataset_manifest
+    dataset_manifest_path = manifests.dataset_manifest_path
+    fixed_threshold = options.fixed_threshold
+    inner_folds = options.inner_folds
+    q = options.q
+    seed = options.seed
+    failed = evidence.failed
+    results = evidence.results
+    from lithiumscope.model_2.training.execution.contracts import CompetitionOutcome
+    from lithiumscope.model_2.preparation.features.spectral import FEATURE_EXTRACTOR_VERSION
+    from lithiumscope.core.states import RunState
+    from lithiumscope.model_2.evaluation.artifacts import competition_workbook_sheets
+    from lithiumscope.results.dashboard import build_dashboard
+    from lithiumscope.results.excel_exporter import export_workbook
+    from lithiumscope.model_2.schema import feature_range_profile
+    from lithiumscope.model_2.training.factory import get_label
+    import numpy as np
+    import pandas as pd
+    from lithiumscope.persistence.save_model import save_model_bundle
+    from lithiumscope.core.scientific.training_diagnostics import save_oof_diagnostics
 
     winner = str(candidates.iloc[0]["algorithm"])
+    logger = get_logger("model_2.winner_finalization")
+    logger.info("Finalizing M2 winner: %s", winner)
     print(f"\n🏆 Ganador de esta ejecución Modelo 2: {get_label(winner)}")
 
     winner_result = results[winner]
@@ -226,7 +223,7 @@ def _finalize_scientific_winner(
 
     export_workbook(
         context.exports / "model_2_results.xlsx",
-        _excel_sheets(ranking, results, y, baseline, context.tables),
+        competition_workbook_sheets(ranking, results, y, baseline, context.tables),
     )
     (context.exports / "winner.txt").write_text(
         f"algorithm={winner}\nmodel={model_path}\nmetadata={metadata_path}\n",
@@ -255,6 +252,7 @@ def _finalize_scientific_winner(
         operating_threshold_objective=threshold_selection.objective,
         operating_threshold_objective_value=threshold_selection.objective_value,
     )
+    logger.info("M2 winner persisted: %s", model_path)
     return CompetitionOutcome(
         context.root,
         ranking,

@@ -1,9 +1,21 @@
-"""Extracted responsibility; original public entrypoint remains stable."""
+"""Independent M2 scientific training component."""
 from __future__ import annotations
+from lithiumscope.model_2.training.execution.contracts import ScientificData, CompetitionOptions, ScientificManifests
 
 
-def _prepare_scientific_manifests(context, fixed_threshold, frame, groups, inner_folds, manifest_path, q, scientific_folds, threshold, quality_mask=None):
-    from lithiumscope.model_2.training.competition import build_tabular_manifest, evaluate_scientific_baseline, write_manifest
+def prepare_scientific_manifests(context, data: ScientificData, options: CompetitionOptions) -> ScientificManifests:
+    frame = data.frame
+    groups = data.groups
+    scientific_folds = data.scientific_folds
+    threshold = data.threshold
+    quality_mask = data.quality_mask
+    fixed_threshold = options.fixed_threshold
+    inner_folds = options.inner_folds
+    manifest_path = options.manifest_path
+    q = options.q
+    from lithiumscope.datasets.provenance.manifest import build_tabular_manifest
+    from lithiumscope.model_2.validation.spatial import evaluate_scientific_baseline
+    from lithiumscope.datasets.provenance.manifest import write_manifest
     dataset_manifest = build_tabular_manifest(
         manifest_path,
         dataset_name="model_2_training_manifest",
@@ -79,4 +91,4 @@ def _prepare_scientific_manifests(context, fixed_threshold, frame, groups, inner
     spatial_table.to_csv(context.tables / "geographic_baseline_fold_metrics.csv", index=False)
     pd.DataFrame([overall]).to_csv(context.tables / "geographic_baseline_global_metrics.csv", index=False)
 
-    return baseline, dataset_manifest, dataset_manifest_path, folds
+    return ScientificManifests(baseline, dataset_manifest, dataset_manifest_path, folds)

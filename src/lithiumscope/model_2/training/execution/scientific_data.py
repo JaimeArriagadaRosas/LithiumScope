@@ -1,23 +1,23 @@
-"""Extracted responsibility; original public entrypoint remains stable."""
+"""Independent M2 scientific training component."""
 
 from __future__ import annotations
+from lithiumscope.model_2.training.execution.contracts import ScientificData
+from lithiumscope.core.logging.session import get_logger
 
 
-def _prepare_scientific_data(
+def prepare_scientific_data(
     cfg, context, fixed_threshold, lithium_column, manifest_path, q, requested_folds, seed, spatial_group_column
 ):
-    from lithiumscope.model_2.training.competition import (
-        PROJECT_ROOT,
-        file_sha256,
-        json,
-        load_model_2_training_frame,
-        make_anchored_scientific_folds,
-        make_scientific_folds,
-        np,
-        pd,
-        scientific_labels,
-        training_quality_mask,
-    )
+    from lithiumscope.core.paths import PROJECT_ROOT
+    from lithiumscope.core.hashing import file_sha256
+    import json
+    from lithiumscope.model_2.preparation.training_data import load_model_2_training_frame
+    from lithiumscope.model_2.validation.spatial import make_anchored_scientific_folds
+    from lithiumscope.model_2.validation.spatial import make_scientific_folds
+    import numpy as np
+    import pandas as pd
+    from lithiumscope.model_2.validation.spatial import scientific_labels
+    from lithiumscope.model_2.validation.quality import training_quality_mask
     from lithiumscope.model_2.preparation.features.v4_inputs import (
         spectral_v4_enabled,
         load_spectral_v4_training_frame,
@@ -25,6 +25,8 @@ def _prepare_scientific_data(
         verify_spectral_v4_source,
     )
 
+    logger = get_logger("model_2.scientific_data")
+    logger.info("Preparing scientific M2 data: %s", manifest_path)
     v4 = spectral_v4_enabled(cfg)
     frame = load_spectral_v4_training_frame(manifest_path, cfg) if v4 else load_model_2_training_frame(manifest_path)
     # Full-data target threshold is reserved for the final fitted model.
@@ -183,4 +185,5 @@ def _prepare_scientific_data(
         encoding="utf-8",
     )
 
-    return fold_ids, frame, groups, quality_audit, quality_cfg, quality_mask, scientific_folds, threshold, x, y, y_full
+    logger.info("M2 scientific data prepared: %d rows, %d folds", len(frame), len(scientific_folds))
+    return ScientificData(fold_ids, frame, groups, quality_audit, quality_cfg, quality_mask, scientific_folds, threshold, x, y, y_full)

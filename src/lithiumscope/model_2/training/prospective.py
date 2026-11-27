@@ -1,7 +1,7 @@
 """Reserve and score independent evidence around the production competition."""
 from pathlib import Path
 
-from lithiumscope.model_2.preparation.training_data import resolve_project_path
+from lithiumscope.core.paths import resolve_project_path
 
 
 def train_with_prospective_evidence(source, device, cfg):

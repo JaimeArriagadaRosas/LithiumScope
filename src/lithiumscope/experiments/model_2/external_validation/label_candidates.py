@@ -17,7 +17,7 @@ import pandas as pd
 from lithiumscope.core.config import load_config
 from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR
 from lithiumscope.datasets.validation.chemistry.qc_protocols import protocol_masks
-from lithiumscope.model_2.data.builder import _sentinel_config
+from lithiumscope.tools.acquisition.sentinel2.configuration import sentinel_config as _sentinel_config
 from lithiumscope.model_2.data.sample_source import _spatial_group
 from lithiumscope.tools.acquisition.sentinel2.provider import (
     Sentinel2Provider, SentinelAssetError, SentinelSceneUnavailable,

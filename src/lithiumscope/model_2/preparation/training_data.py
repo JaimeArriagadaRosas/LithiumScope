@@ -7,15 +7,12 @@ import pandas as pd
 
 from lithiumscope.core.config import load_config
 from lithiumscope.core.logging.session import get_logger
-from lithiumscope.core.paths import PROJECT_ROOT
+from lithiumscope.core.paths import resolve_project_path
 from lithiumscope.core.reproducibility import canonical_json_hash
 from lithiumscope.model_2.data.feature_cache import source_identity, read_cache, write_cache
 from lithiumscope.model_2.preparation.training_matrix import build_training_set
 
 
-def resolveresolve_project_path(raw: str, root: Path = PROJECT_ROOT) -> Path:
-    path = Path(raw)
-    return path if path.is_absolute() else root / path
 
 
 def load_model_2_training_frame(path: Path | None = None) -> pd.DataFrame:

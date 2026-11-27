@@ -59,7 +59,9 @@ def test_cv_runner_persists_and_reconstructs_train_only_policy(monkeypatch, tmp_
     def fake_fit(algorithm, device, seed, params, x_train, y_train, groups_train, inner_folds, **kw):
         fits.append(set(x_train.id))
         return Model(x_train.id)
-    monkeypatch.setattr(cv_runner, "_fit_estimator", fake_fit)
+    from lithiumscope.model_2.training.execution import outer_folds, fold_utilities
+    monkeypatch.setattr(outer_folds, "_fit_estimator", fake_fit)
+    monkeypatch.setattr(fold_utilities, "_fit_estimator", fake_fit)
     args = dict(x=x, y=y, algorithm="catboost", device=None, seed=42, folds=3,
                 groups=groups, checkpoint_root=tmp_path, inner_folds=3,
                 optimization={"enabled": False, "operating_threshold_objective": "balanced_accuracy"},

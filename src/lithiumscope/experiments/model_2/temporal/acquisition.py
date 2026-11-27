@@ -12,7 +12,8 @@ from lithiumscope.core.config import load_config
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.core.reproducibility import canonical_json_hash
-from lithiumscope.model_2.data.builder import _sentinel_config, _atomic_write_csv
+from lithiumscope.tools.acquisition.sentinel2.configuration import sentinel_config as _sentinel_config
+from lithiumscope.model_2.data.acquisition_state import _atomic_write_csv
 from lithiumscope.tools.acquisition.sentinel2.provider import Sentinel2Provider, SentinelProviderError
 from lithiumscope.tools.acquisition.sentinel2.registered_patch import (
     validate_interval, download_registered_patch, _atomic_json,

@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.experiments.model_2.texture_study import STATS, TEXTURE, texture_arms
+from lithiumscope.experiments.model_2.representation.texture import STATS, TEXTURE, texture_arms
 from lithiumscope.model_2.evaluation.geographic_baseline import evaluate_geographic_baseline
 from lithiumscope.model_2.preparation.features.rededge import NEW_BANDS
 from lithiumscope.model_2.preparation.features.spectral import DEFAULT_BAND_NAMES

@@ -17,8 +17,8 @@ from lithiumscope.core.config import load_config
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.model_2.training import competition
-from lithiumscope.model_2.training.execution.competition_prepare_scientific_data import (
-    _prepare_scientific_data,
+from lithiumscope.model_2.training.execution.scientific_data import (
+    prepare_scientific_data,
 )
 from lithiumscope.model_2.preparation.features.v4_inputs import (
     ALGORITHMS,
@@ -114,7 +114,7 @@ def test_main_data_preparation_uses_v4_and_spatial_folds_no_fit(
 ):
     manifest = PROJECT_ROOT / model2_v4["training"]["manifest_path"]
     context = SimpleNamespace(manifests=tmp_path)
-    output = _prepare_scientific_data(
+    output = prepare_scientific_data(
         model2_v4,
         context,
         None,

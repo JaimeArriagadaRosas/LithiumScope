@@ -2,111 +2,34 @@ from __future__ import annotations
 
 from lithiumscope.core.scientific.candidate_evidence import eligible_rows
 
-from dataclasses import dataclass
 from pathlib import Path
 import json
 
-import numpy as np
 import pandas as pd
 
 from lithiumscope.core.config import load_config
-from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.resources.detection.device import DeviceInfo
 from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.reproducibility import set_global_seed
 from lithiumscope.core.run_context import RunContext
-from lithiumscope.core.scientific.training_diagnostics import save_oof_diagnostics
 from lithiumscope.core.states import RunState
-from lithiumscope.datasets.provenance.manifest import build_tabular_manifest, write_manifest
-from lithiumscope.model_2.evaluation.baseline import evaluate_prior_baseline
-from lithiumscope.model_2.evaluation.thresholds import select_operating_threshold
-from lithiumscope.model_2.evaluation.maps import save_spatial_score_map
-from lithiumscope.model_2.evaluation.plots import (
-    save_competition_chart,
-    save_probability_histogram,
-    save_roc_pr,
-)
-from lithiumscope.model_2.preparation.training_data import load_model_2_training_frame
-from lithiumscope.model_2.preparation.features.spectral import (
-    FEATURE_EXTRACTOR_VERSION,
-)
-from lithiumscope.model_2.schema import feature_range_profile
-from lithiumscope.model_2.training.execution.cv_runner import run_classification_cv
-from lithiumscope.model_2.validation.quality import training_quality_mask
+from lithiumscope.model_2.evaluation.plots import save_competition_chart
 from lithiumscope.model_2.training.postprocess import finalize_reports
-from lithiumscope.model_2.validation.spatial import (
-    make_scientific_folds, make_anchored_scientific_folds,
-    scientific_labels, evaluate_scientific_baseline,
-)
-from lithiumscope.model_2.training.factory import create_model, get_label
-from lithiumscope.persistence.save_model import save_model_bundle
 from lithiumscope.results.dashboard import build_dashboard
 from lithiumscope.results.excel_exporter import export_workbook
 from lithiumscope.runtime.graceful_shutdown import get_shutdown_manager
 
+from lithiumscope.model_2.training.execution.contracts import CompetitionOutcome, CompetitionOptions, CandidateEvidence
+from lithiumscope.model_2.evaluation.artifacts import competition_workbook_sheets
+from lithiumscope.model_2.evaluation.selection import rank_candidates
+
+from lithiumscope.model_2.training.execution.scientific_data import prepare_scientific_data
+from lithiumscope.model_2.training.execution.scientific_manifests import prepare_scientific_manifests
+from lithiumscope.model_2.training.execution.candidate_evaluation import evaluate_candidates
+from lithiumscope.model_2.training.execution.winner_finalization import finalize_winner
+
 logger = get_logger("model_2.competition")
-
-
-@dataclass
-class CompetitionOutcome:
-    run_dir: Path
-    ranking: pd.DataFrame
-    winner: str | None
-    successful: list[str]
-    failed: list[str]
-
-
-def _ranking_row(result) -> dict:
-    folds = result.fold_table
-    return {
-        "algorithm": result.algorithm,
-        "label": result.label,
-        "roc_auc_mean": float(folds["roc_auc"].mean()),
-        "roc_auc_std": float(folds["roc_auc"].std(ddof=0)),
-        "average_precision_mean": float(folds["average_precision"].mean()),
-        "balanced_accuracy_mean": float(folds["balanced_accuracy"].mean()),
-        "f1_mean": float(folds["f1"].mean()),
-        "precision_mean": float(folds["precision"].mean()),
-        "recall_mean": float(folds["recall"].mean()),
-        "brier_score_mean": float(folds["brier_score"].mean()),
-        "elapsed_seconds": result.elapsed_seconds,
-        "status": "ok",
-        "is_baseline": False,
-    }
-
-
-def _excel_sheets(
-    ranking: pd.DataFrame,
-    results: dict[str, object],
-    y: pd.Series,
-    baseline,
-    evidence_dir: Path | None = None,
-) -> dict[str, pd.DataFrame]:
-    sheets: dict[str, pd.DataFrame] = {
-        "ranking": ranking,
-        "baseline_folds": baseline[1],
-    }
-    for algorithm, result in results.items():
-        sheets[f"folds_{algorithm}"[:31]] = result.fold_table
-        sheets[f"pred_{algorithm}"[:31]] = pd.DataFrame(
-            {
-                "y_true": y.to_numpy(),
-                "prospectivity_score": result.probabilities,
-                "predicted_class_0_5": (result.probabilities >= 0.5).astype(int),
-            }
-        )
-    if evidence_dir is not None:
-        for filename,sheet in (
-            ("old_release_protocol_comparison_706.csv","release_706"),
-            ("old_release_protocol_intervals_706.csv","release_intervals"),
-            ("scientific_stratified_metrics.csv","scientific_strata"),
-            ("three_zone_competition_cases.csv","three_zone_cases"),
-        ):
-            evidence_path=evidence_dir/filename
-            if evidence_path.exists():
-                sheets[sheet]=pd.read_csv(evidence_path)
-    return sheets
 
 
 def run_model_2_competition(
@@ -159,6 +82,7 @@ def run_model_2_competition(
 
     print("\n=== MODELO 2 · COMPETENCIA DE ALGORITMOS ===")
     print(f"Entrenamiento: {context.run_id}")
+    logger.info("M2 competition started: %s", context.run_id)
 
     if context.resumed and context.tracker.state == RunState.COMPLETED:
         ranking_path = context.tables / "competition_ranking.csv"
@@ -187,45 +111,23 @@ def run_model_2_competition(
     (context.manifests/"effective_configuration.json").write_text(json.dumps(effective_config,indent=2),encoding="utf-8")
     get_shutdown_manager().register_cleanup(context.tracker.cancel_if_active)
 
-    fold_ids, frame, groups, quality_audit, quality_cfg, quality_mask, scientific_folds, threshold, x, y, y_full = _prepare_scientific_data(cfg, context, fixed_threshold, lithium_column, manifest_path, q, requested_folds, seed, spatial_group_column)
+    data = prepare_scientific_data(cfg, context, fixed_threshold, lithium_column, manifest_path, q, requested_folds, seed, spatial_group_column)
+    options = CompetitionOptions(fixed_threshold, inner_folds, lithium_column, manifest_path, optimization_cfg, q, seed)
 
     from lithiumscope.model_2.eda.pipeline import record_training_eda
-    record_training_eda(manifest_path, frame, cfg, scientific_folds, quality_mask, context)
-    baseline, dataset_manifest, dataset_manifest_path, folds = _prepare_scientific_manifests(context, fixed_threshold, frame, groups, inner_folds, manifest_path, q, scientific_folds, threshold, quality_mask)
+    record_training_eda(manifest_path, data.frame, cfg, data.scientific_folds, data.quality_mask, context)
+    manifests = prepare_scientific_manifests(context, data, options)
+    baseline = manifests.baseline
+    y = data.y
 
     rows: list[dict] = [baseline[0]]
     results: dict[str, object] = {}
     failed: list[str] = []
 
-    _evaluate_algorithm_candidates(algorithms, context, device, failed, fixed_threshold, fold_ids, folds, frame, groups, inner_folds, lithium_column, manifest_path, optimization_cfg, q, quality_mask, results, rows, scientific_folds, seed, x, y)
+    evidence = CandidateEvidence(results, rows, failed)
+    evaluate_candidates(algorithms, context, device, data, manifests, options, evidence)
 
-    ranking = pd.DataFrame(rows)
-    candidates = ranking[
-        eligible_rows(ranking)
-        & (ranking["is_baseline"] != True)  # noqa: E712
-    ].copy()
-    baseline_rows = ranking[ranking["is_baseline"] == True].copy()  # noqa: E712
-    failed_rows = ranking[(~eligible_rows(ranking)) & (ranking["is_baseline"] != True)].copy()
-
-    if not candidates.empty:
-        candidates = candidates.sort_values(
-            [
-                "roc_auc_mean",
-                "average_precision_mean",
-                "balanced_accuracy_mean",
-                "algorithm",
-            ],
-            ascending=[False, False, False, True],
-        ).reset_index(drop=True)
-        candidates.insert(0, "rank", range(1, len(candidates) + 1))
-    if not baseline_rows.empty:
-        baseline_rows.insert(0, "rank", pd.NA)
-
-    ranking = pd.concat(
-        [candidates, baseline_rows, failed_rows],
-        ignore_index=True,
-        sort=False,
-    )
+    ranking, candidates = rank_candidates(rows)
     if results:
         # All three reports are repairable from saved OOF without retraining.
         # Preserve a long-running competition even when one report needs repair,
@@ -269,9 +171,10 @@ def run_model_2_competition(
     )
 
     if candidates.empty:
+        logger.error("No eligible M2 candidate: %s", context.run_id)
         export_workbook(
             context.exports / "model_2_results.xlsx",
-            _excel_sheets(ranking, results, y, baseline, context.tables),
+            competition_workbook_sheets(ranking, results, y, baseline, context.tables),
         )
         build_dashboard(context.root, "LithiumScope — Modelo 2")
         context.tracker.set_state(
@@ -285,9 +188,4 @@ def run_model_2_competition(
         context.figures / "competition_roc_auc.png",
     )
 
-    return _finalize_scientific_winner(baseline, candidates, cfg, context, dataset_manifest, dataset_manifest_path, device, failed, fixed_threshold, frame, groups, inner_folds, q, quality_audit, quality_cfg, quality_mask, ranking, results, seed, threshold, x, y, y_full)
-
-from lithiumscope.model_2.training.execution.competition_prepare_scientific_data import _prepare_scientific_data
-from lithiumscope.model_2.training.execution.competition_prepare_scientific_manifests import _prepare_scientific_manifests
-from lithiumscope.model_2.training.execution.competition_evaluate_algorithm_candidates import _evaluate_algorithm_candidates
-from lithiumscope.model_2.training.execution.competition_finalize_scientific_winner import _finalize_scientific_winner
+    return finalize_winner(cfg, context, device, data, manifests, options, evidence, ranking, candidates)

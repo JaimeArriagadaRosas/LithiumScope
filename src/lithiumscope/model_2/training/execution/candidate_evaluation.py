@@ -1,9 +1,37 @@
-"""Extracted responsibility; original public entrypoint remains stable."""
+"""Independent M2 scientific training component."""
 from __future__ import annotations
+from lithiumscope.model_2.training.execution.contracts import ScientificData, ScientificManifests, CompetitionOptions, CandidateEvidence
 
 
-def _evaluate_algorithm_candidates(algorithms, context, device, failed, fixed_threshold, fold_ids, folds, frame, groups, inner_folds, lithium_column, manifest_path, optimization_cfg, q, quality_mask, results, rows, scientific_folds, seed, x, y):
-    from lithiumscope.model_2.training.competition import _ranking_row, get_label, logger, pd, run_classification_cv, save_probability_histogram, save_roc_pr, save_spatial_score_map
+def evaluate_candidates(algorithms, context, device, data: ScientificData, manifests: ScientificManifests,
+                        options: CompetitionOptions, evidence: CandidateEvidence):
+    fold_ids = data.fold_ids
+    frame = data.frame
+    groups = data.groups
+    quality_mask = data.quality_mask
+    scientific_folds = data.scientific_folds
+    x = data.x
+    y = data.y
+    folds = manifests.folds
+    fixed_threshold = options.fixed_threshold
+    inner_folds = options.inner_folds
+    lithium_column = options.lithium_column
+    manifest_path = options.manifest_path
+    optimization_cfg = options.optimization_cfg
+    q = options.q
+    seed = options.seed
+    failed = evidence.failed
+    results = evidence.results
+    rows = evidence.rows
+    from lithiumscope.model_2.evaluation.selection import ranking_row
+    from lithiumscope.model_2.training.factory import get_label
+    from lithiumscope.core.logging.session import get_logger
+    logger = get_logger("model_2.candidate_evaluation")
+    import pandas as pd
+    from lithiumscope.model_2.training.execution.cv_runner import run_classification_cv
+    from lithiumscope.model_2.evaluation.plots import save_probability_histogram
+    from lithiumscope.model_2.evaluation.plots import save_roc_pr
+    from lithiumscope.model_2.evaluation.maps import save_spatial_score_map
     from lithiumscope.core.scientific.candidate_evidence import record_evidence, verify_candidate
     from lithiumscope.core.scientific.classification_metrics import validate_binary_inputs, reliability_table
     from lithiumscope.model_2.evaluation.oof_evidence import build_oof_table
@@ -57,7 +85,7 @@ def _evaluate_algorithm_candidates(algorithms, context, device, failed, fixed_th
                 )
             validate_binary_inputs(y, result.probabilities)
             verify_candidate(result, result.probabilities, len(y), ("roc_auc", "average_precision", "balanced_accuracy"), folds)
-            row = _ranking_row(result)
+            row = ranking_row(result)
         except Exception as exc:
             logger.exception("Model 2 algorithm failed: %s", algorithm)
             failed.append(algorithm)

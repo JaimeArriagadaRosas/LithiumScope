@@ -325,5 +325,13 @@
   "lithiumscope.model_2.eda.statistics.profile": "lithiumscope.model_2.eda.statistics",
   "lithiumscope.model_2.eda.visualization.spectral_quality": "lithiumscope.model_2.eda.visualization",
   "lithiumscope.model_2.training.trainer": "lithiumscope.model_2.training.competition",
-  "lithiumscope.model_2.training.prospectivity_model": "lithiumscope.model_2.training.algorithms.random_forest"
+  "lithiumscope.model_2.training.prospectivity_model": "lithiumscope.model_2.training.algorithms.random_forest",
+  "lithiumscope.model_2.data.builder_assemble": "lithiumscope.model_2.data.builder",
+  "lithiumscope.model_2.data.expansion_vnext_build_manifest": "lithiumscope.model_2.data.expansion_vnext",
+  "lithiumscope.model_2.training.execution.competition_prepare_scientific_data": "lithiumscope.model_2.training.execution.scientific_data",
+  "lithiumscope.model_2.training.execution.competition_prepare_scientific_manifests": "lithiumscope.model_2.training.execution.scientific_manifests",
+  "lithiumscope.model_2.training.execution.competition_evaluate_algorithm_candidates": "lithiumscope.model_2.training.execution.candidate_evaluation",
+  "lithiumscope.model_2.training.execution.competition_finalize_scientific_winner": "lithiumscope.model_2.training.execution.winner_finalization",
+  "lithiumscope.model_2.training.execution.cv_runner_evaluate_outer_classification_folds": "lithiumscope.model_2.training.execution.outer_folds",
+  "lithiumscope.model_2.training.execution.cv_runner_fold_utilities": "lithiumscope.model_2.training.execution.fold_utilities"
 }

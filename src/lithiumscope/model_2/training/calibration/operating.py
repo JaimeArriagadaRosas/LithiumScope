@@ -65,5 +65,5 @@ def fit_policy(algorithm, device, seed, params, x, y, groups, inner_folds, mode)
     if mode == "spatial_sigmoid":
         from lithiumscope.model_2.training.calibration.policy import fit_spatially_calibrated
         return fit_spatially_calibrated(algorithm, device, seed, params, x, y, groups, inner_folds)
-    from lithiumscope.model_2.training.execution.cv_runner import _fit_estimator
+    from lithiumscope.model_2.training.execution.fold_utilities import _fit_estimator
     return _fit_estimator(algorithm, device, seed, params, x, y, groups, inner_folds, strict_spatial=True)

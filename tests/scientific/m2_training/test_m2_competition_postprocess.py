@@ -12,7 +12,7 @@ import pandas as pd
 import pytest
 
 from lithiumscope.model_2.training import postprocess as pp
-from lithiumscope.model_2.training.competition import _excel_sheets
+from lithiumscope.model_2.evaluation.artifacts import competition_workbook_sheets
 
 
 def create_manifest(path:Path):
@@ -160,7 +160,7 @@ def test_excel_export_includes_scientific_comparison_when_present(tmp_path):
         "algorithm,roc_auc\nold,0.56\nnew,0.62\n",encoding="utf-8")
     (tmp_path/"scientific_stratified_metrics.csv").write_text(
         "algorithm,subset,n\ncatboost,all,783\n",encoding="utf-8")
-    sheets=_excel_sheets(ranking,{"catboost":Result()},y,
+    sheets=competition_workbook_sheets(ranking,{"catboost":Result()},y,
                          (None,pd.DataFrame({"fold":[1]})),tmp_path)
     assert "release_706" in sheets
     assert "scientific_strata" in sheets

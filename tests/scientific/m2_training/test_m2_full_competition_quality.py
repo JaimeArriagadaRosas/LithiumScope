@@ -71,7 +71,9 @@ def test_six_algorithm_cv_training_quality_does_not_filter_outer_test(monkeypatc
         assert len(set(np.asarray(y_train)))==2
         observed.append((len(x_train),len(groups_train),algorithm))
         return StubEstimator()
-    monkeypatch.setattr(cv_runner,"_fit_estimator",fake_fit)
+    from lithiumscope.model_2.training.execution import outer_folds, fold_utilities
+    monkeypatch.setattr(outer_folds, "_fit_estimator",fake_fit)
+    monkeypatch.setattr(fold_utilities, "_fit_estimator",fake_fit)
     result=cv_runner.run_classification_cv(
         frame,labels,"catboost",None,42,5,groups,
         optimization={"enabled":False},inner_folds=3,
@@ -137,8 +139,12 @@ def test_optuna_receives_only_quality_train_rows_with_aligned_lithium(monkeypatc
         def predict_proba(self,x):
             p=.2+.0004*x.red_mean.to_numpy(float)
             return np.column_stack([1-p,p])
-    monkeypatch.setattr(cv_runner,"optimize_classifier_with_optuna",optimizer)
-    monkeypatch.setattr(cv_runner,"_fit_estimator",lambda *a,**kw:Predictor())
+    from lithiumscope.model_2.training.execution import outer_folds
+    monkeypatch.setattr(cv_runner, "optimize_classifier_with_optuna",optimizer)
+    monkeypatch.setattr(outer_folds, "optimize_classifier_with_optuna",optimizer)
+    from lithiumscope.model_2.training.execution import outer_folds, fold_utilities
+    monkeypatch.setattr(outer_folds, "_fit_estimator",lambda *a,**kw:Predictor())
+    monkeypatch.setattr(fold_utilities, "_fit_estimator",lambda *a,**kw:Predictor())
     result=cv_runner.run_classification_cv(
         data,labels,"catboost",None,42,5,groups,
         optimization={"enabled":True,"n_trials":2},inner_folds=3,

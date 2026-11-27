@@ -17,7 +17,7 @@ from lithiumscope.experiments.shared.design import budget_arms, choose_algorithm
 from lithiumscope.experiments.shared.paired_suite import Arm, run_paired_suite
 from lithiumscope.model_2.training.calibration.operating import fit_policy
 from lithiumscope.model_2.training.calibration.policy import calibration_policy
-from lithiumscope.model_2.training.execution.competition_prepare_scientific_data import _prepare_scientific_data
+from lithiumscope.model_2.training.execution.scientific_data import prepare_scientific_data
 from lithiumscope.model_2.training.factory import create_model, get_algorithm
 from lithiumscope.model_2.training.optimization.optimizer import optimize_classifier_with_optuna
 from lithiumscope.model_2.training.optimization.search_policy import parameter_space_for
@@ -85,7 +85,7 @@ def run(*, output: Path, study="representation", algorithms=None, execute=False,
     source=local_training_source("model_2")
     preparation=output.parent/(output.name+"_preparation")
     preparation.mkdir(parents=True,exist_ok=False)
-    _,frame,groups,_,_,mask,folds,_,x,_,_=_prepare_scientific_data(
+    _,frame,groups,_,_,mask,folds,_,x,_,_=prepare_scientific_data(
         config,SimpleNamespace(manifests=preparation),model.get("fixed_threshold_ppm"),
         training["lithium_column"],source,float(model["high_lithium_quantile"]),
         int(validation["folds"]),int(model["random_seed"]),training["spatial_group_column"])

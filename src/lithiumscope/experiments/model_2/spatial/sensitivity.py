@@ -20,7 +20,7 @@ from lithiumscope.experiments.shared.design import choose_algorithms
 from lithiumscope.core.scientific.classification_metrics import classification_metrics
 from lithiumscope.model_2.training.calibration.operating import fit_policy
 from lithiumscope.model_2.training.calibration.policy import calibration_policy
-from lithiumscope.model_2.training.execution.competition_prepare_scientific_data import _prepare_scientific_data
+from lithiumscope.model_2.training.execution.scientific_data import prepare_scientific_data
 from lithiumscope.model_2.validation.sensitivity import POLICIES, plan_protocol
 from lithiumscope.resources.detection.device import detect_device
 
@@ -35,7 +35,7 @@ def run(*, output: Path, endpoint_ppm: float, algorithms=None, execute=False):
     output.mkdir(parents=True, exist_ok=False)
     preparation = output / "preparation"
     preparation.mkdir()
-    _, frame, _, _, _, mask, _, _, x, _, _ = _prepare_scientific_data(
+    _, frame, _, _, _, mask, _, _, x, _, _ = prepare_scientific_data(
         config, SimpleNamespace(manifests=preparation), model.get("fixed_threshold_ppm"),
         training["lithium_column"], source, float(model["high_lithium_quantile"]),
         folds, seed, training["spatial_group_column"])

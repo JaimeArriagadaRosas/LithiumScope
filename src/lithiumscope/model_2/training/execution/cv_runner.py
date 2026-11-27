@@ -6,17 +6,13 @@ import time
 
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import StratifiedGroupKFold, StratifiedKFold, GroupKFold
+from sklearn.model_selection import GroupKFold
 
 from lithiumscope.core.checkpoints import FoldCheckpointStore
 from lithiumscope.core.scientific.checkpoint_identity import evaluation_identity
 from lithiumscope.resources.detection.device import DeviceInfo
 from lithiumscope.core.logging.session import get_logger
-from lithiumscope.core.scientific_checks import (
-    assert_group_isolation,
-    assert_partition_coverage,
-    assert_oof_complete,
-)
+from lithiumscope.core.scientific_checks import assert_partition_coverage, assert_oof_complete
 from lithiumscope.core.scientific.classification_metrics import classification_metrics
 from lithiumscope.model_2.validation.spatial import ScientificFold
 from lithiumscope.model_2.training.factory import (
@@ -43,12 +39,6 @@ class ClassificationCVResult:
     elapsed_seconds: float
     final_params: dict
     inner_operating_predictions: pd.DataFrame | None = None
-
-
-
-
-
-
 
 
 def run_classification_cv(
@@ -106,6 +96,7 @@ def run_classification_cv(
         )
     )
     pruning = optimization.get("pruning", {})
+    logger.info("M2 classification CV started: %s", algorithm)
     print(f"\n  ▶ {label}")
 
     split_iter = (
@@ -131,7 +122,13 @@ def run_classification_cv(
                    "quality_mask":None if quality_training_mask is None else quality_training_mask.tolist(),
                    "scientific_thresholds":None if scientific_folds is None else [f.label_threshold_ppm for f in scientific_folds]})
         checkpoint=FoldCheckpointStore(checkpoint_root,algorithm,identity=identity)
-    _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_threshold_ppm, folds, groups, inner_folds, label, label_quantile, lithium_values, optimize, probabilities, pruning, quality_training_mask, records, scientific_folds, seed, spec, split_groups, split_iter, trials, x, y, parameter_space, calibration_mode, operating_objective, operating_records)
+    evaluate_outer_folds(
+        OuterFoldData(x, y, groups, lithium_values, quality_training_mask),
+        OuterFoldPartition(folds, scientific_folds, split_groups, split_iter),
+        OuterFoldOptions(algorithm, device, fixed_threshold_ppm, inner_folds, label, label_quantile,
+                         optimize, pruning, seed, spec, trials, parameter_space, calibration_mode, operating_objective),
+        OuterFoldEvidence(probabilities, records, operating_records), checkpoint,
+    )
 
     assert_oof_complete(probabilities, len(y))
     final_indices = eligible_positions(quality_training_mask,len(y))
@@ -249,6 +246,7 @@ def run_classification_cv(
             }
         )
 
+    logger.info("M2 classification CV completed: %s (%d folds)", algorithm, len(records))
     return ClassificationCVResult(
         algorithm=algorithm,
         label=label,
@@ -260,6 +258,7 @@ def run_classification_cv(
         inner_operating_predictions=pd.DataFrame(operating_records) if operating_records else None,
     )
 
-from lithiumscope.model_2.training.execution.cv_runner_fold_utilities import _splitter, _materialize_splits, _fit_estimator
+from lithiumscope.model_2.training.execution.fold_utilities import _splitter, _materialize_splits
 
-from lithiumscope.model_2.training.execution.cv_runner_evaluate_outer_classification_folds import _evaluate_outer_classification_folds
+from lithiumscope.model_2.training.execution.outer_folds import evaluate_outer_folds
+from lithiumscope.model_2.training.execution.cv_contracts import OuterFoldData, OuterFoldPartition, OuterFoldOptions, OuterFoldEvidence

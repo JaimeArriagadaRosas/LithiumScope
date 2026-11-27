@@ -1,12 +1,51 @@
-"""Extracted responsibility; original public entrypoint remains stable."""
+"""Evaluate isolated outer classification folds and persist fold evidence."""
 from __future__ import annotations
+from lithiumscope.model_2.training.execution.cv_contracts import OuterFoldData, OuterFoldPartition, OuterFoldOptions, OuterFoldEvidence
 
 
-def _evaluate_outer_classification_folds(algorithm, checkpoint, device, fixed_threshold_ppm, folds, groups, inner_folds, label, label_quantile, lithium_values, optimize, probabilities, pruning, quality_training_mask, records, scientific_folds, seed, spec, split_groups, split_iter, trials, x, y, parameter_space, calibration_mode='legacy', operating_objective=None, operating_records=None):
-    from lithiumscope.model_2.training.execution.cv_runner import GroupKFold, Spinner, _fit_estimator, _materialize_splits, assert_group_isolation, classification_metrics, create_model, np, optimize_classifier_with_optuna, pd
-    from lithiumscope.model_2.training.calibration.operating import learn_operating_policy, operating_evidence, fit_policy
-    from lithiumscope.model_2.methodology.evaluation.decision import freeze_inner_oof_threshold
-    from lithiumscope.core.logging.context import scientific_log_context
+from sklearn.model_selection import GroupKFold
+from lithiumscope.runtime.console_status import Spinner
+from lithiumscope.model_2.training.execution.fold_utilities import _fit_estimator
+from lithiumscope.model_2.training.execution.fold_utilities import _materialize_splits
+from lithiumscope.core.scientific_checks import assert_group_isolation
+from lithiumscope.core.scientific.classification_metrics import classification_metrics
+from lithiumscope.model_2.training.factory import create_model
+import numpy as np
+from lithiumscope.model_2.training.optimization.optimizer import optimize_classifier_with_optuna
+import pandas as pd
+from lithiumscope.model_2.training.calibration.operating import learn_operating_policy, operating_evidence, fit_policy
+from lithiumscope.model_2.methodology.evaluation.decision import freeze_inner_oof_threshold
+from lithiumscope.core.logging.context import scientific_log_context
+
+
+def evaluate_outer_folds(data: OuterFoldData, partition: OuterFoldPartition, options: OuterFoldOptions,
+                         evidence: OuterFoldEvidence, checkpoint):
+    x = data.x
+    y = data.y
+    groups = data.groups
+    lithium_values = data.lithium_values
+    quality_training_mask = data.quality_training_mask
+    folds = partition.folds
+    scientific_folds = partition.scientific_folds
+    split_groups = partition.split_groups
+    split_iter = partition.split_iter
+    algorithm = options.algorithm
+    device = options.device
+    fixed_threshold_ppm = options.fixed_threshold_ppm
+    inner_folds = options.inner_folds
+    label = options.label
+    label_quantile = options.label_quantile
+    optimize = options.optimize
+    pruning = options.pruning
+    seed = options.seed
+    spec = options.spec
+    trials = options.trials
+    parameter_space = options.parameter_space
+    calibration_mode = options.calibration_mode
+    operating_objective = options.operating_objective
+    probabilities = evidence.probabilities
+    records = evidence.records
+    operating_records = evidence.operating_records
     for fold, (train_idx, test_idx) in enumerate(split_iter, start=1):
         with scientific_log_context(algorithm=algorithm,fold=fold,stage="outer_cv"):
             train_idx = np.asarray(train_idx, dtype=int)

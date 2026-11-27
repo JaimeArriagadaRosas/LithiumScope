@@ -6,6 +6,7 @@ import pandas as pd
 import pytest
 
 from lithiumscope.model_2.data import expansion_vnext as ex
+from lithiumscope.model_2.data import expansion_candidates as candidates
 from lithiumscope.tools.acquisition.sentinel2.provider import SentinelAssetError
 
 
@@ -34,7 +35,7 @@ def _source():
 def test_strict_source_filter_excludes_subsurface_and_existing_groups():
     baseline = _legacy()
     source = _source()
-    eligible=ex.candidates(source,baseline,max_li_ppm=30, degrees=.5)
+    eligible=candidates.candidates(source,baseline,max_li_ppm=30, degrees=.5)
     assert not eligible.sample_id.eq("GEOROC_3").any()
     assert eligible.Li_icpms.max()<=30
     assert not set(eligible.spatial_group).intersection(baseline.spatial_group)
@@ -43,12 +44,12 @@ def test_strict_source_filter_excludes_subsurface_and_existing_groups():
 
 
 def test_selection_keeps_geographic_uniqueness_and_paper_limit():
-    frame=ex.candidates(_source(),_legacy(),max_li_ppm=100, degrees=.5)
-    queue=ex.balanced_queue(frame,target=8,max_per_paper=2)
+    frame=candidates.candidates(_source(),_legacy(),max_li_ppm=100, degrees=.5)
+    queue=candidates.balanced_queue(frame,target=8,max_per_paper=2)
     assert queue.spatial_group.is_unique
     assert queue.CITATIONS.value_counts().max()<=2
     assert len(queue)>0
-    assert ex.balanced_queue(frame,target=8,max_per_paper=2).sample_id.tolist()==queue.sample_id.tolist()
+    assert candidates.balanced_queue(frame,target=8,max_per_paper=2).sample_id.tolist()==queue.sample_id.tolist()
 
 
 def test_m2_frozen_integrity_protects_old_manifest(monkeypatch,tmp_path):
@@ -57,16 +58,16 @@ def test_m2_frozen_integrity_protects_old_manifest(monkeypatch,tmp_path):
     (tmp_path/"a.npy").write_bytes(b"stub")
     legacy["image_path"] = str(tmp_path/"a.npy")
     legacy.to_csv(p,index=False)
-    monkeypatch.setattr(ex,"file_sha256",lambda path:"correct")
+    monkeypatch.setattr(candidates,"file_sha256",lambda path:"correct")
     config={"training":{
         "manifest_path":str(p),
         "frozen_expected_rows":len(legacy),
         "frozen_manifest_sha256":"correct",
     }}
-    assert len(ex.frozen_m2(tmp_path,config))==len(legacy)
+    assert len(candidates.frozen_m2(tmp_path,config))==len(legacy)
     config["training"]["frozen_manifest_sha256"]="incorrect"
     with pytest.raises(RuntimeError,match="changed"):
-        ex.frozen_m2(tmp_path,config)
+        candidates.frozen_m2(tmp_path,config)
 
 
 def test_scl_cloud_filter_uses_local_pixels_not_scene_summary(monkeypatch):
@@ -80,13 +81,13 @@ def test_scl_cloud_filter_uses_local_pixels_not_scene_summary(monkeypatch):
     class Stub:
         config=cfg
     scene={"assets":{"scl":{"href":"example_scl"}}}
-    monkeypatch.setattr(ex,"_read_patch",lambda *args,**kw:
+    monkeypatch.setattr(candidates,"_read_patch",lambda *args,**kw:
                         np.full((32,32),9.,dtype=float))
     with pytest.raises(SentinelAssetError,match="Cloud"):
-        ex._cloud_mask(scene,-22.,-69.,Stub(),max_cloud=.25)
-    monkeypatch.setattr(ex,"_read_patch",lambda *args,**kw:
+        candidates._cloud_mask(scene,-22.,-69.,Stub(),max_cloud=.25)
+    monkeypatch.setattr(candidates,"_read_patch",lambda *args,**kw:
                         np.full((32,32),4.,dtype=float))
-    assert ex._cloud_mask(scene,-22.,-69.,Stub(),max_cloud=.25)[
+    assert candidates._cloud_mask(scene,-22.,-69.,Stub(),max_cloud=.25)[
         "patch_cloud_fraction_scl"]==0
 
 
@@ -94,12 +95,12 @@ def test_spectral_contract_126_features_for_valid_6_band_patch(tmp_path: Path):
     path=tmp_path/"s2.npy"
     rng=np.random.default_rng(42)
     np.save(path,rng.uniform(.01,.55,(6,32,32)).astype("float32"))
-    assert ex._validate_bands(path,{"imagery":{"bands":[
+    assert candidates._validate_bands(path,{"imagery":{"bands":[
         "red","green","blue","nir","swir16","swir22",
     ]}})==126
     np.save(path,rng.random((5,32,32)).astype("float32"))
     with pytest.raises(ValueError,match="shape"):
-        ex._validate_bands(path,{"imagery":{"bands":[
+        candidates._validate_bands(path,{"imagery":{"bands":[
             "red","green","blue","nir","swir16","swir22",
         ]}})
 
@@ -129,7 +130,7 @@ def test_expansion_plan_is_download_free_and_leaves_legacy_unchanged(monkeypatch
     config["training"].update({
         "manifest_path":str(oldfile),
         "frozen_expected_rows":706,
-        "frozen_manifest_sha256":ex.file_sha256(oldfile),
+        "frozen_manifest_sha256":candidates.file_sha256(oldfile),
     })
     config["training"]["expansion"].update({
         "source_audit_path":str(audit),
@@ -142,7 +143,7 @@ def test_expansion_plan_is_download_free_and_leaves_legacy_unchanged(monkeypatch
     monkeypatch.setattr(ex,"load_config",lambda name:config)
     monkeypatch.setattr(ex,"Sentinel2Provider",
                         lambda cfg: pytest.fail("Plan must not use satellite provider"))
-    base=ex.frozen_m2(tmp_path,config)
+    base=candidates.frozen_m2(tmp_path,config)
     original=oldfile.read_bytes()
     assert ex.ensure_expanded_m2_manifest(
         root=tmp_path,acquire=False,max_new_downloads=1

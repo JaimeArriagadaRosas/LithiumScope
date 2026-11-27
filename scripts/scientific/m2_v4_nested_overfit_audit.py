@@ -15,7 +15,7 @@ from sklearn.metrics import roc_auc_score, average_precision_score, brier_score_
 
 from lithiumscope.core.device import detect_device
 from lithiumscope.core.paths import PROJECT_ROOT
-from lithiumscope.model_2.training.execution.cv_runner_fold_utilities import _fit_estimator
+from lithiumscope.model_2.training.execution.fold_utilities import _fit_estimator
 from lithiumscope.model_2.validation.quality import training_quality_mask
 from lithiumscope.model_2.methodology.spectral.rededge_training import combine_quality_masks
 
