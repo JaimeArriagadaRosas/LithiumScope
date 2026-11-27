@@ -10,7 +10,7 @@ from sklearn.model_selection import KFold
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import RESULTS_DIR
 from lithiumscope.core.reproducibility import runtime_fingerprint
-from lithiumscope.datasets.management.local_sources import local_training_source
+from lithiumscope.datasets.management.sources.local import local_training_source
 from lithiumscope.experiments.model_1.balanced.academic import cohort
 from lithiumscope.experiments.model_1.expansion.academic_bridge import PROFILES,SEED,benchmark_status
 from lithiumscope.experiments.model_1.expansion.sensitivity_data import read

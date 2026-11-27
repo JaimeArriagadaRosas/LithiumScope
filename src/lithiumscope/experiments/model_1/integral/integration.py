@@ -12,7 +12,7 @@ from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import RESULTS_DIR
 from lithiumscope.core.reproducibility import runtime_fingerprint
 from lithiumscope.core.scientific.regression_metrics import regression_metrics
-from lithiumscope.datasets.management.local_sources import local_training_source
+from lithiumscope.datasets.management.sources.local import local_training_source
 from lithiumscope.experiments.data_lab.candidate_audit import REFERENCE,FOLD_SHA256
 from lithiumscope.experiments.model_1.targeted.partitions import outer_from_manifest,validate_partition
 from lithiumscope.experiments.model_1.balanced.academic import cohort

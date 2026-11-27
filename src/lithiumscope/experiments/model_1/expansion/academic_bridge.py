@@ -12,7 +12,7 @@ from sklearn.model_selection import KFold
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import RESULTS_DIR
 from lithiumscope.core.scientific.regression_metrics import regression_metrics
-from lithiumscope.datasets.management.local_sources import local_training_source
+from lithiumscope.datasets.management.sources.local import local_training_source
 from lithiumscope.experiments.model_1.balanced.academic import cohort
 from lithiumscope.experiments.model_1.expansion.sensitivity_data import load_evidence, historical_tokens, reserve, fold_pools, read
 from lithiumscope.experiments.model_1.targeted.fit import _base_fit

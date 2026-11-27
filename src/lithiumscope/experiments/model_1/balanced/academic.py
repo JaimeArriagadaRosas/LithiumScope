@@ -13,7 +13,7 @@ from lithiumscope.core.config import load_config
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import RESULTS_DIR
 from lithiumscope.core.scientific.regression_metrics import regression_metrics
-from lithiumscope.datasets.management.diagnostic_provisioning import prepare_diagnostic_source
+from lithiumscope.datasets.management.sources.diagnostic import prepare_diagnostic_source
 from lithiumscope.experiments.model_1.balanced.selection import MIN_COHORT_ROWS
 from lithiumscope.model_1.pipeline import prepare_training_data
 from lithiumscope.model_1.preparation.detection_limits import clean_detection_limits

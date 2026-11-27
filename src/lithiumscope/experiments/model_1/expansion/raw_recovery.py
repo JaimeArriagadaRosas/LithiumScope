@@ -19,11 +19,11 @@ from lithiumscope.core.config import load_config
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import PROJECT_ROOT, RESULTS_DIR, DATA_DIR
 from lithiumscope.core.scientific.eda_statistics import source_series
-from lithiumscope.datasets.adapters.georoc_ingestion_schema import infer_georoc_column_map, MAJOR_OXIDES
-from lithiumscope.datasets.adapters.georoc_ingestion_transform import harmonize_chunk
+from lithiumscope.datasets.adapters.georoc.schema import infer_georoc_column_map, MAJOR_OXIDES
+from lithiumscope.datasets.adapters.georoc.transformation import harmonize_chunk
 from lithiumscope.datasets.readers.georoc_raw_reader import detect_georoc_encoding
-from lithiumscope.datasets.validation.analytical import parse_analytical_value
-from lithiumscope.datasets.management.local_sources import local_training_source
+from lithiumscope.datasets.validation.chemistry.analytical import parse_analytical_value
+from lithiumscope.datasets.management.sources.local import local_training_source
 from lithiumscope.experiments.model_1.balanced.academic import cohort
 from lithiumscope.experiments.model_1.expansion.academic_bridge import PILOT, SEED, check_pilot
 from lithiumscope.experiments.model_1.expansion.feature_audit import ELEMENTS, profile
