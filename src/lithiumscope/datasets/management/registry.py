@@ -58,6 +58,7 @@ DATASETS: dict[str, DatasetSpec] = {
         destination_name="fregeneda_almendra",
         source_url="https://doi.org/10.5281/zenodo.4575375",
         zenodo_record=4575375,
+        zenodo_files=("Guide for the spectral library.pdf", "Spectral_library.zip"),
         notes="Lithium-dedicated spectral library for the Fregeneda-Almendra field.",
     ),
     "greenpeg": DatasetSpec(

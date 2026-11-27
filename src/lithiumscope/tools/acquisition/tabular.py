@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import hashlib
+from uuid import uuid4
 from pathlib import Path
 from typing import Iterable
 
@@ -18,7 +20,7 @@ logger = get_logger("datasets")
 
 def _stream_download(url: str, destination: Path) -> Path:
     destination.parent.mkdir(parents=True, exist_ok=True)
-    temporary = destination.with_suffix(destination.suffix + ".part")
+    temporary = destination.with_name(f".{destination.name}.{uuid4().hex}.part")
     spinner = Spinner(f"Descargando dataset: {destination.name}").start()
     logger.info("Downloading %s -> %s", url, destination)
 
@@ -44,6 +46,8 @@ def _stream_download(url: str, destination: Path) -> Path:
                             f"Descargando {destination.name}: "
                             f"{downloaded / 1048576:.1f} MiB"
                         )
+        if downloaded == 0 or (total and downloaded != total):
+            raise DatasetError("Incomplete dataset download")
         temporary.replace(destination)
         spinner.succeed(f"Dataset descargado: {destination.name}")
         return validate_nonempty(destination)
@@ -67,45 +71,81 @@ def _zenodo_manifest(record: int) -> list[dict]:
     return files
 
 
-def _zenodo_download(
-    spec: DatasetSpec,
-    destination_dir: Path,
-) -> Path:
-    if spec.zenodo_record is None:
-        raise DatasetError(f"Zenodo record missing for {spec.key}")
-
-    destination_dir.mkdir(parents=True, exist_ok=True)
-    manifest = _zenodo_manifest(spec.zenodo_record)
+def _selected_zenodo_files(spec: DatasetSpec, manifest: list[dict]) -> list[dict]:
     selected = set(spec.zenodo_files)
-    (destination_dir / "zenodo_manifest.json").write_text(
-        json.dumps(manifest, indent=2),
-        encoding="utf-8",
-    )
-
-    downloaded = 0
+    records = {}
     for item in manifest:
         key = item.get("key") or item.get("filename")
         if not key or (selected and key not in selected):
             continue
+        if key in records or Path(key).name != key or "/" in key or chr(92) in key or ":" in key or key in {".", "..", "zenodo_manifest.json"}:
+            raise DatasetError(f"Unsafe or duplicate Zenodo filename: {key}")
+        checksum = str(item.get("checksum", "")).split(":", 1)
+        if len(checksum) != 2 or checksum[0] not in {"md5", "sha256"} or len(checksum[1]) != (32 if checksum[0] == "md5" else 64) or any(c not in "0123456789abcdef" for c in checksum[1].lower()):
+            raise DatasetError(f"Missing or invalid Zenodo checksum: {key}")
+        if not isinstance(item.get("size"), int) or item["size"] <= 0:
+            raise DatasetError(f"Missing Zenodo file size: {key}")
+        records[key] = {**item, "key": key}
+    if not records or selected - set(records):
+        raise DatasetError(f"Zenodo selection incomplete: {spec.key}; missing={sorted(selected-set(records))}")
+    return list(records.values())
+
+
+def _verify_zenodo_file(path: Path, item: dict) -> bool:
+    if path.is_symlink() or not path.is_file() or path.stat().st_size != item["size"]:
+        return False
+    algorithm, expected = item["checksum"].split(":", 1)
+    digest = hashlib.new(algorithm, usedforsecurity=False)
+    with path.open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest() == expected.lower()
+
+
+def _zenodo_download(spec: DatasetSpec, destination_dir: Path) -> Path:
+    if spec.zenodo_record is None:
+        raise DatasetError(f"Zenodo record missing for {spec.key}")
+    if destination_dir.is_symlink():
+        raise DatasetError("Zenodo destination may not be a symbolic link")
+    destination_dir.mkdir(parents=True, exist_ok=True)
+    evidence = destination_dir / "zenodo_manifest.json"
+    # A completed local manifest is usable offline only when every selected byte matches.
+    if evidence.is_file() and not evidence.is_symlink():
+        try:
+            cached = json.loads(evidence.read_text(encoding="utf-8"))
+            if cached.get("record") == spec.zenodo_record:
+                files = _selected_zenodo_files(spec, cached["files"])
+                if all(_verify_zenodo_file(destination_dir / item["key"], item) for item in files):
+                    logger.info("Verified cached Zenodo record %s files=%d", spec.zenodo_record, len(files))
+                    return destination_dir
+        except (OSError, ValueError, KeyError, TypeError, AttributeError, DatasetError):
+            logger.warning("Invalid cached Zenodo evidence: %s", evidence)
+    files = _selected_zenodo_files(spec, _zenodo_manifest(spec.zenodo_record))
+    for item in files:
+        target = destination_dir / item["key"]
+        if _verify_zenodo_file(target, item):
+            logger.info("Reusing verified Zenodo file %s", target)
+            continue
         links = item.get("links", {})
         url = links.get("content") or links.get("self")
         if not url:
-            continue
-
-        target = destination_dir / key
-        if target.exists() and target.stat().st_size > 0:
-            logger.info("Dataset file already exists: %s", target)
-            downloaded += 1
-            continue
-
-        _stream_download(url, target)
-        downloaded += 1
-
-    if downloaded == 0:
-        raise DatasetError(
-            f"No files matched the configured Zenodo selection for {spec.key}"
-        )
-    return validate_nonempty(destination_dir)
+            raise DatasetError(f"No download URL for {item['key']}")
+        staged = destination_dir / f".{uuid4().hex}.download"
+        try:
+            _stream_download(url, staged)
+            if not _verify_zenodo_file(staged, item):
+                raise DatasetError(f"Zenodo checksum or size mismatch: {item['key']}")
+            staged.replace(target)
+        finally:
+            staged.unlink(missing_ok=True)
+    staged = destination_dir / f".manifest.{uuid4().hex}.tmp"
+    try:
+        staged.write_text(json.dumps({"record": spec.zenodo_record, "files": files}, indent=2), encoding="utf-8")
+        staged.replace(evidence)
+    finally:
+        staged.unlink(missing_ok=True)
+    logger.info("Verified Zenodo record %s files=%d", spec.zenodo_record, len(files))
+    return destination_dir
 
 
 def ensure_dataset(key: str, allow_large: bool = False) -> Path:
@@ -143,8 +183,6 @@ def ensure_dataset(key: str, allow_large: bool = False) -> Path:
 
     if spec.provider == "zenodo":
         destination = base / spec.destination_name
-        if destination.exists() and any(destination.iterdir()):
-            return destination
         return _zenodo_download(spec, destination)
 
     raise DatasetError(f"Unsupported dataset provider: {spec.provider}")

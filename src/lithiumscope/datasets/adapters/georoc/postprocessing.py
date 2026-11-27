@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from uuid import uuid4
+from lithiumscope.core.logging.session import get_logger
 
 from lithiumscope.datasets.adapters.georoc.material_filter import (
     MaterialFilterResult,
@@ -39,6 +41,9 @@ def process_georoc_text_export(
     *,
     profile_callback=None,
 ) -> GeorocPostprocessResult:
+    raw_path, destination = Path(raw_path), Path(destination)
+    if raw_path.resolve() == destination.resolve():
+        raise ValueError("GEOROC source and output must be distinct")
     raw = read_georoc_raw(raw_path)
     normalized = normalize_georoc_frame(
         raw.frame
@@ -58,7 +63,7 @@ def process_georoc_text_export(
         exist_ok=True,
     )
     temporary = destination.with_name(
-        destination.name + ".normalized.part"
+        f".{destination.name}.{uuid4().hex}.normalized.part"
     )
     temporary.unlink(missing_ok=True)
     try:
@@ -72,6 +77,7 @@ def process_georoc_text_export(
         temporary.unlink(missing_ok=True)
         raise
 
+    get_logger("datasets.adapters.georoc").info("Postprocessed export %s rows=%d retained=%d", raw_path, material.rows_before, material.rows_after)
     return GeorocPostprocessResult(
         path=destination,
         encoding=raw.encoding,

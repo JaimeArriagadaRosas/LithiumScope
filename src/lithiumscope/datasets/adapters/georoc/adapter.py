@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 import pandas as pd
+import math
 
 
 @dataclass(frozen=True)
@@ -31,6 +32,10 @@ def harmonize_georoc_frame(
     frame: pd.DataFrame,
     config: GeorocAdapterConfig,
 ) -> pd.DataFrame:
+    if not math.isfinite(config.lithium_scale_to_ppm) or config.lithium_scale_to_ppm <= 0:
+        raise ValueError("Lithium conversion factor must be finite and positive")
+    if not config.source_name.strip() or not frame.columns.is_unique or len(set(config.column_map.values())) != len(config.column_map):
+        raise ValueError("Ambiguous GEOROC mapping or source identity")
     if frame.empty:
         raise ValueError("GEOROC input frame is empty.")
 
@@ -55,6 +60,9 @@ def harmonize_georoc_frame(
     result = frame[selected].copy().rename(
         columns=config.column_map
     )
+
+    if not result.columns.is_unique or "source_dataset" in result or any(f"source_{key}" in result or key == "dataset" for key in config.metadata):
+        raise ValueError("GEOROC output column collision")
 
     for column in (
         "Li_icpms",

@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Callable, Iterable
 from collections import Counter
 from uuid import uuid4
+from time import monotonic
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.datasets.readers.georoc_raw_reader import detect_georoc_encoding
 from lithiumscope.datasets.readers.csv_reader import validate_csv_structure
@@ -71,6 +72,9 @@ def ingest_georoc_files(
     allow_incompatible_sources: bool = False,
     exclusion_callback: Callable[[list[dict]], None] | None = None,
 ) -> GeorocIngestionResult:
+    started = monotonic()
+    if not isinstance(chunksize, int) or chunksize <= 0 or not isinstance(minimum_predictors, int) or minimum_predictors < 0:
+        raise ValueError("Invalid GEOROC chunk size or predictor count")
     if iron_total_mode not in {"original", "feot_equivalent"}:
         raise ValueError(f"Unsupported GEOROC iron_total_mode: {iron_total_mode}")
     paths = tuple(Path(path).resolve() for path in files)
@@ -193,6 +197,7 @@ def ingest_georoc_files(
                 )
                 wrote_header = True
                 rows_kept += len(harmonized)
+            logger.info("GEOROC file=%s rows=%d kept=%d rejected=%s", path.name, rows_read-first_read, rows_kept-first_kept, dict(source_rejections))
             source_details.append({"path": str(path), "state": "processed", "encoding": encodings[path],
                                    "mapping": mapping, "rows_read": rows_read - first_read,
                                    "rows_kept": rows_kept - first_kept, "rejection_counts": dict(source_rejections)})
@@ -240,7 +245,7 @@ def ingest_georoc_files(
         temporary.unlink(missing_ok=True)
         audit_temporary.unlink(missing_ok=True)
 
-    logger.info("GEOROC ingestion complete: rows_read=%d rows_kept=%d rejected=%d audit=%s", rows_read, rows_kept, rejected, audit_destination)
+    logger.info("GEOROC ingestion complete: rows_read=%d rows_kept=%d rejected=%d audit=%s elapsed=%.3fs", rows_read, rows_kept, rejected, audit_destination, monotonic()-started)
     return GeorocIngestionResult(
         path=destination,
         files=tuple(

@@ -57,6 +57,19 @@ def select_rows(frame, minimum_predictors, *, rejections=None):
             minimum + maximum
         ) / 2.0
 
+    # Preserve reported bounds; inconsistent bounds are not point estimates.
+    for axis, limit in (("Longitude", 180), ("Latitude", 90)):
+        low, high = f"{axis}_min", f"{axis}_max"
+        if low in frame and high in frame:
+            a, b = frame[low], frame[high]
+            both = a.notna() & b.notna()
+            invalid = (a.notna() & ~a.between(-limit, limit)) | (b.notna() & ~b.between(-limit, limit))
+            invalid |= both & a.gt(b)
+            if axis in frame:
+                center = frame[axis]
+                invalid |= (a.notna() & center.lt(a)) | (b.notna() & center.gt(b))
+            keep(~invalid, "inconsistent_coordinate_bounds")
+
     required = (
         "Li_icpms",
         "Longitude",
