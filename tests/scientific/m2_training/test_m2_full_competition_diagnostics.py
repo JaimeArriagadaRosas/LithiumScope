@@ -8,7 +8,7 @@ import pytest
 from lithiumscope.model_2.training.calibration.policy import (
     calibration_policy, fit_spatially_calibrated,
 )
-from lithiumscope.model_2.training.diagnostic_metrics import (
+from lithiumscope.model_2.diagnostics.competition_metrics import (
     binary_diagnostic, sample_outcomes, spatial_bootstrap_difference,
 )
 
@@ -133,7 +133,7 @@ def test_calibration_policy_handles_two_distinct_algorithms():
 
 
 def test_historical_release_reference_all_algorithms_no_automatic_promotion(tmp_path):
-    from lithiumscope.model_2.training.diagnostic_release_comparison import (
+    from lithiumscope.model_2.diagnostics.release_comparison import (
         compare_to_release_protocol, REFERENCE,
     )
     tables = tmp_path / "tables"
@@ -172,7 +172,7 @@ def test_historical_release_reference_all_algorithms_no_automatic_promotion(tmp_
 
 
 def test_release_reference_misaligned_samples_is_rejected(tmp_path):
-    from lithiumscope.model_2.training.diagnostic_release_comparison import (
+    from lithiumscope.model_2.diagnostics.release_comparison import (
         compare_to_release_protocol, REFERENCE,
     )
     t = tmp_path / "tables"

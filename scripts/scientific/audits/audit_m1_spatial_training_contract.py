@@ -12,7 +12,7 @@ from sklearn.metrics.pairwise import haversine_distances
 from lithiumscope.core.config import load_config
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.model_1.evaluation.baseline import baseline_splits
-from lithiumscope.model_1.evaluation.robustness import SCENARIOS, SEED_OFFSETS, POLICY, apply_stress
+from lithiumscope.model_1.diagnostics.robustness import SCENARIOS, SEED_OFFSETS, POLICY, apply_stress
 from lithiumscope.model_1.pipeline import prepare_training_data
 from lithiumscope.model_1.preparation.feature_engineering import add_geochemical_features
 from lithiumscope.model_1.training.preprocessing.spatial_tabnet import early_stopping_partition

@@ -93,7 +93,7 @@ def scientific_labels(folds: list[ScientificFold], count: int) -> np.ndarray:
 def evaluate_scientific_baseline(
     folds: list[ScientificFold], count: int, *, quality_mask=None,
 ) -> tuple[dict, pd.DataFrame, np.ndarray]:
-    from lithiumscope.model_2.evaluation.metrics import classification_metrics
+    from lithiumscope.core.scientific.classification_metrics import classification_metrics
 
     labels = scientific_labels(folds, count)
     keep = np.ones(count, dtype=bool) if quality_mask is None else np.asarray(quality_mask, dtype=bool)

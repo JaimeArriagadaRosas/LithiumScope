@@ -1,11 +1,11 @@
-from importlib import import_module
+from importlib.util import find_spec
 
 import numpy as np
 
 
-def test_shared_metrics_keep_legacy_identity():
-    for old,new in [["lithiumscope.model_1.evaluation.metrics","lithiumscope.core.scientific.regression_metrics"],["lithiumscope.model_2.evaluation.metrics","lithiumscope.core.scientific.classification_metrics"]]:
-        assert import_module(old) is import_module(new)
+def test_shared_metrics_have_no_model_facades():
+    assert find_spec("lithiumscope.model_1.evaluation." + "metrics") is None
+    assert find_spec("lithiumscope.model_2.evaluation." + "metrics") is None
 
 
 def test_metrics_preserve_strict_input_contract():

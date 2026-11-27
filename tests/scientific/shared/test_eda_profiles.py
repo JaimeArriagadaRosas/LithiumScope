@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 from lithiumscope.model_1.eda.statistics import target_tails
-from lithiumscope.model_2.eda.statistics.profile import redundancy_table,period_summary
+from lithiumscope.model_2.eda.statistics import redundancy_table,period_summary
 
 
 def test_m1_target_tail_counts_invalid_without_removing_extremes():

@@ -6,7 +6,7 @@ import pandas as pd
 from sklearn.neighbors import BallTree
 
 from lithiumscope.core.scientific.spatial_audit import geographic_coordinates, EARTH_RADIUS_M
-from lithiumscope.model_2.evaluation.metrics import classification_metrics
+from lithiumscope.core.scientific.classification_metrics import classification_metrics
 from lithiumscope.model_2.validation.spatial import scientific_labels
 
 

@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from lithiumscope.core.hashing import file_sha256
-from lithiumscope.model_1.evaluation.high_lithium import high_lithium_diagnostics
+from lithiumscope.model_1.diagnostics.high_lithium import high_lithium_diagnostics
 
 ARCHIVE_SHA="a526bfa1985b0de34c3e4bf7dbbd7e4ca428f16630416b6d57fdd13a7c0e8b06"
 

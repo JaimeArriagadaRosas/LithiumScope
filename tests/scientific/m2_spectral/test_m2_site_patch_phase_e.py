@@ -194,7 +194,7 @@ def test_quality_subgroups_have_same_test_rows_per_arm():
 
 
 
-from lithiumscope.model_2.methodology.patch_missingness import inspect_mask
+from lithiumscope.model_2.diagnostics.patch_missingness import inspect_mask
 
 
 def test_missing_mask_anatomy_distinguishes_shared_footprint_from_band_issue():

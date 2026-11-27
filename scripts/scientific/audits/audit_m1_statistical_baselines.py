@@ -11,7 +11,7 @@ from lithiumscope.core.hashing import file_sha256
 from lithiumscope.model_1.pipeline import prepare_training_data
 from lithiumscope.model_1.evaluation.baseline import evaluate_baselines
 from lithiumscope.model_1.evaluation.selection import baseline_eligibility
-from lithiumscope.model_1.evaluation.metrics import regression_metrics
+from lithiumscope.core.scientific.regression_metrics import regression_metrics
 
 
 def run(dataset, archive, output):

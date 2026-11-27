@@ -11,7 +11,7 @@ import pandas as pd
 from lithiumscope.core.checkpoints import read_checkpoint_evidence
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.scientific_checks import assert_partition_coverage, assert_group_isolation
-from lithiumscope.model_2.evaluation.metrics import classification_metrics
+from lithiumscope.core.scientific.classification_metrics import classification_metrics
 
 
 def run(run_dir, manifest_path, output):

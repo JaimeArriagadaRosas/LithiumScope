@@ -113,7 +113,7 @@ def audit_demo_overlap(cases: pd.DataFrame) -> dict:
     The original PDF caller/interface is unchanged; the status becomes honest.
     Audit failures preserve uncertainty rather than certifying independence.
     """
-    from lithiumscope.model_2.evaluation.independence import audit_external_overlap
+    from lithiumscope.model_2.diagnostics.independence import audit_external_overlap
 
     previous = _audit_demo_overlap_historical(cases)
     cfg = load_config("model_2")["training"]["expansion"]

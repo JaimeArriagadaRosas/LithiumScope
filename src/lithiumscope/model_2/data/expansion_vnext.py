@@ -69,7 +69,7 @@ def source_audit(root: Path, config: dict) -> pd.DataFrame:
         acquire_filtered_georoc, GEOROC_FILTERED_NAME,
     )
     from lithiumscope.datasets.adapters.georoc.ingestion import ingest_georoc_files
-    from lithiumscope.experiments.model_2.audit_georoc_source_references import (
+    from lithiumscope.experiments.model_2.external_validation.source_references import (
         classify_record, decimal_places, parse_bibliography,
     )
     from lithiumscope.datasets.validation.chemistry.qc_protocols import protocol_masks

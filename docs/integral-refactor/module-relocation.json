@@ -319,5 +319,11 @@
   "lithiumscope.model_1.training.trainer": "lithiumscope.model_1.training.competition",
   "lithiumscope.model_1.methodology.dataset_comparison_diagnostics": "lithiumscope.model_1.methodology.comparison_diagnostics",
   "lithiumscope.model_1.evaluation.reports": "lithiumscope.core.scientific.json_reports",
-  "lithiumscope.model_1.prediction.input_parser": "lithiumscope.datasets.readers.tabular"
+  "lithiumscope.model_1.prediction.input_parser": "lithiumscope.datasets.readers.tabular",
+  "lithiumscope.model_2.evaluation.reports": "lithiumscope.core.scientific.json_reports",
+  "lithiumscope.model_2.eda.reporting.artifacts": "lithiumscope.model_2.eda.artifacts",
+  "lithiumscope.model_2.eda.statistics.profile": "lithiumscope.model_2.eda.statistics",
+  "lithiumscope.model_2.eda.visualization.spectral_quality": "lithiumscope.model_2.eda.visualization",
+  "lithiumscope.model_2.training.trainer": "lithiumscope.model_2.training.competition",
+  "lithiumscope.model_2.training.prospectivity_model": "lithiumscope.model_2.training.algorithms.random_forest"
 }

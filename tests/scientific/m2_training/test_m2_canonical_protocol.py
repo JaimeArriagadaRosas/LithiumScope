@@ -113,7 +113,7 @@ def test_canonical_folds_reject_overlap_even_with_valid_row_counts():
 
 
 def test_geographic_proximity_audit_is_measured_in_km():
-    from lithiumscope.model_2.evaluation.spatial_distance_sensitivity import (
+    from lithiumscope.model_2.diagnostics.spatial_distance_sensitivity import (
         distances_km,
     )
 

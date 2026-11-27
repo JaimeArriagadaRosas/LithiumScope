@@ -24,7 +24,7 @@ from lithiumscope.model_2.preparation.features.rededge import (
     TOTAL_FEATURES,
     append_rededge_features,
 )
-from lithiumscope.model_2.pipeline import load_model_2_training_frame
+from lithiumscope.model_2.preparation.training_data import load_model_2_training_frame
 
 BASE = PROJECT_ROOT / "results/scientific_simulations/m2_rededge_v4_20261113"
 

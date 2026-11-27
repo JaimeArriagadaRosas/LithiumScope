@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from lithiumscope.model_2.evaluation.metrics import classification_metrics,reliability_table
+from lithiumscope.core.scientific.classification_metrics import classification_metrics,reliability_table
 from lithiumscope.model_2.evaluation.thresholds import select_operating_threshold
 
 

@@ -27,7 +27,7 @@ from lithiumscope.model_2.evaluation.plots import (
     save_probability_histogram,
     save_roc_pr,
 )
-from lithiumscope.model_2.pipeline import load_model_2_training_frame
+from lithiumscope.model_2.preparation.training_data import load_model_2_training_frame
 from lithiumscope.model_2.preparation.features.spectral import (
     FEATURE_EXTRACTOR_VERSION,
 )

@@ -11,7 +11,7 @@ from lithiumscope.tools.acquisition.georoc.georoc_query_models import (
 )
 
 
-from lithiumscope.datasets.adapters.georoc.names import norm
+from lithiumscope.datasets.adapters.georoc.normalization import norm
 
 
 def submit_form(

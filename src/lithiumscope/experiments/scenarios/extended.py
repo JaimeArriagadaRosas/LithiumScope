@@ -4,7 +4,7 @@ from pathlib import Path
 import json
 import pandas as pd
 
-from lithiumscope.experiments.acquisition.acquisition import acquire_pilot, PILOT_LOCATIONS
+from lithiumscope.tools.acquisition.sentinel2.pilot import acquire_pilot, PILOT_LOCATIONS
 from lithiumscope.experiments.scenarios.batch import run_m2_batch, summarize
 from lithiumscope.experiments.reporting.reporting import compare_geographies
 

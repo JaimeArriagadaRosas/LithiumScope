@@ -6,7 +6,7 @@ from sklearn.dummy import DummyClassifier
 from sklearn.model_selection import StratifiedGroupKFold, StratifiedKFold
 
 from lithiumscope.core.scientific_checks import assert_group_isolation, assert_oof_complete
-from lithiumscope.model_2.evaluation.metrics import classification_metrics
+from lithiumscope.core.scientific.classification_metrics import classification_metrics
 
 
 def evaluate_prior_baseline(

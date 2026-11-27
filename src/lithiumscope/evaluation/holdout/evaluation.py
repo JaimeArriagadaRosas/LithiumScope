@@ -108,7 +108,7 @@ def evaluate_registered(root,labels_path):
                             paired_uncertainty=_paired_regression(data,**registration["bootstrap"]))
     else:
         from lithiumscope.core.scientific.classification_metrics import classification_metrics
-        from lithiumscope.model_2.evaluation.paired_uncertainty import bootstrap_paired_groups
+        from lithiumscope.model_2.diagnostics.paired_uncertainty import bootstrap_paired_groups
         from lithiumscope.model_2.evaluation.release_gate import assess_release, ExternalGatePolicy
         label=(y>=registration["label_cutoff_ppm"]).astype(int)
         if np.unique(label).size!=2:

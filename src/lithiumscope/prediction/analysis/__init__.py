@@ -5,8 +5,8 @@ import math
 import numpy as np
 import pandas as pd
 
-from lithiumscope.model_1.evaluation.metrics import regression_metrics
-from lithiumscope.model_2.evaluation.metrics import classification_metrics
+from lithiumscope.core.scientific.regression_metrics import regression_metrics
+from lithiumscope.core.scientific.classification_metrics import classification_metrics
 
 
 def ensure_case_ids(frame: pd.DataFrame) -> pd.DataFrame:

@@ -81,7 +81,7 @@ def test_cv_runner_persists_and_reconstructs_train_only_policy(monkeypatch, tmp_
 
 def test_fast_threshold_matches_brute_force_objective():
     from lithiumscope.model_2.evaluation.thresholds import select_operating_threshold, _candidate_thresholds
-    from lithiumscope.model_2.evaluation.metrics import classification_metrics
+    from lithiumscope.core.scientific.classification_metrics import classification_metrics
     rng = np.random.default_rng(42)
     y = np.tile([0, 1], 15)
     p = rng.choice(np.linspace(0, 1, 11), len(y))

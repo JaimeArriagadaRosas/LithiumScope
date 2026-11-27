@@ -14,7 +14,7 @@ import pandas as pd
 from lithiumscope.model_2.evaluation.thresholds import (
     ThresholdSelection, select_operating_threshold,
 )
-from lithiumscope.model_2.evaluation.metrics import classification_metrics
+from lithiumscope.core.scientific.classification_metrics import classification_metrics
 
 
 @dataclass(frozen=True)

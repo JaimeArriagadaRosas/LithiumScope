@@ -4,7 +4,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from lithiumscope.model_2.evaluation.metrics import validate_binary_inputs
+from lithiumscope.core.scientific.classification_metrics import validate_binary_inputs
 
 
 def build_oof_table(manifest, lithium, labels, fold_ids, probabilities, scientific_folds, quality_mask=None):

@@ -202,7 +202,7 @@ Crear el directorio model_1/preparation/, encargado de la preparación científi
 
 ### ARQ-010 — Arquitectura M1 (L1270-1270)
 
-Crear el directorio model_1/eda/, dedicado exclusivamente al análisis exploratorio de datos. Su organización interna deberá separar el cálculo estadístico, la generación de visualizaciones y la exportación de resultados mediante los subdirectorios statistics/, visualization/ y reporting/. Deberá analizar los datasets antes y después de su preparación, incluyendo distribuciones, correlaciones, valores faltantes, concentraciones extremas, procedencia, categorías geológicas, características derivadas y distribución geográfica. Los resultados deberán mostrarse en consola y almacenarse localmente para su posterior consulta desde el menú interactivo.
+Crear el directorio model_1/eda/, dedicado exclusivamente al análisis exploratorio de datos. Su organización interna deberá separar el cálculo estadístico, la generación de visualizaciones y la exportación de resultados mediante los modulos statistics.py, visualization.py y artifacts.py. Deberá analizar los datasets antes y después de su preparación, incluyendo distribuciones, correlaciones, valores faltantes, concentraciones extremas, procedencia, categorías geológicas, características derivadas y distribución geográfica. Los resultados deberán mostrarse en consola y almacenarse localmente para su posterior consulta desde el menú interactivo.
 
 **Estado:** ABIERTO.
 **Evidencia contextual:** 27 criterios M1 en traceability.md; preparacion, EDA, CV, baselines, Optuna, diagnósticos y persistencia; paridad historica 10/10.
@@ -338,7 +338,7 @@ Fortalecer los mecanismos de almacenamiento y reutilización de imágenes, manif
 
 ### ARQ-027 — Arquitectura M2 (L1308-1308)
 
-Crear el directorio model_2/eda/, dedicado exclusivamente al análisis exploratorio de datos, mediante los subdirectorios statistics/, visualization/ y reporting/. Deberá analizar las muestras geoquímicas, distribuciones de concentración de litio, distribución espacial, calidad de imágenes, disponibilidad de bandas, valores faltantes, estadísticas de reflectancia, textura, índices espectrales, correlaciones, redundancias y diferencias entre fuentes, regiones, escenas y periodos temporales. Los resultados deberán mostrarse en consola y almacenarse localmente para su posterior consulta desde el menú interactivo.
+Crear el directorio model_2/eda/, dedicado exclusivamente al análisis exploratorio de datos, mediante los modulos statistics.py, visualization.py y artifacts.py. Deberá analizar las muestras geoquímicas, distribuciones de concentración de litio, distribución espacial, calidad de imágenes, disponibilidad de bandas, valores faltantes, estadísticas de reflectancia, textura, índices espectrales, correlaciones, redundancias y diferencias entre fuentes, regiones, escenas y periodos temporales. Los resultados deberán mostrarse en consola y almacenarse localmente para su posterior consulta desde el menú interactivo.
 
 **Estado:** ABIERTO.
 **Evidencia contextual:** 30 criterios M2 en traceability.md; 706 parches verificados, v4 offline, QA TRAIN, folds/umbrales, v5 descriptivo, paridad historica 10/10.

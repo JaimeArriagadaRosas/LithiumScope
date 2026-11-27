@@ -25,7 +25,7 @@ from lithiumscope.model_2.methodology.validation.contracts import (
 from lithiumscope.model_2.methodology.validation.spatial import (
     assess_folds, buffered_train_preview,
 )
-from lithiumscope.model_2.methodology.validation.domain import (
+from lithiumscope.model_2.diagnostics.domain import (
     training_domain_profile, score_domain,
 )
 

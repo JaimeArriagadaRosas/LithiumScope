@@ -8,7 +8,7 @@ import pytest
 from lithiumscope.model_2.methodology.spectral.spectral_augmentation import (
     augmented_feature_record, perturb_sentinel_dn, seed_for_sample,
 )
-from lithiumscope.model_2.methodology.spectral_overfit_pilot import (
+from lithiumscope.model_2.diagnostics.spectral_overfit import (
     embargo_training_indices, train_and_score,
 )
 
@@ -70,7 +70,7 @@ def test_augmented_rows_are_fit_only_and_weighted(monkeypatch):
             return np.column_stack([1 - p, p])
 
     monkeypatch.setattr(
-        "lithiumscope.model_2.methodology.spectral_overfit_pilot.create_model",
+        "lithiumscope.model_2.diagnostics.spectral_overfit.create_model",
         lambda **_kwargs: SpyModel(),
     )
     columns = [f"feature_{i}" for i in range(126)]

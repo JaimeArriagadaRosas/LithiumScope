@@ -160,7 +160,7 @@ def prepare_version(group, source, *, run_eda=True, root=None):
             evidence = eda(source, prepared=prepared, config=cfg)
     else:
         from lithiumscope.model_2.preparation.features.v4_inputs import spectral_v4_enabled, load_spectral_v4_training_frame
-        from lithiumscope.model_2.pipeline import load_model_2_training_frame
+        from lithiumscope.model_2.preparation.training_data import load_model_2_training_frame
         from lithiumscope.model_2.eda.pipeline import run_eda as eda
         from lithiumscope.model_2.eda.quality import patch_quality
         from lithiumscope.core.scientific.eda_statistics import source_series

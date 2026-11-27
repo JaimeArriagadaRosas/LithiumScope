@@ -119,7 +119,7 @@ def science_report(root, manifest, folds, y, scores, output):
 
 def diagnostic_report(manifest_path, tables, output, *, root=PROJECT_ROOT):
     """Four-way confusion/error audit for all completed competitors."""
-    from lithiumscope.model_2.training.diagnostic_audit import (
+    from lithiumscope.model_2.diagnostics.competition_audit import (
         analyse_saved_competition,
     )
     return analyse_saved_competition(

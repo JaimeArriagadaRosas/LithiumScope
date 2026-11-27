@@ -101,19 +101,17 @@ def test_repository_refactor_has_no_import_boundary_blockers():
         assert not report[key], (key, report[key])
 
 
-def test_shared_helpers_preserve_legacy_imports():
+def test_shared_helpers_have_canonical_owners():
     from lithiumscope.datasets.validation.tabular.missing_values import normalize_missing_values
     from lithiumscope.datasets.validation.tabular.schema import resolve_target
-    from lithiumscope.model_1.preparation import missing_values, target_filtering
-    from lithiumscope.model_1.evaluation import reports as m1_reports
-    from lithiumscope.model_2.evaluation import reports as m2_reports
-    assert missing_values.normalize_missing_values is normalize_missing_values
-    assert target_filtering.resolve_target is resolve_target
-    assert m1_reports.save_json_report is m2_reports.save_json_report
+    from lithiumscope.core.scientific.json_reports import save_json_report
+    assert callable(normalize_missing_values)
+    assert callable(resolve_target)
+    assert callable(save_json_report)
 
 
 def test_historical_bootstrap_is_accessible_without_experiment_import():
-    from lithiumscope.model_1.methodology.dataset_comparison_diagnostics import cluster_bootstrap_improvement
+    from lithiumscope.model_1.methodology.comparison_diagnostics import cluster_bootstrap_improvement
     report = cluster_bootstrap_improvement([1, 2], [2, 3], [1, 2], ["a", "b"], repeats=8)
     assert report["mae_gain"]["median"] == 1.0
     assert report["rmse_gain"]["median"] == 1.0

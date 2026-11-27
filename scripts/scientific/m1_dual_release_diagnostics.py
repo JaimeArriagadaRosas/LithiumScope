@@ -24,7 +24,7 @@ from lithiumscope.datasets.harmonization import merge_harmonized_sources
 from lithiumscope.datasets.readers.tabular import load_data
 from lithiumscope.model_1.pipeline import prepare_training_data
 from lithiumscope.model_1.training.factory import build_pipeline
-from lithiumscope.model_1.methodology.dual_release_metrics import met, four
+from lithiumscope.model_1.diagnostics.dual_release_metrics import met, four
 
 OUT = PROJECT_ROOT / "results/scientific_simulations/m1_dual_diagnostics_20261113"
 VERSIONS = {

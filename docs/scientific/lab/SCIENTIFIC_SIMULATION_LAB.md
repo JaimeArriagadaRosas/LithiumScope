@@ -38,7 +38,7 @@ Ejemplo (requiere un artefacto M2 entrenado localmente):
 ```python
 from pathlib import Path
 from lithiumscope.persistence.load_model import load_latest_model
-from lithiumscope.model_2.steps.step_01_load_imagery import load_imagery
+from lithiumscope.model_2.preparation.imagery import load_imagery
 from lithiumscope.experiments.scenarios.imagery import evaluate_model_2_image
 bundle, _ = load_latest_model("model_2")
 image = load_imagery(Path("ruta/a/parche.npy"))

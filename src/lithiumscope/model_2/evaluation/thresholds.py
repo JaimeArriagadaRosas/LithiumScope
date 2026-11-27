@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from lithiumscope.model_2.evaluation.metrics import classification_metrics, validate_binary_inputs
+from lithiumscope.core.scientific.classification_metrics import classification_metrics, validate_binary_inputs
 
 
 @dataclass(frozen=True)

@@ -17,7 +17,7 @@ from lithiumscope.core.scientific_checks import (
     assert_partition_coverage,
     assert_oof_complete,
 )
-from lithiumscope.model_2.evaluation.metrics import classification_metrics
+from lithiumscope.core.scientific.classification_metrics import classification_metrics
 from lithiumscope.model_2.validation.spatial import ScientificFold
 from lithiumscope.model_2.training.factory import (
     create_model,

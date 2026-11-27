@@ -14,54 +14,6 @@ import pytest
     "lithiumscope.core.presentation.visualization",
     "lithiumscope.core.visualization"
   ],
-  [
-    "lithiumscope.model_2.evaluation.generalization",
-    "lithiumscope.model_2.diagnostics.generalization"
-  ],
-  [
-    "lithiumscope.model_2.evaluation.independence",
-    "lithiumscope.model_2.diagnostics.independence"
-  ],
-  [
-    "lithiumscope.model_2.evaluation.paired_uncertainty",
-    "lithiumscope.model_2.diagnostics.paired_uncertainty"
-  ],
-  [
-    "lithiumscope.model_2.evaluation.spatial_distance_sensitivity",
-    "lithiumscope.model_2.diagnostics.spatial_distance_sensitivity"
-  ],
-  [
-    "lithiumscope.model_2.methodology.patch_missingness",
-    "lithiumscope.model_2.diagnostics.patch_missingness"
-  ],
-  [
-    "lithiumscope.model_2.methodology.spectral.spectral_overfit_inputs",
-    "lithiumscope.model_2.diagnostics.spectral_overfit_inputs"
-  ],
-  [
-    "lithiumscope.model_2.methodology.spectral_overfit_pilot",
-    "lithiumscope.model_2.diagnostics.spectral_overfit"
-  ],
-  [
-    "lithiumscope.model_2.methodology.validation.domain",
-    "lithiumscope.model_2.diagnostics.domain"
-  ],
-  [
-    "lithiumscope.model_2.training.diagnostic_audit",
-    "lithiumscope.model_2.diagnostics.competition_audit"
-  ],
-  [
-    "lithiumscope.model_2.training.diagnostic_inputs",
-    "lithiumscope.model_2.diagnostics.competition_inputs"
-  ],
-  [
-    "lithiumscope.model_2.training.diagnostic_metrics",
-    "lithiumscope.model_2.diagnostics.competition_metrics"
-  ],
-  [
-    "lithiumscope.model_2.training.diagnostic_release_comparison",
-    "lithiumscope.model_2.diagnostics.release_comparison"
-  ]
 ])
 def test_relocated_module_identity(old,new):
     assert import_module(old) is import_module(new)
@@ -75,6 +27,11 @@ def test_reproducibility_package_api():
     assert callable(hashing.file_sha256)
 
 
-@pytest.mark.parametrize("old", ["lithiumscope.model_1.evaluation.domain","lithiumscope.model_1.evaluation.group_intervals","lithiumscope.model_1.evaluation.high_lithium","lithiumscope.model_1.evaluation.robustness","lithiumscope.model_1.methodology.dual_release_metrics"])
+@pytest.mark.parametrize("old", ["model_1.evaluation.domain","model_1.evaluation.group_intervals","model_1.evaluation.high_lithium","model_1.evaluation.robustness","model_1.methodology.dual_release_metrics"])
 def test_m1_diagnostic_compatibility_modules_retired(old):
-    assert find_spec(old) is None
+    assert find_spec("lithiumscope." + old) is None
+
+
+@pytest.mark.parametrize("old", ['model_2.evaluation.generalization', 'model_2.evaluation.independence', 'model_2.evaluation.metrics', 'model_2.evaluation.paired_uncertainty', 'model_2.evaluation.spatial_distance_sensitivity', 'model_2.evaluation.reports', 'model_2.training.diagnostic_audit', 'model_2.training.diagnostic_inputs', 'model_2.training.diagnostic_metrics', 'model_2.training.diagnostic_release_comparison', 'model_2.methodology.patch_missingness', 'model_2.methodology.spectral.spectral_overfit_inputs', 'model_2.methodology.spectral_overfit_pilot', 'model_2.methodology.validation.domain'])
+def test_m2_diagnostic_compatibility_modules_retired(old):
+    assert find_spec("lithiumscope." + old) is None

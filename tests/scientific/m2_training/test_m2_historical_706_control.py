@@ -9,7 +9,7 @@ import pytest
 
 from lithiumscope.runtime import dataset_provisioning as provisioner
 from lithiumscope.model_2.training import competition
-from lithiumscope.model_2.training.diagnostic_inputs import loaded_competitions
+from lithiumscope.model_2.diagnostics.competition_inputs import loaded_competitions
 from lithiumscope.model_2.training.postprocess import load_predictions
 from lithiumscope.model_2.validation.quality import training_quality_mask
 

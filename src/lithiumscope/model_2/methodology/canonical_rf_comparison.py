@@ -20,7 +20,7 @@ from sklearn.model_selection import GroupKFold
 
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.model_2.evaluation.canonical_protocol import load_protocol, sha256
-from lithiumscope.model_2.evaluation.paired_uncertainty import bootstrap_paired_groups
+from lithiumscope.model_2.diagnostics.paired_uncertainty import bootstrap_paired_groups
 from lithiumscope.model_2.methodology.regularization_study import (
     _apply_calibrator, _calibrator,
 )

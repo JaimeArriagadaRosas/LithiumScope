@@ -6,8 +6,8 @@ import pandas as pd
 import pytest
 from sklearn.ensemble import RandomForestClassifier
 
-from lithiumscope.model_2.evaluation.generalization import _metrics
-from lithiumscope.model_2.evaluation.independence import audit_external_overlap
+from lithiumscope.model_2.diagnostics.generalization import _metrics
+from lithiumscope.model_2.diagnostics.independence import audit_external_overlap
 from lithiumscope.model_2.evaluation.release_gate import (
     ExternalGatePolicy,
     assess_release,

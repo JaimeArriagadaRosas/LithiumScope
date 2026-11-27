@@ -6,23 +6,26 @@ import numpy as np
 import pandas as pd
 
 from lithiumscope.core.config import load_config
+from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.paths import RESULTS_DIR
-from lithiumscope.model_2.pipeline import load_model_2_training_frame
+from lithiumscope.model_2.preparation.training_data import load_model_2_training_frame
 from lithiumscope.model_2.eda.quality import patch_quality
 from lithiumscope.core.scientific.fold_profiles import fold_profiles
 from lithiumscope.core.scientific.spatial_audit import audit_spatial_folds
 from lithiumscope.model_2.validation.spatial import make_scientific_folds
 from lithiumscope.model_2.preparation.features.v4_inputs import spectral_v4_enabled, load_spectral_v4_training_frame
 from lithiumscope.results.eda_artifacts import complete_run, fail_run, find_compatible, new_run, signature
-from lithiumscope.model_2.eda.statistics.profile import descriptive_tables
-from lithiumscope.model_2.eda.reporting.artifacts import write_descriptive_tables
-from lithiumscope.model_2.eda.visualization.spectral_quality import render_profiles
+from lithiumscope.model_2.eda.statistics import descriptive_tables
+from lithiumscope.model_2.eda.artifacts import write_descriptive_tables
+from lithiumscope.model_2.eda.visualization import render_profiles
 from lithiumscope.results.eda_protocol import fold_protocol, attach_training_eda
 
 
 def run_eda(path: Path, *, output_root: Path | None = None, frame=None, config=None,
             scientific_folds=None, quality_mask=None) -> Path:
+    logger = get_logger("model_2.eda")
+    logger.info("M2 EDA requested: %s", path)
     cfg = load_config("model_2") if config is None else config
     training = cfg["training"]
     target = str(training["lithium_column"])
@@ -71,6 +74,7 @@ def run_eda(path: Path, *, output_root: Path | None = None, frame=None, config=N
     key = signature("model_2", path, cfg, combined, protocol=protocol)
     cached = find_compatible(root, key)
     if cached:
+        logger.info("Reusing verified EDA: %s", cached)
         print(f"[OK] EDA descriptivo compatible reutilizado: {cached}")
         return cached
     directory = new_run(root)
@@ -96,7 +100,7 @@ def run_eda(path: Path, *, output_root: Path | None = None, frame=None, config=N
             fold_state = "group_kfold_train_profiles"
         render_profiles(directory/"figures",combined,target,calculated)
         print(calculated["cohort_summary"].to_string(index=False))
-        return complete_run(directory, signature_value=key, details={
+        completed = complete_run(directory, signature_value=key, details={
             "model_group": "model_2", "source_path": str(path), "source_sha256": file_sha256(path),
             "rows_raw": len(manifest), "rows_prepared": len(frame), "features": len(features),
             "feature_names": features, "effective_config": cfg,
@@ -106,7 +110,10 @@ def run_eda(path: Path, *, output_root: Path | None = None, frame=None, config=N
                             "V4 local re-extraction verifies all 44 red-edge descriptors; legacy block verified separately." if spectral_v4_enabled(cfg) else "Legacy cache bound to ordered sample and image identities.",
                             "Scene cloud cover is not patch-local valid-pixel quality."],
         })
+        logger.info("M2 EDA completed: %s", completed)
+        return completed
     except Exception as exc:
+        logger.exception("M2 EDA failed: %s", directory)
         fail_run(directory, exc)
         raise
 

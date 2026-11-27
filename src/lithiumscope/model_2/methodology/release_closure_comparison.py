@@ -16,11 +16,11 @@ from sklearn.metrics import average_precision_score, brier_score_loss, roc_auc_s
 
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.model_2.evaluation.canonical_protocol import load_protocol, sha256
-from lithiumscope.model_2.evaluation.paired_uncertainty import bootstrap_paired_groups
+from lithiumscope.model_2.diagnostics.paired_uncertainty import bootstrap_paired_groups
 from lithiumscope.model_2.methodology.regularization_study import (
     _apply_calibrator, _calibrator, _inner_scores,
 )
-from lithiumscope.model_2.methodology.spectral_overfit_pilot import FIXED_RF
+from lithiumscope.model_2.diagnostics.spectral_overfit import FIXED_RF
 from lithiumscope.model_2.training.algorithms.random_forest import create_model
 
 LEGACY_OOF = ("results/scientific_simulations/sentinel_methodology_20261112/"
