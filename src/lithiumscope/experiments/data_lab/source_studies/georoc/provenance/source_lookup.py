@@ -1,6 +1,6 @@
 """Find legitimate article/supplement URLs for the prioritized 10 GEOROC references."""
 from pathlib import Path
-from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
+from lithiumscope.experiments.data_lab.source_studies.georoc.protocol import EXPERIMENT_ROOT
 import pandas as pd
 from lithiumscope.tools.acquisition.publications import lookup_doi
 from lithiumscope.results.atomic_exports import write_json,write_table

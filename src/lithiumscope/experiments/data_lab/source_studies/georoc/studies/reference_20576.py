@@ -1,6 +1,6 @@
 """Final 20576 source-specific validation gate (no proxy ground-truth inflation)."""
 from pathlib import Path
-from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
+from lithiumscope.experiments.data_lab.source_studies.georoc.protocol import EXPERIMENT_ROOT
 import json,hashlib
 import pandas as pd
 BASE=EXPERIMENT_ROOT

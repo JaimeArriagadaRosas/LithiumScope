@@ -7,7 +7,7 @@ import pytest
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.datasets.management.sources.research import ResearchSource, ResearchPartition
 from lithiumscope.tools.acquisition.georoc.research import acquire
-from lithiumscope.experiments.data_lab.candidate_eda import overlap_flags
+from lithiumscope.experiments.data_lab.source_studies.georoc.candidate_eda import overlap_flags
 from lithiumscope.experiments.data_lab import workflow
 
 

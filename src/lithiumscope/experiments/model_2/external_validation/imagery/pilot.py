@@ -1,6 +1,6 @@
 """Acquire a four-location external-candidate imagery PILOT only (no accuracy claims)."""
 from pathlib import Path
-from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
+from lithiumscope.experiments.data_lab.source_studies.georoc.protocol import EXPERIMENT_ROOT
 import pandas as pd
 from lithiumscope.tools.acquisition.sentinel2.pilot import acquire_pilot
 from lithiumscope.experiments.scenarios.batch import run_m2_batch,summarize

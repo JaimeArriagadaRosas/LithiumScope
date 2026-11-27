@@ -5,7 +5,7 @@ A bibliographic screen is a risk signal; it cannot prove independence.
 from __future__ import annotations
 import re,json
 from pathlib import Path
-from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
+from lithiumscope.experiments.data_lab.source_studies.georoc.protocol import EXPERIMENT_ROOT
 from lithiumscope.core.paths import PROJECT_ROOT
 import pandas as pd
 BASE=EXPERIMENT_ROOT

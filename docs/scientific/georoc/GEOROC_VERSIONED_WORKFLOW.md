@@ -11,7 +11,7 @@ lives under experiments/validation.
 Run from the checkout with LithiumScope installed:
 
 ```
-python -m lithiumscope.experiments.georoc.workflow --partition <part1.csv> --partition <part2.csv> --training <training.csv> --mamani <mamani.csv> --citations <citations.tab>
+python -m lithiumscope.experiments.data_lab.source_studies.georoc.workflow --partition <part1.csv> --partition <part2.csv> --training <training.csv> --mamani <mamani.csv> --citations <citations.tab>
 ```
 
 Preflight is read-only. Add `--execute` to create new evidence under
@@ -26,7 +26,7 @@ zero independent labels are approved by these stages.
 ## Registered exploratory imagery
 
 ```
-python -m lithiumscope.experiments.georoc.imagery.batch --source <imagery_input> --window 2025-01-01/2025-12-31 --limit 4
+python -m lithiumscope.experiments.model_2.external_validation.imagery.batch --source <imagery_input> --window 2025-01-01/2025-12-31 --limit 4
 ```
 
 Add `--acquire` to authorize registered Sentinel acquisition and verified model

@@ -1,6 +1,6 @@
 """Expand external whole-rock provenance screening using original GEOROC rows."""
 from pathlib import Path
-from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
+from lithiumscope.experiments.data_lab.source_studies.georoc.protocol import EXPERIMENT_ROOT
 import json,re,hashlib
 from ..provenance.bibliography import unambiguous_references
 import numpy as np

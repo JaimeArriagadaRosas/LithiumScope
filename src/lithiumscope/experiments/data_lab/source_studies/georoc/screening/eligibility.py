@@ -1,6 +1,6 @@
 """Evidence gate for GEOROC pilot references: no external test until provenance verified."""
 from pathlib import Path
-from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
+from lithiumscope.experiments.data_lab.source_studies.georoc.protocol import EXPERIMENT_ROOT
 import hashlib
 import json
 import pandas as pd

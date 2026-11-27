@@ -5,9 +5,9 @@ downloaded public GEOROC data. Does not alter, fit, or evaluate trained models.
 """
 from __future__ import annotations
 from pathlib import Path
-from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
+from lithiumscope.experiments.data_lab.source_studies.georoc.protocol import EXPERIMENT_ROOT
 import json,re,hashlib
-from lithiumscope.experiments.georoc.provenance.bibliography import unambiguous_references
+from lithiumscope.experiments.data_lab.source_studies.georoc.provenance.bibliography import unambiguous_references
 from lithiumscope.results.atomic_exports import write_table, write_json, write_text
 import numpy as np
 import pandas as pd

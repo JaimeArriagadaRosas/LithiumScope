@@ -1,6 +1,6 @@
 """Conservative reference/location audit before any external validation."""
 from pathlib import Path
-from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
+from lithiumscope.experiments.data_lab.source_studies.georoc.protocol import EXPERIMENT_ROOT
 import hashlib,json,re
 import pandas as pd
 import numpy as np

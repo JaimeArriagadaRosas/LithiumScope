@@ -8,10 +8,10 @@ import pandas as pd
 import pytest
 
 from lithiumscope.datasets.management.snapshots import verify_snapshot
-from lithiumscope.experiments.georoc.imagery.coordinate_plan import coordinate_plan
-from lithiumscope.experiments.georoc.imagery import batch
-from lithiumscope.experiments.georoc.provenance.bibliography import unambiguous_references
-from lithiumscope.experiments.georoc.workflow import run
+from lithiumscope.experiments.model_2.external_validation.imagery.coordinate_plan import coordinate_plan
+from lithiumscope.experiments.model_2.external_validation.imagery import batch
+from lithiumscope.experiments.data_lab.source_studies.georoc.provenance.bibliography import unambiguous_references
+from lithiumscope.experiments.data_lab.source_studies.georoc.workflow import run
 from lithiumscope.experiments.scenarios.imagery import image_catalog
 from lithiumscope.tools.acquisition.publications import lookup_doi, fetch_public_pdf
 

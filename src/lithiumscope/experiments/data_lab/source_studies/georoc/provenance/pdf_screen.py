@@ -1,6 +1,6 @@
 """Historical public-document method scan; no specimen-level verification."""
 from pathlib import Path
-from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
+from lithiumscope.experiments.data_lab.source_studies.georoc.protocol import EXPERIMENT_ROOT
 import hashlib,json
 from lithiumscope.tools.acquisition.publications import fetch_public_pdf
 from lithiumscope.results.atomic_exports import write_json

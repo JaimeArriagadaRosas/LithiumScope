@@ -1,6 +1,6 @@
 """Consolidate exploratory external batch without making verified accuracy claims."""
 from pathlib import Path
-from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
+from lithiumscope.experiments.data_lab.source_studies.georoc.protocol import EXPERIMENT_ROOT
 import json
 import numpy as np
 import pandas as pd

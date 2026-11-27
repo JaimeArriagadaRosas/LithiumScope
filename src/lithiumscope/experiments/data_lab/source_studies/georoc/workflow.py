@@ -9,7 +9,7 @@ from lithiumscope.core.logging.session import get_logger, run_log
 from lithiumscope.core.paths import RESULTS_DIR
 from lithiumscope.core.reproducibility import canonical_json_hash
 from lithiumscope.datasets.management.snapshots import dataset_implementation_revision, materialize_snapshot, verify_snapshot
-from lithiumscope.experiments.georoc.screening import andean_candidates, provenance_screen, extended_evidence, mamani_overlap
+from lithiumscope.experiments.data_lab.source_studies.georoc.screening import andean_candidates, provenance_screen, extended_evidence, mamani_overlap
 from lithiumscope.experiments.reporting import georoc_evidence
 from lithiumscope.results.atomic_exports import write_json
 

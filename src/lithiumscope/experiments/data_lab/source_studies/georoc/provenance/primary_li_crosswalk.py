@@ -1,6 +1,6 @@
 """Exact supplementary-table Li crosswalk for GEOROC citation 20576."""
 from pathlib import Path
-from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
+from lithiumscope.experiments.data_lab.source_studies.georoc.protocol import EXPERIMENT_ROOT
 import re,json,hashlib
 import numpy as np,pandas as pd
 B=EXPERIMENT_ROOT

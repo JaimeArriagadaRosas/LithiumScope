@@ -26,7 +26,7 @@ from lithiumscope.tools.acquisition.sentinel2.registered_patch import (
     download_registered_patch, validate_interval,
 )
 from .coordinate_plan import coordinate_plan
-from ..protocol import EXPERIMENT_ROOT
+from lithiumscope.experiments.data_lab.source_studies.georoc.protocol import EXPERIMENT_ROOT
 
 OUT = RESULTS_DIR / "scientific_simulations" / "georoc_registered_v1"
 LOGGER = get_logger("experiments.georoc.imagery")
@@ -35,8 +35,8 @@ COLUMNS = ["image_id", "latitude", "longitude", "state", "path", "scene_id",
 
 
 def _revision():
-    package = Path(__file__).resolve().parents[3]
-    roots = ("experiments/georoc", "experiments/scenarios", "tools/acquisition/sentinel2",
+    package = Path(__file__).resolve().parents[4]
+    roots = ("experiments/data_lab/source_studies/georoc", "experiments/model_2/external_validation", "experiments/scenarios", "tools/acquisition/sentinel2",
              "datasets/adapters", "model_2/preparation", "model_2/prediction", "model_2/methodology/spectral")
     packages={}
     for name in ("numpy","pandas","scikit-learn","rasterio","pystac-client"):

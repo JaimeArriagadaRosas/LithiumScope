@@ -1,6 +1,6 @@
 """Publication-first evidence registry for GEOROC: 59 citations, sample gates, auditable decisions."""
 from pathlib import Path
-from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
+from lithiumscope.experiments.data_lab.source_studies.georoc.protocol import EXPERIMENT_ROOT
 import json,hashlib,re
 import pandas as pd
 BASE=EXPERIMENT_ROOT

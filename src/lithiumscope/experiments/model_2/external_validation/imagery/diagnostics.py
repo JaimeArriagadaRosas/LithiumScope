@@ -1,6 +1,6 @@
 """Diagnostic-only analysis: grouped uncertainty and source/site sensitivity for GEOROC."""
 from pathlib import Path
-from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
+from lithiumscope.experiments.data_lab.source_studies.georoc.protocol import EXPERIMENT_ROOT
 import json
 import numpy as np
 import pandas as pd

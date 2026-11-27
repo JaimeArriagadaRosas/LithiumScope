@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 from lithiumscope.datasets.adapters.georoc.dataverse import whole_rock_candidates
 from lithiumscope.tools.acquisition.georoc.dataverse import fetch_partition
-from lithiumscope.experiments.georoc.studies.andean_partitions import run
+from lithiumscope.experiments.data_lab.source_studies.georoc.studies.andean_partitions import run
 
 def test_candidate_adapter_excludes_nonfinite_and_nonrock():
     frame=pd.DataFrame({"LATITUDE MIN":[-20]*3,"LONGITUDE MIN":[-70]*3,

@@ -15,4 +15,4 @@ Local regression is required; no criterion is closed by file relocation alone.
 
 ## GEOROC experimental relocation
 
-Both experimental `acquisition/` packages have been retired. Historical pilot retrieval lives in `tools/acquisition/sentinel2/pilot.py`; isolated asset workers remain in the provider tools. GEOROC study entry points live in `experiments/georoc/{screening,provenance,imagery,studies}`. Historical report output filenames are preserved. New code must use canonical imports, not the retired packages. The relocation catalog includes the paths and the software validation preflight scans them.
+Both experimental `acquisition/` packages have been retired. Historical pilot retrieval lives in `tools/acquisition/sentinel2/pilot.py`; isolated asset workers remain in the provider tools. GEOROC study entry points live in `experiments/data_lab/source_studies/georoc/{screening,provenance,studies} and experiments/model_2/external_validation/imagery`. Historical report output filenames are preserved. New code must use canonical imports, not the retired packages. The relocation catalog includes the paths and the software validation preflight scans them.

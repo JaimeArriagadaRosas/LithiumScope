@@ -22,7 +22,7 @@ def analyze(group, source, *, include_candidates=True):
         print(f"[OK] EDA descriptivo vigente, sin repetir análisis: {evidence}")
     records=[]
     if group=="model_1" and include_candidates:
-        from lithiumscope.experiments.data_lab.candidate_eda import run_candidates
+        from lithiumscope.experiments.data_lab.source_studies.georoc.candidate_eda import run_candidates
         records=run_candidates(source)
     state="complete" if all(r["state"]=="complete" for r in records) else "partial"
     return evidence,state,{"eda_path":str(evidence),

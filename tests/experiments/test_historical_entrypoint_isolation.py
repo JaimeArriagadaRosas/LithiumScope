@@ -10,7 +10,7 @@ def test_canonical_experiment_import(name):
 def test_experimental_relocation(old,new):
     assert import_module(old) is import_module(new)
 
-@pytest.mark.parametrize("name",["studies.andean_partitions","screening.andean_candidates","imagery.pilot"])
+@pytest.mark.parametrize("name",["data_lab.source_studies.georoc.studies.andean_partitions","data_lab.source_studies.georoc.screening.andean_candidates","model_2.external_validation.imagery.pilot"])
 def test_historical_import_does_not_acquire_or_read_data(name,monkeypatch,tmp_path):
     monkeypatch.chdir(tmp_path)
     import requests
@@ -19,6 +19,6 @@ def test_historical_import_does_not_acquire_or_read_data(name,monkeypatch,tmp_pa
         pytest.fail("Import attempted acquisition or dataset read")
     monkeypatch.setattr(requests,"get",forbidden)
     monkeypatch.setattr(pd,"read_csv",forbidden)
-    module=import_module("lithiumscope.experiments.georoc."+name)
+    module=import_module("lithiumscope.experiments."+name)
     assert callable(module.main)
     assert not list(tmp_path.iterdir())

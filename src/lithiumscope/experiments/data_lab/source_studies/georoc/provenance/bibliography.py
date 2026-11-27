@@ -1,6 +1,6 @@
 """Reproduce bibliography verification and training/source overlap for GEOROC pilot."""
 from pathlib import Path
-from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
+from lithiumscope.experiments.data_lab.source_studies.georoc.protocol import EXPERIMENT_ROOT
 import re,json,hashlib
 import pandas as pd
 

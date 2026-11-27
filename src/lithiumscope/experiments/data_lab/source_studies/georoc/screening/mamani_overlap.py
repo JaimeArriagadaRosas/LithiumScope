@@ -6,7 +6,7 @@ surface correspondence before any sample can become labelled external validation
 from __future__ import annotations
 import hashlib,json
 from pathlib import Path
-from lithiumscope.experiments.georoc.protocol import EXPERIMENT_ROOT
+from lithiumscope.experiments.data_lab.source_studies.georoc.protocol import EXPERIMENT_ROOT
 from lithiumscope.core.paths import PROJECT_ROOT
 from lithiumscope.datasets.validation.spatial.coordinates import assess_coordinate_aliases
 import numpy as np
