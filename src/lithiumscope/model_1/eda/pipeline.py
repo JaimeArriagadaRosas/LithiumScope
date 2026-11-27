@@ -5,6 +5,7 @@ from pathlib import Path
 
 from lithiumscope.core.config import load_config
 from lithiumscope.core.hashing import file_sha256
+from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.paths import RESULTS_DIR
 from lithiumscope.model_1.pipeline import prepare_training_data
 from lithiumscope.model_1.validation.spatial import materialize_regression_splits
@@ -13,16 +14,21 @@ from lithiumscope.core.scientific.spatial_audit import audit_spatial_folds
 from lithiumscope.results.eda_artifacts import (
     complete_run, fail_run, find_compatible, new_run, signature,
 )
-from lithiumscope.model_1.eda.statistics.profile import descriptive_tables
-from lithiumscope.model_1.eda.reporting.artifacts import write_descriptive_tables
-from lithiumscope.model_1.eda.visualization.source_profiles import render_profiles
+from lithiumscope.model_1.eda.statistics import descriptive_tables
+from lithiumscope.model_1.eda.artifacts import write_descriptive_tables
+from lithiumscope.model_1.eda.visualization import render_profiles
 from lithiumscope.results.eda_protocol import fold_protocol, attach_training_eda
 
 
+logger = get_logger("model_1.eda")
+
+
 def run_eda(path: Path, *, output_root: Path | None = None, prepared=None, config=None) -> Path:
+    logger.info("M1_EDA_STARTED source=%s", path)
     prepared = prepare_training_data(path) if prepared is None else prepared
     cfg = load_config("model_1") if config is None else config
     if prepared.audit.dataset_sha256 != file_sha256(path):
+        logger.error("M1_EDA_SOURCE_CHANGED source=%s", path)
         raise ValueError("M1 prepared source changed before EDA")
     validation = cfg["validation"]
     splits, strategy, protocol = None, "not_available", None
@@ -38,6 +44,7 @@ def run_eda(path: Path, *, output_root: Path | None = None, prepared=None, confi
     key = signature("model_1", path, cfg, prepared.frame, protocol=protocol)
     cached = find_compatible(root, key)
     if cached:
+        logger.info("M1_EDA_REUSED run=%s", cached.name)
         print(f"[OK] EDA descriptivo compatible reutilizado: {cached}")
         return cached
     directory = new_run(root)
@@ -59,7 +66,7 @@ def run_eda(path: Path, *, output_root: Path | None = None, prepared=None, confi
             spatial_rows.to_csv(tables / "outer_spatial_nearest.csv", index=False)
             fold_state = strategy
         print(summary.to_string(index=False))
-        return complete_run(directory, signature_value=key, details={
+        result = complete_run(directory, signature_value=key, details={
             "model_group": "model_1", "source_path": str(path), "source_sha256": file_sha256(path),
             "tabular_source": prepared.raw_frame.attrs.get("tabular_source", {}),
             "rows_raw": len(prepared.raw_frame), "rows_prepared": len(prepared.frame),
@@ -71,7 +78,10 @@ def run_eda(path: Path, *, output_root: Path | None = None, prepared=None, confi
             "fold_profile_state": fold_state, "development_protocol": protocol,
             "limitation": "Descriptive full cohort; not an independent development subset.",
         })
+        logger.info("M1_EDA_COMPLETED run=%s rows=%d features=%d fold_state=%s", directory.name, len(prepared.frame), len(cols), fold_state)
+        return result
     except Exception as exc:
+        logger.exception("M1_EDA_FAILED run=%s", directory.name)
         fail_run(directory, exc)
         raise
 
