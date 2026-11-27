@@ -5,20 +5,20 @@ from pathlib import Path
 import requests
 
 from lithiumscope.runtime.console_status import Spinner
-from lithiumscope.datasets.validation.georoc_dataset_health import (
+from lithiumscope.datasets.validation.georoc.dataset_health import (
     assess_dataset_health_file,
 )
 from lithiumscope.tools.georoc.query.georoc_query_export import (
     materialize_download,
     validate_export,
 )
-from lithiumscope.datasets.adapters.georoc_postprocess import (
+from lithiumscope.datasets.adapters.georoc.postprocessing import (
     process_georoc_text_export,
 )
 from lithiumscope.tools.georoc.query.georoc_query_log import (
     BoundedRunLog,
 )
-from lithiumscope.datasets.validation.georoc_schema_profile import (
+from lithiumscope.datasets.validation.georoc.schema_profile import (
     log_georoc_schema_profile,
 )
 from lithiumscope.tools.acquisition.georoc.source_checkpoint import (

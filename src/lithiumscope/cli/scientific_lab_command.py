@@ -25,7 +25,7 @@ def _run_eda_m2():
 
 
 def _eda_source(model_group):
-    from lithiumscope.datasets.management.diagnostic_provisioning import prepare_diagnostic_source
+    from lithiumscope.datasets.management.sources.diagnostic import prepare_diagnostic_source
     try:
         return prepare_diagnostic_source(model_group)
     except FileNotFoundError:

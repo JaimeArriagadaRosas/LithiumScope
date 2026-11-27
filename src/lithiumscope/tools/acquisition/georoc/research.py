@@ -9,7 +9,7 @@ from uuid import uuid4
 import requests
 
 from lithiumscope.core.hashing import file_sha256
-from lithiumscope.datasets.management.research_sources import ResearchPartition
+from lithiumscope.datasets.management.sources.research import ResearchPartition
 from lithiumscope.tools.acquisition.georoc.dataverse import fetch_partition
 
 METADATA = "https://data.goettingen-research-online.de/api/datasets/:persistentId/"
