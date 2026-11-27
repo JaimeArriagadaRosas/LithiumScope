@@ -7,7 +7,7 @@ from lithiumscope.core.exceptions import InputValidationError
 from lithiumscope.core.logging.session import get_logger
 from .csv_reader import CSV_ENCODINGS, _LEGACY_BLANK_HEADERS, _read_csv_with_fallback
 from .excel_reader import read_excel
-from lithiumscope.datasets.validation.tabular.headers import validate_headers as _validate_headers
+from lithiumscope.datasets.validation.tabular.schema import validate_headers as _validate_headers
 
 logger = get_logger("datasets.readers.tabular")
 

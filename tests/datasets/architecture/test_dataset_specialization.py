@@ -50,3 +50,24 @@ def test_relative_source_paths_are_portable(tmp_path, monkeypatch):
     relative = "data/processed/model_1/training.csv"
     assert project_path(relative, first) == first / relative
     assert project_path(relative, second) == second / relative
+
+
+def test_validation_root_contains_only_cross_domain_components():
+    assert {p.name for p in (ROOT / "validation").glob("*.py")} == {
+        "__init__.py", "contracts.py", "files.py", "quality_report.py"
+    }
+
+
+@pytest.mark.parametrize("name", [
+    "validation.coordinates", "validation.paths", "validation.target_column",
+    "validation.tabular.headers",
+])
+def test_validation_relocated_modules_are_retired(name):
+    assert util.find_spec("lithiumscope.datasets." + name) is None
+
+
+def test_validation_canonical_owners():
+    from lithiumscope.datasets.validation.spatial.coordinates import assess_coordinate_aliases
+    from lithiumscope.datasets.management.paths import resolve_image_path
+    from lithiumscope.datasets.validation.tabular.schema import validate_headers, resolve_target
+    assert all(callable(fn) for fn in (assess_coordinate_aliases, resolve_image_path, validate_headers, resolve_target))

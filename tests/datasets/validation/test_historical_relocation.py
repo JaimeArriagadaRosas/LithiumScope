@@ -1,6 +1,6 @@
 import pytest
 
-from lithiumscope.datasets.validation.paths import resolve_image_path
+from lithiumscope.datasets.management.paths import resolve_image_path
 
 
 def test_relocated_path_does_not_fall_back_to_original(tmp_path):

@@ -11,7 +11,7 @@ import pandas as pd
 
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.reproducibility import canonical_json_hash
-from lithiumscope.datasets.validation.paths import resolve_image_path
+from lithiumscope.datasets.management.paths import resolve_image_path
 from lithiumscope.model_2.preparation.features.spectral import (
     FEATURE_EXTRACTOR_VERSION, extract_spectral_features,
 )

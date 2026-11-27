@@ -154,5 +154,9 @@
   "lithiumscope.experiments.analysis.compare_vnext_trained_runs": "lithiumscope.experiments.integrated.compare_vnext_trained_runs",
   "lithiumscope.experiments.analysis.verify_vnext_data_adequacy": "lithiumscope.experiments.integrated.verify_vnext_data_adequacy",
   "lithiumscope.experiments.analysis.comparison.compare_vnext_trained_runs_compare_m1": "lithiumscope.experiments.integrated.comparison.compare_m1",
-  "lithiumscope.experiments.analysis.comparison.compare_vnext_trained_runs_compare_m2": "lithiumscope.experiments.integrated.comparison.compare_m2"
+  "lithiumscope.experiments.analysis.comparison.compare_vnext_trained_runs_compare_m2": "lithiumscope.experiments.integrated.comparison.compare_m2",
+  "lithiumscope.datasets.validation.coordinates": "lithiumscope.datasets.validation.spatial.coordinates",
+  "lithiumscope.datasets.validation.paths": "lithiumscope.datasets.management.paths",
+  "lithiumscope.datasets.validation.tabular.headers": "lithiumscope.datasets.validation.tabular.schema",
+  "lithiumscope.datasets.validation.target_column": "lithiumscope.datasets.validation.tabular.schema"
 }

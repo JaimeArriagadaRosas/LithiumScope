@@ -6,7 +6,7 @@ from lithiumscope.datasets.adapters.georoc.schema import infer_georoc_column_map
 from lithiumscope.datasets.adapters.georoc.dataverse import whole_rock_candidates
 from lithiumscope.datasets.validation.chemistry.analytical import parse_analytical_value
 from lithiumscope.datasets.validation.georoc.dataset_health import assess_dataset_health
-from lithiumscope.datasets.validation.target_column import resolve_target
+from lithiumscope.datasets.validation.tabular.schema import resolve_target
 
 
 def test_health_distinguishes_presence_from_quantification():

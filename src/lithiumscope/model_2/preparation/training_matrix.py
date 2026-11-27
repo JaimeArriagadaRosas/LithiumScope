@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from lithiumscope.datasets.validation.paths import resolve_image_path
+from lithiumscope.datasets.management.paths import resolve_image_path
 
 from lithiumscope.core.logging.session import get_logger
 from lithiumscope.model_2.preparation.imagery import load_imagery

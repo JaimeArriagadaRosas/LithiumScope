@@ -63,9 +63,11 @@ coverage, rollback, snapshot reuse, version comparison, provenance identity, raw
 and M2 manifest evidence. These tests require local execution; no result is
 asserted in this document.
 
-## Deferred moves
+## Canonical validation layout
 
-The existing coordinates.py, paths.py and target_column.py remain in their
-current locations until consumers have been fully audited. No compatibility
-shims were restored. Structural migration of these paths should be performed
-only as a coordinated change with all consumers and tests.
+Coordinate validation lives in `validation/spatial/coordinates.py`.
+Header validation and target-column resolution share `validation/tabular/schema.py`.
+Historical image-path resolution lives in `management/paths.py`.
+The validation root retains only its initializer, contracts, file-integrity checks,
+and the cross-domain quality report. The retired modules are not compatibility shims.
+The relocation catalog and static import check include these moves.

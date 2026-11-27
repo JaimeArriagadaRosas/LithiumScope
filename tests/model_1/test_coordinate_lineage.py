@@ -6,7 +6,7 @@ import pytest
 
 from lithiumscope.core.pipeline_audit import PipelineAudit, stable_source_row_id
 from lithiumscope.datasets.harmonization import canonicalize_coordinates
-from lithiumscope.datasets.validation.coordinates import assess_coordinate_aliases, coordinate_summary
+from lithiumscope.datasets.validation.spatial.coordinates import assess_coordinate_aliases, coordinate_summary
 from lithiumscope.model_1.validation.coordinate_preflight import coordinate_preflight
 from lithiumscope.model_1.validation.spatial import build_spatial_groups
 from lithiumscope.model_1.training.preprocessing.tabular import FeatureSchema

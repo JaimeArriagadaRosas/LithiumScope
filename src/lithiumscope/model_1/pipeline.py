@@ -10,7 +10,7 @@ from lithiumscope.core.config import load_config
 from lithiumscope.core.logging.session import get_logger
 from lithiumscope.core.pipeline_audit import PipelineAudit, stable_source_row_id
 from lithiumscope.datasets.harmonization import canonicalize_coordinates
-from lithiumscope.datasets.validation.coordinates import assess_coordinate_aliases, coordinate_summary
+from lithiumscope.datasets.validation.spatial.coordinates import assess_coordinate_aliases, coordinate_summary
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.model_1.schema import validate_training_schema
 from lithiumscope.datasets.readers.tabular import load_data

@@ -1,6 +1,6 @@
 """Excel sheet selection and header validation."""
 import pandas as pd
-from lithiumscope.datasets.validation.tabular.headers import validate_headers as _validate_headers
+from lithiumscope.datasets.validation.tabular.schema import validate_headers as _validate_headers
 
 
 def read_excel(path, sheet_name):

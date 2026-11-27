@@ -11,7 +11,7 @@ import pandas as pd
 
 from lithiumscope.datasets.validation.chemistry.composition import assess_composition
 from lithiumscope.datasets.validation.chemistry.concentration import valid_concentration
-from lithiumscope.datasets.validation.coordinates import assess_coordinate_aliases
+from lithiumscope.datasets.validation.spatial.coordinates import assess_coordinate_aliases
 from lithiumscope.datasets.validation.spatial.precision import assess_precision
 from lithiumscope.datasets.validation.contracts import QualityPolicy
 

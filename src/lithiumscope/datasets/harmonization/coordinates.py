@@ -51,7 +51,7 @@ def canonicalize_coordinates(
 ) -> pd.DataFrame:
     """Legacy coalescence or strict new coordinate contract."""
     if strict:
-        from lithiumscope.datasets.validation.coordinates import assess_coordinate_aliases
+        from lithiumscope.datasets.validation.spatial.coordinates import assess_coordinate_aliases
         return assess_coordinate_aliases(frame)[0]
     result = frame.copy()
     longitude = _coalesce_numeric(

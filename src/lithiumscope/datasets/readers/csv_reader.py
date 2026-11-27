@@ -6,7 +6,7 @@ import pandas as pd
 
 from lithiumscope.core.exceptions import InputValidationError
 from lithiumscope.core.hashing import file_sha256
-from lithiumscope.datasets.validation.tabular.headers import validate_headers as _validate_headers
+from lithiumscope.datasets.validation.tabular.schema import validate_headers as _validate_headers
 
 CSV_ENCODINGS = ("utf-8-sig", "cp1252", "latin-1")
 # The frozen public mirror has four blank, non-predictor headers.

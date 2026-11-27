@@ -9,7 +9,7 @@ from lithiumscope.datasets.validation.chemistry.concentration import valid_conce
 logger = get_logger("model_1.target_filtering")
 
 
-from lithiumscope.datasets.validation.target_column import resolve_target as resolve_target
+from lithiumscope.datasets.validation.tabular.schema import resolve_target as resolve_target
 
 
 def filter_target(
