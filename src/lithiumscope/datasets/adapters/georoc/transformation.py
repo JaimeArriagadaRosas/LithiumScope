@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 import pandas as pd
 from .chemistry import convert_chemistry, quality_sum
-from .material_selection import select_material
+from .material import select_material
 from .row_selection import select_rows
 
 

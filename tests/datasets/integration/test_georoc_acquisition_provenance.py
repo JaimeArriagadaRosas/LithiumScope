@@ -200,7 +200,7 @@ def test_schema_profile_is_logged_before_filter_failure(
 
 
 def test_material_parser_understands_georoc_wr_batch_notation():
-    from lithiumscope.tools.georoc.processing.georoc_material_parser import (
+    from lithiumscope.datasets.adapters.georoc.material import (
         parse_georoc_material,
     )
 
@@ -214,7 +214,7 @@ def test_material_parser_understands_georoc_wr_batch_notation():
 
 
 def test_material_parser_understands_georoc_gl_batch_notation():
-    from lithiumscope.tools.georoc.processing.georoc_material_parser import (
+    from lithiumscope.datasets.adapters.georoc.material import (
         parse_georoc_material,
     )
 
@@ -227,7 +227,7 @@ def test_material_parser_understands_georoc_gl_batch_notation():
 
 
 def test_material_parser_does_not_guess_unknown_values():
-    from lithiumscope.tools.georoc.processing.georoc_material_parser import (
+    from lithiumscope.datasets.adapters.georoc.material import (
         parse_georoc_material,
     )
 
@@ -242,7 +242,7 @@ def test_material_parser_does_not_guess_unknown_values():
 
 def test_whole_rock_filter_supports_georoc_batch_notation():
     import pandas as pd
-    from lithiumscope.tools.georoc.processing.georoc_material_filter import (
+    from lithiumscope.datasets.adapters.georoc.material import (
         filter_whole_rock,
     )
 

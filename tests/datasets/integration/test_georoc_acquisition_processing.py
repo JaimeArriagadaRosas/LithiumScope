@@ -183,7 +183,7 @@ def test_raw_reader_falls_back_to_cp1252(tmp_path):
 
 def test_whole_rock_filter_removes_volcanic_glass():
     import pandas as pd
-    from lithiumscope.tools.georoc.processing.georoc_material_filter import (
+    from lithiumscope.datasets.adapters.georoc.material import (
         filter_whole_rock,
     )
 

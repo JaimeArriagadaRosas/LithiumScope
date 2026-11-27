@@ -92,7 +92,7 @@
   "lithiumscope.prediction.report": "lithiumscope.prediction.exports.report_facade",
   "lithiumscope.tools.georoc.processing.georoc_dataset_health": "lithiumscope.datasets.validation.georoc.dataset_health",
   "lithiumscope.tools.georoc.processing.georoc_download_finalize": "lithiumscope.tools.acquisition.georoc.download_finalize",
-  "lithiumscope.tools.georoc.processing.georoc_material_filter": "lithiumscope.datasets.adapters.georoc.material_filter",
+  "lithiumscope.tools.georoc.processing.georoc_material_filter": "lithiumscope.datasets.adapters.georoc.material",
   "lithiumscope.tools.georoc.processing.georoc_normalizer": "lithiumscope.datasets.adapters.georoc.normalization",
   "lithiumscope.tools.georoc.processing.georoc_postprocess": "lithiumscope.datasets.adapters.georoc.postprocessing",
   "lithiumscope.tools.georoc.processing.georoc_raw_reader": "lithiumscope.datasets.readers.georoc_raw_reader",
@@ -112,10 +112,10 @@
   "lithiumscope.datasets.adapters.georoc_ingestion_schema": "lithiumscope.datasets.adapters.georoc.schema",
   "lithiumscope.datasets.adapters.georoc_ingestion_transform": "lithiumscope.datasets.adapters.georoc.transformation",
   "lithiumscope.datasets.adapters.georoc_material": "lithiumscope.datasets.adapters.georoc.material",
-  "lithiumscope.datasets.adapters.georoc_material_filter": "lithiumscope.datasets.adapters.georoc.material_filter",
+  "lithiumscope.datasets.adapters.georoc_material_filter": "lithiumscope.datasets.adapters.georoc.material",
   "lithiumscope.datasets.adapters.georoc_normalizer": "lithiumscope.datasets.adapters.georoc.normalization",
   "lithiumscope.datasets.adapters.georoc_postprocess": "lithiumscope.datasets.adapters.georoc.postprocessing",
-  "lithiumscope.datasets.adapters.georoc_names": "lithiumscope.datasets.adapters.georoc.names",
+  "lithiumscope.datasets.adapters.georoc_names": "lithiumscope.datasets.adapters.georoc.normalization",
   "lithiumscope.datasets.adapters.georoc_dataverse": "lithiumscope.datasets.adapters.georoc.dataverse",
   "lithiumscope.datasets.management.local_sources": "lithiumscope.datasets.management.sources.local",
   "lithiumscope.datasets.management.diagnostic_provisioning": "lithiumscope.datasets.management.sources.diagnostic",
@@ -165,5 +165,8 @@
   "lithiumscope.datasets.management.sources.model_1.assembly": "lithiumscope.datasets.management.sources.model_1_assembly",
   "lithiumscope.datasets.management.sources.model_2.frozen": "lithiumscope.datasets.management.sources.model_2",
   "lithiumscope.datasets.management.sources.model_2.expanded": "lithiumscope.datasets.management.sources.model_2",
-  "lithiumscope.datasets.management.paths": "lithiumscope.datasets.management.sources.model_2_paths"
+  "lithiumscope.datasets.management.paths": "lithiumscope.datasets.management.sources.model_2_paths",
+  "lithiumscope.datasets.adapters.georoc.material_filter": "lithiumscope.datasets.adapters.georoc.material",
+  "lithiumscope.datasets.adapters.georoc.material_selection": "lithiumscope.datasets.adapters.georoc.material",
+  "lithiumscope.datasets.adapters.georoc.names": "lithiumscope.datasets.adapters.georoc.normalization"
 }

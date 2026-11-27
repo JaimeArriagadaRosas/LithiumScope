@@ -71,3 +71,11 @@ def test_validation_canonical_owners():
     from lithiumscope.datasets.management.sources.model_2_paths import resolve_image_path
     from lithiumscope.datasets.validation.tabular.schema import validate_headers, resolve_target
     assert all(callable(fn) for fn in (assess_coordinate_aliases, resolve_image_path, validate_headers, resolve_target))
+
+
+def test_georoc_material_and_normalization_owners_are_consolidated():
+    from lithiumscope.datasets.adapters.georoc.material import parse_georoc_material, filter_whole_rock, select_material
+    from lithiumscope.datasets.adapters.georoc.normalization import norm, normalize_georoc_frame
+    assert all(callable(fn) for fn in (parse_georoc_material, filter_whole_rock, select_material, norm, normalize_georoc_frame))
+    for name in ("material_filter", "material_selection", "names"):
+        assert util.find_spec("lithiumscope.datasets.adapters.georoc." + name) is None

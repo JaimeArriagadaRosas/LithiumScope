@@ -85,3 +85,36 @@ No retired source modules are retained as compatibility shims.
 Preboot and local diagnostics resolve the configured cohort; expanded M2 is not silently replaced with frozen M2. Acquisition is injected by the caller and requires explicit authorization in diagnostics. Existing frozen hashes are not changed. Unfrozen M1 combined sources are reused only when source bytes, ingestion options, conservative dataset-code fingerprint and output hashes match. Candidate code fingerprints include dataset Python files and selected package versions; arbitrary external transformation dependencies are not automatically tracked.
 
 Candidate CLI: `list` inventories versions, `verify <directory>` verifies their evidence, and `audit` / `georoc` accept `--recover-corrupt` to preserve a damaged matching version under `.quarantine` and rebuild from supplied inputs. Writers use per-version locks and fail clearly when another writer is active. A lock left by a process crash requires manual inspection and removal after ensuring no writer is active. Recovery is maintenance of candidate versions only; do not run recovery while other processes are reading that version. Image link checks verify availability and registered relocation hashes when requested, not spectral content. Full regression is menu 5 > 3 > 1.
+
+## Registered source adapters
+
+The registered dataset keys resolve to source-specific local adapters via
+`lithiumscope.datasets.adapters.registry.get_adapter`. Acquisition stays separate.
+
+Use `python -m lithiumscope.datasets.management.candidates members <archive.zip>`
+to list supported text members and `python -m lithiumscope.datasets.management.candidates adapt <key> <file> --options <options.json>`
+to create a versioned research artifact. Add `--member <exact archive member>` when
+adapting a selected spectral file inside a ZIP. Only that member is extracted into
+a temporary directory under a bounded size policy. Inputs and output artifacts
+are hashed. For GEOROC, use the existing `georoc` subcommand.
+
+Examples of JSON options (explicit research parameters):
+
+- Mamani09: `{"lithium_unit":"unknown"}`. The public mirror is not certified as the official dataset. Coordinate conflicts and censored assays remain visible for review.
+- Fregeneda-Almendra: `{"sample_id":"A","instrument":"SR-6500"}` or instrument `ASD FieldSpec 4`. The published data descriptor (https://doi.org/10.3390/data6030033, section 2) specifies a 28-line header and percentage reflectance for SR-6500, and two columns of wavelength in nm and absolute reflectance for ASD. Record: https://doi.org/10.5281/zenodo.4575375.
+- GREENPEG: `{"sample_id":"A","representation":"raw","reflectance_unit":"fraction","header_lines":0}` **only if the selected file's documented format matches those options**. The database includes raw and continuum-removed spectra, and resampled products (https://doi.org/10.5194/essd-15-3111-2023, section 2; record https://doi.org/10.5281/zenodo.6518319). Access, geodatabase, GeoPackage and pre-resampled tables are not automatically interpreted.
+- Sentinel-2: `{"expected_bands":["red","green","blue","nir","swir16","swir22"],"expected_pixels":32,"expected_size_m":640}`. Local patch inspection requires a matching sidecar. NPY geometry is declared only; GeoTIFF inspection checks metric grid, not independent center or complete atmospheric quality. The M2 strict patch contract remains authoritative for training.
+
+The spectral adapters preserve wavelength and original reflectance, flag physical
+range issues without clipping, and never produce Li labels. Spectral response
+integration requires a caller-supplied response curve, full wavelength coverage and
+an explicit maximum interpolation gap. It is not a synthetic Sentinel-2 image.
+
+GEOROC materials and name normalization are consolidated. Contradictory simultaneously
+reported numeric aliases stop ingestion; Fe species are not equated. Invalid spatial
+bounds are excluded with reasons. Candidate ingestion streams analytical censoring
+into `analytical_censoring.jsonl`; the operational API retains inline evidence unless
+a callback is provided. Zenodo reuses only complete, checksum-verified selected files,
+with no automatic bypass of the large-source authorization. The real spectral ZIP
+contents still require local format/metadata verification; test fixtures represent
+published layouts, not a full audit of original archive members.

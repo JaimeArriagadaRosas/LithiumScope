@@ -5,7 +5,7 @@ from pathlib import Path
 from uuid import uuid4
 from lithiumscope.core.logging.session import get_logger
 
-from lithiumscope.datasets.adapters.georoc.material_filter import (
+from lithiumscope.datasets.adapters.georoc.material import (
     MaterialFilterResult,
     filter_whole_rock,
 )

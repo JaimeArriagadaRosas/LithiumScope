@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pandas as pd
+import re
 
 
 def normalize_georoc_frame(
@@ -48,3 +49,11 @@ def normalize_georoc_frame(
         )
 
     return result
+
+
+def norm(value: str) -> str:
+    return re.sub(
+        r"[^A-Z0-9]+",
+        "",
+        str(value).upper(),
+    )
