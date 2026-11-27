@@ -2,7 +2,7 @@
 import numpy as np
 import pandas as pd
 
-from lithiumscope.experiments.analysis.audit_georoc_m2_candidate_coverage import (
+from lithiumscope.experiments.model_2.audit_georoc_m2_candidate_coverage import (
     coalesced_coordinates,coordinate_half_extent_m,
 )
 

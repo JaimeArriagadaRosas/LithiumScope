@@ -1,6 +1,6 @@
 import pandas as pd
 import pytest
-from lithiumscope.experiments.analysis.validate_feot_expansion_m1 import (
+from lithiumscope.model_1.methodology.feot_expansion import (
     heldout_new_geography,
 )
 

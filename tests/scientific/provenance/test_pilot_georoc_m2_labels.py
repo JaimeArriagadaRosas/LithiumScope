@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from lithiumscope.experiments.analysis.pilot_georoc_m2_labels import (
+from lithiumscope.experiments.model_2.pilot_georoc_m2_labels import (
     _quality_of_patch, _stable_sample_id, collect_eligible_label_pairs,
     select_small_pilot,
 )

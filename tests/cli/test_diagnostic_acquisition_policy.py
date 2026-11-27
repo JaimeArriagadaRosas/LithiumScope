@@ -4,7 +4,7 @@ from lithiumscope.datasets.management.sources.diagnostic import prepare_diagnost
 
 
 def test_no_acquisition_by_default(monkeypatch):
-    from lithiumscope.datasets.management import local_sources
+    from lithiumscope.datasets.management.sources import local as local_sources
     def missing(_): raise FileNotFoundError("missing")
     monkeypatch.setattr(local_sources,"local_training_source",missing)
     with pytest.raises(FileNotFoundError,match="missing"):
@@ -12,7 +12,7 @@ def test_no_acquisition_by_default(monkeypatch):
 
 
 def test_frozen_snapshot_not_reconstructed_even_with_authorization(monkeypatch):
-    from lithiumscope.datasets.management import local_sources
+    from lithiumscope.datasets.management.sources import local as local_sources
     from lithiumscope.core import config
     def missing(_): raise FileNotFoundError("missing")
     monkeypatch.setattr(local_sources,"local_training_source",missing)

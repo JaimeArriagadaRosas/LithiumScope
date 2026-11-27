@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from lithiumscope.experiments.analysis.protocols.georoc_qc_protocols import (
+from lithiumscope.model_1.methodology.qc_protocols import (
     protocol_masks,
     protocol_summary,
 )
