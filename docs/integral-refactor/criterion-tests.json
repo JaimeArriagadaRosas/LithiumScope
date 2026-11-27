@@ -638,8 +638,8 @@
       "tests/architecture/structure/test_architecture.py"
     ],
     "ARQ-070": [
-      "tests/runtime/test_logging_retention.py",
-      "tests/runtime/test_logging_lifecycle.py"
+      "tests/reliability/logging/test_logging_retention.py",
+      "tests/reliability/logging/test_logging_lifecycle.py"
     ],
     "ARQ-071": [
       "tests/performance/resources/test_resource_manager.py",
@@ -647,7 +647,7 @@
     ],
     "ARQ-072": [
       "tests/scientific/methodology/test_scientific_checks.py",
-      "tests/core/test_training_diagnostics.py",
+      "tests/reliability/logging/test_training_diagnostics.py",
       "tests/unit/metrics/test_shared_metrics_contract.py"
     ],
     "ARQ-073": [
@@ -778,21 +778,21 @@
       "tests/architecture/structure/test_architecture.py"
     ],
     "ARQ-099": [
-      "tests/runtime/test_logging_lifecycle.py",
+      "tests/reliability/logging/test_logging_lifecycle.py",
       "tests/runtime/test_session_structured_logs.py"
     ],
     "ARQ-100": [
-      "tests/runtime/test_logging_lifecycle.py",
+      "tests/reliability/logging/test_logging_lifecycle.py",
       "tests/runtime/test_training_logging_session.py",
       "tests/reliability/persistence/test_tracker_atomic.py",
       "tests/integration/acquisition/test_georoc_acquisition.py",
       "tests/runtime/test_worker_logging_isolation.py",
       "tests/development/test_validation.py",
-      "tests/runtime/test_operation_log_layout.py"
+      "tests/reliability/logging/test_operation_log_layout.py"
     ],
     "ARQ-101": [
       "tests/runtime/test_session_structured_logs.py",
-      "tests/core/test_experiment_tracker.py",
+      "tests/reliability/logging/test_experiment_tracker.py",
       "tests/runtime/test_scientific_log_context.py"
     ],
     "ARQ-102": [
@@ -810,7 +810,7 @@
       "tests/runtime/test_worker_logging_isolation.py"
     ],
     "ARQ-105": [
-      "tests/runtime/test_logging_retention.py",
+      "tests/reliability/logging/test_logging_retention.py",
       "tests/regression/recovery/test_run_recovery.py",
       "tests/runtime/test_scientific_log_context.py"
     ],
@@ -834,7 +834,7 @@
       "tests/performance/execution/test_optimization_parallel_policy.py",
       "tests/performance/execution/test_batched_optuna_contract.py",
       "tests/performance/execution/test_acceleration_benchmark.py",
-      "tests/runtime/test_operation_log_layout.py",
+      "tests/reliability/logging/test_operation_log_layout.py",
       "tests/regression/historical/test_historical_parity_preflight.py",
       "tests/development/test_failure_context.py",
       "tests/architecture/structure/test_scientific_script_layout.py"

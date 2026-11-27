@@ -9,7 +9,7 @@ def _run_logging_probe(tmp_path: Path, code: str):
     env["LITHIUMSCOPE_LOG_DIR"] = str(tmp_path)
     env.pop("LITHIUMSCOPE_SESSION_DIR", None)
     env.pop("LITHIUMSCOPE_WORKER_SESSION_DIR", None)
-    env["PYTHONPATH"] = str(Path(__file__).resolve().parents[2] / "src")
+    env["PYTHONPATH"] = str(next(parent for parent in Path(__file__).resolve().parents if (parent / "pyproject.toml").is_file()) / "src")
     return subprocess.run([sys.executable, "-c", code], check=True, capture_output=True, text=True, env=env, timeout=20)
 
 
