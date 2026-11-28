@@ -325,7 +325,7 @@ source_comparison.csv SHA256
 recalculado y coincidente. Los seis registros de fuentes coinciden entre
 inventario e informe. 17 originales adicionales reportados verificados
 por la ejecución local, 2 perfiles nuevos, 4 reutilizados, 11 referencias
-históricas verificadas (10 estudios distintos por ruta). Cero bloqueos,
+históricas verificadas (8 estudios distintos por ruta). Cero bloqueos,
 cero retiros, cero nuevas filas aprobadas, cero fits. 35 CSV y seis figuras
 declarados en manifiesto canónico; no se adjuntaron sus bytes en esta
 entrega para recalcular sus hashes. Fuente congelada y protocolo de cinco
