@@ -148,7 +148,7 @@ def prepare_version(group, source, *, run_eda=True, root=None):
         eda_cache.record(group, source, evidence, eda_key)
         return destination, evidence
     if group == "model_1":
-        from lithiumscope.model_1.pipeline import prepare_training_data
+        from lithiumscope.model_1.preparation.training_data import prepare_training_data
         from lithiumscope.model_1.eda.pipeline import run_eda as eda
         from lithiumscope.core.scientific.eda_statistics import source_series
         prepared = prepare_training_data(source)

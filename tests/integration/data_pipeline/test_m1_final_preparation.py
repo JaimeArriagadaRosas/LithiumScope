@@ -96,3 +96,38 @@ def test_fold_contract_preserves_outer_and_inner_membership():
         assert not set(fold["train"]) & set(fold["test"])
         for inner in fold["inner"]:
             assert not set(inner["train"]) & set(fold["test"])
+
+
+def test_cold_m1_snapshot_calls_canonical_preparation_and_reuses_snapshot(tmp_path, monkeypatch):
+    import pandas as pd
+    from lithiumscope.experiments.generalization import prepared
+    from lithiumscope.model_1.preparation.training_data import prepare_training_data
+    from lithiumscope.results.eda_protocol import fold_protocol
+    from lithiumscope.model_1.validation.spatial import materialize_regression_splits
+    from lithiumscope.experiments.generalization.partitions import partitions
+    source = tmp_path / "combined.csv"
+    pd.DataFrame({"Li_icpms":[10.,20.,30.,40.,50.,60.,70.,80.,90.,100.],
+        "SUM (no water)":[98.]*10,"SiO2":[50.+i for i in range(10)],
+        "Longitude":[-70.-i for i in range(10)],"Latitude":[-20.]*10,
+        "source_dataset":["GEOROC"]*10}).to_csv(source,index=False)
+    before=source.read_bytes()
+    # Isolate only the cache identity; execute actual production preparation,
+    # persistence, reloading and partition checks, not a mocked import.
+    monkeypatch.setattr(prepared,"identity",lambda *args:"cold_m1")
+    original=prepare_training_data(source)
+    snapshot,eda=prepared.prepare_version("model_1",source,run_eda=False,root=tmp_path/"snapshots")
+    data=prepared.load_snapshot(snapshot,snapshot.name)
+    x,y,groups,_,eligible,numeric,categorical=data
+    assert eda is None and len(x)==10
+    assert x.index.tolist()==original.x.index.astype(str).tolist()
+    assert list(x.columns)==list(original.x.columns)==numeric+categorical
+    pd.testing.assert_frame_equal(x,original.x.set_axis(x.index),check_dtype=False)
+    assert y.tolist()==original.y.tolist() and groups.tolist()==original.groups.tolist()
+    cfg={"validation":{"outer_folds":5,"inner_folds":2}}
+    splits,strategy=materialize_regression_splits(original.x,original.y,original.groups,5,42,require_groups=True)
+    expected=fold_protocol(original.x,original.y,original.groups,splits,strategy=strategy)
+    plan=partitions("model_1",data,cfg)
+    assert fold_protocol(x,y,groups,[(a,b) for a,b,_ in plan],
+                         eligible=eligible,strategy=strategy)==expected
+    assert prepared.prepare_version("model_1",source,run_eda=False,root=tmp_path/"snapshots")==(snapshot,None)
+    assert source.read_bytes()==before
