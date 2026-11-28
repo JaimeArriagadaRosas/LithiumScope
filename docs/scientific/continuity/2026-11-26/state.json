@@ -687,7 +687,7 @@
     },
     "final_eda_data_refinement": {
       "date": "2026-11-28",
-      "state": "local_eda_complete_pending_treatment_decision",
+      "state": "final_preparation_implemented_pending_local_execution",
       "document": "M1_REFINAMIENTO_FINAL_EDA_DATOS_20261128.md",
       "source_run": "eda_20261128T100117_090336Z_db98fe5f",
       "canonical_source_sha256": "94e78b2662b002184bcfd550be0aacc522f5eec73283d0c12f75be29599bcc94",
@@ -702,14 +702,14 @@
         "quality_control": "diagnostics_local_verified_original_review_pending",
         "identity_spatial": "diagnostics_local_verified_review_pending",
         "eda_expansion": "local_eda_verified",
-        "conditional_treatments": "proposal_pending_decision",
-        "validation_closure": "pending"
+        "conditional_treatments": "train_only_preparation_implemented_pending_local_execution",
+        "validation_closure": "pending_local_validation_and_predictive_evaluation"
       },
       "new_rows_approved": 0,
       "implementation_authorized_now": true,
       "training_authorized_now": false,
       "dataset_lifecycle": {
-        "state": "local_sequential_eda_complete_retirement_decisions_pending",
+        "state": "approved_retirements_implemented_pending_local_execution",
         "execution": "sequential_deterministic_active_sources",
         "missing_or_blocked": "record_and_continue",
         "reuse": "verified_compatible_evidence",
@@ -722,7 +722,8 @@
       "implementation_head": "2cde42c698e2e3477c693bc9bb5c200a1ebb4674",
       "retired_sources": [],
       "next_local": [
-        "5 > 3 > 1"
+        "5 > 3 > 1",
+        "5 > 2 > 1"
       ],
       "latest_local_run": {
         "run_id": "eda_20261128T113124_016337Z_5451af22",
@@ -742,7 +743,33 @@
         "review_original_qc_measurements",
         "source_retirement",
         "novel_treatment_preflight"
-      ]
+      ],
+      "preparation": {
+        "document": "M1_PREPARACION_FINAL_20261128.md",
+        "implementation_head": "ad4ddb1b99781d41b9a66ef1b4a7c1fcdfc73ea0",
+        "approved_retirements": [
+          "chen_global_arcs_2020",
+          "meixner_2020",
+          "fernandez_turiel_2020"
+        ],
+        "retirements_executed": false,
+        "variants": [
+          "reference",
+          "without_categories",
+          "ilr_oxides",
+          "chemistry_missing_indicators"
+        ],
+        "expected_partitions": 30,
+        "expected_checks": 120,
+        "model_fits": 0,
+        "new_rows_approved": 0,
+        "evaluation_authorized": false,
+        "conditional_variants": [
+          "recovered_measurements",
+          "real_expansion",
+          "combined"
+        ]
+      }
     }
   },
   "m2": {

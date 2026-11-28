@@ -55,6 +55,10 @@ def reconcile(profiles, base, root, lower, upper):
                          "within_candidate_coordinate_li"]].any(axis=1)
         y = num(new, ["Li_icpms"]).iloc[:,0]
         selected = qc & no_flag & (y.gt(696) if key == KEYS[1] else True)
+        expected=profiles[key]["manifest"]["summary"]
+        expected_count=expected["above_696_qc_no_identity_flag" if key==KEYS[1] else "qc_no_identity_flag_rows"]
+        if len(new)!=expected["candidate_rows"] or int(selected.sum())!=expected_count:
+            raise ValueError("Current candidate screening differs from verified EDA: "+key)
         detail = new.loc[selected].copy()
         detail["comparison_key"] = b.loc[selected]
         detail["archived_candidate_id"] = detail.comparison_key.map(unique.candidate_id)

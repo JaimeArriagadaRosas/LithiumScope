@@ -116,6 +116,16 @@ def run(source, *, root=None, research_root=None):
         stage(4,"Contratos de predictores")
         print("    Control | sin categorías | ILR de óxidos | indicadores de ausencia")
         print("    No se repiten balanceos sintéticos ni campañas de transferencia cerradas.")
+        write_json(directory/"treatment_decisions.json",{
+            "control":"reference", "new_feature_variants":["without_categories","ilr_oxides","chemistry_missing_indicators"],
+            "prior_policies_not_repeated":["SMOTER","rare/group bootstrap","density and source/group weighting",
+                "broad GEOROC transfer","Chen C1/C2/D","historical log-ratios","KNN/lithology imputation",
+                "regional-context ablation","TabNet missing mask"],
+            "reason":"Historical campaigns archived; final preparation isolates non-equivalent feature hypotheses.",
+            "conditional_variants":{"recovered_measurements":"requires original identity, units and analytical basis approval",
+                "real_expansion":"requires certified new identities, metadata, TRAIN compatibility and explicit review",
+                "combined":"requires individual predictive evaluation and approved composition"},
+            "model_fits":0,"production_changed":False})
         stage(5,"Preparación exterior e interior exclusivamente TRAIN")
         plan,protocol,table,states,splits,coverage=prepare_folds(data,cfg,eda_manifest["development_protocol"])
         write_table(directory/"treatments.csv",table)

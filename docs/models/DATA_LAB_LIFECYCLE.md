@@ -50,3 +50,8 @@ La retirada exige perfil íntegro y decisión explícita, conserva históricos y
 no elimina originales. El nuevo EDA no modifica la preparación canónica.
 Validar primero suite y EDA local; no reejecutar tratamientos generales hasta
 revisar los resultados y decidir las brechas experimentales pendientes.
+
+## Preparación final M1 aprobada (28/11)
+
+La opción 5 > 2 > 1 consume el checkpoint EDA aprobado y ejecuta la nueva
+[preparación final M1](../scientific/continuity/2026-11-26/M1_PREPARACION_FINAL_20261128.md), no los doce brazos genéricos anteriores. M2 permanece sin cambios. Las rutas de evaluación histórica todavía no consumen los contratos nuevos y no deben ejecutarse para este punto de control.
