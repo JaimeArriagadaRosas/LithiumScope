@@ -9,6 +9,7 @@ import pandas as pd
 
 from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.reproducibility import canonical_json_hash
+from lithiumscope.core.scientific import eda_statistics
 from lithiumscope.core.scientific.eda_statistics import feature_profiles
 from lithiumscope.results.eda_artifacts import complete_run, fail_run, find_compatible, new_run
 from lithiumscope.results.atomic_exports import write_table, write_legacy_evidence_json
@@ -91,6 +92,7 @@ def profile(key, paths, base_path, *, output_root):
     code = {Path(m.__file__).name: file_sha256(Path(m.__file__))
             for m in (chen, meixner, whole_rock, directed_intake)}
     code["directed_profiles.py"] = file_sha256(Path(__file__))
+    code["eda_statistics.py"] = file_sha256(Path(eda_statistics.__file__))
     libraries = ("numpy", "pandas", "xlrd") if key == directed_intake.MEIXNER else ("numpy", "pandas", "openpyxl")
     signature = canonical_json_hash({"key": key, "files": digests, "base": base_digest,
         "code": code, "versions": {p: version(p) for p in libraries}})

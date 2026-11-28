@@ -73,6 +73,7 @@ def profile(spec, paths, receipt, base_path, *, output_root=None, availability_c
         raise ValueError("Candidate source files must have unique names")
     base_digest=file_sha256(base_path) if base_path is not None else None
     from lithiumscope.datasets.adapters.georoc import schema as georoc_ingestion_schema, transformation as georoc_ingestion_transform, ingestion as georoc_ingestion
+    from lithiumscope.core.scientific import eda_statistics
     from lithiumscope.datasets.readers import georoc_raw_reader
     from lithiumscope.datasets.adapters.georoc import research_view
     from importlib.metadata import version
@@ -80,7 +81,7 @@ def profile(spec, paths, receipt, base_path, *, output_root=None, availability_c
         "implementation":dataset_implementation_revision("candidate-eda-v3"),
         "code":[file_sha256(Path(__file__)),file_sha256(Path(georoc_ingestion_schema.__file__)),
                 file_sha256(Path(georoc_ingestion_transform.__file__)),file_sha256(Path(georoc_ingestion.__file__)),
-                file_sha256(Path(georoc_raw_reader.__file__)),file_sha256(Path(research_view.__file__))],
+                file_sha256(Path(georoc_raw_reader.__file__)),file_sha256(Path(research_view.__file__)),file_sha256(Path(eda_statistics.__file__))],
         "versions":{p:version(p) for p in ("pandas","numpy","matplotlib")}})
     root=Path(output_root) if output_root else RESULTS_DIR/"model_1"/"candidate_eda"/spec.key
     cached=find_compatible(root,key)

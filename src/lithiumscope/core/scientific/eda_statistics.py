@@ -19,6 +19,10 @@ def feature_profiles(frame: pd.DataFrame, columns: list[str], *, stage: str) -> 
         for column in columns:
             values = group[column] if column in group else pd.Series(np.nan, index=group.index)
             numeric = pd.to_numeric(values, errors="coerce")
+            # Boolean review flags describe prevalence (0/1), not chemistry.
+            # NumPy quantile interpolation cannot subtract boolean arrays.
+            if pd.api.types.is_bool_dtype(numeric.dtype):
+                numeric = numeric.astype(float)
             finite = numeric[np.isfinite(numeric)]
             records.append({
                 "stage": stage, "source": source, "feature": column, "rows": len(group),

@@ -43,3 +43,19 @@ def test_m1_coverage_reports_source_dependence_and_missing_composition():
     assert report["compositional_readiness"].incomplete.sum()==4
     assert not report["compositional_readiness"].ilr_applied.any()
     assert report["missingness_patterns"].rows.sum()==4
+
+
+def test_feature_profiles_support_boolean_review_flags_and_nullable_values():
+    from lithiumscope.core.scientific.eda_statistics import feature_profiles
+    frame = pd.DataFrame({"source_dataset": ["candidate"] * 4,
+        "qc": [True, False, True, False],
+        "nullable": pd.Series([True, pd.NA, False, True], dtype="boolean"),
+        "Li_icpms": [10., 20., 30., 40.]})
+    result = feature_profiles(frame, ["qc", "nullable", "Li_icpms"], stage="candidate").set_index("feature")
+    assert result.loc["qc", "median"] == .5
+    assert result.loc["qc", "zero"] == 2
+    assert result.loc["nullable", "missing"] == 1
+    assert result.loc["nullable", "numeric_finite"] == 3
+    assert np.isclose(result.loc["nullable", "mean"], 2/3)
+    assert result.loc["Li_icpms", "median"] == 25.
+    assert str(frame.nullable.dtype) == "boolean"
