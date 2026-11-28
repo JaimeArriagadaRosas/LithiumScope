@@ -684,6 +684,33 @@
         "independent_holdout": false,
         "models_saved": false
       }
+    },
+    "final_eda_data_refinement": {
+      "date": "2026-11-28",
+      "state": "approved_documented_implementation_paused",
+      "document": "M1_REFINAMIENTO_FINAL_EDA_DATOS_20261128.md",
+      "source_run": "eda_20261128T100117_090336Z_db98fe5f",
+      "canonical_source_sha256": "94e78b2662b002184bcfd550be0aacc522f5eec73283d0c12f75be29599bcc94",
+      "rows_prepared": 3420,
+      "predictors": 33,
+      "groups": 244,
+      "canonical_eda": "completed",
+      "global_eda": "partial_candidate_sources_blocked",
+      "blocked_sources": [
+        "georoc_andean_202609",
+        "georoc_felsic_rocks"
+      ],
+      "phases": {
+        "functional_eda": "pending",
+        "quality_control": "pending",
+        "identity_spatial": "pending",
+        "eda_expansion": "pending",
+        "conditional_treatments": "pending",
+        "validation_closure": "pending"
+      },
+      "new_rows_approved": 0,
+      "implementation_authorized_now": false,
+      "training_authorized_now": false
     }
   },
   "m2": {

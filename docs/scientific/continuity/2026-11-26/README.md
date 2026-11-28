@@ -1,3 +1,5 @@
+> **28/11 — refinamiento final EDA/datos aprobado, implementación en espera:** [plan](M1_REFINAMIENTO_FINAL_EDA_DATOS_20261128.md) registra seis fases y el inventario/uso de fuentes extra. EDA canónico 3420 × 33 completo; GEOROC candidato bloqueado por encabezado vacío. No repetir campañas ni ejecutar ajustes. Recuperación espacial 4B sigue pendiente; M2 y producción congelados.
+
 > **Salud del código (prioridad vigente):** refactorización de `datasets` implementada sin carpetas `_legacy`, imports canónicos, validación integral diferida por indicación del usuario. Revisar los siguientes módulos uno por uno. No ejecutar ni consultar workflows; suspender experimentos y mantener main/M2/modelos/datasets congelados. La mejora del menú 5 y la suite completa local quedan para el cierre autorizado de arquitectura. Ver [M1_SALUD_CODIGO_DATASETS.md](M1_SALUD_CODIGO_DATASETS.md).
 
 # Continuidad científica — LithiumScope, 26 de noviembre de 2026
