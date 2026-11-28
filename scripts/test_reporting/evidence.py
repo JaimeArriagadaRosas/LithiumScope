@@ -126,6 +126,9 @@ def write_report(path, summary, criteria):
         if item.get("message"):
             message = " ".join(item["message"].split())[:300].replace("`", "'")
             lines.append(f"  - Diagnóstico local: `{message}`")
+    lines += ["", "## Cinco pruebas más lentas", ""]
+    for row in details.get("slowest", []):
+        lines.append(f"- {row['seconds']:.2f} s | `{row['test']}`")
     lines += ["", "## Evidencias", "", "- summary.json (incluye versiones del entorno y diagnóstico local)", "- junit.xml (si fue generado)",
               "- coverage.xml (si fue generado)", "- architecture.json (validación integral)",
               "- criterion_evidence.json", f"- Log: {summary['log']}", "",

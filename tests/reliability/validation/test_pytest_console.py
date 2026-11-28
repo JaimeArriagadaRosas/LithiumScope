@@ -77,3 +77,29 @@ def test_live_line_rewrites_clears_and_never_wraps():
     assert not live.active
     live.clear()
     assert stream.getvalue().endswith("\r  \r")
+
+
+def test_summary_distinguishes_omissions_from_failure_and_preserves_detail_location(tmp_path,capsys):
+    details={"line_coverage_pct":57.47,"executed_tests":1313,"collection_errors":0,
+        "categories":{"integration":{"passed":151}},
+        "responsibilities":{"integration/data_pipeline":{"passed":42}},
+        "scopes":{"m1":{"passed":289,"skipped":1}},
+        "collection":{"full_suite_verified":True,"collected_modules":300,"expected_modules":300,
+                      "selected_cases":1313,"deselected_cases":0},
+        "criterion_summary":{"state":"OK","by_family":{"ARQ":{"ASSOCIATED_TESTS_PASSED":105,
+                            "INCOMPLETE_TEST_EVIDENCE":4}}},
+        "nonpassing":[{"state":"skipped","test":"a","message":"Historical artifacts unavailable"},
+                      {"state":"skipped","test":"b","message":"Historical artifacts unavailable"},
+                      {"state":"skipped","test":"c","message":"Requires local extension"}],
+        "slowest":[]}
+    summary={"state":"incomplete","duration_seconds":445,"counts":{"tests":1313,
+        "failures":0,"errors":0,"skipped":3},"details":details,"checks":{"lint":{"state":"OK","log":"long/path/lint.log"}},
+        "git_identity_unchanged":True,"tracked_worktree_dirty":False,"untracked_code_present":False,
+        "pytest_exit_code":0,"exit_code":10,"coverage_requested":True,"log":"pytest.log"}
+    print_summary(summary,tmp_path)
+    output=capsys.readouterr().out
+    assert "INCOMPLETO" in output and "Sin fallos; validación incompleta por pruebas omitidas" in output
+    assert "2 | Historical artifacts unavailable" in output
+    assert "integration/data_pipeline" not in output and "long/path/lint.log" not in output
+    assert "57.47%" in output and "300/300" in output and "Pytest: 0 | Validación: 10" in output
+    assert "[5/5] EVIDENCIAS" in output

@@ -184,93 +184,110 @@ def _print_groups(title, groups):
     if not groups:
         return
     print("\n" + title)
-    print(f"{'Área':42} {'OK':>7} {'Fallos':>7} {'Errores':>7} {'Omit.':>7}")
+    print(f"{'Área':<28} {'OK':>7} {'Fallos':>7} {'Errores':>7} {'Omit.':>7}")
     for group, counts in groups.items():
-        print(f"{group[:42]:42} {counts.get('passed',0):7} {counts.get('failure',0):7} "
+        print(f"{group:<28} {counts.get('passed',0):7} {counts.get('failure',0):7} "
               f"{counts.get('error',0):7} {counts.get('skipped',0):7}")
 
 
+def _interpret(summary, clean):
+    state = summary["state"]
+    counts, details = summary["counts"], summary["details"]
+    if state == "passed":
+        return "Suite aprobada; no demuestra superioridad científica."
+    if state == "cancelled":
+        return "Ejecución cancelada; conservar evidencia parcial."
+    if state == "failed":
+        return "Hay fallos o comprobaciones no superadas; revisar incidencias."
+    if (state == "incomplete" and summary.get("pytest_exit_code") == 0
+            and counts.get("tests",0) > 0 and counts.get("skipped",0) > 0
+            and not counts.get("failures",0) and not counts.get("errors",0)
+            and not details.get("collection_errors",0) and clean
+            and details.get("collection",{}).get("full_suite_verified")
+            and all(r["state"] == "OK" for r in summary.get("checks",{}).values())
+            and (not summary.get("coverage_requested") or details.get("line_coverage_pct") is not None)
+            and not summary.get("report_error")):
+        return "Sin fallos; validación incompleta por pruebas omitidas."
+    return "Evidencia incompleta; revisar recopilación, integridad, cobertura e incidencias."
+
+
 def print_summary(summary, results):
-    counts = summary["counts"]
-    details = summary["details"]
-    label = {"passed": "APROBADO", "failed": "FALLIDO", "cancelled": "CANCELADO", "incomplete": "INCOMPLETO"}.get(summary["state"], "DESCONOCIDO")
-    print("\n" + "=" * 76)
-    print(f"VALIDACIÓN DEL SOFTWARE | {label}")
-    print("=" * 76)
-    print(f"Rama           : {summary.get('git_branch') or 'N/D'}")
-    print(f"Commit         : {(summary.get('git_commit') or 'N/D')[:12]}")
-    print(f"Duración       : {elapsed(summary['duration_seconds'])} (min:seg)")
-    if summary.get("checks"):
-        print("\nCOMPROBACIONES DEL SOFTWARE")
-        for name, record in summary["checks"].items():
-            print(f"  {name:<24} {record['state']} | {record.get('log', record.get('scope', ''))}")
-    if counts:
-        passed = counts["tests"] - counts["failures"] - counts["errors"] - counts["skipped"]
-        print(f"Total JUnit    : {counts['tests']}")
-        print(f"Recopilación   : {details.get('collection_errors', 0)} errores")
-        print(f"Casos no colección: {details.get('executed_tests', 0)}")
-        print(f"Aprobados      : {max(0, passed)}")
-        print(f"Fallidos       : {counts['failures']}")
-        print(f"Errores        : {counts['errors']}")
-        print(f"Omitidos       : {counts['skipped']}")
-    else:
-        print("Resultados     : JUnit no disponible; no se pueden certificar los conteos")
-    rate = details["line_coverage_pct"]
-    print(f"Cobertura      : {rate:.2f}% de líneas" if rate is not None
-          else f"Cobertura      : no disponible ({summary['coverage_state']})")
+    counts, details = summary["counts"], summary["details"]
+    label = {"passed":"APROBADO","failed":"FALLIDO","cancelled":"CANCELADO",
+             "incomplete":"INCOMPLETO"}.get(summary["state"],"DESCONOCIDO")
     clean = (summary.get("git_identity_unchanged") and summary.get("tracked_worktree_dirty") is False
              and summary.get("untracked_code_present") is False)
-    print("Integridad Git : " + ("commit limpio y sin cambios" if clean else "no certificada"))
-    print(f"Código salida  : {summary['exit_code']}")
-    if summary.get("error"):
-        print(f"Incidencia     : {summary['error']}")
-    if details.get("collection_causes"):
-        print("\nCAUSAS DE ERRORES DE RECOPILACIÓN")
-        for cause, count in details["collection_causes"].items():
-            print(f"  {count:4} | {cause}")
-    collection = details.get("collection", {})
+    checks = summary.get("checks",{})
+    collection = details.get("collection",{})
+    rate = details["line_coverage_pct"]
+    print("\n" + "="*72 + f"\nVALIDACIÓN DEL SOFTWARE | {label}\n" + "="*72)
+    print(f"Rama: {summary.get('git_branch') or 'N/D'} | Commit: {(summary.get('git_commit') or 'N/D')[:12]}")
+    print(f"Duración: {elapsed(summary['duration_seconds'])} | Pytest: {summary.get('pytest_exit_code','N/D')} | Validación: {summary['exit_code']}")
+    print("\n[1/5] RESULTADO GENERAL")
+    if counts:
+        passed = counts["tests"]-counts["failures"]-counts["errors"]-counts["skipped"]
+        print(f"  Total: {counts['tests']} | OK: {max(0,passed)} | Fallos: {counts['failures']} | Errores: {counts['errors']} | Omitidos: {counts['skipped']}")
+        print(f"  Casos ejecutados (no colección): {details.get('executed_tests',0)} | Errores de recopilación: {details.get('collection_errors',0)}")
+    else:
+        print("  JUnit no disponible; conteos no certificados.")
+    print(f"  Cobertura de líneas: {rate:.2f}%" if rate is not None
+          else f"  Cobertura: no disponible ({summary['coverage_state']})")
+    print("  " + _interpret(summary,clean))
+    print("\n[2/5] INTEGRIDAD Y COMPROBACIONES")
+    print("  Git: " + ("commit limpio y sin cambios" if clean else "no certificado"))
     if collection:
-        print(f"Suite completa : {'verificada' if collection['full_suite_verified'] else 'no verificada'}")
-        print(f"Módulos        : {collection['collected_modules']}/{collection['expected_modules']}")
-        print(f"Casos recogidos: {collection['selected_cases']} | deseleccionados: {collection['deselected_cases']}")
-        if collection["missing_modules"]:
-            print("Módulos no recopilados: " + ", ".join(collection["missing_modules"]))
-    _print_groups("CATEGORÍAS PRINCIPALES", details.get("categories") or details["groups"])
-    _print_groups("RESPONSABILIDADES", details.get("responsibilities", {}))
-    _print_groups("ÁMBITOS TRANSVERSALES (SOLAPADOS)", details.get("scopes", {}))
+        print(f"  Suite completa: {'verificada' if collection.get('full_suite_verified') else 'no verificada'}")
+        print(f"  Módulos: {collection.get('collected_modules')}/{collection.get('expected_modules')} | Casos: {collection.get('selected_cases')} | Deseleccionados: {collection.get('deselected_cases')}")
+        for module in collection.get("missing_modules",[]):
+            print(f"  [FALTANTE] {module}")
+        if collection.get("module_count_mismatches"):
+            print(f"  Módulos con conteos diferentes: {len(collection['module_count_mismatches'])}")
+    if checks:
+        print(f"  Comprobaciones: {sum(r['state']=='OK' for r in checks.values())}/{len(checks)} OK")
+        for name,record in checks.items():
+            if record["state"] != "OK":
+                print(f"  [{record['state']}] {name}: {record.get('log',record.get('scope',''))}")
+    print("\n[3/5] COBERTURA DE PRUEBAS Y CRITERIOS")
+    _print_groups("Categorías principales",details.get("categories") or details.get("groups",{}))
+    _print_groups("Ámbitos transversales (solapados)",details.get("scopes",{}))
     if details.get("unclassified"):
-        print(f"Casos sin clasificación: {details['unclassified']}")
-    criteria = details.get("criterion_summary", {})
+        print(f"  Casos sin clasificación: {details['unclassified']}")
+    criteria = details.get("criterion_summary",{})
     if criteria:
-        print(f"\nCRITERIOS ASOCIADOS | {criteria['state']}")
-        for family, counts_by_state in criteria["by_family"].items():
-            print(f"  {family}: " + " | ".join(f"{state}: {n}" for state, n in counts_by_state.items()))
-    failures = [r for r in details["nonpassing"] if r["state"] != "skipped"]
-    if failures:
-        print("\nPRUEBAS CON FALLOS O ERRORES")
-        for row in failures:
-            print(f"- {row['test']}\n  {' '.join(row['message'].split())}")
-    skipped = [r for r in details["nonpassing"] if r["state"] == "skipped"]
+        print(f"\n  Evidencia de criterios: {criteria['state']}")
+        print(f"  {'Familia':<10} {'Aprobados':>10} {'Incompletos':>12} {'Otros':>8}")
+        for family,by_state in criteria.get("by_family",{}).items():
+            ok=by_state.get("ASSOCIATED_TESTS_PASSED",0)
+            incomplete=by_state.get("INCOMPLETE_TEST_EVIDENCE",0)
+            other=sum(by_state.values())-ok-incomplete
+            print(f"  {family:<10} {ok:>10} {incomplete:>12} {other:>8}")
+            for status,n in by_state.items():
+                if status not in {"ASSOCIATED_TESTS_PASSED","INCOMPLETE_TEST_EVIDENCE"}:
+                    print(f"    {status}: {n}")
+    print("\n[4/5] INCIDENCIAS")
+    if summary.get("error"):
+        print(f"  {summary['error']}")
+    for cause,count in details.get("collection_causes",{}).items():
+        print(f"  [RECOPILACIÓN] {count} | {cause}")
+    failures = [r for r in details.get("nonpassing",[]) if r["state"]!="skipped"]
+    skipped = [r for r in details.get("nonpassing",[]) if r["state"]=="skipped"]
+    for row in failures:
+        print(f"  [{row['state'].upper()}] {row['test']}\n    {' '.join(row['message'].split())}")
     if skipped:
-        print("\nPRUEBAS OMITIDAS")
-        for row in skipped:
-            print(f"- {row['test']}\n  {' '.join(row['message'].split())}")
-    if details["slowest"]:
-        print("\nCINCO PRUEBAS MÁS LENTAS")
-        for row in details["slowest"]:
-            print(f"  {row['seconds']:7.2f} s | {row['test']}")
-    print("\nEVIDENCIAS")
-    print(f"  Resumen JSON : {results / 'summary.json'}")
-    if (results / "junit.xml").is_file():
-        print(f"  JUnit XML    : {results / 'junit.xml'}")
-    if summary.get("pytest_exit_code") is not None:
-        print(f"  Código pytest: {summary['pytest_exit_code']}")
-    if rate is not None:
-        print(f"  Cobertura XML: {results / 'coverage.xml'}")
-    for name in ("architecture.json", "criterion_evidence.json", "verification_report.md"):
-        if (results / name).is_file():
-            print(f"  {name}: {results / name}")
-    print(f"  Log completo : {summary['log']}")
-    print("\nInterpretación : " + ("sin fallos de pytest; no demuestra superioridad científica."
-          if summary["state"] == "passed" and counts else "revisar incidencias antes de continuar."))
-    print("=" * 76, flush=True)
+        print(f"  Omitidas: {len(skipped)} (no equivalen a aprobadas)")
+        for reason,n in Counter(" ".join(r["message"].split()) for r in skipped).items():
+            print(f"    {n} | {reason or 'Motivo no disponible'}")
+    if not failures and not skipped and not summary.get("error") and not details.get("collection_causes"):
+        print("  Sin fallos, errores ni omisiones reportados." if counts else "  Incidencias no certificables sin JUnit.")
+    if details.get("slowest"):
+        slow=details["slowest"][0]
+        print(f"  Prueba más lenta: {slow['seconds']:.2f} s | {slow['test'].split('::')[-1]}")
+    print("\n[5/5] EVIDENCIAS")
+    print(f"  Carpeta: {results}")
+    names=["summary.json"]
+    names.extend(name for name in ("junit.xml","coverage.xml","architecture.json","criterion_evidence.json",
+                                   "verification_report.md") if (results/name).is_file())
+    print("  Archivos: " + ", ".join(names))
+    print(f"  Log pytest: {summary['log']}")
+    print("  Detalle por responsabilidad, pruebas omitidas y tiempos: informes exportados.")
+    print("="*72,flush=True)

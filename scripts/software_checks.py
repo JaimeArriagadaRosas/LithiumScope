@@ -13,7 +13,7 @@ def _command(root: Path, logs: Path, name: str, arguments: list[str], env: dict,
     log = logs / f"{name}.log"
     start = time.monotonic()
     if show:
-        print(f"  [PREVIO] {name}...", flush=True)
+        print(f"  [EN CURSO] {name}", flush=True)
     code, error = None, None
     try:
         with log.open("wb") as stream:
@@ -37,7 +37,9 @@ def _command(root: Path, logs: Path, name: str, arguments: list[str], env: dict,
             with log.open(encoding="utf-8", errors="replace") as stream:
                 result["log_tail"] = [line.rstrip()[:1000] for line in deque(stream, maxlen=20)]
     if show:
-        print(f"  [{result['state']}] {name}: {result['log']}", flush=True)
+        print(f"  [{result['state']}] {name:<24} {result['duration_seconds']:.2f} s", flush=True)
+        if result["state"] != "OK":
+            print(f"    Log: {result['log']}", flush=True)
         if result.get("finding_count") is not None:
             print(f"    Referencias o errores detectados: {result['finding_count']}", flush=True)
     return result
