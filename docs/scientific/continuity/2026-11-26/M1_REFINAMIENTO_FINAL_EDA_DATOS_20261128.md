@@ -311,3 +311,95 @@ source_inventory.json/source_comparison.csv, y los manifiestos/tablas
 de fuentes candidatas necesarios para la evaluación. Si persiste bloqueo
 GEOROC, entregar raw_structure_audit.json de cada fuente afectada.
 Validación software completa pendiente; no ejecutar tratamientos ni fits.
+
+
+## Cierre funcional del EDA local (28/11, 11:32 UTC)
+
+Commit ejecutado 2cde42c698e2e3477c693bc9bb5c200a1ebb4674.
+Informe eda_verification_20261128T113220_b0df91c9.json, estado COMPLETADO.
+EDA eda_20261128T113124_016337Z_5451af22, firma
+81df1b4f5adc451b82024367a0b78feb3c200705bb76aaf23057d478287a86f8.
+Inventario eda_20261128T113220_328539Z_f771bdcf/source_inventory.json;
+source_comparison.csv SHA256
+68b87ef7fc2fe328e5a217b233602b13ae2c6f536de82a18904d726b68d7fb92
+recalculado y coincidente. Los seis registros de fuentes coinciden entre
+inventario e informe. 17 originales adicionales reportados verificados
+por la ejecución local, 2 perfiles nuevos, 4 reutilizados, 11 referencias
+históricas verificadas (10 estudios distintos por ruta). Cero bloqueos,
+cero retiros, cero nuevas filas aprobadas, cero fits. 35 CSV y seis figuras
+declarados en manifiesto canónico; no se adjuntaron sus bytes en esta
+entrega para recalcular sus hashes. Fuente congelada y protocolo de cinco
+folds con identidades sin cambios. La nueva presentación funciona.
+
+| Fuente | Filas perfiladas | Li >40 | Li >696 | QC sin alerta identidad | >696 QC sin alerta |
+|---|---:|---:|---:|---:|---:|
+| Andean Arc | 2801 | 219 | 14 | 6 | 0 |
+| Granite/Rhyolite | 7996 | 2287 | 117 | 6694 | 69 |
+| Chen | 3680 | 102 | 0 | N/D | N/D |
+| Meixner | 82 | 19 | 0 | N/D | N/D |
+| Fernández-Turiel | 6 | 0 | 0 | N/D | N/D |
+| Macusani | 29 | 22 | 16 | N/D | N/D |
+
+Conteos de perfil, no identidades independientes ni elegibilidad. QC
+GEOROC y QC Chen tienen definiciones distintas. Se conservan las cifras
+anteriores de expansión (2998 y 8234); el perfil actual reporta 2801 y
+7996 (197 y 238 menos). No atribuir la diferencia a una causa sin
+contrastar las tablas de ingestión, filtros y claves de fila; el mero
+recuento de 69 altas coincidente no demuestra misma membresía.
+
+### Recomendaciones de disposición, pendientes de decisión explícita
+
+- Andean Arc: cerrar expansión masiva; seis QC sin alertas requieren
+  verificación individual si se consideran nuevas filas. Ninguna >696.
+  Mantener únicamente revisión de procedencia/enriquecimiento y recuperación
+  de exclusiones con identidad independiente de Li, no repetir campaña
+  retrospectiva de 2686 enlaces.
+- Granite/Rhyolite: cerrar repetición de transferencia amplia y pesada.
+  69 altas QC sin alerta (53 >1000); el estudio anterior encontró 69
+  intraplaca sin soporte químico y fallos de estabilidad pese a menor RMSE
+  global. Reconciliar membresía exacta y soporte TRAIN antes de considerar
+  cualquier hipótesis nueva. No admitir 6694 filas ni 69 altas por conteo.
+  Si no hay información nueva relevante, mantener cerrado ese uso.
+- Chen: candidato a retiro del EDA activo, no repetir C1/C2/D. 1588
+  compatibles históricas, cuatro >40, ninguna >60; C2 mejora RMSE medio
+  académico .021649 ppm pero empeora cola .205072. No aporta >696.
+- Meixner: candidato a retiro del EDA activo, insuficiencia de química
+  canónica (1/22) e identidad no resuelta; no usar estándares, lixiviación
+  ni Li como clave de recuperación de objetivos faltantes.
+- Fernández-Turiel: candidato a retiro del EDA activo; seis registros
+  con buena trazabilidad pero sin soporte compatible en preflight histórico
+  de cinco folds y ninguno >40. No rechazo de calidad de la publicación.
+- Macusani: mantener cuarentena por publicación compartida 30009 y
+  potenciales duplicados. 16 >696 descriptivas, 8 QC históricas en total,
+  20 posibles duplicados y 29 bloqueadas por publicación. Uso restringido
+  a auditoría de procedencia/mediciones, no expansión ni holdout independiente.
+
+No se ha ejecutado retiro: todos siguen review_required en el inventario
+real. El retiro persistente requiere decisión explícita y evidencia local
+íntegra, cierre de todos los usos; conservar fichas y originales.
+
+### Siguiente punto de decisión (fase 5)
+
+Cerrar ampliación descriptiva general, sin más campañas de adquisición
+ni repetición de EDA. Priorizar, sin fit:
+1. Reconciliar dos vistas GEOROC por clave y razón de filtrado usando
+   evidencias existentes. Revisar las seis andinas y 69 félsicas solo
+   si una diferencia real modifica elegibilidad. Recuperar bibliografía
+   y mediciones de las 33 exclusiones QC parcialmente observadas desde
+   originales si hay identidad inequívoca sin Li, sin imputación para QC.
+2. Verificar inventario previo de tratamientos antes de definir brazos:
+   ablación de categorías asociadas a fuente, indicadores de ausencia
+   y transformación ILR de óxidos (3363 completos positivos; 44 con cero,
+   13 incompletos). No repetir tratamientos equivalentes. Contrastar
+   mediciones/ceros, bases de composición y paridad de inferencia.
+3. Solo ante una hipótesis nueva y admisible, diseño pareado TRAIN-only
+   con control congelado, folds internos, guardas de cola, MAE, sesgo
+   y estabilidad espacial; presupuesto fijo previo a ejecución. Los
+   TEST observados siguen siendo desarrollo reutilizado, no holdout.
+4. Si no existe ganancia de información justificable, mantener cohorte
+   y metodología, cerrar tratamiento y retomar recuperación espacial 4B
+   pendiente (10 fits según protocolo predeclarado, previa compatibilidad).
+
+La suite completa posterior a las modificaciones sigue pendiente.
+Este cierre funcional no certifica mejora predictiva, nuevas filas,
+independencia espacial, método, CRS ni cierre de fases 5–6.

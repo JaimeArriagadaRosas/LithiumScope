@@ -687,7 +687,7 @@
     },
     "final_eda_data_refinement": {
       "date": "2026-11-28",
-      "state": "diagnostics_implemented_pending_local_validation",
+      "state": "local_eda_complete_pending_treatment_decision",
       "document": "M1_REFINAMIENTO_FINAL_EDA_DATOS_20261128.md",
       "source_run": "eda_20261128T100117_090336Z_db98fe5f",
       "canonical_source_sha256": "94e78b2662b002184bcfd550be0aacc522f5eec73283d0c12f75be29599bcc94",
@@ -695,24 +695,21 @@
       "predictors": 33,
       "groups": 244,
       "canonical_eda": "completed",
-      "global_eda": "partial_candidate_sources_blocked",
-      "blocked_sources": [
-        "georoc_andean_202609",
-        "georoc_felsic_rocks"
-      ],
+      "global_eda": "complete",
+      "blocked_sources": [],
       "phases": {
-        "functional_eda": "implemented_pending_local_validation",
-        "quality_control": "diagnostic_implemented_original_review_pending",
-        "identity_spatial": "diagnostic_implemented_review_pending",
-        "eda_expansion": "implemented_pending_local_validation",
-        "conditional_treatments": "awaiting_eda_evidence",
+        "functional_eda": "local_eda_verified_full_software_suite_pending",
+        "quality_control": "diagnostics_local_verified_original_review_pending",
+        "identity_spatial": "diagnostics_local_verified_review_pending",
+        "eda_expansion": "local_eda_verified",
+        "conditional_treatments": "proposal_pending_decision",
         "validation_closure": "pending"
       },
       "new_rows_approved": 0,
       "implementation_authorized_now": true,
       "training_authorized_now": false,
       "dataset_lifecycle": {
-        "state": "implemented_pending_local_validation",
+        "state": "local_sequential_eda_complete_retirement_decisions_pending",
         "execution": "sequential_deterministic_active_sources",
         "missing_or_blocked": "record_and_continue",
         "reuse": "verified_compatible_evidence",
@@ -722,11 +719,29 @@
         "automatic_downloads": false,
         "automatic_training": false
       },
-      "implementation_head": "99e1baddfb6bfb77447bcc3cf172e5172f29f9e0",
+      "implementation_head": "2cde42c698e2e3477c693bc9bb5c200a1ebb4674",
       "retired_sources": [],
       "next_local": [
-        "5 > 3 > 1",
-        "5 > 1 > 1"
+        "5 > 3 > 1"
+      ],
+      "latest_local_run": {
+        "run_id": "eda_20261128T113124_016337Z_5451af22",
+        "commit": "2cde42c698e2e3477c693bc9bb5c200a1ebb4674",
+        "verification": "eda_verification_20261128T113220_b0df91c9.json",
+        "inventory_run": "eda_20261128T113220_328539Z_f771bdcf",
+        "comparison_sha256": "68b87ef7fc2fe328e5a217b233602b13ae2c6f536de82a18904d726b68d7fb92",
+        "active_sources": 6,
+        "verified_files": 17,
+        "new_profiles": 2,
+        "reused_profiles": 4,
+        "canonical_tables": 35,
+        "model_fits": 0
+      },
+      "pending_decisions": [
+        "reconcile_georoc_profile_membership",
+        "review_original_qc_measurements",
+        "source_retirement",
+        "novel_treatment_preflight"
       ]
     }
   },
