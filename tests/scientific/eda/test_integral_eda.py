@@ -82,3 +82,23 @@ def test_qc_review_does_not_admit_rows_or_substitute_missing_oxides(tmp_path):
     assert path.read_bytes() == original
     manifest = json.loads((result / "manifest.json").read_text())
     assert manifest["rows_prepared"] == 1
+
+
+def test_m1_identity_and_buffer_diagnostics_preserve_frozen_folds(tmp_path):
+    from lithiumscope.model_1.eda.pipeline import prepare_training_data, materialize_regression_splits
+    from lithiumscope.model_1.eda.spatial_review import identity_review, spatial_sensitivity
+    path = tmp_path / "data.csv"
+    pd.DataFrame({"Li_icpms": [10, 90, 10, 20, 10, 20],
+        "SUM (no water)": [98]*6, "Longitude": [-70.001, -70.001, -71., -72., -73., -74.],
+        "Latitude": [-20.]*6, "SiO2": [50.]*6,
+        "source_sample": ["same", "same", "a", "b", "c", "d"]}).to_csv(path,index=False)
+    prepared = prepare_training_data(path)
+    identity, pairs = identity_review(prepared)
+    assert identity.shared_name.sum() == 2
+    assert len(pairs) == 1 and not pairs.target_used.any()
+    splits, _ = materialize_regression_splits(prepared.x,prepared.y,prepared.groups,5,42,require_groups=True)
+    result = spatial_sensitivity(prepared, splits, identity, pairs)
+    sensitivity = result["spatial_buffer_sensitivity"]
+    assert len(sensitivity) == 20 and not sensitivity.applied_to_training.any()
+    assert sensitivity.groupby("nominal_buffer_m").test_rows_unchanged.sum().eq(6).all()
+    assert len(result["outer_chemical_support"]) == 6

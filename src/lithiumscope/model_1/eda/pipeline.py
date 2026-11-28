@@ -16,6 +16,7 @@ from lithiumscope.results.eda_artifacts import (
 )
 from lithiumscope.model_1.eda.statistics import descriptive_tables
 from lithiumscope.model_1.eda.quality_review import quality_review
+from lithiumscope.model_1.eda.spatial_review import identity_review, spatial_sensitivity
 from lithiumscope.model_1.eda.artifacts import write_descriptive_tables
 from lithiumscope.model_1.eda.visualization import render_profiles
 from lithiumscope.results.eda_protocol import fold_protocol, attach_training_eda
@@ -54,6 +55,10 @@ def run_eda(path: Path, *, output_root: Path | None = None, prepared=None, confi
         cols = [*prepared.schema.numeric, *prepared.schema.categorical]
         calculated=descriptive_tables(prepared)
         calculated.update(quality_review(prepared, cfg["data"]))
+        identity, pairs = identity_review(prepared)
+        calculated.update(identity_review=identity, possible_identity_pairs=pairs)
+        if splits is not None:
+            calculated.update(spatial_sensitivity(prepared, splits, identity, pairs))
         write_descriptive_tables(calculated,prepared,tables)
         render_profiles(directory/"figures",prepared,calculated)
         summary=calculated["cohort_summary"]
