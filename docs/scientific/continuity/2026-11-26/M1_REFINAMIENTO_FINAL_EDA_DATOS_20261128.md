@@ -80,6 +80,87 @@ Antes de reejecutar un estudio, verificar identidad y evidencia previa.
 Las fuentes extra deben ser visibles desde el flujo M1 aunque se mantengan
 estudios independientes; no ejecutar ajustes o descargas por defecto.
 
+#### Ejecución secuencial y cierre del ciclo de cada dataset (precisión aprobada)
+
+El comando 5 > 1 > 1 debe recorrer un dataset a la vez, en orden explícito
+y reproducible del registro de fuentes. No depender del orden del sistema
+de archivos. Orden inicial propuesto: combinado canónico (con perfiles
+separados de Mamani09 y GEOROC histórico), GEOROC Andean Arc,
+GEOROC Granite/Rhyolite, Chen, Meixner, Fernández-Turiel y Macusani.
+Las particiones de una misma fuente se verifican individualmente y se
+consolidan antes de pasar a la siguiente fuente. No contar el combinado
+y sus componentes como poblaciones independientes. Inventariar además
+cualquier otro dataset M1 adquirido y registrado que se descubra en el
+catálogo local, sin admitir archivos arbitrarios ni descargar por defecto.
+
+Para cada fuente activa, imprimir nombre, posición i/N, disponibilidad,
+identidad y estado. Si falta un original o una partición, enumerar lo que
+falta y continuar con el siguiente dataset; no dar por rechazada una
+fuente ausente. Si falla el lector o la validación, registrar el error
+con contexto, preservar evidencia parcial y continuar. Un manifiesto
+parcial no acredita una evaluación completa. No sustituir el dato faltante
+por otro de procedencia distinta. Reutilizar perfiles anteriores completos
+y verificados cuando su identidad y metodología sean compatibles.
+
+Cada dataset disponible requiere un perfil individual adecuado a su
+formato y contenido (no aplicar indiscriminadamente el esquema canónico):
+- Inventario de archivos, hojas/particiones, dimensiones, mediciones,
+  unidades, métodos, material, referencias, licencia, CRS y precisión.
+- Li medido, ausente, censurado, inválido, distribución por bandas y cola;
+  cobertura de predictores, calidad de óxidos y química, categorías,
+  redundancia, faltantes, extremos y soporte multivariado/espacial.
+- Identidad de muestras, duplicados y solapamiento con histórico y
+  otras fuentes; separar recuperaciones de mediciones, nuevas filas y
+  posibles conjuntos de evaluación independiente.
+- Aporte marginal al balance y cobertura por concentración, química,
+  grupo y publicación, no solo al número total de filas. Estimar
+  elegibilidad por TRAIN/fold en la fase de preparación, sin usar TEST
+  para seleccionar ni incorporar muestras.
+- Indicar uso efectivo anterior, tratamientos, resultados comparativos,
+  guardas satisfechas/incumplidas, limitaciones y recomendación razonada.
+  Aprovechar resultados históricos compatibles para evitar repetir fits.
+  Si no hay evidencia de rendimiento suficiente, dejar la fuente en
+  evaluación; el EDA por sí solo no prueba una mejora predictiva.
+
+Mantener un registro persistente de decisiones por fuente y versión/hash.
+Estados de ejecución (disponible, faltante, bloqueado, completo, reutilizado)
+son independientes de la disposición científica (canónico, candidato,
+en evaluación, admitido para un uso definido, cuarentena, rechazado).
+La recomendación EDA no equivale a aceptación productiva ni autoriza fit.
+Antes de adoptar datos, la preparación y evaluación de tratamientos
+demuestran aporte marginal frente al control congelado, con guardas de
+cola, generalización y paridad de inferencia. Registrar resultados
+negativos y positivos, y distinguir incorporación de filas de
+enriquecimiento/transferencia o uso solo diagnóstico.
+
+Una fuente con rechazo definitivo respaldado por evidencia y decisión
+explícita se retira de la lista activa del EDA: no descargar, volver a
+leer, perfilar ni evaluar automáticamente en ejecuciones posteriores.
+Conservar su ficha de cierre en el catálogo histórico separado del flujo
+activo, con identidad/versión, perfil completo, resultados, motivos
+específicos, fecha, decisión y enlaces/hashes de evidencias. No eliminar
+originales ni documentación por defecto. Cuarentena, fallo de lectura
+y ausencia no equivalen a rechazo definitivo. La retirada se aplica
+también a las entradas automáticas del registro, sin eliminar funciones
+científicas que tengan otros usos vigentes. Una fuente rechazada solo
+puede reabrirse de forma explícita y justificada (por ejemplo, una versión
+realmente nueva o evidencia primaria nueva); nunca por reiniciar el EDA.
+Si una fuente tiene usos diferenciados, cerrar cada uso por separado y
+retirarla del flujo únicamente cuando ninguno siga vigente. No reabrir
+en bloque las campañas cerradas el 26/11: consolidar primero evidencia
+existente y decisiones definitivas, y analizar solo brechas pendientes.
+
+Consola: mostrar progreso y un resumen por fuente al finalizar su turno;
+al terminar, listar resultados, ausentes, bloqueos, evidencias reutilizadas,
+candidatos pendientes y decisiones de cierre. Las fuentes ya retiradas
+no forman parte del denominador activo; pueden figurar únicamente como
+referencia al catálogo histórico, sin procesarse. El informe global
+distingue estado del EDA canónico y estado de las fuentes activas.
+Probar orden determinista, continuidad ante ausencia/error, integridad
+de caché, tratamiento de particiones, aislamiento entre fuentes y exclusión
+persistente de rechazados. La evaluación de datos y el entrenamiento
+siguen siendo etapas separadas, sin ajustes automáticos desde el EDA.
+
 ### 2. Refinamiento del control de calidad
 Auditar 109 filas con suma de óxidos faltante; 160 bajo 94, 3 sobre 102.
 Reconstruir únicamente desde mediciones originales completas compatibles,

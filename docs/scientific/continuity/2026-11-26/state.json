@@ -710,7 +710,18 @@
       },
       "new_rows_approved": 0,
       "implementation_authorized_now": false,
-      "training_authorized_now": false
+      "training_authorized_now": false,
+      "dataset_lifecycle": {
+        "state": "approved_documented_pending_implementation",
+        "execution": "sequential_deterministic_active_sources",
+        "missing_or_blocked": "record_and_continue",
+        "reuse": "verified_compatible_evidence",
+        "scientific_disposition_separate": true,
+        "definitive_rejection": "remove_from_active_eda_keep_historical_evidence",
+        "reopen": "explicit_justified_only",
+        "automatic_downloads": false,
+        "automatic_training": false
+      }
     }
   },
   "m2": {
