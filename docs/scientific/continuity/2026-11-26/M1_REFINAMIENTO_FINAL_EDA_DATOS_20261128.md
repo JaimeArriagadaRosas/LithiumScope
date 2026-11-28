@@ -1,8 +1,7 @@
 # M1 — último refinamiento de EDA y tratamiento de datos
 
 Fecha: 28/11/2026. Rama: feat/training-refinement.
-Estado: plan aprobado por el usuario; implementación expresamente aplazada.
-La consulta sobre fuentes adicionales precede a cualquier cambio funcional.
+Estado: implementación diagnóstica de fases 1–4 publicada tras aprobación; pendiente validación local y revisión de evidencia. Fases 5–6 condicionadas a esa revisión.
 No ejecutar campañas, descargar fuentes, ajustar modelos, modificar datos,
 activar workflows ni fusionar main. M2 y producción permanecen congelados.
 
@@ -51,7 +50,7 @@ por guardas. Chen ponderado C2: RMSE medio académico 7.053262 frente a A
 7.074911, pero RMSE cola >40 25.093647 frente a 24.888575; no aprobado.
 Cero nuevas filas aprobadas para producción.
 
-El registro source_studies/registry.py habilita automáticamente solo
+En el estado previo a esta implementación, el registro source_studies/registry.py habilitaba automáticamente solo
 georoc_candidate_eda para M1. Los otros estudios (Chen, Meixner, whole_rock,
 directed_intake, UNAB) se invocan de forma independiente y requieren entradas
 declaradas. En la ejecución entregada ambos conjuntos GEOROC candidatos
@@ -228,6 +227,48 @@ fine-tuning no iniciada. No iniciar nueva búsqueda masiva de Optuna.
 
 ## Estado de aprobación
 
-Solo documentación autorizada en esta intervención. No hay cambios de
-código, datos, modelos o experimentos ni comando local requerido.
-El plan queda en espera de instrucción expresa para comenzar.
+Implementación autorizada. No se autoriza todavía ejecutar fits nuevos,
+promover modelos o modificar datos canónicos sin revisar la evidencia.
+
+## Entrega de implementación (fases 1–4)
+
+- Normalización temporal de exportaciones GEOROC: columnas sin encabezado
+  solo si vacías en filas científicas; pies bibliográficos explícitos,
+  inventario de todas las columnas y huellas originales. El archivo de
+  datos real no se ha probado en esta sesión.
+- EDA secuencial del combinado y seis fuentes registradas: Andean Arc,
+  Granite/Rhyolite, Chen, Meixner, Fernández-Turiel y Macusani. No descarga.
+  Faltantes, discrepancias de hash y errores se distinguen de rechazo.
+  Perfiles específicos por formato, evidencia parcial y caché verificada.
+  No se certifica cobertura de fuentes no registradas.
+- Inventario en results/model_1/source_catalog/executions/eda_*/source_inventory.json;
+  perfiles candidatos en results/model_1/candidate_eda. Manifiestos y
+  referencias históricas con SHA256. Retiro explícito por versión y
+  justificación, sin borrar archivos. Ninguna fuente retirada ahora.
+- Auditorías canónicas nuevas: qc_recovery_review, qc_recovery_summary,
+  target_analytical_review, target_analytical_summary, identity_review,
+  possible_identity_pairs, outer_chemical_support, outer_identity_support_summary,
+  spatial_buffer_sensitivity y tablas de representatividad, correlación
+  por fuente, faltantes conjuntos y preparación composicional.
+  Las sumas reconstruibles son hipótesis de revisión, no filas recuperadas.
+  Distancias nominales y duplicados posibles no acreditan independencia.
+- Pruebas de regresión añadidas; no ejecutadas aquí. M2, originales,
+  modelos y main sin cambios. No workflows.
+
+Retirar solo tras decisión científica explícita y perfil íntegro:
+`python -m lithiumscope.experiments.data_lab.source_studies.source_catalog retire FUENTE RUTA_PERFIL --reason "motivo" --decision-reference "evidencia" --all-uses-closed`.
+Reabrir explícitamente mediante subcomando reopen y --reason. Mantener
+evidencias y catálogo histórico; no ejecutar estos comandos por defecto.
+
+### Punto de control local
+
+En feat/training-refinement, git pull --ff-only. Ejecutar primero
+5 > 3 > 1 para suite completa; después 5 > 1 > 1. Revisar informe
+eda_verification_*.json, source_inventory.json, manifiestos y tablas.
+Si la lectura GEOROC falla, conservar error y raw_structure_audit si existe.
+No ejecutar 5 > 2 > 1 ni campañas de tratamiento por este punto de control:
+la preparación general existente no incorpora aún las decisiones de este
+refinamiento. Pendientes: verificar originales de exclusiones QC, comparar
+evidencia entre fuentes y resolver elegibilidad; definir tratamientos
+condicionados TRAIN sin repetir campañas; ejecutar y cerrar fase 6 solo con
+resultados reales. No hay mejora predictiva ni cierre científico demostrado.

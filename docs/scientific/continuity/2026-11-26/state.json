@@ -687,7 +687,7 @@
     },
     "final_eda_data_refinement": {
       "date": "2026-11-28",
-      "state": "approved_documented_implementation_paused",
+      "state": "diagnostics_implemented_pending_local_validation",
       "document": "M1_REFINAMIENTO_FINAL_EDA_DATOS_20261128.md",
       "source_run": "eda_20261128T100117_090336Z_db98fe5f",
       "canonical_source_sha256": "94e78b2662b002184bcfd550be0aacc522f5eec73283d0c12f75be29599bcc94",
@@ -701,18 +701,18 @@
         "georoc_felsic_rocks"
       ],
       "phases": {
-        "functional_eda": "pending",
-        "quality_control": "pending",
-        "identity_spatial": "pending",
-        "eda_expansion": "pending",
-        "conditional_treatments": "pending",
+        "functional_eda": "implemented_pending_local_validation",
+        "quality_control": "diagnostic_implemented_original_review_pending",
+        "identity_spatial": "diagnostic_implemented_review_pending",
+        "eda_expansion": "implemented_pending_local_validation",
+        "conditional_treatments": "awaiting_eda_evidence",
         "validation_closure": "pending"
       },
       "new_rows_approved": 0,
-      "implementation_authorized_now": false,
+      "implementation_authorized_now": true,
       "training_authorized_now": false,
       "dataset_lifecycle": {
-        "state": "approved_documented_pending_implementation",
+        "state": "implemented_pending_local_validation",
         "execution": "sequential_deterministic_active_sources",
         "missing_or_blocked": "record_and_continue",
         "reuse": "verified_compatible_evidence",
@@ -721,7 +721,13 @@
         "reopen": "explicit_justified_only",
         "automatic_downloads": false,
         "automatic_training": false
-      }
+      },
+      "implementation_head": "99e1baddfb6bfb77447bcc3cf172e5172f29f9e0",
+      "retired_sources": [],
+      "next_local": [
+        "5 > 3 > 1",
+        "5 > 1 > 1"
+      ]
     }
   },
   "m2": {

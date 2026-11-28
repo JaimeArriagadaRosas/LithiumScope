@@ -1,4 +1,4 @@
-> **28/11 — refinamiento final EDA/datos aprobado, implementación en espera:** [plan](M1_REFINAMIENTO_FINAL_EDA_DATOS_20261128.md) registra seis fases, recorrido secuencial de datasets, continuidad ante faltantes/bloqueos, evaluación de aporte y retiro persistente de fuentes rechazadas con ficha histórica. EDA canónico 3420 × 33 completo; GEOROC candidato bloqueado por encabezado vacío. No repetir campañas ni ejecutar ajustes. Recuperación espacial 4B sigue pendiente; M2 y producción congelados.
+> **28/11 — refinamiento final EDA/datos, diagnóstico implementado:** [plan y punto de control](M1_REFINAMIENTO_FINAL_EDA_DATOS_20261128.md). Fases 1–4: implementación diagnóstica publicada; suite y EDA local pendientes. Recorrido secuencial, perfiles de seis fuentes y catálogo histórico; ninguna fuente retirada ni fila aprobada. Fases 5–6 condicionadas a resultados; no repetir campañas. Recuperación espacial 4B sigue pendiente; M2 y producción congelados.
 
 > **Salud del código (prioridad vigente):** refactorización de `datasets` implementada sin carpetas `_legacy`, imports canónicos, validación integral diferida por indicación del usuario. Revisar los siguientes módulos uno por uno. No ejecutar ni consultar workflows; suspender experimentos y mantener main/M2/modelos/datasets congelados. La mejora del menú 5 y la suite completa local quedan para el cierre autorizado de arquitectura. Ver [M1_SALUD_CODIGO_DATASETS.md](M1_SALUD_CODIGO_DATASETS.md).
 
@@ -53,12 +53,11 @@ Rama: `feat/m1-targeted-data-refinement`. Base de esta documentación:
 
 | Ruta | Operación |
 | --- | --- |
-| 5 > 1 > 1 | EDA M1 y adquisición de fuentes candidatas |
+| 5 > 1 > 1 | EDA M1 y perfiles secuenciales de fuentes locales; no adquisición |
 | 5 > 2 > 1 | Preparación y tratamientos M1 |
 | 5 > 3 > 1 | Tests completos |
-| 5 > 3 > 5 | Comparación de versiones guardadas |
-| 5 > 3 > 3 > 2 | Balanceo y expertos M1, ya ejecutado |
-| 5 > 3 > 6 | Piloto OASIS, ya ejecutado |
+| 5 > 3 > 2 | Comparación de versiones guardadas |
+| 5 > 3 > 3 | Evaluación de tratamientos; no repetir campañas cerradas |
 | 1 > 2 | Demostración integrada y PDF |
 
 ## Estado de la evidencia
