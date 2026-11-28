@@ -31,10 +31,13 @@ def studies_for(group):
         raise ValueError("Unknown model group")
     return tuple(study for study in STUDIES if group in study.models)
 
-def run_candidate_eda(group, source):
-    records=[]
+def run_candidate_eda(group, source, *, canonical_state="complete", detailed=False):
+    records, retired, inventory = [], [], None
     for study in studies_for(group):
         if study.automatic_eda:
-            result = getattr(import_module(study.module),study.entrypoint)(source)
-            records.extend(result[0])
-    return records
+            rows, archived, path = getattr(import_module(study.module), study.entrypoint)(
+                source, canonical_state=canonical_state)
+            records.extend(rows)
+            retired.extend(archived)
+            inventory = path
+    return (records, retired, inventory) if detailed else records

@@ -7,7 +7,7 @@ from lithiumscope.core.logging.session import get_logger
 from .source_studies.registry import run_candidate_eda, studies_for
 
 
-def analyze(group, source, *, include_candidates=True):
+def analyze(group, source, *, include_candidates=True, source_error=None):
     if group=="model_1":
         from lithiumscope.model_1.eda.pipeline import run_eda
     elif group=="model_2":
@@ -15,19 +15,41 @@ def analyze(group, source, *, include_candidates=True):
     else:
         raise ValueError("Unknown model group")
     from lithiumscope.results import eda_cache
-    evidence=eda_cache.lookup(group,source)
-    if evidence is None:
-        key=eda_cache.key_for(group,source)
-        evidence=run_eda(source)
-        eda_cache.record(group,source,evidence,key)
-    else:
-        print(f"[OK] EDA descriptivo vigente, sin repetir análisis: {evidence}")
-    records=run_candidate_eda(group,source) if include_candidates else []
-    get_logger("experiments.data_lab").info("Descriptive EDA model=%s run=%s candidate_records=%d",group,evidence.name,len(records))
-    state="complete" if all(r["state"]=="complete" for r in records) else "partial"
-    return evidence,state,{"eda_path":str(evidence),
-        "eda_manifest":json.loads((evidence/"manifest.json").read_text(encoding="utf-8")),
-        "candidate_sources":records,"available_source_studies":[s.key for s in studies_for(group)],"model_fits":0,"treatment_plans_created":False}
+    evidence = None
+    canonical_state = "complete"
+    manifest = {}
+    if group == "model_1" and include_candidates:
+        print("\nDataset canónico M1 | preparación y perfiles por fuente", flush=True)
+    try:
+        if source is None:
+            raise FileNotFoundError(source_error or "Canonical source unavailable")
+        evidence=eda_cache.lookup(group,source)
+        if evidence is None:
+            key=eda_cache.key_for(group,source)
+            evidence=run_eda(source)
+            eda_cache.record(group,source,evidence,key)
+        else:
+            print(f"[OK] EDA descriptivo vigente, sin repetir análisis: {evidence}")
+        manifest = json.loads((evidence/"manifest.json").read_text(encoding="utf-8"))
+    except Exception as exc:
+        if group != "model_1" or not include_candidates:
+            raise
+        canonical_state = "missing" if isinstance(exc, FileNotFoundError) else "blocked"
+        source_error = f"{type(exc).__name__}: {exc}"
+        evidence = None
+        print(f"[{canonical_state.upper()}] Dataset canónico: {source_error}", flush=True)
+        get_logger("experiments.data_lab").exception("Canonical M1 EDA unavailable")
+    records, retired, inventory = run_candidate_eda(group,source,canonical_state=canonical_state,
+        detailed=True) if include_candidates else ([], [], None)
+    get_logger("experiments.data_lab").info("Descriptive EDA model=%s run=%s candidate_records=%d",
+        group,evidence.name if evidence is not None else None,len(records))
+    state="complete" if canonical_state == "complete" and all(
+        r["state"] in ("complete", "reused") for r in records) else "partial"
+    return evidence,state,{"eda_path":str(evidence) if evidence is not None else None,
+        "eda_manifest":manifest,"canonical_state":canonical_state,"canonical_error":source_error,
+        "candidate_sources":records,"retired_sources":retired,
+        "source_inventory":str(inventory) if inventory is not None else None,
+        "available_source_studies":[s.key for s in studies_for(group)],"model_fits":0,"treatment_plans_created":False}
 
 
 def existing_eda(group, source):

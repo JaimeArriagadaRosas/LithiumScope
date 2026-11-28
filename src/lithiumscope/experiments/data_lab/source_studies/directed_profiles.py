@@ -91,8 +91,9 @@ def profile(key, paths, base_path, *, output_root):
     code = {Path(m.__file__).name: file_sha256(Path(m.__file__))
             for m in (chen, meixner, whole_rock, directed_intake)}
     code["directed_profiles.py"] = file_sha256(Path(__file__))
+    libraries = ("numpy", "pandas", "xlrd") if key == directed_intake.MEIXNER else ("numpy", "pandas", "openpyxl")
     signature = canonical_json_hash({"key": key, "files": digests, "base": base_digest,
-        "code": code, "versions": {p: version(p) for p in ("numpy", "pandas", "openpyxl", "xlrd")}})
+        "code": code, "versions": {p: version(p) for p in libraries}})
     cached = find_compatible(output_root, signature)
     if cached is not None:
         return cached, True

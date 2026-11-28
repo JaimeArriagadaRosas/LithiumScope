@@ -65,7 +65,7 @@ def _plots(frame, folder):
     fig.savefig(folder/"coordinates.png",dpi=150)
 
 
-def profile(spec, paths, receipt, base_path, *, output_root=None, availability_complete=True):
+def profile(spec, paths, receipt, base_path, *, output_root=None, availability_complete=True, return_reuse=False):
     paths = tuple(map(Path,paths))
     cfg=load_config("model_1")
     digests={p.name:file_sha256(p) for p in paths}
@@ -86,7 +86,7 @@ def profile(spec, paths, receipt, base_path, *, output_root=None, availability_c
     cached=find_compatible(root,key)
     if cached:
         print(f"[OK] EDA candidato vigente: {cached}")
-        return cached
+        return (cached, True) if return_reuse else cached
     directory=new_run(root)
     try:
         # Harmonized view is an analysis artifact, not a training source.
@@ -145,11 +145,12 @@ def profile(spec, paths, receipt, base_path, *, output_root=None, availability_c
                  "above_1000_qc_no_identity_flag":int((qc&unique&y.gt(1000)).sum()),"approved_rows":0}
         get_logger("experiments.data_lab").info("Candidate EDA source=%s rows=%d flagged=%d",spec.key,len(frame),int((~unique).sum()))
         print(pd.DataFrame([summary]).to_string(index=False))
-        return complete_run(directory,signature_value=key,details={"model_group":"model_1",
+        result = complete_run(directory,signature_value=key,details={"model_group":"model_1",
             "source_key":spec.key,"doi":spec.doi,"source_sha256":digests,"base_sha256":base_digest,
             "acquisition_receipt":str(receipt) if receipt is not None else None,"summary":summary,"eligibility":"requires_review",
             "all_originals_available":availability_complete,"historical_overlap_evaluated":base_path is not None,
             "training_reusable":False})
+        return (result, False) if return_reuse else result
     except Exception as exc:
         fail_run(directory,exc)
         raise

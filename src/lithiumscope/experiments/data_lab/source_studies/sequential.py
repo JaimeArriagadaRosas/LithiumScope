@@ -28,9 +28,9 @@ def _inspect(key, base_path, research_root, results_root):
         spec = specs[key]
         paths, inventory, receipt, plan_verified = local_sources.georoc_files(spec, research_root)
         complete = plan_verified and bool(paths) and all(v["state"] == "verified" for v in inventory)
-        execute = lambda: (profile(spec, paths, receipt, base_path,
+        execute = lambda: profile(spec, paths, receipt, base_path,
             output_root=results_root / "model_1" / "candidate_eda" / key,
-            availability_complete=complete), False)
+            availability_complete=complete, return_reuse=True)
     else:
         paths, inventory = local_sources.directed_files(directed_profiles.EXPECTED[key], research_root / "directed" / key)
         complete = bool(paths) and all(v["state"] == "verified" for v in inventory)
@@ -75,7 +75,9 @@ def run_sources(base_path, *, research_root=None, results_root=None, canonical_s
     records = []
     total = len(active) + 1
     print(f"[1/{total}] Dataset canónico: {canonical_state}", flush=True)
-    base_digest = file_sha256(base_path) if base_path is not None else None
+    base_digest = file_sha256(base_path) if base_path is not None and Path(base_path).is_file() else None
+    if base_digest is None:
+        base_path = None
     for index, key in enumerate(active, 2):
         print(f"\n[{index}/{total}] {key}", flush=True)
         try:
