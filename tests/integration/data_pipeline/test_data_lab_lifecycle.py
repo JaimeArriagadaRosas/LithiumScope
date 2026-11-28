@@ -134,6 +134,9 @@ def test_source_sequence_continues_and_excludes_retired_before_reading(monkeypat
     assert records[0]["state"] == "blocked"
     assert retired[0]["source"] == keys[1]
     assert path.is_file()
+    comparison = pd.read_csv(path.parent / "source_comparison.csv")
+    assert comparison.source.tolist() == calls
+    assert comparison.approved_rows.eq(0).all()
 
 
 def test_source_retirement_requires_complete_evidence_and_can_reopen(tmp_path):
@@ -154,3 +157,14 @@ def test_source_retirement_requires_complete_evidence_and_can_reopen(tmp_path):
     assert record["profile"]["summary"] == {"rows": 1}
     archive = source_catalog.reopen(key, reason="new version", root=catalog)
     assert archive.is_file() and source_catalog.retirement(key, root=catalog) is None
+
+
+def test_source_comparison_keeps_unknown_counts_and_qc_scopes_distinct():
+    from lithiumscope.experiments.data_lab.source_studies.sequential import comparison_row
+    blocked = comparison_row({"source": "georoc_andean_202609", "state": "blocked"})
+    assert blocked["profile_rows"] is None and blocked["above_696_ppm"] is None
+    row = comparison_row({"source": "chen_global_arcs_2020", "state": "complete",
+        "profile": {"profile_rows": 10, "uncensored_numeric_positive_li": 10,
+                    "basic_qc_rows": 8, "tail_above_40": 2, "tail_above_696": 0}})
+    assert row["above_696_ppm"] == 0 and row["qc_definition"] == "source_specific_basic_qc"
+    assert row["qc_no_identity_flag_rows"] is None and row["approved_rows"] == 0

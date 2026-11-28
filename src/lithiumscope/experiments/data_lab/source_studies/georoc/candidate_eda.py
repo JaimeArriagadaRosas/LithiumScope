@@ -86,7 +86,8 @@ def profile(spec, paths, receipt, base_path, *, output_root=None, availability_c
     root=Path(output_root) if output_root else RESULTS_DIR/"model_1"/"candidate_eda"/spec.key
     cached=find_compatible(root,key)
     if cached:
-        print(f"[OK] EDA candidato vigente: {cached}")
+        if not return_reuse:
+            print(f"[OK] EDA candidato vigente: {cached}")
         return (cached, True) if return_reuse else cached
     directory=new_run(root)
     try:
@@ -152,10 +153,14 @@ def profile(spec, paths, receipt, base_path, *, output_root=None, availability_c
         if (base_path is not None and file_sha256(base_path)!=base_digest) or any(file_sha256(p)!=digests[p.name] for p in paths):
             raise ValueError("Input changed during candidate EDA")
         summary={"raw_rows":harmonized.rows_read,"candidate_rows":len(frame),"qc_rows":int(qc.sum()),
+                 "positive_li_rows":int((np.isfinite(y)&y.gt(0)).sum()),
+                 "tail_above_40":int((np.isfinite(y)&y.gt(40)).sum()),
+                 "tail_above_696":int((np.isfinite(y)&y.gt(696)).sum()),
                  "qc_no_identity_flag_rows":int((qc&unique).sum()),"above_696_qc_no_identity_flag":int((qc&unique&y.gt(696)).sum()),
                  "above_1000_qc_no_identity_flag":int((qc&unique&y.gt(1000)).sum()),"approved_rows":0}
         get_logger("experiments.data_lab").info("Candidate EDA source=%s rows=%d flagged=%d",spec.key,len(frame),int((~unique).sum()))
-        print(pd.DataFrame([summary]).to_string(index=False))
+        if not return_reuse:
+            print(pd.DataFrame([summary]).to_string(index=False))
         result = complete_run(directory,signature_value=key,details={"model_group":"model_1",
             "source_key":spec.key,"doi":spec.doi,"source_sha256":digests,"base_sha256":base_digest,
             "acquisition_receipt":str(receipt) if receipt is not None else None,"summary":summary,"eligibility":"requires_review",
