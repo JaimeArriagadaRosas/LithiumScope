@@ -155,3 +155,28 @@ def test_georoc_ingestion_parses_batch_material_and_preserves_traceability(
     assert frame.loc[0, "Sample_type_raw"] == "/ WR [13695]"
     assert frame.loc[0, "Sample_material_code"] == "WR"
     assert str(frame.loc[0, "Sample_material_batch_id"]) == "13695"
+
+
+def test_research_view_preserves_original_and_separates_footer(tmp_path):
+    from lithiumscope.datasets.adapters.georoc.research_view import normalize_research_export
+    source = tmp_path / "raw.csv"
+    source.write_text('SAMPLE NAME,LI(PPM),,SIO2(WT%)\nA,15,,60\nReferences:\n"[42] citation",extra\n')
+    before = source.read_bytes()
+    destination = tmp_path / "view.csv"
+    report = normalize_research_export(source, destination)
+    assert source.read_bytes() == before
+    assert report["empty_auxiliary_columns_1based"] == [3]
+    assert report["data_records"] == 1
+    assert len(report["footer"]) == 2
+    assert list(pd.read_csv(destination).columns) == ["SAMPLE NAME", "LI(PPM)", "SIO2(WT%)"]
+
+
+def test_research_view_rejects_populated_blank_and_malformed_rows(tmp_path):
+    import pytest
+    from lithiumscope.core.exceptions import InputValidationError
+    from lithiumscope.datasets.adapters.georoc.research_view import normalize_research_export
+    source = tmp_path / "raw.csv"
+    for i, row in enumerate(["A,15,unmapped", "A,15"]):
+        source.write_text("SAMPLE NAME,LI(PPM),\n" + row + "\n")
+        with pytest.raises(InputValidationError):
+            normalize_research_export(source, tmp_path / f"view_{i}.csv")
