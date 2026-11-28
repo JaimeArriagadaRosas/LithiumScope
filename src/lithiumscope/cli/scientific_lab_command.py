@@ -15,11 +15,13 @@ def _prepare_eda(group):
     from lithiumscope.experiments.data_lab.workflow import analyze
     if group == "model_1":
         from lithiumscope.datasets.management.sources.diagnostic import prepare_diagnostic_source
+        from lithiumscope.cli.eda_console import show_eda_summary
         try:
             source = prepare_diagnostic_source(group)
         except (OSError, ValueError, RuntimeError, KeyError) as exc:
-            return analyze(group, None, source_error=str(exc))
-        return analyze(group, source)
+            return analyze(group, None, source_error=str(exc),
+                source_blocked=not isinstance(exc, FileNotFoundError), display_canonical=show_eda_summary)
+        return analyze(group, source, display_canonical=show_eda_summary)
     return analyze(group, _eda_source(group))
 
 
@@ -66,7 +68,9 @@ def _eda_menu() -> bool | None:
                 outcome = job()
                 path, prepared_state, record = outcome if isinstance(outcome, tuple) else (outcome, "complete", {})
                 from lithiumscope.cli.eda_console import show_eda_summary
-                displayed = show_eda_summary(path) if path is not None else False
+                displayed = record.get("canonical_displayed")
+                if displayed is None:
+                    displayed = show_eda_summary(path) if path is not None else False
             status = {"complete": "COMPLETADO", "partial": "PARCIAL", "blocked": "BLOQUEADO"}[prepared_state]
             if not displayed and status == "COMPLETADO":
                 status = "PARCIAL"

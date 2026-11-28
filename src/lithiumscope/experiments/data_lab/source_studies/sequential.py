@@ -75,7 +75,12 @@ def run_sources(base_path, *, research_root=None, results_root=None, canonical_s
     records = []
     total = len(active) + 1
     print(f"[1/{total}] Dataset canónico: {canonical_state}", flush=True)
-    base_digest = file_sha256(base_path) if base_path is not None and Path(base_path).is_file() else None
+    try:
+        base_digest = file_sha256(base_path) if base_path is not None and Path(base_path).is_file() else None
+    except OSError as exc:
+        base_digest = None
+        canonical_state = "blocked"
+        print(f"[BLOQUEADO] Comparación canónica: {exc}", flush=True)
     if base_digest is None:
         base_path = None
     for index, key in enumerate(active, 2):
@@ -87,7 +92,10 @@ def run_sources(base_path, *, research_root=None, results_root=None, canonical_s
         except Exception as exc:
             record = {"source": key, "state": "blocked", "reason": f"{type(exc).__name__}: {exc}"}
         if key not in blocked:
-            record["historical_evidence"] = historical_evidence.inspect_history(key, root, base_digest)
+            try:
+                record["historical_evidence"] = historical_evidence.inspect_history(key, root, base_digest)
+            except Exception as exc:
+                record["historical_evidence"] = [{"state": "blocked", "reason": str(exc)}]
         records.append(record)
         print(f"  [{record['state'].upper()}] {key}: {record.get('profile', record.get('reason', ''))}", flush=True)
         get_logger("experiments.data_lab").info("M1 source=%s state=%s", key, record["state"])

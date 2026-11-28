@@ -77,3 +77,29 @@ def reopen(key, *, reason, root=None):
                         "reopening_reason": reason.strip()})
     _path(key, root).unlink()
     return history
+
+
+def main():
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    commands = parser.add_subparsers(dest="action", required=True)
+    close = commands.add_parser("retire")
+    close.add_argument("source", choices=known_keys())
+    close.add_argument("profile", type=Path)
+    close.add_argument("--reason", required=True)
+    close.add_argument("--decision-reference", required=True)
+    close.add_argument("--all-uses-closed", action="store_true")
+    restore = commands.add_parser("reopen")
+    restore.add_argument("source", choices=known_keys())
+    restore.add_argument("--reason", required=True)
+    args = parser.parse_args()
+    if args.action == "retire":
+        path = retire(args.source, args.profile, reason=args.reason,
+            decision_reference=args.decision_reference, all_uses_closed=args.all_uses_closed)
+    else:
+        path = reopen(args.source, reason=args.reason)
+    print(path)
+
+
+if __name__ == "__main__":
+    main()

@@ -22,7 +22,10 @@ def _status(path, expected):
         return {"file": path.name, "state": "missing"}
     if path.is_symlink() or not path.resolve().is_relative_to(path.parent.resolve()):
         return {"file": path.name, "state": "blocked", "reason": "unsafe path"}
-    digest = file_sha256(path)
+    try:
+        digest = file_sha256(path)
+    except OSError as exc:
+        return {"file": path.name, "state": "blocked", "reason": str(exc)}
     if expected and digest != expected:
         return {"file": path.name, "state": "blocked", "reason": "hash mismatch", "sha256": digest}
     return {"file": path.name, "state": "verified" if expected else "unverified", "sha256": digest}

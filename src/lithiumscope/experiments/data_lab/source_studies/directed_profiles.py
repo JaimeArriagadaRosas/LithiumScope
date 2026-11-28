@@ -107,7 +107,12 @@ def profile(key, paths, base_path, *, output_root):
         valid = np.isfinite(y) & y.ge(0)
         # Chen profile deliberately retains only positive, observed Li; denominator
         # and discarded/reference-like rows are in its original source summary.
-        summary.update(profile_rows=len(rows), finite_nonnegative_li=int(valid.sum()),
+        censor = rows.get("source_li_censoring", pd.Series("", index=rows.index)).fillna("").astype(str)
+        censored = ~censor.str.strip().str.lower().isin(("", "none", "exact", "not_censored", "nan"))
+        summary.update(profile_scope="positive_observed_labels_only" if key == chen.SOURCE else "primary_review_rows",
+                       censored_target_rows=int(censored.sum()),
+                       uncensored_numeric_positive_li=int((valid & y.gt(0) & ~censored).sum()),
+                       profile_rows=len(rows), finite_nonnegative_li=int(valid.sum()),
                        zero_li=int(y.eq(0).sum()), invalid_or_missing_li=int((~valid).sum()),
                        tail_above_40=int((valid & y.gt(40)).sum()),
                        tail_above_696=int((valid & y.gt(696)).sum()),

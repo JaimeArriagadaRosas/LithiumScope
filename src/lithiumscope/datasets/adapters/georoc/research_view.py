@@ -25,6 +25,8 @@ def normalize_research_export(source, destination):
         validate_headers(header, allowed_blank=blank)
         keep = [i for i in range(len(header)) if i not in blank]
         validate_headers([header[i] for i in keep])
+        nonempty = [0] * len(header)
+        censored = [0] * len(header)
         with destination.open("x", encoding="utf-8", newline="") as output:
             writer = csv.writer(output)
             writer.writerow([header[i] for i in keep])
@@ -43,10 +45,17 @@ def normalize_research_export(source, destination):
                     raise InputValidationError(f"Malformed GEOROC row at line {reader.line_num}")
                 if any(row[i].strip() for i in blank):
                     raise InputValidationError(f"Unnamed GEOROC data column populated at line {reader.line_num}")
+                for i in keep:
+                    value = row[i].strip()
+                    nonempty[i] += bool(value)
+                    censored[i] += value.startswith(("<", ">"))
                 writer.writerow([row[i] for i in keep])
                 count += 1
     if not count or file_sha256(source) != digest:
         raise InputValidationError("Empty or changed GEOROC original")
     return {"original_sha256": digest, "encoding": encoding,
             "empty_auxiliary_columns_1based": [i+1 for i in sorted(blank)],
-            "blank_records": blank_lines, "data_records": count, "footer": footer}
+            "blank_records": blank_lines, "data_records": count, "footer": footer,
+            "columns": [{"position_1based": i+1, "header": header[i],
+                         "nonempty": nonempty[i], "empty": count-nonempty[i],
+                         "limit_markers": censored[i]} for i in range(len(header))]}
