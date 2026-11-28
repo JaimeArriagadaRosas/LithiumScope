@@ -63,6 +63,13 @@ def normalize_research_export(source, destination):
                 # The historical GEOROC bibliography reader detects an explicit
                 # marker in any nonempty cell, including a multi-cell footer row.
                 marker = next((value for value in cells if _MARKER.fullmatch(value)), None)
+                # Published 172-column partitions end with an inline legend:
+                # "Abbreviations: MET: METAMORPHIC ROCK; PEG: PEGMATITE; ...".
+                # Require the first cell, a short standalone row and an explicit
+                # abbreviation pair. Never treat an arbitrary scientific note as a footer.
+                if (marker is None and len(cells) == 1 and row[0].strip() == cells[0]
+                        and re.match(r"^Abbreviations\s*:\s*[A-Z]{2,8}\s*:\s*\S", cells[0], re.I)):
+                    marker = "Abbreviations:"
                 has_measurement = _has_measurement(row, measurement_positions)
                 if marker is not None:
                     if has_measurement:

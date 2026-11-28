@@ -204,3 +204,25 @@ def test_research_view_blocks_scientific_data_after_footer_and_reports_width(tmp
     source.write_text(header + "B,20\n")
     with pytest.raises(InputValidationError, match=r"raw.csv: Malformed GEOROC row at line 3; expected=4, actual=2"):
         normalize_research_export(source, tmp_path / "width.csv")
+
+
+def test_research_view_preserves_inline_georoc_legend(tmp_path):
+    from lithiumscope.datasets.adapters.georoc.research_view import normalize_research_export
+    source = tmp_path / "published.csv"
+    header = ["SAMPLE NAME", "LI(PPM)", "SIO2(WT%)"] + [
+        f"EXTRA {i}" for i in range(168)] + [""]
+    import csv
+    with source.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(header)
+        writer.writerow(["A", "15", "60"] + [""] * 169)
+        writer.writerow(["Abbreviations: MET: METAMORPHIC ROCK; PEG: PEGMATITE; PER: MANTLE XENOLITH"])
+        writer.writerow(["References:"])
+        writer.writerow(["[42] Example"])
+    before = source.read_bytes()
+    report = normalize_research_export(source, tmp_path / "view.csv")
+    assert report["data_records"] == 1
+    assert report["empty_auxiliary_columns_1based"] == [172]
+    assert len(report["footer"]) == 3
+    assert report["footer"][0]["cells"][0].startswith("Abbreviations: MET:")
+    assert source.read_bytes() == before
