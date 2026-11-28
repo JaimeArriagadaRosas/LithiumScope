@@ -63,7 +63,6 @@ def run_eda(path: Path, *, output_root: Path | None = None, prepared=None, confi
             calculated.update(spatial_sensitivity(prepared, splits, identity, pairs))
         write_descriptive_tables(calculated,prepared,tables)
         render_profiles(directory/"figures",prepared,calculated)
-        summary=calculated["cohort_summary"]
         fold_state = "not_available"
         if splits is not None:
             fold_summary, fold_features = fold_profiles(prepared.x, prepared.y, prepared.groups, splits)
@@ -74,7 +73,6 @@ def run_eda(path: Path, *, output_root: Path | None = None, prepared=None, confi
             spatial_summary.to_csv(tables / "outer_spatial_summary.csv", index=False)
             spatial_rows.to_csv(tables / "outer_spatial_nearest.csv", index=False)
             fold_state = strategy
-        print(summary.to_string(index=False))
         result = complete_run(directory, signature_value=key, details={
             "model_group": "model_1", "source_path": str(path), "source_sha256": file_sha256(path),
             "tabular_source": prepared.raw_frame.attrs.get("tabular_source", {}),

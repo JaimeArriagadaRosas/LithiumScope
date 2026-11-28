@@ -24,6 +24,8 @@ def test_eda_console_reads_verified_profiles_without_modifying_evidence(tmp_path
     output = capsys.readouterr().out
     assert "SiO2" in output and ">=50% faltantes: 1" in output
     assert "SOLO TRAIN" in output and "NO EVALUADOS" in output
+    assert "1. Cohorte canónica" in output and "4. Alcance y evidencias" in output
+    assert "Variables preparadas por fuente" not in output
     assert {p: p.read_bytes() for p in tmp_path.rglob("*") if p.is_file()} == before
     (tables / "feature_profiles.csv").write_text("corrupted", encoding="utf-8")
     assert not show_eda_summary(tmp_path)

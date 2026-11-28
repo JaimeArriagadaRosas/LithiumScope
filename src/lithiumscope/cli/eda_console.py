@@ -66,6 +66,70 @@ def _features(directory, manifest):
         _table("Redundancia espectral exacta y constantes", redundancy)
 
 
+def _m1_summary(directory, manifest):
+    """Compact decision-oriented console; detailed tables remain in the manifest."""
+    def read(name):
+        return _read(directory, manifest, name)
+
+    print("\n--- 1. Cohorte canónica y control de calidad ---")
+    raw, ready = manifest["rows_raw"], manifest["rows_prepared"]
+    print(f"Filas: {raw} originales | {ready} preparadas | {raw-ready} excluidas")
+    print(f"Predictores: {manifest['features']} | Protocolo: {manifest.get('fold_profile_state', 'N/D')}")
+    summary = read("cohort_summary")
+    if summary is not None:
+        _table("Distribución por fuente (Li ppm)", summary,
+               ["source", "rows", "target_min", "target_median", "target_max"])
+    qc = read("qc_recovery_summary")
+    if qc is not None:
+        _table("Exclusiones QC", qc.groupby(["reason","status"],dropna=False).rows.sum().reset_index())
+    targets = read("target_analytical_summary")
+    if targets is not None:
+        zero = targets.loc[targets.status.eq("reported_zero") & targets.retained.eq(True), "rows"].sum()
+        print(f"Ceros de Li retenidos: {zero} (revisión analítica)")
+    print("\n--- 2. Representatividad y validación espacial ---")
+    fold = read("outer_identity_support_summary")
+    if fold is not None:
+        fold = fold.assign(sin_soporte=fold.test_rows-fold.chemistry_supported_test_rows)
+        _table("Folds externos", fold.rename(columns={"train_rows":"TRAIN","test_rows":"TEST",
+            "train_above_696":"TRAIN >696","test_above_train_max":"TEST fuera rango",
+            "near_identity_pair_flags_across_fold":"pares señalados"}),
+            ["fold","TRAIN","TEST","TRAIN >696","TEST fuera rango","sin_soporte","pares señalados"])
+        print(f"Sin soporte químico: {fold.sin_soporte.sum()}/{fold.test_rows.sum()}")
+    spatial = read("outer_spatial_summary")
+    if spatial is not None:
+        _table("Distancias nominales TRAIN/TEST (m)", spatial,
+               ["fold","minimum_fit_m","within_1km","within_10km"])
+    coord = manifest.get("coordinate_report", {})
+    if coord:
+        print(f"Coordenadas válidas: {coord.get('valid_rows','N/D')} | CRS desconocido: {coord.get('unknown_crs_rows','N/D')}")
+    print("\n--- 3. Predictores y alertas ---")
+    profiles = read("feature_profiles")
+    if profiles is not None:
+        prepared = profiles.loc[profiles.stage.eq("prepared")].copy()
+        prepared["missing_pct"] = 100*prepared.missing/prepared.rows.where(prepared.rows.gt(0))
+        for source, block in prepared.groupby("source",sort=True):
+            high = block.loc[block.missing_pct.ge(50),"feature"].tolist()
+            constant = block.loc[block.unique_present.le(1),"feature"].tolist()
+            print(f"{source}: >=50% faltantes: {len(high)} | " + (", ".join(high) or "ninguna"))
+            print("  Constantes o vacías: " + (", ".join(constant) or "ninguna"))
+    train = read("outer_train_features")
+    if train is not None and not train.empty:
+        train = train.assign(missing_pct=100*train.train_missing/train.train_eligible_rows.where(train.train_eligible_rows.gt(0)))
+        worst = train.groupby("feature").missing_pct.max().sort_values(ascending=False).head(6)
+        _table("Mayor porcentaje de faltantes SOLO TRAIN", worst.rename("max_pct").reset_index())
+    association = read("categorical_source_association")
+    if association is not None:
+        _table("Asociación de categorías con fuente (V de Cramér)", association,
+               ["feature","cramers_v_source"])
+    comp = read("compositional_readiness")
+    if comp is not None:
+        print(f"Óxidos completos y positivos: {comp.all_positive.sum()}/{ready} (ILR no aplicada)")
+    print("\n--- 4. Alcance y evidencias ---")
+    print("Descriptivo; sin selección de variables, cambios de datos ni ajustes de modelos.")
+    print("Sobreajuste e infraajuste: NO EVALUADOS. Las alertas no prueban fuga.")
+    print(f"Tablas: {sum(k.startswith('tables/') for k in manifest['artifacts'])} | Detalle: {directory}")
+
+
 def show_eda_summary(directory: Path) -> bool:
     """Render verified existing tables without rebuilding or changing any artifact."""
     try:
@@ -73,6 +137,9 @@ def show_eda_summary(directory: Path) -> bool:
         manifest = json.loads((directory / "manifest.json").read_text(encoding="utf-8"))
         if not verify_eda(directory, manifest["signature"]):
             raise ValueError("Integridad del EDA no verificada")
+        if manifest["model_group"] == "model_1":
+            _m1_summary(directory, manifest)
+            return True
         print(f"\n=== EDA DETALLADO · {manifest['model_group'].upper()} ===")
         print(f"Estado: {manifest['state']} | Filas originales: {manifest['rows_raw']} | "
               f"Filas preparadas: {manifest['rows_prepared']} | Variables: {manifest['features']}")

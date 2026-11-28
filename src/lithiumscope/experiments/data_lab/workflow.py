@@ -19,7 +19,8 @@ def analyze(group, source, *, include_candidates=True, source_error=None, source
     canonical_state = "complete"
     manifest = {}
     if group == "model_1" and include_candidates:
-        print("\nDataset canónico M1 | preparación y perfiles por fuente", flush=True)
+        print("\n" + "="*72 + "\nANÁLISIS EXPLORATORIO | MODELO 1\n" + "="*72, flush=True)
+        print("\n[1] Dataset canónico | preparación y perfiles por fuente", flush=True)
     try:
         if source is None:
             raise (ValueError if source_blocked else FileNotFoundError)(source_error or "Canonical source unavailable")
@@ -29,7 +30,7 @@ def analyze(group, source, *, include_candidates=True, source_error=None, source
             evidence=run_eda(source)
             eda_cache.record(group,source,evidence,key)
         else:
-            print(f"[OK] EDA descriptivo vigente, sin repetir análisis: {evidence}")
+            print(f"[OK] EDA descriptivo reutilizado: {evidence.name}")
         manifest = json.loads((evidence/"manifest.json").read_text(encoding="utf-8"))
     except Exception as exc:
         if group != "model_1" or not include_candidates:
