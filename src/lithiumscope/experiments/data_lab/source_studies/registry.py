@@ -16,7 +16,8 @@ class SourceStudy:
 
 _PREFIX="lithiumscope.experiments.data_lab.source_studies."
 STUDIES=(
-    SourceStudy("georoc_candidate_eda",("model_1",),_PREFIX+"georoc.candidate_eda","run_candidates",True),
+    SourceStudy("georoc_candidate_eda",("model_1",),_PREFIX+"georoc.candidate_eda","profile"),
+    SourceStudy("m1_source_eda",("model_1",),_PREFIX+"sequential","run_sources",True),
     SourceStudy("georoc_external_evidence",("model_2",),_PREFIX+"georoc.workflow","run"),
     SourceStudy("chen",("model_1",),_PREFIX+"chen","run"),
     SourceStudy("meixner",("model_1",),_PREFIX+"meixner","parse_a1"),
@@ -34,5 +35,6 @@ def run_candidate_eda(group, source):
     records=[]
     for study in studies_for(group):
         if study.automatic_eda:
-            records.extend(getattr(import_module(study.module),study.entrypoint)(source))
+            result = getattr(import_module(study.module),study.entrypoint)(source)
+            records.extend(result[0])
     return records
