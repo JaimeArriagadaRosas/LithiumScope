@@ -87,10 +87,17 @@ def show_eda_summary(directory: Path) -> bool:
             ("preparation_stages", "Preparación y pérdidas por etapa", ["stage", "rows", "columns", "missing_cells"]),
             ("cohort_summary", "Concentración de Li por fuente (ppm)", None),
             ("target_tails", "Colas de Li por fuente (ppm)", None),
+            ("qc_recovery_summary", "Exclusiones QC y recuperación potencial (no aprobada)", None),
+            ("target_analytical_summary", "Estado analítico del Li", None),
+            ("target_bands_by_source", "Representatividad por fuente y concentración", None),
+            ("compositional_readiness", "Disponibilidad de óxidos para análisis composicional", None),
+            ("categorical_source_association", "Asociación categórica con fuente", None),
+            ("outer_identity_support_summary", "Identidad y soporte químico TRAIN por fold", None),
+            ("spatial_buffer_sensitivity", "Sensibilidad a separación nominal (sin cambiar entrenamiento)", None),
             ("outer_train_summary", "Distribución y balance de TRAIN por fold", None),
             ("outer_spatial_summary", "Separación espacial TRAIN/TEST (metros)", [
                 "fold", "minimum_fit_m", "median_fit_m", "within_100m", "within_1km", "within_10km",
-                "sentinel_scene_id_shared_test_rows", "possible_patch_overlap_test_rows", "distance_policy_pass"]),
+                "sentinel_scene_id_shared_test_rows", "possible_patch_overlap_test_rows", "minimum_required_m", "distance_policy_pass"]),
         ):
             frame = _read(directory, manifest, name)
             if frame is not None:

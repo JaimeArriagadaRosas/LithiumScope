@@ -27,3 +27,19 @@ def test_period_profiles_preserve_unknown_dates_and_local_qa():
     assert data.loc["2024-01","samples"]==2
     assert np.isclose(data.loc["2024-01","mean_local_valid_fraction"],.95)
     assert data.loc["unknown","samples"]==1
+
+
+def test_m1_coverage_reports_source_dependence_and_missing_composition():
+    from types import SimpleNamespace
+    from lithiumscope.model_1.eda.representativeness import coverage_tables
+    x=pd.DataFrame({"SiO2":[50.,51.,52.,53.],"Rock_type":["unknown","unknown","granite","granite"]})
+    frame=x.assign(source_dataset=["A","A","B","B"])
+    prepared=SimpleNamespace(x=x, y=pd.Series([0.,10.,50.,700.]), frame=frame,
+        groups=pd.Series(["g1","g1","g2","g3"]),
+        schema=SimpleNamespace(numeric=["SiO2"],categorical=["Rock_type"]))
+    report=coverage_tables(prepared)
+    assert report["target_bands_by_source"].rows.sum()==4
+    assert report["categorical_source_association"].cramers_v_source.iloc[0]==1.
+    assert report["compositional_readiness"].incomplete.sum()==4
+    assert not report["compositional_readiness"].ilr_applied.any()
+    assert report["missingness_patterns"].rows.sum()==4
