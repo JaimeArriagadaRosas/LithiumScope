@@ -180,3 +180,27 @@ def test_research_view_rejects_populated_blank_and_malformed_rows(tmp_path):
         source.write_text("SAMPLE NAME,LI(PPM),\n" + row + "\n")
         with pytest.raises(InputValidationError):
             normalize_research_export(source, tmp_path / f"view_{i}.csv")
+
+
+def test_research_view_recognizes_multicell_bibliography_marker(tmp_path):
+    from lithiumscope.datasets.adapters.georoc.research_view import normalize_research_export
+    source = tmp_path / "raw.csv"
+    source.write_text('SAMPLE NAME,LI(PPM),,SIO2(WT%)\nA,15,,60\nReferences:,"[42] Author (2020)",journal\n"[43] Author (2021)"\n')
+    report = normalize_research_export(source, tmp_path / "view.csv")
+    assert report["data_records"] == 1
+    assert len(report["footer"]) == 2
+    assert report["footer"][0]["cells"][1] == "[42] Author (2020)"
+
+
+def test_research_view_blocks_scientific_data_after_footer_and_reports_width(tmp_path):
+    import pytest
+    from lithiumscope.core.exceptions import InputValidationError
+    from lithiumscope.datasets.adapters.georoc.research_view import normalize_research_export
+    source = tmp_path / "raw.csv"
+    header = "SAMPLE NAME,LI(PPM),,SIO2(WT%)\nA,15,,60\n"
+    source.write_text(header + "References:\nB,20,,65\n")
+    with pytest.raises(InputValidationError, match="Scientific-looking row after bibliography"):
+        normalize_research_export(source, tmp_path / "footer.csv")
+    source.write_text(header + "B,20\n")
+    with pytest.raises(InputValidationError, match=r"raw.csv: Malformed GEOROC row at line 3; expected=4, actual=2"):
+        normalize_research_export(source, tmp_path / "width.csv")

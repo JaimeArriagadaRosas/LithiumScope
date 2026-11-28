@@ -97,11 +97,21 @@ def profile(spec, paths, receipt, base_path, *, output_root=None, availability_c
         with TemporaryDirectory() as temp:
             normalized=[]
             normalization={}
+            errors=[]
             for path in paths:
                 target=Path(temp)/path.name
-                normalization[path.name]=normalize_research_export(path,target)
-                normalized.append(target)
-            (tables/"raw_structure_audit.json").write_text(json.dumps(normalization,indent=2,ensure_ascii=False),encoding="utf-8")
+                try:
+                    normalization[path.name]=normalize_research_export(path,target)
+                    normalized.append(target)
+                except Exception as exc:
+                    message=f"{type(exc).__name__}: {exc}"
+                    normalization[path.name]={"state":"blocked","original_sha256":digests[path.name],"error":message}
+                    errors.append(message)
+                    get_logger("experiments.data_lab").exception("GEOROC normalization failed: %s",path.name)
+            audit=tables/"raw_structure_audit.json"
+            audit.write_text(json.dumps(normalization,indent=2,ensure_ascii=False),encoding="utf-8")
+            if errors:
+                raise ValueError(f"{len(errors)}/{len(paths)} partitions blocked; {errors[0]}; detailed audit: {audit}")
             harmonized=ingest_georoc_files(normalized,tables/"candidate_view.csv",
                 audit_path=tables/"ingestion_audit.json",source_name=spec.key,
                 minimum_predictors=int(settings["minimum_predictors"]),

@@ -6,8 +6,32 @@ from lithiumscope.core.hashing import file_sha256
 from lithiumscope.core.exceptions import InputValidationError
 from lithiumscope.datasets.readers.georoc_raw_reader import detect_georoc_encoding
 from lithiumscope.datasets.validation.tabular.schema import validate_headers
+from .schema import infer_georoc_column_map, MAJOR_OXIDES
 
 _MARKER = re.compile(r"^(references|bibliography|citations|abbreviations)\s*:\s*$", re.I)
+
+
+_NUMBER = re.compile(r"^[<>≤≥]?\s*[+-]?(?:\d+(?:[.,]\d*)?|[.,]\d+)(?:[eE][+-]?\d+)?$")
+
+
+def _measurement_positions(header, keep):
+    mapping = infer_georoc_column_map([header[i] for i in keep])
+    return [i for i in keep if (mapping.get(header[i], "") in MAJOR_OXIDES
+        or mapping.get(header[i], "").endswith("_icpms")
+        or mapping.get(header[i], "").startswith(("Longitude", "Latitude"))
+        or header[i].strip().upper().replace(" ", "") in {"FEOT(WT%)", "FEOT"})]
+
+
+def _has_measurement(row, positions):
+    return any(i < len(row) and _NUMBER.fullmatch(row[i].strip()) for i in positions)
+
+
+def _structure_error(source, line, header, row, reason):
+    occupied = [i + 1 for i, value in enumerate(row) if value.strip()]
+    preview = [(i + 1, value.strip()[:100]) for i, value in enumerate(row) if value.strip()][:6]
+    return InputValidationError(
+        f"{source.name}: {reason} at line {line}; expected={len(header)}, "
+        f"actual={len(row)}, nonempty_columns={occupied[:20]}, preview={preview!r}")
 
 
 def normalize_research_export(source, destination):
@@ -25,6 +49,7 @@ def normalize_research_export(source, destination):
         validate_headers(header, allowed_blank=blank)
         keep = [i for i in range(len(header)) if i not in blank]
         validate_headers([header[i] for i in keep])
+        measurement_positions = _measurement_positions(header, keep)
         nonempty = [0] * len(header)
         censored = [0] * len(header)
         with destination.open("x", encoding="utf-8", newline="") as output:
@@ -35,16 +60,25 @@ def normalize_research_export(source, destination):
                 if not cells:
                     blank_lines += 1
                     continue
-                # Only a standalone, explicit section marker starts a footer.
-                if len(cells) == 1 and _MARKER.fullmatch(cells[0]):
-                    section = cells[0]
+                # The historical GEOROC bibliography reader detects an explicit
+                # marker in any nonempty cell, including a multi-cell footer row.
+                marker = next((value for value in cells if _MARKER.fullmatch(value)), None)
+                has_measurement = _has_measurement(row, measurement_positions)
+                if marker is not None:
+                    if has_measurement:
+                        raise _structure_error(source, reader.line_num, header, row,
+                                               "Ambiguous footer marker with scientific values")
+                    section = marker
                 if section is not None:
+                    if len(row) == len(header) and has_measurement:
+                        raise _structure_error(source, reader.line_num, header, row,
+                                               "Scientific-looking row after bibliography marker")
                     footer.append({"line": reader.line_num, "section": section, "cells": row})
                     continue
                 if len(row) != len(header):
-                    raise InputValidationError(f"Malformed GEOROC row at line {reader.line_num}")
+                    raise _structure_error(source, reader.line_num, header, row, "Malformed GEOROC row")
                 if any(row[i].strip() for i in blank):
-                    raise InputValidationError(f"Unnamed GEOROC data column populated at line {reader.line_num}")
+                    raise _structure_error(source, reader.line_num, header, row, "Unnamed GEOROC data column populated")
                 for i in keep:
                     value = row[i].strip()
                     nonempty[i] += bool(value)
