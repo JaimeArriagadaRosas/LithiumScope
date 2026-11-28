@@ -21,9 +21,12 @@ def run():
             with run_log("eda",group+"_preparation"):
                 state,record=prepare(group,prepare_diagnostic_source(group))
             records[group]={"state":state,**record}
-            print(f"[{state.upper()}] {group}")
+            status={"complete":"COMPLETADO","partial":"PARCIAL","blocked":"BLOQUEADO"}.get(state,state.upper())
+            print(f"[{status}] {group}")
         except Exception as exc:
             records[group]={"state":"blocked","reason":str(exc)}
+            from lithiumscope.core.logging.session import get_logger
+            get_logger("experiments.data_lab.preparation").exception("Preparation failed model=%s",group)
             print(f"[BLOQUEADO] {group}: {exc}")
     state="COMPLETADO" if all(r["state"]=="complete" for r in records.values()) else "PARCIAL/BLOQUEADO"
     print(f"Informe de preparación: {write_verification(state,records,scope='train_only_data_preparation')}")

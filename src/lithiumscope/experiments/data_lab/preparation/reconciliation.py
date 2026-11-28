@@ -84,12 +84,17 @@ def candidate_preflight(candidates, x, groups, plan):
     if candidates.empty:
         return pd.DataFrame(columns=columns)
     cx = candidates.reindex(columns=CHEM)
+    concentrations = num(candidates,["Li_icpms"]).Li_icpms
+    sources = candidates.source_dataset
     cg = group(candidates)
     for fold,(train,test,inner) in enumerate(plan,1):
         for i,(fit,reserved) in enumerate([(train,test),*inner]):
             support = chemical_support(cx, x.iloc[fit], [c for c in CHEM if c in x])
             table = support.reset_index(drop=True)
             table["review_id"] = candidates.review_id.to_numpy()
+            table["source"] = sources.to_numpy()
+            table["candidate_li_ppm"] = concentrations.to_numpy()
+            table["above_696"] = concentrations.gt(696).to_numpy()
             table["outer_fold"],table["inner_fold"] = fold,i
             # No reserved labels are used; group exclusion is a prerequisite only.
             # Inner folds must also exclude the outer TEST groups.

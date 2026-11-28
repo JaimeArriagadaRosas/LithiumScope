@@ -64,6 +64,9 @@ def existing_eda(group, source):
 
 
 def prepare(group,source):
+    if group == "model_1":
+        from .preparation.runner import run
+        return run(source)
     from lithiumscope.experiments.generalization.prepared import prepare_version
     from lithiumscope.experiments.generalization.preflight import prepare_treatments, require_treatments, show_treatments
     evidence=existing_eda(group,source)

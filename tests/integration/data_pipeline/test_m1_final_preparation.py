@@ -61,3 +61,38 @@ def test_missing_indicators_use_only_train_and_categories_are_ablated():
     assert "missing_SiO2" not in transform(held,state)
     ablation=fit_variant(train,["SiO2","MgO"],["Rock_type"],"without_categories")
     assert list(transform(held,ablation))==["SiO2","MgO"]
+
+
+def test_m1_preparation_dispatch_does_not_run_old_generic_campaign(monkeypatch):
+    from lithiumscope.experiments.data_lab import workflow
+    from lithiumscope.experiments.data_lab.preparation import runner
+    calls=[]
+    monkeypatch.setattr(runner,"run",lambda source: calls.append(source) or ("complete",{"model_fits":0}))
+    assert workflow.prepare("model_1",Path("combined.csv"))==("complete",{"model_fits":0})
+    assert calls==[Path("combined.csv")]
+
+
+def test_fold_contract_preserves_outer_and_inner_membership():
+    import numpy as np
+    import pandas as pd
+    from lithiumscope.experiments.data_lab.preparation.fold_preparation import prepare_folds
+    from lithiumscope.experiments.generalization.partitions import partitions
+    from lithiumscope.results.eda_protocol import fold_protocol
+    from lithiumscope.model_1.training.preprocessing.tabular import OXIDES
+    n=12
+    x=pd.DataFrame({c:np.arange(1,n+1,dtype=float) for c in OXIDES})
+    x.loc[::2,"P2O5"]=np.nan
+    y=pd.Series(np.arange(n,dtype=float))
+    groups=pd.Series(["g"+str(i//2) for i in range(n)])
+    data=(x,y,groups,pd.Series(["A"]*n),np.ones(n,dtype=bool),OXIDES,[])
+    cfg={"validation":{"outer_folds":3,"inner_folds":2}}
+    plan=partitions("model_1",data,cfg)
+    protocol=fold_protocol(x,y,groups,[(a,b) for a,b,_ in plan],strategy="group_kfold_spatial")
+    _,_,table,states,splits,coverage=prepare_folds(data,cfg,protocol)
+    assert len(table)==36 and len(states)==36
+    assert table.state.eq("ready").all()
+    assert table.generated_rows.eq(0).all() and table.model_fits.eq(0).all()
+    for fold in splits:
+        assert not set(fold["train"]) & set(fold["test"])
+        for inner in fold["inner"]:
+            assert not set(inner["train"]) & set(fold["test"])
