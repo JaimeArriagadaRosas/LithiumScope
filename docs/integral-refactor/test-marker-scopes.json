@@ -28,6 +28,10 @@
   "tests/integration/acquisition/test_training_georoc_auto_acquisition.py": [
     "training"
   ],
+  "tests/integration/data_pipeline/test_m1_final_preparation.py": [
+    "m1",
+    "eda"
+  ],
   "tests/integration/reporting/test_eda_figure_evidence_snapshot.py": [
     "eda"
   ],

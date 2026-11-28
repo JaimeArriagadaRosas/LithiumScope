@@ -7,14 +7,15 @@ import pandas as pd
 
 from lithiumscope.core.config import load_config
 from lithiumscope.core.hashing import file_sha256
-from lithiumscope.core.paths import DATA_DIR, RESULTS_DIR
+from lithiumscope.core.paths import DATA_DIR, RESULTS_DIR, PROJECT_ROOT
 from lithiumscope.core.logging.session import get_logger
 from lithiumscope.experiments.generalization.prepared import prepare_version, load_snapshot
 from lithiumscope.results.atomic_exports import write_json, write_table
 from .evidence import BASE_SHA, INVENTORY_SHA, load_checkpoint, checked_file, read
 from .dispositions import apply_decisions
 from .reconciliation import reconcile, candidate_preflight
-from .recovery import recover, ANDEAN
+from .recovery import recover, ANDEAN, independent_links
+from .historical_recovery import review_originals
 from .fold_preparation import prepare_folds
 
 logger = get_logger("experiments.data_lab.preparation")
@@ -90,6 +91,28 @@ def run(source, *, root=None, research_root=None):
                 print(f"    [BLOQUEADO] Recuperación: {exc}")
         else:
             failures["recovery"]="Verified Andean profile unavailable"
+        # Search original historical files only for the identified QC gaps.
+        original_proposals, original_review = review_originals(base,qc,cfg,PROJECT_ROOT)
+        write_table(directory/"historical_original_review.csv",original_review)
+        proposals=pd.concat([proposals,original_proposals],ignore_index=True)
+        if len(proposals):
+            # Preserve contradictory values for review; never pick one silently.
+            proposals["conflicting_values"] = proposals.groupby(["base_position","oxide"]).proposed_value_wt_pct.transform("nunique").gt(1)
+        write_table(directory/"oxide_recovery_review.csv",proposals)
+        unresolved = qc.loc[qc.reason.eq("missing_or_unparseable")].copy()
+        proposed = set(proposals.get("base_position",pd.Series(dtype=str)).astype(str))
+        unresolved["measurement_proposal_available"] = unresolved.row_index.astype(str).isin(proposed)
+        unresolved["approved_for_training"] = False
+        write_table(directory/"qc_recovery_disposition.csv",unresolved)
+        if len(original_review) and original_review.state.eq("blocked").any():
+            failures["historical_originals"]="Some original historical partitions or lineage unavailable"
+        if "macusani_2025" in profiles:
+            # Independent identity diagnostic only: no Macusani rows or values admitted.
+            mac=pd.read_csv(profiles["macusani_2025"]["path"]/"tables/review_rows.csv",low_memory=False)
+            mac_links=independent_links(base,mac)
+            mac_links["disposition"]="quarantine"
+            write_table(directory/"macusani_identity_review.csv",mac_links)
+        print(f"    Propuestas de medición (todas pendientes): {len(proposals)}")
         stage(4,"Contratos de predictores")
         print("    Control | sin categorías | ILR de óxidos | indicadores de ausencia")
         print("    No se repiten balanceos sintéticos ni campañas de transferencia cerradas.")
