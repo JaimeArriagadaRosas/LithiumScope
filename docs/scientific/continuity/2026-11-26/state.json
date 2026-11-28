@@ -722,8 +722,8 @@
       "implementation_head": "2cde42c698e2e3477c693bc9bb5c200a1ebb4674",
       "retired_sources": [],
       "next_local": [
-        "5 > 3 > 1",
-        "5 > 2 > 1"
+        "5 > 2 > 1",
+        "5 > 3 > 1"
       ],
       "latest_local_run": {
         "run_id": "eda_20261128T113124_016337Z_5451af22",
@@ -768,7 +768,35 @@
           "recovered_measurements",
           "real_expansion",
           "combined"
-        ]
+        ],
+        "last_local_attempt": {
+          "commit": "76069a3a7f2875aab45d43be21dad60fce48a96f",
+          "state": "blocked",
+          "stage": 1,
+          "reason": "obsolete import of prepare_training_data from model_1.pipeline",
+          "verification": "eda_verification_20261128T121341_88fefb14.json",
+          "model_fits": 0
+        },
+        "correction_head": "74195f9ee8b1a9c6acb22bf167e0439b7929154b",
+        "software_validation": {
+          "run_id": "20261128T120137Z_93730df54b214f699ead8d9323553997",
+          "commit": "76069a3a7f2875aab45d43be21dad60fce48a96f",
+          "state": "incomplete",
+          "pytest_exit_code": 0,
+          "validation_exit_code": 10,
+          "tests": 1313,
+          "passed": 1310,
+          "failed": 0,
+          "errors": 0,
+          "skipped": 3,
+          "modules": 300,
+          "checks_passed": 8,
+          "line_coverage_pct": 57.47,
+          "criteria_associated_passed": 161,
+          "criteria_incomplete": 5,
+          "evidence": "user_console",
+          "post_fix_validation_pending": true
+        }
       }
     }
   },

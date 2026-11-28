@@ -101,3 +101,38 @@ Li, ortonormalidad e invariancia de ILR, indicadores TRAIN, ablación,
 despacho de menú y particiones externas/internas. Las pruebas no han
 sido ejecutadas contra el clon local; verificar suite y resultados reales.
 Todos los commits de esta intervención incluyen [skip ci].
+
+
+## Validación local posterior y corrección (28/11, 12:01–12:13 UTC)
+
+Commit probado 76069a3a7f2875aab45d43be21dad60fce48a96f.
+Ejecución de suite 20261128T120137Z_93730df54b214f699ead8d9323553997:
+1313 casos, 1310 aprobados, cero fallos, cero errores, tres omisiones,
+300/300 módulos, 8/8 comprobaciones, cobertura de líneas 57.47%.
+Pytest 0, validación integral 10 (incompleta por omisiones), Git limpio.
+Criterios con pruebas asociadas aprobadas 161/166; cinco con evidencia
+incompleta. Omisiones: dos pruebas de artefactos históricos locales
+ausentes y una de la extensión provisional M2 de 783 observaciones.
+Datos de consola aportados por el usuario; XML/summary no adjuntados
+en este punto de control. No interpretar como cierre científico.
+
+Preparación bloqueada en etapa 1, informe
+eda_verification_20261128T121341_88fefb14.json, sin ajustes.
+La creación en frío del snapshot M1 importaba prepare_training_data
+desde model_1.pipeline después de la reubicación del propietario.
+Corregido al módulo canónico model_1.preparation.training_data.
+Prueba de regresión de creación real, persistencia, reutilización
+y correspondencia de folds con datos sintéticos. Aún pendiente ejecutar
+esta nueva prueba en el clon local. No se ejecutaron retiros en la
+preparación bloqueada ni se modificó la cohorte.
+
+Consola de validación reorganizada en cinco bloques: resultado general,
+integridad, cobertura y criterios, incidencias, evidencias. Agrupa las
+omisiones por motivo y distingue pytest de la política de validación.
+La tabla completa de responsabilidades, nombres de pruebas omitidas,
+tiempos y rutas por comprobación permanece en los informes/logs.
+Sin cambios a la política de salida ni reducción de la suite.
+
+Actualizar con git pull --ff-only y ejecutar primero 5 > 2 > 1 para
+obtener el resultado real de preparación. Después ejecutar 5 > 3 > 1
+para revalidar las correcciones. No repetir EDA ni iniciar 5 > 3 > 3.
