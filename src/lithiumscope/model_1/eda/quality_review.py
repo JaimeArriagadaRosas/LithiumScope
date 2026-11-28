@@ -39,7 +39,14 @@ def quality_review(prepared, data_config):
         status = ("review_sum_in_range" if missing_total and in_range else
                   "review_sum_out_of_range" if missing_total and numeric_complete else
                   "insufficient_original_measurements" if missing_total else "recorded_qc_exclusion")
+        missing_oxides = "|".join(name for name in MAJOR_OXIDES if not measured.loc[idx,name])
         record = {**item, "measured_oxide_count": int(measured.loc[idx].sum()),
+                  "missing_or_invalid_oxides": missing_oxides or "<none>",
+                  "reported_source_file": original.get("source_file", None),
+                  "reported_source_row_position": original.get("source_row_position", None),
+                  "reported_source_unique_id": original.get("source_unique_id", None),
+                  "raw_target": original.get(prepared.target, None),
+                  "original_partition_identity_verified": False,
                   "all_ten_numeric_nonnegative": bool(complete.loc[idx]),
                   "censored_oxide": censored, "diagnostic_sum": diagnostic_sum,
                   "diagnostic_sum_in_range": in_range,
@@ -55,6 +62,8 @@ def quality_review(prepared, data_config):
         qc.append(record)
     qc_columns = ["stage", "row_index", "source", "sample_id", "source_row_id",
                   "column", "original", "reason", "measured_oxide_count",
+                  "missing_or_invalid_oxides", "reported_source_file", "reported_source_row_position",
+                  "reported_source_unique_id", "raw_target", "original_partition_identity_verified",
                   "all_ten_numeric_nonnegative", "censored_oxide", "diagnostic_sum",
                   "diagnostic_sum_in_range", "iron_provenance", "source_feot_raw",
                   "source_fe2o3_raw", "water_basis_and_units_certified", "status",
@@ -62,6 +71,9 @@ def quality_review(prepared, data_config):
     qc_rows = pd.DataFrame(qc) if qc else pd.DataFrame(columns=qc_columns)
     qc_summary = (qc_rows.groupby(["source", "reason", "status"], dropna=False)
                   .size().rename("rows").reset_index())
+    missing_patterns = (qc_rows.loc[qc_rows.reason.eq("missing_or_unparseable")]
+        .groupby(["source", "measured_oxide_count", "missing_or_invalid_oxides"], dropna=False)
+        .size().rename("rows").reset_index())
     # Distinguish exact observed labels from substituted/censored and invalid labels.
     target_rows = []
     for idx, value in raw[prepared.target].items():
@@ -86,4 +98,5 @@ def quality_review(prepared, data_config):
     target = pd.DataFrame(target_rows)
     target_summary = target.groupby(["source", "status", "retained"], dropna=False).size().rename("rows").reset_index()
     return {"qc_recovery_review": qc_rows, "qc_recovery_summary": qc_summary,
+            "qc_missing_oxide_patterns": missing_patterns,
             "target_analytical_review": target, "target_analytical_summary": target_summary}

@@ -77,6 +77,10 @@ def test_qc_review_does_not_admit_rows_or_substitute_missing_oxides(tmp_path):
     assert set(review.status) == {"review_sum_in_range", "insufficient_original_measurements"}
     assert not review.approved_for_training.any()
     assert not review.water_basis_and_units_certified.any()
+    assert not review.original_partition_identity_verified.any()
+    patterns = pd.read_csv(result / "tables/qc_missing_oxide_patterns.csv")
+    assert patterns.rows.sum() == 2
+    assert set(patterns.missing_or_invalid_oxides) == {"<none>", "CaO"}
     target = pd.read_csv(result / "tables/target_analytical_review.csv")
     assert "reported_zero" in set(target.status)
     assert path.read_bytes() == original

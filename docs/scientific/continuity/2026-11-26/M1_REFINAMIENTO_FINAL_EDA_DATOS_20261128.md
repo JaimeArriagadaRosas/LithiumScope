@@ -272,3 +272,42 @@ refinamiento. Pendientes: verificar originales de exclusiones QC, comparar
 evidencia entre fuentes y resolver elegibilidad; definir tratamientos
 condicionados TRAIN sin repetir campañas; ejecutar y cerrar fase 6 solo con
 resultados reales. No hay mejora predictiva ni cierre científico demostrado.
+
+
+## Punto de control local posterior (28/11, 11:10 UTC)
+
+Ejecución canónica eda_20261128T110953_162096Z_c46e99f5; firma registrada en el manifiesto original.
+34/34 CSV entregados verificados por SHA256. Cohorte 3420 × 33, 244
+grupos, hash congelado sin cambios. Cero ajustes. Los cuatro estudios
+dirigidos (Chen, Meixner, Fernández-Turiel, Macusani) completaron su
+perfil tras corregir cuantiles de booleanos. Las nueve particiones GEOROC
+verificadas fallaron por la leyenda inline "Abbreviations: MET: ...",
+no por calidad científica. Corregido reconocimiento conservador y prueba
+sintética de 172 columnas; pendiente confirmar en archivos reales.
+
+De 109 sumas QC faltantes, 76 filas no tienen ningún óxido numérico
+disponible en el combinado y 33 tienen nueve: 25 sin SiO2, seis sin P2O5,
+una sin Fe2O3 y una sin MnO. No existe reconstrucción directa certificada.
+Nueva tabla qc_missing_oxide_patterns y referencias de procedencia
+declaradas, no certificadas, para una revisión puntual de los originales.
+No imputar para superar QC.
+
+14 pares de identidad potenciales; cero atraviesan TRAIN/TEST según el
+criterio aplicado. 269/3420 TEST fuera del soporte químico; las nueve
+observaciones >696 ppm del fold 5 carecen también de soporte químico.
+No certifica ausencia de fuga ni requiere modificar folds congelados.
+No ampliar indiscriminadamente el EDA canónico; priorizar completar
+GEOROC y consolidar aporte marginal, evidencia histórica y decisiones.
+
+Consola M1 compacta, bloques por cohorte, calidad, soporte y alertas;
+cada fuente informa progreso, número de archivos verificados, estado,
+conteos y duración. Exporta source_comparison.csv junto al inventario,
+con hash y definiciones de QC y conteos; N/D no se interpreta como cero.
+Los conteos de fuentes no equivalen a muestras independientes ni admisión.
+Se preserva el detalle completo en tablas, manifiestos y logs.
+
+Siguiente ejecución: 5 > 1 > 1; aportar eda_verification y el nuevo
+source_inventory.json/source_comparison.csv, y los manifiestos/tablas
+de fuentes candidatas necesarios para la evaluación. Si persiste bloqueo
+GEOROC, entregar raw_structure_audit.json de cada fuente afectada.
+Validación software completa pendiente; no ejecutar tratamientos ni fits.
