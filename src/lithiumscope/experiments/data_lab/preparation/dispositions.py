@@ -1,6 +1,5 @@
 """Approved, version-bound scientific dispositions; preserve all historical evidence."""
 from ..source_studies import source_catalog
-from .evidence import BASE_SHA
 
 DECISION_REFERENCE = "M1 final data refinement, 28/11/2026: approved preparation plan; M1_FUENTES_Y_CIERRE.md and M1_CIERRE_DATOS_RESULTADOS.md"
 DECISIONS = {
@@ -38,7 +37,8 @@ def apply_decisions(profiles, issues, catalog):
                     row["state"] = "reopened_requires_review"
                 else:
                     source_catalog.retire(key, profile["path"], reason=reason,
-                        decision_reference=DECISION_REFERENCE, all_uses_closed=True, root=catalog)
+                        decision_reference=DECISION_REFERENCE, all_uses_closed=True, root=catalog,
+                        historical_evidence=profile["history"])
                     row["state"] = "retired"
             elif record is not None:
                 row["state"] = "existing_retirement_requires_review"

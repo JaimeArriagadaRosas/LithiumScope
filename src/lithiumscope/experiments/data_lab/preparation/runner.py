@@ -11,7 +11,7 @@ from lithiumscope.core.paths import DATA_DIR, RESULTS_DIR, PROJECT_ROOT
 from lithiumscope.core.logging.session import get_logger
 from lithiumscope.experiments.generalization.prepared import prepare_version, load_snapshot
 from lithiumscope.results.atomic_exports import write_json, write_table
-from .evidence import BASE_SHA, INVENTORY_SHA, load_checkpoint, checked_file, read
+from .evidence import BASE_SHA, INVENTORY_SHA, load_checkpoint, checked_file
 from .dispositions import apply_decisions
 from .reconciliation import reconcile, candidate_preflight
 from .recovery import recover, ANDEAN, independent_links
@@ -123,8 +123,16 @@ def run(source, *, root=None, research_root=None):
         write_json(directory/"partitions.json",splits)
         write_table(directory/"train_concentration_coverage.csv",coverage)
         try:
-            screening=candidate_preflight(candidates,x,groups,plan)
+            historical=base.loc[x.index.astype(int)]
+            screening=candidate_preflight(candidates,x,groups,plan,historical=historical)
             write_table(directory/"candidate_fold_preflight.csv",screening)
+            if len(screening):
+                counts=screening.groupby(["source","outer_fold","inner_fold"],dropna=False).agg(
+                    review_rows=("review_id","size"),supported=("chemistry_nn_supported","sum"),
+                    above_696=("above_696","sum"),reserved_group=("group_reserved","sum"),
+                    reserved_publication=("known_reserved_publication_overlap","sum"),
+                    approved_rows=("approved_for_training","sum")).reset_index()
+                write_table(directory/"candidate_fold_summary.csv",counts)
         except (OSError,ValueError,KeyError,TypeError) as exc:
             failures["candidate_preflight"]=str(exc)
             logger.exception("Candidate preflight blocked")
@@ -147,6 +155,8 @@ def run(source, *, root=None, research_root=None):
                  "measurement_proposals":len(proposals),"fold_partitions":sum(1+len(i) for _,_,i in plan),
                  "variant_checks":len(table),"ready":int(table.state.eq("ready").sum()),
                  "blocked":int(table.state.eq("blocked").sum()),"new_rows_approved":0,"model_fits":0}
+        from importlib.metadata import version
+        code={module.name:file_sha256(module) for module in sorted(Path(__file__).parent.glob("*.py"))}
         manifest={"schema_version":1,"state":"partial" if failures else "complete",
             "scope":"M1_final_train_only_preparation_not_predictive_evaluation",
             "source_sha256":BASE_SHA,"eda_run_id":eda.name,
@@ -155,7 +165,8 @@ def run(source, *, root=None, research_root=None):
             "prepared_identity":snapshot.name,"prepared_manifest_sha256":file_sha256(snapshot/"manifest.json"),
             "development_protocol":protocol,"summary":summary,"failures":failures,
             "source_unchanged":True,"predictive_improvement_verified":False,"production_changed":False,
-            "evaluation_authorized":False,
+            "evaluation_authorized":False,"implementation_sha256":code,
+            "versions":{name:version(name) for name in ("numpy","pandas","scikit-learn")},
             "artifacts":{path.name:file_sha256(path) for path in sorted(directory.iterdir()) if path.is_file()}}
         path=write_json(directory/"manifest.json",manifest)
         for name,digest in manifest["artifacts"].items():

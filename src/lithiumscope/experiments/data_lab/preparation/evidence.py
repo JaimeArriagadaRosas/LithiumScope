@@ -58,16 +58,22 @@ def load_checkpoint(source, cfg, root, research_root):
             if profile["source_sha256"] != expected:
                 raise ValueError("Candidate originals differ from approved inventory")
             folder = research_root / key if key.startswith("georoc_") else research_root / "directed" / key
-            for name, digest in expected.items():
-                if Path(name).name != name or "/" in name or chr(92) in name:
-                    raise ValueError("Invalid original name")
-                checked_file(folder / name, digest)
+            archived = source_catalog.retirement(key,root=root/"model_1/source_catalog")
+            if archived is not None:
+                if (archived["profile_manifest_sha256"] != record["manifest_sha256"]
+                        or archived["source_sha256"] != expected):
+                    raise ValueError("Retirement belongs to a different source version")
+            else:
+                for name, digest in expected.items():
+                    if Path(name).name != name or "/" in name or chr(92) in name:
+                        raise ValueError("Invalid original name")
+                    checked_file(folder / name, digest)
             history = historical_evidence.inspect_history(key, root, BASE_SHA)
             if not history or any(h["state"] != "verified_historical" or
                     h["canonical_source_matches"] is False for h in history):
                 raise ValueError("Historical decision evidence incomplete")
             profiles[key] = {"path": path, "manifest": profile, "record": record,
-                             "history": history, "original_folder": folder}
+                             "history": history, "original_folder": folder, "archived": archived is not None}
         except (OSError, ValueError, KeyError, TypeError) as exc:
             issues[key] = f"{type(exc).__name__}: {exc}"
     return eda, manifest, profiles, issues

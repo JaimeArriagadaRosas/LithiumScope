@@ -39,7 +39,7 @@ def retirement(key, *, root=None):
     return record
 
 
-def retire(key, profile_path, *, reason, decision_reference, all_uses_closed=False, root=None):
+def retire(key, profile_path, *, reason, decision_reference, all_uses_closed=False, root=None, historical_evidence=None):
     """Never retire from a missing file, failed analysis or an unapproved suggestion."""
     path = _path(key, root)
     if not all_uses_closed or not reason.strip() or not decision_reference.strip():
@@ -61,7 +61,7 @@ def retire(key, profile_path, *, reason, decision_reference, all_uses_closed=Fal
               "date_utc": datetime.now(timezone.utc).isoformat(),
               "source_sha256": manifest["source_sha256"],
               "profile_manifest_sha256": digest, "profile_path": str(profile_path),
-              "profile": manifest}
+              "profile": manifest, "historical_evidence": historical_evidence or []}
     write_json(path, record)
     return path
 

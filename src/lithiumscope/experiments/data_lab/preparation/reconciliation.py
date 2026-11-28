@@ -1,5 +1,6 @@
 """Compare current and archived GEOROC views without re-running their campaigns."""
 from collections import Counter
+import re
 import numpy as np
 import pandas as pd
 
@@ -8,6 +9,7 @@ from ..source_studies.historical_evidence import HISTORICAL, verify_manifest
 from ..source_studies.georoc.candidate_eda import overlap_flags
 from lithiumscope.core.scientific.chemical_support import chemical_support
 from .evidence import BASE_SHA, read
+from lithiumscope.experiments.model_1.data_expansion.sensitivity_data import tokens, historical_tokens
 
 KEYS = ("georoc_andean_202609", "georoc_felsic_rocks")
 
@@ -60,6 +62,23 @@ def reconcile(profiles, base, root, lower, upper):
         detail["unique_comparison_key"] = detail.comparison_key.map(old_counts).eq(1) & detail.comparison_key.map(new_counts).eq(1)
         detail["review_state"] = np.where(detail.unique_comparison_key,
             "historical_key_reused_not_independence", "membership_unresolved")
+        structures=read(profiles[key]["path"]/"tables/raw_structure_audit.json")
+        bibliography={}
+        for file,structure in structures.items():
+            for row in structure.get("footer",[]):
+                if not str(row["section"]).strip().lower().startswith(("references","bibliography","citations")):
+                    continue
+                for cell in row["cells"]:
+                    match=re.match(r"^\s*\[(\d+)\]\s*(.+)",cell)
+                    if match:
+                        bibliography.setdefault((file,match[1]),set()).add(match[2].strip())
+        references=[]
+        for item in detail.itertuples(index=False):
+            ids=re.findall(r"\[(\d+)\]",str(item.source_publication))
+            resolved=[bibliography.get((item.source_file,i),set()) for i in ids]
+            references.append(" | ".join(next(iter(v)) for v in resolved)
+                if ids and all(len(v)==1 for v in resolved) else "")
+        detail["resolved_publications"]=references
         detail["approved_for_training"] = False
         detail["review_id"] = key + "|" + detail.source_file.astype(str) + "|" + detail.source_row_position.astype(str)
         current.append(detail)
@@ -76,7 +95,7 @@ def reconcile(profiles, base, root, lower, upper):
         "archived_rows","current_rows","cause"]), pd.concat(current, ignore_index=True) if current else pd.DataFrame()
 
 
-def candidate_preflight(candidates, x, groups, plan):
+def candidate_preflight(candidates, x, groups, plan, *, historical=None):
     """Diagnostic support computed only from each TRAIN, never admit rows."""
     columns = ["review_id","outer_fold","inner_fold","chemistry_nn_supported","group_reserved",
                "method_known","crs_known","approved_for_training"]
@@ -86,6 +105,10 @@ def candidate_preflight(candidates, x, groups, plan):
     cx = candidates.reindex(columns=CHEM)
     concentrations = num(candidates,["Li_icpms"]).Li_icpms
     sources = candidates.source_dataset
+    old_refs=historical_tokens(historical) if historical is not None else [set() for _ in range(len(x))]
+    if len(old_refs)!=len(x):
+        raise ValueError("Historical publication identities not aligned")
+    candidate_refs=[tokens(a)|tokens(b) for a,b in zip(candidates.source_publication,candidates.resolved_publications,strict=True)]
     cg = group(candidates)
     for fold,(train,test,inner) in enumerate(plan,1):
         for i,(fit,reserved) in enumerate([(train,test),*inner]):
@@ -100,9 +123,15 @@ def candidate_preflight(candidates, x, groups, plan):
             # Inner folds must also exclude the outer TEST groups.
             blocked = set(groups.iloc[reserved]) | set(groups.iloc[test])
             table["group_reserved"] = cg.isin(blocked).to_numpy()
+            reserved_positions=set(map(int,reserved)) | set(map(int,test))
+            reserved_refs=set().union(*(old_refs[j] for j in reserved_positions))
+            table["known_reserved_publication_overlap"]=[bool(v&reserved_refs) for v in candidate_refs]
+            table["reserved_rows_without_publication"]=sum(not old_refs[j] for j in reserved_positions)
+            table["candidate_publication_resolved"]=candidates.resolved_publications.ne("").to_numpy()
+            table["publication_independence_certified"]=False
             for name,column in (("method_known","source_li_method"),("crs_known","source_coordinate_crs")):
                 value = candidates.get(column,pd.Series("",index=candidates.index)).fillna("").astype(str).str.strip().str.lower()
-                table[name] = ~value.isin(["","unknown","nan","none","<na>"])
+                table[name] = ~value.isin(["","unknown","nan","none","<na>","unconfirmed"]) & ~value.str.startswith("review_")
             table["approved_for_training"] = False
             rows.append(table)
     return pd.concat(rows, ignore_index=True)
